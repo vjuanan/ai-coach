@@ -14,6 +14,7 @@ export interface StrengthConfig {
     tempo?: string;
     rest?: string;
     notes?: string;
+    [key: string]: any;
 }
 
 export interface EMOMConfig {
@@ -21,12 +22,14 @@ export interface EMOMConfig {
     interval: number; // every X minutes
     movements: string[];
     notes?: string;
+    [key: string]: any;
 }
 
 export interface AMRAPConfig {
     minutes: number;
     movements: string[];
     notes?: string;
+    [key: string]: any;
 }
 
 export interface RFTConfig {
@@ -34,6 +37,7 @@ export interface RFTConfig {
     timeCap?: number;
     movements: string[];
     notes?: string;
+    [key: string]: any;
 }
 
 export interface TabataConfig {
@@ -42,6 +46,7 @@ export interface TabataConfig {
     restSeconds: number;
     movement: string;
     notes?: string;
+    [key: string]: any;
 }
 
 export interface LadderConfig {
@@ -51,10 +56,12 @@ export interface LadderConfig {
     increment: number;
     movements: string[];
     notes?: string;
+    [key: string]: any;
 }
 
 export interface FreeTextConfig {
     content: string;
+    [key: string]: any;
 }
 
 export type WorkoutConfig =
