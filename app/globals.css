@@ -1,0 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CV-OS Base Styles */
+@layer base {
+  :root {
+    --cv-bg-primary: #0A0A0B;
+    --cv-bg-secondary: #141415;
+    --cv-bg-tertiary: #1C1C1E;
+    --cv-accent: #FF6B35;
+  }
+
+  html {
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-cv-bg-primary text-cv-text-primary font-sans;
+  }
+
+  /* Custom Scrollbar - CV-OS Style */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-cv-border rounded-full;
+    transition: background 0.2s;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-cv-text-tertiary;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-cv-accent/30 text-cv-text-primary;
+  }
+}
+
+@layer components {
+
+  /* CV Card Styles */
+  .cv-card {
+    @apply bg-cv-bg-secondary border border-cv-border rounded-xl p-4;
+  }
+
+  .cv-card-elevated {
+    @apply bg-cv-bg-tertiary border border-cv-border rounded-xl p-4 shadow-cv-md;
+  }
+
+  /* CV Input Styles */
+  .cv-input {
+    @apply w-full bg-cv-bg-tertiary border border-cv-border rounded-lg px-3 py-2 text-cv-text-primary placeholder:text-cv-text-tertiary focus:outline-none focus:border-cv-accent focus:ring-1 focus:ring-cv-accent/50 transition-all duration-200;
+  }
+
+  .cv-input-mono {
+    @apply cv-input font-mono text-sm;
+  }
+
+  /* CV Button Styles */
+  .cv-btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-cv-bg-primary;
+  }
+
+  .cv-btn-primary {
+    @apply cv-btn bg-cv-accent text-white hover:bg-cv-accent-hover focus:ring-cv-accent shadow-cv-sm;
+  }
+
+  .cv-btn-secondary {
+    @apply cv-btn bg-cv-bg-tertiary text-cv-text-primary border border-cv-border hover:bg-cv-bg-elevated hover:border-cv-text-tertiary focus:ring-cv-text-tertiary;
+  }
+
+  .cv-btn-ghost {
+    @apply cv-btn text-cv-text-secondary hover:text-cv-text-primary hover:bg-cv-bg-tertiary focus:ring-cv-text-tertiary;
+  }
+
+  /* CV Badge Styles */
+  .cv-badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium;
+  }
+
+  .cv-badge-accent {
+    @apply cv-badge bg-cv-accent-muted text-cv-accent;
+  }
+
+  .cv-badge-success {
+    @apply cv-badge bg-emerald-500/15 text-emerald-400;
+  }
+
+  .cv-badge-warning {
+    @apply cv-badge bg-amber-500/15 text-amber-400;
+  }
+
+  /* Workout Block Modality Colors */
+  .modality-strength {
+    @apply border-l-4 border-l-red-500;
+  }
+
+  .modality-metcon {
+    @apply border-l-4 border-l-cv-accent;
+  }
+
+  .modality-warmup {
+    @apply border-l-4 border-l-green-500;
+  }
+
+  .modality-accessory {
+    @apply border-l-4 border-l-purple-500;
+  }
+
+  .modality-skill {
+    @apply border-l-4 border-l-blue-500;
+  }
+
+  /* Command Palette Overlay */
+  .cv-overlay {
+    @apply fixed inset-0 bg-black/60 backdrop-blur-sm z-50;
+  }
+
+  /* Drag and Drop States */
+  .cv-dragging {
+    @apply opacity-50 scale-105 shadow-cv-glow;
+  }
+
+  .cv-drop-target {
+    @apply border-2 border-dashed border-cv-accent;
+  }
+}
+
+@layer utilities {
+
+  /* Text Gradient */
+  .text-gradient-accent {
+    @apply bg-gradient-to-r from-cv-accent to-orange-400 bg-clip-text text-transparent;
+  }
+
+  /* Subtle Grid Background */
+  .bg-grid {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* Hide scrollbar but allow scroll */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

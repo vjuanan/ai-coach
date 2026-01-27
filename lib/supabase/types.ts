@@ -1,0 +1,203 @@
+// Database Types for CV-OS
+// These match the Supabase schema
+
+export type ClientType = 'athlete' | 'gym';
+export type BlockType = 'strength_linear' | 'metcon_structured' | 'warmup' | 'accessory' | 'skill' | 'free_text';
+export type WorkoutFormat = 'AMRAP' | 'EMOM' | 'RFT' | 'Chipper' | 'Ladder' | 'Tabata' | 'Not For Time' | 'For Time';
+export type ExerciseCategory = 'Weightlifting' | 'Gymnastics' | 'Monostructural' | 'Functional Bodybuilding';
+
+// JSONB Config Types for Workout Blocks
+export interface StrengthConfig {
+    sets: number;
+    reps: string;
+    percentage?: string;
+    tempo?: string;
+    rest?: string;
+    notes?: string;
+}
+
+export interface EMOMConfig {
+    minutes: number;
+    interval: number; // every X minutes
+    movements: string[];
+    notes?: string;
+}
+
+export interface AMRAPConfig {
+    minutes: number;
+    movements: string[];
+    notes?: string;
+}
+
+export interface RFTConfig {
+    rounds: number;
+    timeCap?: number;
+    movements: string[];
+    notes?: string;
+}
+
+export interface TabataConfig {
+    rounds: number;
+    workSeconds: number;
+    restSeconds: number;
+    movement: string;
+    notes?: string;
+}
+
+export interface LadderConfig {
+    direction: 'ascending' | 'descending' | 'pyramid';
+    startReps: number;
+    endReps: number;
+    increment: number;
+    movements: string[];
+    notes?: string;
+}
+
+export interface FreeTextConfig {
+    content: string;
+}
+
+export type WorkoutConfig =
+    | StrengthConfig
+    | EMOMConfig
+    | AMRAPConfig
+    | RFTConfig
+    | TabataConfig
+    | LadderConfig
+    | FreeTextConfig;
+
+// Database Table Types
+export interface Coach {
+    id: string;
+    user_id: string;
+    full_name: string;
+    avatar_url: string | null;
+    business_name: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Client {
+    id: string;
+    coach_id: string;
+    type: ClientType;
+    name: string;
+    logo_url: string | null;
+    email: string | null;
+    phone: string | null;
+    details: Record<string, unknown> | null;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+}
+
+export interface Program {
+    id: string;
+    coach_id: string;
+    client_id: string | null;
+    name: string;
+    description: string | null;
+    status: 'draft' | 'active' | 'archived';
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+}
+
+export interface Mesocycle {
+    id: string;
+    program_id: string;
+    week_number: number;
+    focus: string | null;
+    attributes: {
+        volume?: 'low' | 'moderate' | 'high';
+        intensity?: 'low' | 'moderate' | 'high';
+        deload?: boolean;
+    } | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Day {
+    id: string;
+    mesocycle_id: string;
+    day_number: number; // 1-7
+    name: string | null; // e.g., "Monday" or custom name
+    date: string | null;
+    is_rest_day: boolean;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface WorkoutBlock {
+    id: string;
+    day_id: string;
+    order_index: number;
+    type: BlockType;
+    format: WorkoutFormat | null;
+    name: string | null;
+    config: WorkoutConfig;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Exercise {
+    id: string;
+    name: string;
+    category: ExerciseCategory;
+    subcategory: string | null;
+    modality_suitability: string[];
+    equipment: string[];
+    description: string | null;
+    video_url: string | null;
+    created_at: string;
+}
+
+// Supabase Database Type (for typed client)
+export interface Database {
+    public: {
+        Tables: {
+            coaches: {
+                Row: Coach;
+                Insert: Omit<Coach, 'id' | 'created_at' | 'updated_at'>;
+                Update: Partial<Omit<Coach, 'id'>>;
+            };
+            clients: {
+                Row: Client;
+                Insert: Omit<Client, 'id' | 'created_at' | 'updated_at'>;
+                Update: Partial<Omit<Client, 'id'>>;
+            };
+            programs: {
+                Row: Program;
+                Insert: Omit<Program, 'id' | 'created_at' | 'updated_at'>;
+                Update: Partial<Omit<Program, 'id'>>;
+            };
+            mesocycles: {
+                Row: Mesocycle;
+                Insert: Omit<Mesocycle, 'id' | 'created_at' | 'updated_at'>;
+                Update: Partial<Omit<Mesocycle, 'id'>>;
+            };
+            days: {
+                Row: Day;
+                Insert: Omit<Day, 'id' | 'created_at' | 'updated_at'>;
+                Update: Partial<Omit<Day, 'id'>>;
+            };
+            workout_blocks: {
+                Row: WorkoutBlock;
+                Insert: Omit<WorkoutBlock, 'id' | 'created_at' | 'updated_at'>;
+                Update: Partial<Omit<WorkoutBlock, 'id'>>;
+            };
+            exercises: {
+                Row: Exercise;
+                Insert: Omit<Exercise, 'id' | 'created_at'>;
+                Update: Partial<Omit<Exercise, 'id'>>;
+            };
+        };
+        Enums: {
+            client_type: ClientType;
+            block_type: BlockType;
+            workout_format: WorkoutFormat;
+            exercise_category: ExerciseCategory;
+        };
+    };
+}
