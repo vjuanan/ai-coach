@@ -7,10 +7,10 @@
 /* CV-OS Base Styles */
 @layer base {
   :root {
-    --cv-bg-primary: #0A0A0B;
-    --cv-bg-secondary: #141415;
-    --cv-bg-tertiary: #1C1C1E;
-    --cv-accent: #FF6B35;
+    --cv-bg-primary: #09090b;
+    --cv-bg-secondary: #18181b;
+    --cv-bg-tertiary: #27272A;
+    --cv-accent: #FF5F26;
   }
 
   html {
