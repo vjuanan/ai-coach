@@ -12,21 +12,21 @@ const config: Config = {
             colors: {
                 // CV-OS Dark Theme
                 'cv': {
-                    'bg-primary': '#09090b',
-                    'bg-secondary': '#18181b',
-                    'bg-tertiary': '#27272A',
-                    'bg-elevated': '#27272A', // Matches inputs/surfaces for cohesive look
-                    'border': '#27272A',
-                    'border-subtle': '#27272A',
-                    'accent': '#FF5F26',
-                    'accent-hover': '#EA580C',
-                    'accent-muted': 'rgba(255, 95, 38, 0.15)',
+                    'bg-primary': '#F3F4F6', // Light Gray 50
+                    'bg-secondary': '#FFFFFF', // White
+                    'bg-tertiary': '#F9FAFB', // Light Input bg
+                    'bg-elevated': '#FFFFFF', // Elevated White
+                    'border': '#E5E7EB', // Gray 200
+                    'border-subtle': '#F3F4F6', // Lighter border
+                    'accent': '#84cc16', // Lime 500
+                    'accent-hover': '#65a30d', // Lime 600
+                    'accent-muted': 'rgba(132, 204, 22, 0.15)',
                     'success': '#34D399',
                     'warning': '#FBBF24',
                     'error': '#F87171',
-                    'text-primary': '#FFFFFF',
-                    'text-secondary': '#A1A1AA',
-                    'text-tertiary': '#71717A',
+                    'text-primary': '#111827', // Gray 900
+                    'text-secondary': '#6B7280', // Gray 500
+                    'text-tertiary': '#9CA3AF', // Gray 400
                 },
             },
             fontFamily: {
