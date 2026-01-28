@@ -12,7 +12,7 @@ import {
     Plus,
     Trash2
 } from 'lucide-react';
-import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
+import type { BlockType, WorkoutFormat, WorkoutConfig } from '@/lib/supabase/types';
 
 interface BlockEditorProps {
     blockId: string;
@@ -63,7 +63,7 @@ export function BlockEditor({ blockId }: BlockEditorProps) {
 
     const handleConfigChange = (key: string, value: unknown) => {
         updateBlock(blockId, {
-            config: { ...config, [key]: value },
+            config: { ...config, [key]: value } as WorkoutConfig,
         });
     };
 
