@@ -12,21 +12,21 @@ const config: Config = {
             colors: {
                 // CV-OS Dark Theme
                 'cv': {
-                    'bg-primary': '#F3F4F6', // Light Gray 50
+                    'bg-primary': '#F8FAFC', // Slate 50 (Cooler/Cleaner than Gray)
                     'bg-secondary': '#FFFFFF', // White
-                    'bg-tertiary': '#F9FAFB', // Light Input bg
-                    'bg-elevated': '#FFFFFF', // Elevated White
-                    'border': '#E5E7EB', // Gray 200
-                    'border-subtle': '#F3F4F6', // Lighter border
-                    'accent': '#84cc16', // Lime 500
-                    'accent-hover': '#65a30d', // Lime 600
-                    'accent-muted': 'rgba(132, 204, 22, 0.15)',
+                    'bg-tertiary': '#F1F5F9', // Slate 100
+                    'bg-elevated': '#FFFFFF',
+                    'border': '#E2E8F0', // Slate 200
+                    'border-subtle': '#F8FAFC',
+                    'accent': '#86C4A3', // Soft Sage / Pastel Mint
+                    'accent-hover': '#6EE7B7', // Emerald 300
+                    'accent-muted': 'rgba(134, 196, 163, 0.15)',
                     'success': '#34D399',
                     'warning': '#FBBF24',
                     'error': '#F87171',
-                    'text-primary': '#111827', // Gray 900
-                    'text-secondary': '#6B7280', // Gray 500
-                    'text-tertiary': '#9CA3AF', // Gray 400
+                    'text-primary': '#0F172A', // Slate 900
+                    'text-secondary': '#475569', // Slate 600
+                    'text-tertiary': '#94A3B8', // Slate 400
                 },
             },
             fontFamily: {

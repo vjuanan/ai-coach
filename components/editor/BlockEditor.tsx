@@ -38,7 +38,7 @@ export function BlockEditor({ blockId }: BlockEditorProps) {
         type: string;
         format: string | null;
         name: string | null;
-        config: Record<string, unknown>;
+        config: WorkoutConfig;
     } | null = null;
 
     for (const meso of mesocycles) {

@@ -7,10 +7,10 @@
 /* CV-OS Base Styles */
 @layer base {
   :root {
-    --cv-bg-primary: #F3F4F6;
+    --cv-bg-primary: #F8FAFC;
     --cv-bg-secondary: #FFFFFF;
-    --cv-bg-tertiary: #F9FAFB;
-    --cv-accent: #84cc16;
+    --cv-bg-tertiary: #F1F5F9;
+    --cv-accent: #86C4A3;
   }
 
   html {
@@ -53,29 +53,27 @@
 
   /* CV Card Styles */
   .cv-card {
-    @apply bg-cv-bg-secondary border border-cv-border rounded-xl p-4;
+    @apply bg-cv-bg-secondary border border-cv-border rounded-lg p-4;
   }
 
   .cv-card-elevated {
-    @apply bg-cv-bg-tertiary border border-cv-border rounded-xl p-4 shadow-cv-md;
+    @apply bg-cv-bg-tertiary border border-cv-border rounded-lg p-4 shadow-cv-md;
   }
 
   /* CV Input Styles */
   .cv-input {
-    @apply w-full bg-cv-bg-tertiary border border-cv-border rounded-lg px-3 py-2 text-cv-text-primary placeholder:text-cv-text-tertiary focus:outline-none focus:border-cv-accent focus:ring-1 focus:ring-cv-accent/50 transition-all duration-200;
+    @apply w-full bg-cv-bg-tertiary border border-cv-border rounded-md px-3 py-2 text-cv-text-primary placeholder:text-cv-text-tertiary focus:outline-none focus:border-cv-accent focus:ring-1 focus:ring-cv-accent/50 transition-all duration-200;
   }
 
-  .cv-input-mono {
-    @apply cv-input font-mono text-sm;
-  }
+  /* ... */
 
   /* CV Button Styles */
   .cv-btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-cv-bg-primary;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-cv-bg-primary;
   }
 
   .cv-btn-primary {
-    @apply cv-btn bg-cv-accent text-white hover:bg-cv-accent-hover focus:ring-cv-accent shadow-cv-sm;
+    @apply cv-btn bg-cv-accent text-slate-900 hover:bg-cv-accent-hover focus:ring-cv-accent shadow-cv-sm;
   }
 
   .cv-btn-secondary {
