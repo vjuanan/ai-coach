@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-    title: 'CV-OS | CrossFit Programming',
-    description: 'Professional CrossFit programming and mesocycle design platform for coaches',
+    title: 'AI Coach',
+    description: 'Professional CrossFit programming and mesocycle design platform',
 };
 
 export default function RootLayout({
