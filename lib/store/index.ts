@@ -15,7 +15,7 @@ import type {
 // Editor Store - Canvas State Management
 // ============================================
 
-interface DraftWorkoutBlock {
+export interface DraftWorkoutBlock {
     id: string;
     tempId?: string; // For new blocks not yet saved
     day_id: string;
@@ -27,7 +27,7 @@ interface DraftWorkoutBlock {
     isDirty?: boolean;
 }
 
-interface DraftDay {
+export interface DraftDay {
     id: string;
     tempId?: string;
     mesocycle_id: string;
@@ -39,7 +39,7 @@ interface DraftDay {
     isDirty?: boolean;
 }
 
-interface DraftMesocycle {
+export interface DraftMesocycle {
     id: string;
     tempId?: string;
     program_id: string;
@@ -173,7 +173,7 @@ export const useEditorStore = create<EditorState>()(
                     type,
                     format: format || null,
                     name: null,
-                    config: type === 'free_text' ? { content: '' } : {},
+                    config: type === 'free_text' ? { content: '' } : {} as WorkoutConfig,
                     isDirty: true,
                 };
 
