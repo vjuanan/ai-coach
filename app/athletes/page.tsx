@@ -35,8 +35,20 @@ export default function AthletesPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
-    const [newAthleteName, setNewAthleteName] = useState('');
-    const [newAthleteEmail, setNewAthleteEmail] = useState('');
+
+    // Enhanced Form State
+    const [formData, setFormData] = useState({
+        type: 'athlete' as 'athlete' | 'gym',
+        name: '',
+        email: '',
+        level: 'RX',
+        goal: '',
+        injuries: '',
+        snatch: '',
+        cnj: '',
+        backSquat: '',
+        deadlift: ''
+    });
     const [isAdding, setIsAdding] = useState(false);
 
     // Alert Modal State
@@ -54,23 +66,51 @@ export default function AthletesPage() {
         setIsLoading(false);
     }
 
+    function resetForm() {
+        setFormData({
+            type: 'athlete',
+            name: '',
+            email: '',
+            level: 'RX',
+            goal: '',
+            injuries: '',
+            snatch: '',
+            cnj: '',
+            backSquat: '',
+            deadlift: ''
+        });
+    }
+
     async function addAthlete() {
-        if (!newAthleteName.trim()) return;
+        if (!formData.name.trim()) return;
         setIsAdding(true);
 
         try {
+            const details = {
+                level: formData.level,
+                goal: formData.goal,
+                injuries: formData.injuries,
+                oneRmStats: {
+                    snatch: formData.snatch ? parseInt(formData.snatch) : null,
+                    cnj: formData.cnj ? parseInt(formData.cnj) : null,
+                    backSquat: formData.backSquat ? parseInt(formData.backSquat) : null,
+                    deadlift: formData.deadlift ? parseInt(formData.deadlift) : null
+                }
+            };
+
             await createClient({
-                type: 'athlete',
-                name: newAthleteName,
-                email: newAthleteEmail || undefined,
+                type: formData.type,
+                name: formData.name,
+                email: formData.email || undefined,
+                details
             });
 
-            setNewAthleteName('');
-            setNewAthleteEmail('');
+            resetForm();
             setShowAddModal(false);
             fetchAthletes();
         } catch (e) {
-            alert('Error al añadir atleta');
+            console.error('Error adding athlete:', e);
+            alert('Error al añadir atleta. Verifica tu conexión.');
         }
         setIsAdding(false);
     }
@@ -180,45 +220,151 @@ export default function AthletesPage() {
                 {showAddModal && (
                     <>
                         <div className="cv-overlay" onClick={() => setShowAddModal(false)} />
-                        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-cv-bg-secondary border border-cv-border rounded-xl p-6 z-50">
-                            <h2 className="text-xl font-semibold text-cv-text-primary mb-4">Añadir Atleta</h2>
+                        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-cv-bg-secondary border border-cv-border rounded-lg p-6 z-50 max-h-[90vh] overflow-y-auto">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold text-cv-text-primary">Nuevo Atleta / Cliente</h2>
+                                <button onClick={() => setShowAddModal(false)} className="cv-btn-ghost p-1">
+                                    <X size={18} />
+                                </button>
+                            </div>
+
                             <div className="space-y-4">
+                                {/* Type Toggle */}
+                                <div>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Tipo</label>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, type: 'athlete' }))}
+                                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${formData.type === 'athlete' ? 'bg-cv-accent text-slate-900' : 'bg-cv-bg-tertiary text-cv-text-secondary'}`}
+                                        >
+                                            Atleta Individual
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, type: 'gym' }))}
+                                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${formData.type === 'gym' ? 'bg-cv-accent text-slate-900' : 'bg-cv-bg-tertiary text-cv-text-secondary'}`}
+                                        >
+                                            Gimnasio / Box
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Name */}
                                 <div>
                                     <label className="block text-sm font-medium text-cv-text-secondary mb-2">Nombre *</label>
                                     <input
                                         type="text"
-                                        value={newAthleteName}
-                                        onChange={(e) => setNewAthleteName(e.target.value)}
+                                        value={formData.name}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                         placeholder="John Doe"
                                         className="cv-input"
                                         autoFocus
                                     />
                                 </div>
+
+                                {/* Email */}
                                 <div>
                                     <label className="block text-sm font-medium text-cv-text-secondary mb-2">Correo</label>
                                     <input
                                         type="email"
-                                        value={newAthleteEmail}
-                                        onChange={(e) => setNewAthleteEmail(e.target.value)}
+                                        value={formData.email}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                                         placeholder="john@example.com"
                                         className="cv-input"
                                     />
                                 </div>
+
+                                {/* Level Dropdown */}
+                                <div>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Nivel</label>
+                                    <select
+                                        value={formData.level}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, level: e.target.value }))}
+                                        className="cv-input"
+                                    >
+                                        <option value="Scaled">Scaled</option>
+                                        <option value="RX">RX</option>
+                                        <option value="Elite">Elite</option>
+                                        <option value="Master">Master</option>
+                                    </select>
+                                </div>
+
+                                {/* Goal */}
+                                <div>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Objetivo Principal</label>
+                                    <input
+                                        type="text"
+                                        value={formData.goal}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, goal: e.target.value }))}
+                                        placeholder="Ej: Competition Prep, Strength Bias..."
+                                        className="cv-input"
+                                    />
+                                </div>
+
+                                {/* Injuries/Notes */}
+                                <div>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Lesiones / Notas</label>
+                                    <textarea
+                                        value={formData.injuries}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, injuries: e.target.value }))}
+                                        placeholder="Ej: Shoulder impingement, bajo movilidad de tobillo..."
+                                        rows={3}
+                                        className="cv-input resize-none"
+                                    />
+                                </div>
+
+                                {/* 1RM Stats (Optional) */}
+                                <div>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">1RM Stats (kg) - Opcional</label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <input
+                                            type="number"
+                                            value={formData.snatch}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, snatch: e.target.value }))}
+                                            placeholder="Snatch"
+                                            className="cv-input"
+                                        />
+                                        <input
+                                            type="number"
+                                            value={formData.cnj}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, cnj: e.target.value }))}
+                                            placeholder="C&J"
+                                            className="cv-input"
+                                        />
+                                        <input
+                                            type="number"
+                                            value={formData.backSquat}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, backSquat: e.target.value }))}
+                                            placeholder="Back Squat"
+                                            className="cv-input"
+                                        />
+                                        <input
+                                            type="number"
+                                            value={formData.deadlift}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, deadlift: e.target.value }))}
+                                            placeholder="Deadlift"
+                                            className="cv-input"
+                                        />
+                                    </div>
+                                </div>
                             </div>
+
+                            {/* Actions */}
                             <div className="flex gap-3 mt-6">
                                 <button
-                                    onClick={() => setShowAddModal(false)}
+                                    onClick={() => { resetForm(); setShowAddModal(false); }}
                                     className="cv-btn-secondary flex-1"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     onClick={addAthlete}
-                                    disabled={!newAthleteName.trim() || isAdding}
+                                    disabled={!formData.name.trim() || isAdding}
                                     className="cv-btn-primary flex-1"
                                 >
                                     {isAdding ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-                                    Añadir Atleta
+                                    Guardar
                                 </button>
                             </div>
                         </div>

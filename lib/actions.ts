@@ -60,7 +60,12 @@ export async function getPrograms() {
     return data;
 }
 
-export async function createProgram(name: string, clientId: string | null) {
+export async function createProgram(
+    name: string,
+    clientId: string | null,
+    focus?: string,
+    duration: number = 4
+) {
     const supabase = createServerClient();
 
     // Try to find ANY coach first
@@ -108,7 +113,7 @@ export async function createProgram(name: string, clientId: string | null) {
 
     if (!coach) throw new Error('Could not find or create a coach');
 
-    return createProgramInternal(supabase, coach.id, name, clientId);
+    return createProgramInternal(supabase, coach.id, name, clientId, focus, duration);
 }
 
 export async function deleteProgram(programId: string) {
@@ -144,7 +149,9 @@ async function createProgramInternal(
     supabase: any,
     coachId: string,
     name: string,
-    clientId: string | null
+    clientId: string | null,
+    focus?: string,
+    duration: number = 4
 ) {
     // 1. Create Program
     const { data: program, error } = await supabase
@@ -160,11 +167,11 @@ async function createProgramInternal(
 
     if (error) throw error;
 
-    // 2. Create 4 Empty Mesocycles
-    const mesocycles = Array.from({ length: 4 }).map((_, i) => ({
+    // 2. Create Empty Mesocycles (based on duration)
+    const mesocycles = Array.from({ length: duration }).map((_, i) => ({
         program_id: program.id,
         week_number: i + 1,
-        focus: i === 3 ? 'Deload' : 'Accumulation',
+        focus: i === 0 && focus ? focus : (i === duration - 1 ? 'Deload' : 'Accumulation'),
     }));
 
     const { data: createdMesocycles, error: mesoError } = await supabase
@@ -210,7 +217,12 @@ export async function getClients(type: 'athlete' | 'gym') {
     return data;
 }
 
-export async function createClient(clientData: { type: 'athlete' | 'gym', name: string, email?: string }) {
+export async function createClient(clientData: {
+    type: 'athlete' | 'gym',
+    name: string,
+    email?: string,
+    details?: Record<string, any>
+}) {
     const supabase = createServerClient();
 
     // Ensure Coach Exists (Repeated logic - ideally refactor to helper)
@@ -247,17 +259,23 @@ export async function createClient(clientData: { type: 'athlete' | 'gym', name: 
 
     if (!coach) throw new Error('System Error: No coach available to assign client to.');
 
-    const { error } = await supabase
+    const { data, error } = await supabase
         .from('clients')
         .insert({
-            ...clientData,
+            type: clientData.type,
+            name: clientData.name,
+            email: clientData.email || null,
+            details: clientData.details || null,
             coach_id: coach.id
-        });
+        })
+        .select()
+        .single();
 
     if (error) throw error;
     revalidatePath('/athletes');
     revalidatePath('/gyms');
     revalidatePath('/');
+    return data;
 }
 
 export async function deleteClient(id: string) {
