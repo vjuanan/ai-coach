@@ -45,25 +45,25 @@ export function Sidebar() {
             {/* Logo - Horizontal layout matching reference */}
             <div className={`
                 flex items-center bg-white border-b border-cv-border transition-all duration-300 relative
-                ${isSidebarCollapsed ? 'h-16 justify-center px-2' : 'h-16 px-4'}
+                ${isSidebarCollapsed ? 'h-16 justify-center px-2' : 'h-12 px-4'}
             `}>
                 <Link href="/" className="flex items-center">
-                    {/* Logo */}
-                    <div className="relative w-9 h-9 flex items-center justify-center flex-shrink-0">
-                        <Image
-                            src="/images/ai-coach-logo-v3.png"
-                            alt="AI Coach Logo"
-                            width={36}
-                            height={36}
-                            className="object-contain"
-                        />
-                    </div>
+                    {/* Logo - Increased size to h-10 w-10 */}
+                    <Image
+                        src="/images/ai-coach-logo-v3.png"
+                        alt="Logo"
+                        width={40}
+                        height={40}
+                        className="h-10 w-10 object-contain"
+                    />
+
                     {!isSidebarCollapsed && (
                         <>
-                            {/* Vertical Divider */}
-                            <div className="h-5 w-px bg-slate-300 mx-3 self-center"></div>
-                            {/* Text */}
-                            <span className="font-semibold text-lg text-slate-800 whitespace-nowrap">
+                            {/* The Divider (CRITICAL) - Subtle vertical line */}
+                            <div className="h-6 w-[1.5px] bg-slate-200 mx-4"></div>
+
+                            {/* The Text - Specific slate grey, medium weight, tight tracking */}
+                            <span className="text-slate-500 font-medium text-lg tracking-tight whitespace-nowrap">
                                 AI Coach
                             </span>
                         </>
