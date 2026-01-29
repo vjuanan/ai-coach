@@ -60,22 +60,53 @@ export async function getPrograms() {
     return data;
 }
 
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+
 // Helper to ensure coach exists for current user
+// Uses Service Role to bypass RLS for creation if needed
 async function ensureCoach(supabase: any) {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('User not authenticated');
+    if (authError || !user) {
+        console.error('ensureCoach: User not authenticated', authError);
+        throw new Error('User not authenticated');
+    }
 
+    console.log('ensureCoach: Checking for coach profile for user', user.id);
+
+    // Try normal fetch first
     const { data: coach, error: fetchError } = await supabase
         .from('coaches')
         .select('id')
         .eq('user_id', user.id)
         .single();
 
-    if (coach) return coach.id;
+    if (coach) {
+        console.log('ensureCoach: Found existing coach', coach.id);
+        return coach.id;
+    }
+
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "Row not found"
+        console.error('ensureCoach: Error fetching coach', fetchError);
+    }
+
+    console.log('ensureCoach: Coach profile not found. Attempting to create...');
+
+    // Fallback to Service Role if regular client fails or just to be robust
+    // This is critical because RLS might block normal INSERT even if policies seem correct, 
+    // or if the user session has subtle issues.
+    const supabaseAdmin = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            }
+        }
+    );
 
     // Create coach if not exists (upsert-like behavior)
-    // We try to use metadata or default values
-    const { data: newCoach, error: insertError } = await supabase
+    const { data: newCoach, error: insertError } = await supabaseAdmin
         .from('coaches')
         .insert({
             user_id: user.id,
@@ -85,14 +116,17 @@ async function ensureCoach(supabase: any) {
         .single();
 
     if (insertError) {
+        console.error('ensureCoach: Error creating coach profile via Admin', insertError);
+
         // Handle race condition if created in parallel
         if (insertError.code === '23505') { // Unique violation
-            const { data: existing } = await supabase.from('coaches').select('id').eq('user_id', user.id).single();
+            const { data: existing } = await supabaseAdmin.from('coaches').select('id').eq('user_id', user.id).single();
             return existing?.id;
         }
         throw new Error(`Error creating coach profile: ${insertError.message}`);
     }
 
+    console.log('ensureCoach: Created new coach profile', newCoach.id);
     return newCoach.id;
 }
 
@@ -102,10 +136,12 @@ export async function createProgram(
     focus?: string,
     duration: number = 4
 ) {
+    console.log('createProgram: Starting creation', { name, clientId, duration });
     const supabase = createServerClient();
 
     try {
         const coachId = await ensureCoach(supabase);
+        console.log('createProgram: Using coachId', coachId);
 
         // 1. Create Program
         const { data: program, error: progError } = await supabase
@@ -119,7 +155,12 @@ export async function createProgram(
             .select()
             .single();
 
-        if (progError) throw new Error(`Failed to create program: ${progError.message}`);
+        if (progError) {
+            console.error('createProgram: Error inserting program', progError);
+            throw new Error(`Failed to create program: ${progError.message}`);
+        }
+
+        console.log('createProgram: Created program', program.id);
 
         // 2. Create Mesocycles
         const mesocycles = Array.from({ length: duration }).map((_, i) => ({
@@ -134,7 +175,12 @@ export async function createProgram(
             .insert(mesocycles)
             .select();
 
-        if (mesoError) throw new Error(`Failed to create mesocycles: ${mesoError.message}`);
+        if (mesoError) {
+            console.error('createProgram: Error inserting mesocycles', mesoError);
+            throw new Error(`Failed to create mesocycles: ${mesoError.message}`);
+        }
+
+        console.log('createProgram: Created mesocycles', createdMesos.length);
 
         // 3. Create Days
         const days: any[] = []; // Explicit type to avoid inference issues
@@ -149,14 +195,18 @@ export async function createProgram(
         }
 
         const { error: daysError } = await supabase.from('days').insert(days);
-        if (daysError) throw new Error(`Failed to create days: ${daysError.message}`);
+        if (daysError) {
+            console.error('createProgram: Error inserting days', daysError);
+            throw new Error(`Failed to create days: ${daysError.message}`);
+        }
 
+        console.log('createProgram: Successfully created full program structure');
         revalidatePath('/programs');
         revalidatePath('/');
         return program;
 
     } catch (error: any) {
-        console.error('Error in createProgram:', error);
+        console.error('createProgram: UNHANDLED ERROR', error);
         throw new Error(error.message || 'Error creating program');
     }
 }
@@ -181,14 +231,6 @@ export async function deleteProgram(programId: string) {
 
 export async function getClients(type: 'athlete' | 'gym') {
     const supabase = createServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    // We assume RLS handles filtering by coach_id usually, 
-    // but if we need coachId logic we can add it. 
-    // For now, trusting RLS + typical query.
-
-    // However, if RLS relies on "user -> coach -> client", standard select * should work
-    // provided I am the coach.
 
     const { data, error } = await supabase
         .from('clients')
@@ -206,10 +248,12 @@ export async function createClient(clientData: {
     email?: string,
     details?: Record<string, any>
 }) {
+    console.log('createClient: Starting', clientData);
     const supabase = createServerClient();
 
     try {
         const coachId = await ensureCoach(supabase);
+        console.log('createClient: Using coachId', coachId);
 
         const { data, error } = await supabase
             .from('clients')
@@ -224,14 +268,18 @@ export async function createClient(clientData: {
             .select()
             .single();
 
-        if (error) throw new Error(error.message);
+        if (error) {
+            console.error('createClient: Error inserting client', error);
+            throw new Error(error.message);
+        }
 
+        console.log('createClient: Success', data.id);
         revalidatePath(clientData.type === 'athlete' ? '/athletes' : '/gyms');
         revalidatePath('/');
         return data;
 
     } catch (error: any) {
-        console.error('Error creating client:', error);
+        console.error('createClient: UNHANDLED ERROR', error);
         throw new Error(error.message);
     }
 }
