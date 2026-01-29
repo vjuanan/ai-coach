@@ -68,138 +68,37 @@ export async function createProgram(
 ) {
     const supabase = createServerClient();
 
-    // Try to find ANY coach first
-    let { data: coach } = await supabase.from('coaches').select('id').limit(1).single();
-
-    if (!coach) {
-        // Need a valid user_id for the coach
-        // 1. Try to list users to find an existing one
-        const { data: { users } } = await supabase.auth.admin.listUsers();
-        let userId = users?.[0]?.id;
-
-        // 2. If no users, create a dev user
-        if (!userId) {
-            const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-                email: 'dev@example.com',
-                password: 'password123',
-                email_confirm: true
-            });
-            if (createError || !newUser.user) throw new Error('Failed to create dev auth user: ' + createError?.message);
-            userId = newUser.user.id;
+    const { data, error } = await supabase.functions.invoke('manage-resources', {
+        body: {
+            action: 'create_program',
+            payload: { name, clientId, focus, duration }
         }
+    });
 
-        // 3. Create Key Coach Profile
-        const { data: newCoach, error: coachError } = await supabase
-            .from('coaches')
-            .insert({
-                full_name: 'Dev Coach',
-                user_id: userId
-            })
-            .select()
-            .single();
+    if (error) throw new Error(error.message || 'Error creating program via Edge Function');
 
-        if (coachError) {
-            // Fallback: Maybe coach already exists for this user but wasn't found in first query
-            const { data: existingCoach } = await supabase.from('coaches').select('id').eq('user_id', userId).single();
-            if (existingCoach) {
-                coach = existingCoach;
-            } else {
-                throw new Error('Failed to create coach profile: ' + coachError.message);
-            }
-        } else {
-            coach = newCoach;
-        }
-    }
-
-    if (!coach) throw new Error('Could not find or create a coach');
-
-    return createProgramInternal(supabase, coach.id, name, clientId, focus, duration);
+    revalidatePath('/programs');
+    revalidatePath('/');
+    return data;
 }
 
 export async function deleteProgram(programId: string) {
     const supabase = createServerClient();
 
-    // Delete in order due to constraints
-    // (Ideally use ON DELETE CASCADE in DB, but doing manual cleanup to be safe)
-
-    // 1. Get mesos
-    const { data: mesos } = await supabase.from('mesocycles').select('id').eq('program_id', programId);
-    if (mesos) {
-        for (const meso of mesos) {
-            const { data: days } = await supabase.from('days').select('id').eq('mesocycle_id', meso.id);
-            if (days) {
-                const dayIds = days.map(d => d.id);
-                if (dayIds.length > 0) {
-                    await supabase.from('workout_blocks').delete().in('day_id', dayIds);
-                }
-                await supabase.from('days').delete().in('id', dayIds);
-            }
+    const { error } = await supabase.functions.invoke('manage-resources', {
+        body: {
+            action: 'delete_program',
+            payload: { id: programId }
         }
-        await supabase.from('mesocycles').delete().eq('program_id', programId);
-    }
+    });
 
-    const { error } = await supabase.from('programs').delete().eq('id', programId);
     if (error) throw error;
 
     revalidatePath('/programs');
     revalidatePath('/');
 }
 
-async function createProgramInternal(
-    supabase: any,
-    coachId: string,
-    name: string,
-    clientId: string | null,
-    focus?: string,
-    duration: number = 4
-) {
-    // 1. Create Program
-    const { data: program, error } = await supabase
-        .from('programs')
-        .insert({
-            coach_id: coachId,
-            name,
-            client_id: clientId,
-            status: 'draft'
-        })
-        .select()
-        .single();
 
-    if (error) throw error;
-
-    // 2. Create Empty Mesocycles (based on duration)
-    const mesocycles = Array.from({ length: duration }).map((_, i) => ({
-        program_id: program.id,
-        week_number: i + 1,
-        focus: i === 0 && focus ? focus : (i === duration - 1 ? 'Deload' : 'Accumulation'),
-    }));
-
-    const { data: createdMesocycles, error: mesoError } = await supabase
-        .from('mesocycles')
-        .insert(mesocycles)
-        .select();
-
-    if (mesoError) throw mesoError;
-
-    // 3. Create Days
-    const days = [];
-    for (const meso of createdMesocycles) {
-        for (let d = 1; d <= 7; d++) {
-            days.push({
-                mesocycle_id: meso.id,
-                day_number: d,
-                is_rest_day: d === 3 || d === 7,
-            });
-        }
-    }
-
-    const { error: daysError } = await supabase.from('days').insert(days);
-    if (daysError) throw daysError;
-
-    revalidatePath('/programs');
-    revalidatePath('/');
-    return program;
-}
 
 // ==========================================
 // CLIENTS ACTIONS
@@ -225,55 +124,16 @@ export async function createClient(clientData: {
 }) {
     const supabase = createServerClient();
 
-    // Ensure Coach Exists (Repeated logic - ideally refactor to helper)
-    let { data: coach } = await supabase.from('coaches').select('id').limit(1).single();
-
-    if (!coach) {
-        // Need a valid user_id for the coach
-        const { data: { users } } = await supabase.auth.admin.listUsers();
-        let userId = users?.[0]?.id;
-
-        if (!userId) {
-            const { data: newUser } = await supabase.auth.admin.createUser({
-                email: 'dev@example.com',
-                password: 'password123',
-                email_confirm: true
-            });
-            if (newUser.user) userId = newUser.user.id;
+    const { data, error } = await supabase.functions.invoke('manage-resources', {
+        body: {
+            action: 'create_client',
+            payload: clientData
         }
+    });
 
-        if (userId) {
-            const { data: newCoach } = await supabase
-                .from('coaches')
-                .insert({ full_name: 'Dev Coach', user_id: userId })
-                .select()
-                .single();
-            coach = newCoach;
-            // Check if it failed because it existed
-            if (!coach) {
-                const { data: existing } = await supabase.from('coaches').select('id').eq('user_id', userId).single();
-                coach = existing;
-            }
-        }
-    }
+    if (error) throw new Error(error.message || 'Error creating client via Edge Function');
 
-    if (!coach) throw new Error('System Error: No coach available to assign client to.');
-
-    const { data, error } = await supabase
-        .from('clients')
-        .insert({
-            type: clientData.type,
-            name: clientData.name,
-            email: clientData.email || null,
-            details: clientData.details || null,
-            coach_id: coach.id
-        })
-        .select()
-        .single();
-
-    if (error) throw error;
-    revalidatePath('/athletes');
-    revalidatePath('/gyms');
+    revalidatePath(clientData.type === 'athlete' ? '/athletes' : '/gyms');
     revalidatePath('/');
     return data;
 }
