@@ -92,11 +92,16 @@ async function ensureCoach(supabase: any) {
     console.log('ensureCoach: Coach profile not found. Attempting to create...');
 
     // Fallback to Service Role if regular client fails or just to be robust
-    // This is critical because RLS might block normal INSERT even if policies seem correct, 
-    // or if the user session has subtle issues.
+    // This is critical because RLS might block normal INSERT even if policies seem correct.
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceRoleKey) {
+        console.error('ensureCoach: CRITICAL - SUPABASE_SERVICE_ROLE_KEY is missing in environment variables.');
+        throw new Error('Server configuration error: Missing Service Role Key.');
+    }
+
     const supabaseAdmin = createSupabaseClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        serviceRoleKey,
         {
             auth: {
                 autoRefreshToken: false,
