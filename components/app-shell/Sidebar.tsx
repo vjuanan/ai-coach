@@ -53,7 +53,7 @@ export function Sidebar() {
                     <div className="relative w-8 h-8 flex items-center justify-center">
                         <Image
                             src="/logo.png"
-                            alt="CV-OS Logo"
+                            alt="AI Coach Logo"
                             width={32}
                             height={32}
                             className="object-contain"
@@ -61,7 +61,7 @@ export function Sidebar() {
                     </div>
                     {!isSidebarCollapsed && (
                         <span className={`font-bold text-lg tracking-tight text-cv-text-primary`}>
-                            CV-OS
+                            AI Coach
                         </span>
                     )}
                 </Link>

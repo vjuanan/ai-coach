@@ -60,6 +60,42 @@ export async function getPrograms() {
     return data;
 }
 
+// Helper to ensure coach exists for current user
+async function ensureCoach(supabase: any) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('User not authenticated');
+
+    const { data: coach, error: fetchError } = await supabase
+        .from('coaches')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+    if (coach) return coach.id;
+
+    // Create coach if not exists (upsert-like behavior)
+    // We try to use metadata or default values
+    const { data: newCoach, error: insertError } = await supabase
+        .from('coaches')
+        .insert({
+            user_id: user.id,
+            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Coach',
+        })
+        .select('id')
+        .single();
+
+    if (insertError) {
+        // Handle race condition if created in parallel
+        if (insertError.code === '23505') { // Unique violation
+            const { data: existing } = await supabase.from('coaches').select('id').eq('user_id', user.id).single();
+            return existing?.id;
+        }
+        throw new Error(`Error creating coach profile: ${insertError.message}`);
+    }
+
+    return newCoach.id;
+}
+
 export async function createProgram(
     name: string,
     clientId: string | null,
@@ -68,31 +104,70 @@ export async function createProgram(
 ) {
     const supabase = createServerClient();
 
-    const { data, error } = await supabase.functions.invoke('manage-resources', {
-        body: {
-            action: 'create_program',
-            payload: { name, clientId, focus, duration }
+    try {
+        const coachId = await ensureCoach(supabase);
+
+        // 1. Create Program
+        const { data: program, error: progError } = await supabase
+            .from('programs')
+            .insert({
+                coach_id: coachId,
+                name,
+                client_id: clientId || null,
+                status: 'draft'
+            })
+            .select()
+            .single();
+
+        if (progError) throw new Error(`Failed to create program: ${progError.message}`);
+
+        // 2. Create Mesocycles
+        const mesocycles = Array.from({ length: duration }).map((_, i) => ({
+            program_id: program.id,
+            week_number: i + 1,
+            focus: i === 0 && focus ? focus : (i === duration - 1 ? 'Deload' : 'Accumulation'),
+            // attributes can be null based on types
+        }));
+
+        const { data: createdMesos, error: mesoError } = await supabase
+            .from('mesocycles')
+            .insert(mesocycles)
+            .select();
+
+        if (mesoError) throw new Error(`Failed to create mesocycles: ${mesoError.message}`);
+
+        // 3. Create Days
+        const days: any[] = []; // Explicit type to avoid inference issues
+        for (const meso of createdMesos) {
+            for (let d = 1; d <= 7; d++) {
+                days.push({
+                    mesocycle_id: meso.id,
+                    day_number: d,
+                    is_rest_day: d === 3 || d === 7,
+                });
+            }
         }
-    });
 
-    if (error) throw new Error(error.message || 'Error creating program via Edge Function');
+        const { error: daysError } = await supabase.from('days').insert(days);
+        if (daysError) throw new Error(`Failed to create days: ${daysError.message}`);
 
-    revalidatePath('/programs');
-    revalidatePath('/');
-    return data;
+        revalidatePath('/programs');
+        revalidatePath('/');
+        return program;
+
+    } catch (error: any) {
+        console.error('Error in createProgram:', error);
+        throw new Error(error.message || 'Error creating program');
+    }
 }
 
 export async function deleteProgram(programId: string) {
     const supabase = createServerClient();
+    // Verify ownership via RLS mainly, but good to check current user too if needed.
+    // Standard delete calls RLS policies.
+    const { error } = await supabase.from('programs').delete().eq('id', programId);
 
-    const { error } = await supabase.functions.invoke('manage-resources', {
-        body: {
-            action: 'delete_program',
-            payload: { id: programId }
-        }
-    });
-
-    if (error) throw error;
+    if (error) throw new Error(error.message);
 
     revalidatePath('/programs');
     revalidatePath('/');
@@ -106,6 +181,15 @@ export async function deleteProgram(programId: string) {
 
 export async function getClients(type: 'athlete' | 'gym') {
     const supabase = createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // We assume RLS handles filtering by coach_id usually, 
+    // but if we need coachId logic we can add it. 
+    // For now, trusting RLS + typical query.
+
+    // However, if RLS relies on "user -> coach -> client", standard select * should work
+    // provided I am the coach.
+
     const { data, error } = await supabase
         .from('clients')
         .select('*')
@@ -124,18 +208,32 @@ export async function createClient(clientData: {
 }) {
     const supabase = createServerClient();
 
-    const { data, error } = await supabase.functions.invoke('manage-resources', {
-        body: {
-            action: 'create_client',
-            payload: clientData
-        }
-    });
+    try {
+        const coachId = await ensureCoach(supabase);
 
-    if (error) throw new Error(error.message || 'Error creating client via Edge Function');
+        const { data, error } = await supabase
+            .from('clients')
+            .insert({
+                coach_id: coachId,
+                type: clientData.type,
+                name: clientData.name,
+                email: clientData.email,
+                details: clientData.details || {},
+                status: 'active'
+            })
+            .select()
+            .single();
 
-    revalidatePath(clientData.type === 'athlete' ? '/athletes' : '/gyms');
-    revalidatePath('/');
-    return data;
+        if (error) throw new Error(error.message);
+
+        revalidatePath(clientData.type === 'athlete' ? '/athletes' : '/gyms');
+        revalidatePath('/');
+        return data;
+
+    } catch (error: any) {
+        console.error('Error creating client:', error);
+        throw new Error(error.message);
+    }
 }
 
 export async function deleteClient(id: string) {

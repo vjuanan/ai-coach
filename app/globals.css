@@ -4,7 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CV-OS Base Styles */
+/* AI Coach Base Styles */
 @layer base {
   :root {
     --cv-bg-primary: #F8FAFC;
@@ -24,7 +24,7 @@
     @apply bg-cv-bg-primary text-cv-text-primary font-sans;
   }
 
-  /* Custom Scrollbar - CV-OS Style */
+  /* Custom Scrollbar - AI Coach Style */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;

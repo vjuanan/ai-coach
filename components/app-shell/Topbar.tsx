@@ -2,6 +2,7 @@
 
 import { useAppStore } from '@/lib/store';
 import { Search, Command, Bell, Plus } from 'lucide-react';
+import Link from 'next/link';
 
 interface TopbarProps {
     title?: string;
@@ -51,10 +52,13 @@ export function Topbar({ title, actions }: TopbarProps) {
             {/* Right: Actions */}
             <div className="flex items-center gap-3">
                 {/* Quick Add */}
-                <button className="cv-btn-primary">
+                <Link
+                    href={currentView === 'athletes' ? '/athletes/new' : '/gyms/new'}
+                    className="cv-btn-primary"
+                >
                     <Plus size={16} />
                     <span>New {currentView === 'athletes' ? 'Athlete' : 'Gym'}</span>
-                </button>
+                </Link>
 
                 {/* Notifications */}
                 <button className="cv-btn-ghost relative p-2">
