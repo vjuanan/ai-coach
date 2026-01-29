@@ -55,7 +55,7 @@ export function Sidebar() {
                 <Link href="/" className={`flex items-center gap-3 ${isSidebarCollapsed ? '' : 'flex-col gap-2'}`}>
                     <div className="relative w-10 h-10 flex items-center justify-center">
                         <Image
-                            src="/images/ai-coach-logo.png"
+                            src="/images/ai-coach-logo-v3.png"
                             alt="AI Coach Logo"
                             width={40}
                             height={40}
