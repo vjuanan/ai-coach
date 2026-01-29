@@ -36,18 +36,26 @@ export default function AthletesPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
 
-    // Enhanced Form State
+    // Enhanced Form State with Full Athlete Profile
     const [formData, setFormData] = useState({
         type: 'athlete' as 'athlete' | 'gym',
         name: '',
         email: '',
+        dob: '',
+        height: '',
+        weight: '',
+        gender: 'male' as 'male' | 'female' | 'other',
         level: 'RX',
         goal: '',
         injuries: '',
+        // Benchmarks (1RM in kg)
         snatch: '',
         cnj: '',
         backSquat: '',
-        deadlift: ''
+        deadlift: '',
+        frontSquat: '',
+        cleanPull: '',
+        franTime: ''  // in seconds
     });
     const [isAdding, setIsAdding] = useState(false);
 
@@ -71,13 +79,20 @@ export default function AthletesPage() {
             type: 'athlete',
             name: '',
             email: '',
+            dob: '',
+            height: '',
+            weight: '',
+            gender: 'male',
             level: 'RX',
             goal: '',
             injuries: '',
             snatch: '',
             cnj: '',
             backSquat: '',
-            deadlift: ''
+            deadlift: '',
+            frontSquat: '',
+            cleanPull: '',
+            franTime: ''
         });
     }
 
@@ -87,15 +102,26 @@ export default function AthletesPage() {
 
         try {
             const details = {
+                // Physical Profile
+                dob: formData.dob || null,
+                height: formData.height ? parseInt(formData.height) : null,
+                weight: formData.weight ? parseInt(formData.weight) : null,
+                gender: formData.gender,
+                // Training
                 level: formData.level,
                 goal: formData.goal,
                 injuries: formData.injuries,
+                // Benchmarks (1RM in kg)
                 oneRmStats: {
                     snatch: formData.snatch ? parseInt(formData.snatch) : null,
                     cnj: formData.cnj ? parseInt(formData.cnj) : null,
                     backSquat: formData.backSquat ? parseInt(formData.backSquat) : null,
-                    deadlift: formData.deadlift ? parseInt(formData.deadlift) : null
-                }
+                    deadlift: formData.deadlift ? parseInt(formData.deadlift) : null,
+                    frontSquat: formData.frontSquat ? parseInt(formData.frontSquat) : null,
+                    cleanPull: formData.cleanPull ? parseInt(formData.cleanPull) : null
+                },
+                // Metcon Benchmarks
+                franTime: formData.franTime ? parseInt(formData.franTime) : null  // seconds
             };
 
             await createClient({
@@ -275,6 +301,54 @@ export default function AthletesPage() {
                                     />
                                 </div>
 
+                                {/* Physical Profile Section */}
+                                <div className="border-t border-cv-border pt-4 mt-4">
+                                    <label className="block text-sm font-medium text-cv-text-primary mb-3">Perfil Físico</label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-xs text-cv-text-tertiary mb-1">Fecha Nac.</label>
+                                            <input
+                                                type="date"
+                                                value={formData.dob}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, dob: e.target.value }))}
+                                                className="cv-input"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-cv-text-tertiary mb-1">Género</label>
+                                            <select
+                                                value={formData.gender}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value as any }))}
+                                                className="cv-input"
+                                            >
+                                                <option value="male">Masculino</option>
+                                                <option value="female">Femenino</option>
+                                                <option value="other">Otro</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-cv-text-tertiary mb-1">Altura (cm)</label>
+                                            <input
+                                                type="number"
+                                                value={formData.height}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))}
+                                                placeholder="175"
+                                                className="cv-input"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-cv-text-tertiary mb-1">Peso (kg)</label>
+                                            <input
+                                                type="number"
+                                                value={formData.weight}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))}
+                                                placeholder="75"
+                                                className="cv-input"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {/* Level Dropdown */}
                                 <div>
                                     <label className="block text-sm font-medium text-cv-text-secondary mb-2">Nivel</label>
@@ -304,47 +378,71 @@ export default function AthletesPage() {
 
                                 {/* Injuries/Notes */}
                                 <div>
-                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Lesiones / Notas</label>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Lesiones / Limitaciones</label>
                                     <textarea
                                         value={formData.injuries}
                                         onChange={(e) => setFormData(prev => ({ ...prev, injuries: e.target.value }))}
                                         placeholder="Ej: Shoulder impingement, bajo movilidad de tobillo..."
-                                        rows={3}
+                                        rows={2}
                                         className="cv-input resize-none"
                                     />
                                 </div>
 
-                                {/* 1RM Stats (Optional) */}
-                                <div>
-                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">1RM Stats (kg) - Opcional</label>
-                                    <div className="grid grid-cols-2 gap-3">
+                                {/* Benchmarks Section */}
+                                <div className="border-t border-cv-border pt-4 mt-4">
+                                    <label className="block text-sm font-medium text-cv-text-primary mb-3">Benchmarks (1RM en kg)</label>
+                                    <div className="grid grid-cols-3 gap-2">
                                         <input
                                             type="number"
                                             value={formData.snatch}
                                             onChange={(e) => setFormData(prev => ({ ...prev, snatch: e.target.value }))}
                                             placeholder="Snatch"
-                                            className="cv-input"
+                                            className="cv-input text-sm"
                                         />
                                         <input
                                             type="number"
                                             value={formData.cnj}
                                             onChange={(e) => setFormData(prev => ({ ...prev, cnj: e.target.value }))}
                                             placeholder="C&J"
-                                            className="cv-input"
+                                            className="cv-input text-sm"
                                         />
                                         <input
                                             type="number"
                                             value={formData.backSquat}
                                             onChange={(e) => setFormData(prev => ({ ...prev, backSquat: e.target.value }))}
                                             placeholder="Back Squat"
-                                            className="cv-input"
+                                            className="cv-input text-sm"
+                                        />
+                                        <input
+                                            type="number"
+                                            value={formData.frontSquat}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, frontSquat: e.target.value }))}
+                                            placeholder="Front Squat"
+                                            className="cv-input text-sm"
                                         />
                                         <input
                                             type="number"
                                             value={formData.deadlift}
                                             onChange={(e) => setFormData(prev => ({ ...prev, deadlift: e.target.value }))}
                                             placeholder="Deadlift"
-                                            className="cv-input"
+                                            className="cv-input text-sm"
+                                        />
+                                        <input
+                                            type="number"
+                                            value={formData.cleanPull}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, cleanPull: e.target.value }))}
+                                            placeholder="Clean Pull"
+                                            className="cv-input text-sm"
+                                        />
+                                    </div>
+                                    <div className="mt-2">
+                                        <label className="block text-xs text-cv-text-tertiary mb-1">Fran Time (segundos)</label>
+                                        <input
+                                            type="number"
+                                            value={formData.franTime}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, franTime: e.target.value }))}
+                                            placeholder="Ej: 180 (= 3:00)"
+                                            className="cv-input text-sm"
                                         />
                                     </div>
                                 </div>

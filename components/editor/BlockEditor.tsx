@@ -189,13 +189,22 @@ function StrengthForm({ config, onChange }: FormProps) {
                 <label className="block text-sm font-medium text-cv-text-secondary mb-2">
                     Carga / Porcentaje
                 </label>
-                <input
-                    type="text"
-                    value={(config.percentage as string) || ''}
-                    onChange={(e) => onChange('percentage', e.target.value)}
-                    placeholder="75% or 225lbs"
-                    className="cv-input-mono"
-                />
+                <div className="grid grid-cols-2 gap-3">
+                    <input
+                        type="text"
+                        value={(config.percentage as string) || ''}
+                        onChange={(e) => onChange('percentage', e.target.value)}
+                        placeholder="75%"
+                        className="cv-input-mono"
+                    />
+                    <input
+                        type="text"
+                        value={(config.rpe as string) || ''}
+                        onChange={(e) => onChange('rpe', e.target.value)}
+                        placeholder="RPE 8"
+                        className="cv-input-mono"
+                    />
+                </div>
             </div>
 
             <div>
@@ -441,13 +450,13 @@ function MetconForm({ config, format, onChange, onFormatChange }: MetconFormProp
                                 <ExerciseAutocomplete
                                     value={movement}
                                     onChange={(val) => updateMovement(index, val)}
-                                    placeholder="e.g. 15 Wall Balls (20/14)"
+                                    placeholder={`Movimiento ${index + 1}`}
                                     className="cv-input"
                                 />
                             </div>
                             <button
                                 onClick={() => removeMovement(index)}
-                                className="cv-btn-ghost p-2 text-red-400 self-start mt-0.5"
+                                className="cv-btn-ghost text-red-400 p-2"
                             >
                                 <Trash2 size={16} />
                             </button>
@@ -455,24 +464,24 @@ function MetconForm({ config, format, onChange, onFormatChange }: MetconFormProp
                     ))}
                     <button
                         onClick={addMovement}
-                        className="w-full py-2 border border-dashed border-cv-border rounded-lg text-cv-text-tertiary hover:text-cv-text-primary hover:border-cv-text-tertiary transition-all flex items-center justify-center gap-2"
+                        className="cv-btn-secondary w-full py-2 text-xs"
                     >
-                        <Plus size={14} />
-                        Add Movement
+                        <Plus size={14} className="mr-1" />
+                        Añadir Movimiento
                     </button>
                 </div>
             </div>
 
-            {/* Notes */}
+            {/* Notes Field */}
             <div>
                 <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                    Notes
+                    Notas / Estrategia
                 </label>
                 <textarea
                     value={(config.notes as string) || ''}
                     onChange={(e) => onChange('notes', e.target.value)}
-                    placeholder="Scale options, strategy notes..."
-                    className="cv-input min-h-[80px] resize-none"
+                    placeholder="Pace instructions, scaling options..."
+                    className="cv-input min-h-[60px] resize-none"
                 />
             </div>
         </div>

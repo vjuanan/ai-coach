@@ -4,16 +4,18 @@ import { useCallback, useState } from 'react';
 import { useEditorStore } from '@/lib/store';
 import { WeekView } from './WeekView';
 import { BlockEditor } from './BlockEditor';
-import { Save, Undo, Redo, Download, Eye, Settings2, Loader2, CheckCircle2 } from 'lucide-react';
+import { Save, Undo, Redo, Download, Eye, Settings2, Loader2, CheckCircle2, Maximize2, Minimize2 } from 'lucide-react';
 import { saveMesocycleChanges } from '@/lib/actions';
 import { ExportPreview } from '@/components/export';
 
 interface MesocycleEditorProps {
     programId: string;
     programName: string;
+    isFullScreen?: boolean;
+    onToggleFullScreen?: () => void;
 }
 
-export function MesocycleEditor({ programId, programName }: MesocycleEditorProps) {
+export function MesocycleEditor({ programId, programName, isFullScreen = false, onToggleFullScreen }: MesocycleEditorProps) {
     const {
         mesocycles,
         selectedWeek,
@@ -116,6 +118,15 @@ export function MesocycleEditor({ programId, programName }: MesocycleEditorProps
                     <button className="cv-btn-ghost p-2" title="Settings">
                         <Settings2 size={18} />
                     </button>
+                    {onToggleFullScreen && (
+                        <button
+                            onClick={onToggleFullScreen}
+                            className="cv-btn-ghost p-2"
+                            title={isFullScreen ? "Exit Full Screen" : "Full Screen"}
+                        >
+                            {isFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                        </button>
+                    )}
                     <div className="w-px h-6 bg-cv-border mx-1" />
                     <button
                         onClick={handleSave}

@@ -11,8 +11,18 @@ interface AppShellProps {
     actions?: React.ReactNode;
 }
 
-export function AppShell({ children, title, actions }: AppShellProps) {
+export function AppShell({ children, title, actions, fullScreen = false }: AppShellProps & { fullScreen?: boolean }) {
     const { isSidebarCollapsed } = useAppStore();
+
+    if (fullScreen) {
+        return (
+            <div className="min-h-screen bg-cv-bg-primary">
+                <main className="min-h-screen">
+                    {children}
+                </main>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-cv-bg-primary">

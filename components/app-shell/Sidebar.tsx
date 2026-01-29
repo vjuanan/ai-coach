@@ -2,6 +2,7 @@
 
 import { useAppStore } from '@/lib/store';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard,
@@ -48,12 +49,18 @@ export function Sidebar() {
         >
             {/* Logo */}
             <div className="h-16 flex items-center justify-between px-4 border-b border-cv-border">
-                <Link href="/" className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-cv-accent flex items-center justify-center">
-                        <Zap size={18} className="text-white" />
+                <Link href="/" className="flex items-center gap-3">
+                    <div className="relative w-8 h-8 flex items-center justify-center">
+                        <Image
+                            src="/logo.png"
+                            alt="CV-OS Logo"
+                            width={32}
+                            height={32}
+                            className="object-contain"
+                        />
                     </div>
                     {!isSidebarCollapsed && (
-                        <span className="font-semibold text-cv-text-primary text-lg tracking-tight">
+                        <span className={`font-bold text-lg tracking-tight text-cv-text-primary`}>
                             CV-OS
                         </span>
                     )}

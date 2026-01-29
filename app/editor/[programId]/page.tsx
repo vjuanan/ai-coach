@@ -15,6 +15,8 @@ export default function EditorPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const [isFullScreen, setIsFullScreen] = useState(false);
+
     useEffect(() => {
         async function loadData() {
             setIsLoading(true);
@@ -71,10 +73,12 @@ export default function EditorPage() {
     }
 
     return (
-        <AppShell>
+        <AppShell fullScreen={isFullScreen}>
             <MesocycleEditor
                 programId={programId}
                 programName={useEditorStore.getState().programName} // Use store name in case it changes
+                isFullScreen={isFullScreen}
+                onToggleFullScreen={() => setIsFullScreen(!isFullScreen)}
             />
         </AppShell>
     );

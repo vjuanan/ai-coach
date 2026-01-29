@@ -29,7 +29,21 @@ export default function GymsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
-    const [newGymName, setNewGymName] = useState('');
+    // Enhanced Gym Form State
+    const [formData, setFormData] = useState({
+        name: '',
+        ownerName: '',
+        location: '',
+        memberCount: '',
+        equipment: {
+            rig: false,
+            sleds: false,
+            skiErgs: false,
+            assaultBikes: false,
+            rowers: false,
+            pool: false
+        }
+    });
     const [isAdding, setIsAdding] = useState(false);
 
     useEffect(() => {
@@ -46,16 +60,35 @@ export default function GymsPage() {
     }
 
     async function addGym() {
-        if (!newGymName.trim()) return;
+        if (!formData.name.trim()) return;
         setIsAdding(true);
 
         try {
             await createClient({
                 type: 'gym',
-                name: newGymName,
+                name: formData.name,
+                details: {
+                    ownerName: formData.ownerName,
+                    location: formData.location,
+                    memberCount: formData.memberCount ? parseInt(formData.memberCount) : null,
+                    equipment: formData.equipment
+                }
             });
 
-            setNewGymName('');
+            setFormData({
+                name: '',
+                ownerName: '',
+                location: '',
+                memberCount: '',
+                equipment: {
+                    rig: false,
+                    sleds: false,
+                    skiErgs: false,
+                    assaultBikes: false,
+                    rowers: false,
+                    pool: false
+                }
+            });
             setShowAddModal(false);
             fetchGyms();
         } catch (e) {
@@ -149,21 +182,89 @@ export default function GymsPage() {
                 {showAddModal && (
                     <>
                         <div className="cv-overlay" onClick={() => setShowAddModal(false)} />
-                        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-cv-bg-secondary border border-cv-border rounded-xl p-6 z-50">
-                            <h2 className="text-xl font-semibold text-cv-text-primary mb-4">Añadir Gimnasio</h2>
+                        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-cv-bg-secondary border border-cv-border rounded-lg p-6 z-50 max-h-[90vh] overflow-y-auto">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold text-cv-text-primary">Nuevo Gimnasio / Cliente B2B</h2>
+                                <button onClick={() => setShowAddModal(false)} className="cv-btn-ghost p-1">
+                                    <Trash2 size={18} className="text-cv-text-tertiary" />
+                                </button>
+                            </div>
+
                             <div className="space-y-4">
+                                {/* Gym Info */}
                                 <div>
                                     <label className="block text-sm font-medium text-cv-text-secondary mb-2">Nombre del Gimnasio *</label>
                                     <input
                                         type="text"
-                                        value={newGymName}
-                                        onChange={(e) => setNewGymName(e.target.value)}
+                                        value={formData.name}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                         placeholder="CrossFit Downtown"
                                         className="cv-input"
                                         autoFocus
                                     />
                                 </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Ubicación</label>
+                                    <input
+                                        type="text"
+                                        value={formData.location}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                                        placeholder="Madrid, España"
+                                        className="cv-input"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">Propietario / Contacto</label>
+                                        <input
+                                            type="text"
+                                            value={formData.ownerName}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, ownerName: e.target.value }))}
+                                            placeholder="Juan Pérez"
+                                            className="cv-input"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">Miembros (aprox)</label>
+                                        <input
+                                            type="number"
+                                            value={formData.memberCount}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, memberCount: e.target.value }))}
+                                            placeholder="150"
+                                            className="cv-input"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Equipment Config */}
+                                <div className="border-t border-cv-border pt-4 mt-4">
+                                    <label className="block text-sm font-medium text-cv-text-primary mb-3">Equipamiento Disponible</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {[
+                                            { key: 'rig', label: 'Rack / Estructura' },
+                                            { key: 'sleds', label: 'Trineos / Prowlers' },
+                                            { key: 'skiErgs', label: 'SkiErgs' },
+                                            { key: 'assaultBikes', label: 'Assault Bikes / Echo' },
+                                            { key: 'rowers', label: 'Remos (C2)' },
+                                            { key: 'pool', label: 'Piscina' }
+                                        ].map((item) => (
+                                            <label key={item.key} className="flex items-center gap-2 p-2 rounded-md bg-cv-bg-tertiary border border-cv-border cursor-pointer hover:bg-slate-700/50 transition-colors">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.equipment[item.key as keyof typeof formData.equipment]}
+                                                    onChange={(e) => setFormData(prev => ({
+                                                        ...prev,
+                                                        equipment: { ...prev.equipment, [item.key]: e.target.checked }
+                                                    }))}
+                                                    className="w-4 h-4 rounded border-cv-border text-cv-accent focus:ring-cv-accent bg-transparent"
+                                                />
+                                                <span className="text-sm text-cv-text-secondary">{item.label}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
+
                             <div className="flex gap-3 mt-6">
                                 <button
                                     onClick={() => setShowAddModal(false)}
@@ -173,11 +274,11 @@ export default function GymsPage() {
                                 </button>
                                 <button
                                     onClick={addGym}
-                                    disabled={!newGymName.trim() || isAdding}
+                                    disabled={!formData.name.trim() || isAdding}
                                     className="cv-btn-primary flex-1"
                                 >
                                     {isAdding ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-                                    Añadir Gimnasio
+                                    Guardar Gimnasio
                                 </button>
                             </div>
                         </div>
