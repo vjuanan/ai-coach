@@ -48,29 +48,42 @@ export function Sidebar() {
       `}
         >
             {/* Logo */}
-            <div className="h-16 flex items-center justify-between px-4 border-b border-cv-border">
-                <Link href="/" className="flex items-center gap-3">
-                    <div className="relative w-8 h-8 flex items-center justify-center">
+            <div className={`
+                flex items-center border-b border-cv-border transition-all duration-300
+                ${isSidebarCollapsed ? 'h-16 justify-center px-4' : 'h-32 justify-center px-6'}
+            `}>
+                <Link href="/" className={`flex items-center gap-3 ${isSidebarCollapsed ? '' : 'flex-col gap-2'}`}>
+                    <div className="relative w-10 h-10 flex items-center justify-center">
                         <Image
                             src="/logo.png"
                             alt="AI Coach Logo"
-                            width={32}
-                            height={32}
+                            width={40}
+                            height={40}
                             className="object-contain"
                         />
                     </div>
                     {!isSidebarCollapsed && (
-                        <span className={`font-bold text-lg tracking-tight text-cv-text-primary`}>
+                        <span className="font-bold text-xl tracking-tight text-cv-text-primary">
                             AI Coach
                         </span>
                     )}
                 </Link>
-                <button
-                    onClick={toggleSidebar}
-                    className="p-1.5 rounded-md text-cv-text-tertiary hover:text-cv-text-primary hover:bg-cv-bg-tertiary transition-colors"
-                >
-                    {isSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-                </button>
+                {!isSidebarCollapsed && (
+                    <button
+                        onClick={toggleSidebar}
+                        className="absolute right-4 top-4 p-1.5 rounded-md text-cv-text-tertiary hover:text-cv-text-primary hover:bg-cv-bg-tertiary transition-colors"
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+                )}
+                {isSidebarCollapsed && (
+                    <button
+                        onClick={toggleSidebar}
+                        className="p-1.5 rounded-md text-cv-text-tertiary hover:text-cv-text-primary hover:bg-cv-bg-tertiary transition-colors"
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+                )}
             </div>
 
             {/* Context Switcher */}
