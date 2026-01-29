@@ -1,8 +1,8 @@
 'use client';
 
 import { useAppStore } from '@/lib/store';
-import { Search, Command, Bell, Plus } from 'lucide-react';
-import Link from 'next/link';
+import { Search, Command, Bell } from 'lucide-react';
+import { GlobalCreateButton } from './GlobalCreateButton';
 
 interface TopbarProps {
     title?: string;
@@ -10,7 +10,7 @@ interface TopbarProps {
 }
 
 export function Topbar({ title, actions }: TopbarProps) {
-    const { openCommandPalette, isSidebarCollapsed, currentView } = useAppStore();
+    const { openCommandPalette, isSidebarCollapsed } = useAppStore();
 
     return (
         <header
@@ -38,7 +38,7 @@ export function Topbar({ title, actions }: TopbarProps) {
         "
             >
                 <Search size={16} className="text-cv-text-tertiary group-hover:text-cv-text-secondary" />
-                <span className="text-sm flex-1 text-left">Search...</span>
+                <span className="text-sm flex-1 text-left">Buscar...</span>
                 <div className="flex items-center gap-1">
                     <kbd className="px-1.5 py-0.5 rounded bg-cv-bg-tertiary text-2xs font-mono text-cv-text-tertiary">
                         <Command size={10} className="inline" />
@@ -51,14 +51,8 @@ export function Topbar({ title, actions }: TopbarProps) {
 
             {/* Right: Actions */}
             <div className="flex items-center gap-3">
-                {/* Quick Add */}
-                <Link
-                    href={currentView === 'athletes' ? '/athletes/new' : '/gyms/new'}
-                    className="cv-btn-primary"
-                >
-                    <Plus size={16} />
-                    <span>New {currentView === 'athletes' ? 'Athlete' : 'Gym'}</span>
-                </Link>
+                {/* Global Create Button */}
+                <GlobalCreateButton />
 
                 {/* Notifications */}
                 <button className="cv-btn-ghost relative p-2">

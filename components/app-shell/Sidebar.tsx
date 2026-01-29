@@ -13,31 +13,26 @@ import {
     Settings,
     ChevronLeft,
     ChevronRight,
-    Zap
 } from 'lucide-react';
 
 interface NavItem {
     label: string;
     href: string;
     icon: React.ReactNode;
-    context?: 'athletes' | 'gyms' | 'all';
 }
 
+// Unified nav items - no more context filtering
 const navItems: NavItem[] = [
-    { label: 'Panel', href: '/', icon: <LayoutDashboard size={20} />, context: 'all' },
-    { label: 'Atletas', href: '/athletes', icon: <Users size={20} />, context: 'athletes' },
-    { label: 'Gimnasios', href: '/gyms', icon: <Building2 size={20} />, context: 'gyms' },
-    { label: 'Programas', href: '/programs', icon: <Dumbbell size={20} />, context: 'all' },
-    { label: 'Plantillas', href: '/templates', icon: <FileText size={20} />, context: 'all' },
+    { label: 'Panel', href: '/', icon: <LayoutDashboard size={20} /> },
+    { label: 'Atletas', href: '/athletes', icon: <Users size={20} /> },
+    { label: 'Gimnasios', href: '/gyms', icon: <Building2 size={20} /> },
+    { label: 'Programas', href: '/programs', icon: <Dumbbell size={20} /> },
+    { label: 'Plantillas', href: '/templates', icon: <FileText size={20} /> },
 ];
 
 export function Sidebar() {
-    const { currentView, isSidebarCollapsed, toggleSidebar, setCurrentView } = useAppStore();
+    const { isSidebarCollapsed, toggleSidebar } = useAppStore();
     const pathname = usePathname();
-
-    const filteredNavItems = navItems.filter(
-        item => item.context === 'all' || item.context === currentView
-    );
 
     return (
         <aside
@@ -86,39 +81,9 @@ export function Sidebar() {
                 )}
             </div>
 
-            {/* Context Switcher */}
-            {!isSidebarCollapsed && (
-                <div className="p-3 border-b border-cv-border">
-                    <div className="flex bg-cv-bg-tertiary rounded-lg p-1">
-                        <button
-                            onClick={() => setCurrentView('athletes')}
-                            className={`
-                flex-1 py-1.5 px-3 rounded-md text-sm font-medium transition-all
-                ${currentView === 'athletes'
-                                    ? 'bg-cv-accent text-white shadow-cv-sm'
-                                    : 'text-cv-text-secondary hover:text-cv-text-primary'}
-              `}
-                        >
-                            Atletas
-                        </button>
-                        <button
-                            onClick={() => setCurrentView('gyms')}
-                            className={`
-                flex-1 py-1.5 px-3 rounded-md text-sm font-medium transition-all
-                ${currentView === 'gyms'
-                                    ? 'bg-cv-accent text-white shadow-cv-sm'
-                                    : 'text-cv-text-secondary hover:text-cv-text-primary'}
-              `}
-                        >
-                            Gimnasios
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Navigation */}
+            {/* Navigation - Unified, no toggle */}
             <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-                {filteredNavItems.map((item) => {
+                {navItems.map((item) => {
                     const isActive = pathname === item.href ||
                         (item.href !== '/' && pathname.startsWith(item.href));
 
