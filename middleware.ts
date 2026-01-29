@@ -61,9 +61,9 @@ export async function middleware(request: NextRequest) {
     const isAuthPage = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/auth');
 
     // If no session and not on an auth page, redirect to login
-    // if (!session && !isAuthPage) {
-    //     return NextResponse.redirect(new URL('/login', request.url))
-    // }
+    if (!session && !isAuthPage) {
+        return NextResponse.redirect(new URL('/login', request.url))
+    }
 
     // If session exists and user is on login page, redirect to dashboard
     if (session && request.nextUrl.pathname.startsWith('/login')) {
