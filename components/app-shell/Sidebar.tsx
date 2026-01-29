@@ -49,21 +49,21 @@ export function Sidebar() {
             `}>
                 <Link href="/" className="flex items-center">
                     {/* Logo */}
-                    <div className="relative w-10 h-10 flex items-center justify-center flex-shrink-0">
+                    <div className="relative w-9 h-9 flex items-center justify-center flex-shrink-0">
                         <Image
                             src="/images/ai-coach-logo-v3.png"
                             alt="AI Coach Logo"
-                            width={40}
-                            height={40}
+                            width={36}
+                            height={36}
                             className="object-contain"
                         />
                     </div>
                     {!isSidebarCollapsed && (
                         <>
                             {/* Vertical Divider */}
-                            <div className="h-6 w-px bg-slate-200 mx-4"></div>
+                            <div className="h-5 w-px bg-slate-300 mx-3 self-center"></div>
                             {/* Text */}
-                            <span className="font-semibold text-lg text-slate-700 whitespace-nowrap">
+                            <span className="font-semibold text-lg text-slate-800 whitespace-nowrap">
                                 AI Coach
                             </span>
                         </>
