@@ -64,20 +64,27 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 // Helper to ensure coach exists for current user
 // Uses Service Role to bypass RLS for creation if needed
+// Helper to ensure coach exists for current user
+// Uses Service Role to bypass RLS for creation if needed
 async function ensureCoach(supabase: any) {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-        console.error('ensureCoach: User not authenticated', authError);
-        throw new Error('User not authenticated');
+
+    // NO-AUTH FALLBACK: If user is missing, check if we're in "Public Mode"
+    let userId = user?.id;
+
+    if (!userId) {
+        console.log('ensureCoach: No authenticated user. Running in Public/Demo Mode.');
+        // Use a fixed UUID for the "Public Owner" to allow the app to function without login
+        userId = '00000000-0000-0000-0000-000000000000';
     }
 
-    console.log('ensureCoach: Checking for coach profile for user', user.id);
+    console.log('ensureCoach: Resolving coach for userId', userId);
 
     // Try normal fetch first
     const { data: coach, error: fetchError } = await supabase
         .from('coaches')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single();
 
     if (coach) {
@@ -85,17 +92,10 @@ async function ensureCoach(supabase: any) {
         return coach.id;
     }
 
-    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "Row not found"
-        console.error('ensureCoach: Error fetching coach', fetchError);
-    }
-
-    console.log('ensureCoach: Coach profile not found. Attempting to create...');
-
-    // Fallback to Service Role if regular client fails or just to be robust
-    // This is critical because RLS might block normal INSERT even if policies seem correct.
+    // Fallback to Service Role key for creation/admin access
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceRoleKey) {
-        console.error('ensureCoach: CRITICAL - SUPABASE_SERVICE_ROLE_KEY is missing in environment variables.');
+        console.error('ensureCoach: CRITICAL - SUPABASE_SERVICE_ROLE_KEY missing.');
         throw new Error('Server configuration error: Missing Service Role Key.');
     }
 
@@ -110,12 +110,24 @@ async function ensureCoach(supabase: any) {
         }
     );
 
-    // Create coach if not exists (upsert-like behavior)
+    // Check again via Admin
+    const { data: adminCoach } = await supabaseAdmin
+        .from('coaches')
+        .select('id')
+        .eq('user_id', userId)
+        .single();
+
+    if (adminCoach) {
+        return adminCoach.id;
+    }
+
+    // Create "Public Coach" if not exists
     const { data: newCoach, error: insertError } = await supabaseAdmin
         .from('coaches')
         .insert({
-            user_id: user.id,
-            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Coach',
+            user_id: userId,
+            full_name: user?.user_metadata?.full_name || 'Public Coach',
+            business_name: 'AI Coach Demo'
         })
         .select('id')
         .single();
@@ -123,9 +135,9 @@ async function ensureCoach(supabase: any) {
     if (insertError) {
         console.error('ensureCoach: Error creating coach profile via Admin', insertError);
 
-        // Handle race condition if created in parallel
-        if (insertError.code === '23505') { // Unique violation
-            const { data: existing } = await supabaseAdmin.from('coaches').select('id').eq('user_id', user.id).single();
+        // Handle race condition
+        if (insertError.code === '23505') {
+            const { data: existing } = await supabaseAdmin.from('coaches').select('id').eq('user_id', userId).single();
             return existing?.id;
         }
         throw new Error(`Error creating coach profile: ${insertError.message}`);
