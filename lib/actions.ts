@@ -357,7 +357,16 @@ export async function deleteClient(id: string) {
 // ==========================================
 
 export async function getFullProgramData(programId: string) {
-    const supabase = createServerClient();
+    let supabase = createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Demo Mode: Use Admin Client to view programs if not authenticated
+    if (!user && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        supabase = createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        ) as any;
+    }
 
     // Fetch Program + Client
     const { data: program, error: progError } = await supabase
