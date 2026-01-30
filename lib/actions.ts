@@ -489,3 +489,24 @@ export async function searchExercises(query: string) {
     if (error) return [];
     return data;
 }
+
+// ==========================================
+// EQUIPMENT ACTIONS
+// ==========================================
+
+export async function getEquipmentCatalog() {
+    const supabase = createServerClient();
+
+    // Check if table exists indirectly by trying to select
+    const { data, error } = await supabase
+        .from('equipment_catalog')
+        .select('*')
+        .order('category', { ascending: true })
+        .order('name', { ascending: true });
+
+    if (error) {
+        console.error('Error fetching equipment catalog:', error);
+        return [];
+    }
+    return data;
+}
