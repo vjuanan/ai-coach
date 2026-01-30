@@ -85,11 +85,7 @@ export default function SettingsPage() {
     return (
         <AppShell title="Configuración">
             <div className="max-w-2xl mx-auto pb-12">
-                {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-cv-text-primary">Configuración</h1>
-                    <p className="text-cv-text-secondary">Gestiona tu cuenta y preferencias</p>
-                </div>
+                {/* Header removed as per user request */}
 
                 {/* Settings Sections */}
                 <div className="space-y-6">
@@ -100,14 +96,7 @@ export default function SettingsPage() {
                                 <User size={18} />
                                 Perfil
                             </h2>
-                            <button
-                                onClick={handleSaveProfile}
-                                disabled={saving}
-                                className="text-xs flex items-center gap-1 bg-cv-accent/10 text-cv-accent px-3 py-1.5 rounded-lg hover:bg-cv-accent/20 transition-colors disabled:opacity-50"
-                            >
-                                {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
-                                Guardar
-                            </button>
+
                         </div>
                         <div className="space-y-4">
                             <div>
@@ -139,6 +128,17 @@ export default function SettingsPage() {
                                     className="cv-input"
                                     placeholder="+54 9 11 1234 5678"
                                 />
+                            </div>
+
+                            <div className="flex justify-end pt-2">
+                                <button
+                                    onClick={handleSaveProfile}
+                                    disabled={saving}
+                                    className="cv-btn-primary flex items-center gap-2 px-4 py-2"
+                                >
+                                    {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                                    Guardar Cambios
+                                </button>
                             </div>
                         </div>
                     </div>

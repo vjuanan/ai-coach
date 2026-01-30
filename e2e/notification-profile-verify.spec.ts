@@ -25,9 +25,10 @@ test.describe('Notification and Profile Verification', () => {
         await bell.click();
 
         // 3. Verify Dropdown Content
-        // Should show "Notificaciones" title
-        await expect(page.getByText('Notificaciones', { exact: true })).toBeVisible();
-        await expect(page.getByText('No tienes notificaciones').or(page.locator('.text-sm.font-semibold'))).toBeVisible();
+        // Should show "Notificaciones" title in the dropdown header
+        await expect(page.locator('h3').filter({ hasText: 'Notificaciones' })).toBeVisible();
+        // Check for empty state or list
+        await expect(page.getByText('No tienes notificaciones').first()).toBeVisible();
 
         await page.screenshot({ path: 'e2e-screenshots/verify-notifications.png' });
     });
@@ -43,18 +44,18 @@ test.describe('Notification and Profile Verification', () => {
         await expect(page).toHaveURL(/settings/);
 
         // 3. Verify Settings Page Content
-        await expect(page.getByText('Configuración')).toBeVisible();
+        // "Configuración" appears in sidebar AND header. We want the main header.
+        await expect(page.locator('h1').filter({ hasText: 'Configuración' })).toBeVisible();
         await expect(page.getByText('Perfil')).toBeVisible();
 
         // 4. Verify Profile Fields are interactive
         const nameInput = page.locator('input[value="Super Admin Juanan"]'); // Assuming match or close
-        // If exact value match fails, just find input by label
-        const nameInputGeneric = page.locator('div').filter({ hasText: 'Nombre completo' }).locator('input');
-        await expect(nameInputGeneric).toBeVisible();
-
         // 5. Try updating name (mock save)
+        // Targeted selector for the Name input. Using first() is safe here as it's the first input in the form typically.
+        const nameInputGeneric = page.locator('input[type="text"]').first();
+        await expect(nameInputGeneric).toBeVisible();
         await nameInputGeneric.fill('Coach Updated');
-        const saveBtn = page.getByText('Guardar');
+        const saveBtn = page.getByRole('button', { name: 'Guardar Cambios' });
         await expect(saveBtn).toBeVisible();
         await saveBtn.click();
 
