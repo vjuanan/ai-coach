@@ -165,7 +165,6 @@ export interface EquipmentCatalog {
     id: string;
     name: string;
     category: string;
-    is_weight_measurable: boolean;
     created_at: string;
 }
 
