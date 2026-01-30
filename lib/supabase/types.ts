@@ -160,6 +160,14 @@ export interface Exercise {
     created_at: string;
 }
 
+export interface EquipmentCatalog {
+    id: string;
+    name: string;
+    category: string;
+    is_weight_measurable: boolean;
+    created_at: string;
+}
+
 // Supabase Database Type (for typed client)
 export interface Database {
     public: {
