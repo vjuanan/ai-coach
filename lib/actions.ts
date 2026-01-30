@@ -520,7 +520,7 @@ export async function createClient(clientData: {
                 type: clientData.type,
                 name: clientData.name,
                 email: clientData.email || null,
-                // details: clientData.details || {}, // TEMPORARY REMOVE to debug
+                details: clientData.details || {},
             })
             .select()
             .single();
