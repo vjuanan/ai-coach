@@ -97,7 +97,7 @@ export function GlobalCreateButton() {
                 ) : (
                     <Plus size={16} />
                 )}
-                <span>+</span>
+
                 {pathname !== '/programs' && (
                     <ChevronDown
                         size={14}
