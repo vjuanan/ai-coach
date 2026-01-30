@@ -60,6 +60,119 @@ export async function getPrograms() {
     return data;
 }
 
+export async function getTemplates() {
+    const supabase = createServerClient();
+    const { data, error } = await supabase
+        .from('programs')
+        .select('*')
+        .eq('is_template', true)
+        .eq('status', 'active');
+
+    if (error) {
+        console.error('Error fetching templates:', error);
+        return [];
+    }
+    return data;
+}
+
+export async function copyTemplateToProgram(templateId: string) {
+    const supabase = createServerClient();
+
+    // 1. Fetch Template Data
+    // We reuse logic similar to getFullProgramData but internal
+    const { data: templateProgram, error: progError } = await supabase
+        .from('programs')
+        .select('*')
+        .eq('id', templateId)
+        .single();
+
+    if (progError || !templateProgram) {
+        throw new Error('Template not found');
+    }
+
+    const { data: mesocycles } = await supabase
+        .from('mesocycles')
+        .select('*, days(*, workout_blocks(*))')
+        .eq('program_id', templateId);
+
+    if (!mesocycles) throw new Error('Template structure missing');
+
+    try {
+        const coachId = await ensureCoach(supabase);
+
+        // 2. Create Target Program
+        const { data: newProgram, error: newProgError } = await supabase
+            .from('programs')
+            .insert({
+                coach_id: coachId,
+                name: `${templateProgram.name} (Copy)`,
+                description: templateProgram.description,
+                status: 'draft',
+                // Explicitly not a template
+                is_template: false,
+                client_id: null // Unassigned initially
+            })
+            .select()
+            .single();
+
+        if (newProgError) throw new Error(newProgError.message);
+
+        // 3. Clone Mesocycles
+        for (const meso of mesocycles) {
+            const { data: newMeso, error: mesoError } = await supabase
+                .from('mesocycles')
+                .insert({
+                    program_id: newProgram.id,
+                    week_number: meso.week_number,
+                    focus: meso.focus,
+                    attributes: meso.attributes
+                })
+                .select()
+                .single();
+
+            if (mesoError) throw mesoError;
+
+            // 4. Clone Days
+            for (const day of meso.days) {
+                const { data: newDay, error: dayError } = await supabase
+                    .from('days')
+                    .insert({
+                        mesocycle_id: newMeso.id,
+                        day_number: day.day_number,
+                        name: day.name,
+                        is_rest_day: day.is_rest_day,
+                        notes: day.notes
+                    })
+                    .select()
+                    .single();
+
+                if (dayError) throw dayError;
+
+                // 5. Clone Blocks
+                if (day.workout_blocks && day.workout_blocks.length > 0) {
+                    const blocksToInsert = day.workout_blocks.map((b: any) => ({
+                        day_id: newDay.id,
+                        order_index: b.order_index,
+                        type: b.type,
+                        format: b.format,
+                        name: b.name,
+                        config: b.config
+                    }));
+
+                    await supabase.from('workout_blocks').insert(blocksToInsert);
+                }
+            }
+        }
+
+        revalidatePath('/programs');
+        return { data: newProgram };
+
+    } catch (error: any) {
+        console.error('Copy Template Failed', error);
+        return { error: error.message };
+    }
+}
+
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

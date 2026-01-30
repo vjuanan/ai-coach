@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Plus, Users, Building2, Dumbbell, Loader2, ChevronDown } from 'lucide-react';
 import { createProgram } from '@/lib/actions';
 
@@ -10,6 +10,7 @@ export function GlobalCreateButton() {
     const [isCreatingProgram, setIsCreatingProgram] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
+    const pathname = usePathname();
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -81,7 +82,13 @@ export function GlobalCreateButton() {
         <div className="relative" ref={dropdownRef}>
             {/* Main Button */}
             <button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => {
+                    if (pathname === '/programs') {
+                        handleCreateProgram();
+                    } else {
+                        setIsOpen(!isOpen);
+                    }
+                }}
                 disabled={isCreatingProgram}
                 className="cv-btn-primary flex items-center gap-2"
             >
@@ -91,10 +98,12 @@ export function GlobalCreateButton() {
                     <Plus size={16} />
                 )}
                 <span>+</span>
-                <ChevronDown
-                    size={14}
-                    className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-                />
+                {pathname !== '/programs' && (
+                    <ChevronDown
+                        size={14}
+                        className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                    />
+                )}
             </button>
 
             {/* Dropdown Menu */}

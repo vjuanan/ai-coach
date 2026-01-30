@@ -105,6 +105,7 @@ export interface Program {
     name: string;
     description: string | null;
     status: 'draft' | 'active' | 'archived';
+    is_template?: boolean;
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
