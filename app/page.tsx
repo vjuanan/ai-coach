@@ -1,6 +1,7 @@
 'use client';
 
 import { AppShell } from '@/components/app-shell';
+import { GlobalCreateButton } from '@/components/app-shell/GlobalCreateButton';
 import { useAppStore } from '@/lib/store';
 import { getPrograms, createProgram, getDashboardStats } from '@/lib/actions';
 import {
@@ -23,7 +24,6 @@ export default function DashboardPage() {
     const [programs, setPrograms] = useState<any[]>([]);
     const [stats, setStats] = useState({ athletes: 0, gyms: 0, activePrograms: 0, totalBlocks: 0 });
     const [isLoading, setIsLoading] = useState(true);
-    const [isCreating, setIsCreating] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -44,18 +44,7 @@ export default function DashboardPage() {
         fetchData();
     }, []);
 
-    const handleCreateProgram = async () => {
-        setIsCreating(true);
-        try {
-            const newProgram = await createProgram('Nuevo Programa', null);
-            router.push(`/editor/${newProgram.id}`);
-        } catch (err) {
-            console.error('Failed to create program:', err);
-            alert('No se pudo crear el programa. Asegúrate de estar conectado.');
-        } finally {
-            setIsCreating(false);
-        }
-    };
+    // Logic removed - moved to GlobalCreateButton
 
     return (
         <AppShell title="Dashboard">
@@ -70,14 +59,7 @@ export default function DashboardPage() {
                             Resumen de actividad de tus {currentView === 'athletes' ? 'atletas' : 'gimnasios'} hoy.
                         </p>
                     </div>
-                    <button
-                        onClick={handleCreateProgram}
-                        disabled={isCreating}
-                        className="cv-btn-primary"
-                    >
-                        {isCreating ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
-                        Nuevo Programa
-                    </button>
+                    <GlobalCreateButton />
                 </div>
 
                 {/* Stats Grid - REAL DATA */}
@@ -176,10 +158,7 @@ export default function DashboardPage() {
                         <div className="cv-card">
                             <h2 className="font-semibold text-cv-text-primary mb-4">Acciones Rápidas</h2>
                             <div className="space-y-2">
-                                <button onClick={handleCreateProgram} className="cv-btn-secondary w-full justify-start">
-                                    <Plus size={16} />
-                                    Crear Programa
-                                </button>
+                                {/* "Crear Programa" removed - use Global + button */}
                                 <Link href="/athletes/new" className="cv-btn-secondary w-full justify-start">
                                     <Users size={16} />
                                     Añadir Atleta

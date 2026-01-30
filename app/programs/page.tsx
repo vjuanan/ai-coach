@@ -1,6 +1,7 @@
 'use client';
 
 import { AppShell } from '@/components/app-shell';
+import { GlobalCreateButton } from '@/components/app-shell/GlobalCreateButton';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -41,17 +42,7 @@ export default function ProgramsPage() {
     const [clients, setClients] = useState<Client[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [isCreating, setIsCreating] = useState(false);
-
-    // Enhanced Form State
-    const [formData, setFormData] = useState({
-        name: '',
-        clientId: '',
-        focus: '',
-        duration: 4,
-        startDate: ''
-    });
+    // State cleaned up
 
     // New State for Delete Modal
     const [programToDelete, setProgramToDelete] = useState<string | null>(null);
@@ -79,38 +70,7 @@ export default function ProgramsPage() {
         setClients([...(athletes || []), ...(gyms || [])] as Client[]);
     }
 
-    function resetForm() {
-        setFormData({
-            name: '',
-            clientId: '',
-            focus: '',
-            duration: 4,
-            startDate: ''
-        });
-    }
-
-    async function handleCreateProgram() {
-        if (!formData.name.trim()) return;
-        setIsCreating(true);
-
-        try {
-            const program = await createProgram(
-                formData.name,
-                formData.clientId || null,
-                formData.focus || undefined,
-                formData.duration || 4
-            );
-            if (program) {
-                resetForm();
-                setShowAddModal(false);
-                router.push(`/editor/${program.id}`);
-            }
-        } catch (e) {
-            console.error('Error creating program:', e);
-            alert('Error al crear el programa. Verifica tu conexión.');
-            setIsCreating(false);
-        }
-    }
+    // Create logic moved to GlobalCreateButton
 
     function promptDelete(id: string) {
         setProgramToDelete(id);
@@ -144,13 +104,7 @@ export default function ProgramsPage() {
                         <h1 className="text-2xl font-bold text-cv-text-primary">Programas</h1>
                         <p className="text-cv-text-secondary">Tus programas de entrenamiento y mesociclos</p>
                     </div>
-                    <button
-                        onClick={() => setShowAddModal(true)}
-                        className="cv-btn-primary"
-                    >
-                        <Plus size={18} />
-                        Nuevo Programa
-                    </button>
+                    <GlobalCreateButton />
                 </div>
 
                 {/* Search */}
@@ -174,13 +128,9 @@ export default function ProgramsPage() {
                     <div className="text-center py-12">
                         <Dumbbell size={48} className="mx-auto text-cv-text-tertiary mb-4" />
                         <p className="text-cv-text-secondary">Aún no hay programas</p>
-                        <button
-                            onClick={() => setShowAddModal(true)}
-                            className="cv-btn-primary mt-4"
-                        >
-                            <Plus size={18} />
-                            Crea tu primer programa
-                        </button>
+                        <div className="mt-4 flex justify-center">
+                            <GlobalCreateButton />
+                        </div>
                     </div>
                 ) : (
                     <div className="space-y-3">
@@ -221,106 +171,7 @@ export default function ProgramsPage() {
                     </div>
                 )}
 
-                {/* Add Modal */}
-                {showAddModal && (
-                    <>
-                        <div className="cv-overlay" onClick={() => setShowAddModal(false)} />
-                        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-cv-bg-secondary border border-cv-border rounded-lg p-6 z-50 max-h-[90vh] overflow-y-auto">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-semibold text-cv-text-primary">Nuevo Programa</h2>
-                                <button onClick={() => setShowAddModal(false)} className="cv-btn-ghost p-1">
-                                    <X size={18} />
-                                </button>
-                            </div>
-
-                            <div className="space-y-4">
-                                {/* Program Name */}
-                                <div>
-                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Nombre del Programa *</label>
-                                    <input
-                                        type="text"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                        placeholder="Ej: Winter Strength Cycle"
-                                        className="cv-input"
-                                        autoFocus
-                                    />
-                                </div>
-
-                                {/* Assigned Client Dropdown */}
-                                <div>
-                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Asignar a (Opcional)</label>
-                                    <select
-                                        value={formData.clientId}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, clientId: e.target.value }))}
-                                        className="cv-input"
-                                    >
-                                        <option value="">Sin asignar</option>
-                                        {clients.map(client => (
-                                            <option key={client.id} value={client.id}>
-                                                {client.name} ({client.type === 'athlete' ? 'Atleta' : 'Gimnasio'})
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                {/* Mesocycle Focus */}
-                                <div>
-                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Enfoque del Mesociclo</label>
-                                    <input
-                                        type="text"
-                                        value={formData.focus}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, focus: e.target.value }))}
-                                        placeholder="Ej: Hypertrophy + Gymnastics Volume"
-                                        className="cv-input"
-                                    />
-                                </div>
-
-                                {/* Duration & Start Date */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">Duración (Semanas)</label>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            max="16"
-                                            value={formData.duration}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) || 4 }))}
-                                            className="cv-input"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">Fecha de Inicio</label>
-                                        <input
-                                            type="date"
-                                            value={formData.startDate}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
-                                            className="cv-input"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex gap-3 mt-6">
-                                <button
-                                    onClick={() => { resetForm(); setShowAddModal(false); }}
-                                    className="cv-btn-secondary flex-1"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    onClick={handleCreateProgram}
-                                    disabled={!formData.name.trim() || isCreating}
-                                    className="cv-btn-primary flex-1"
-                                >
-                                    {isCreating ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-                                    Crear Programa
-                                </button>
-                            </div>
-                        </div>
-                    </>
-                )}
+                {/* Add Modal removed - consolidated into GlobalCreateButton */}
 
                 {/* Delete Confirmation Modal */}
                 {programToDelete && (

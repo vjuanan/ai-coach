@@ -70,7 +70,7 @@ export function GlobalCreateButton() {
                 ) : (
                     <Plus size={16} />
                 )}
-                <span>Crear</span>
+                <span>+</span>
                 <ChevronDown
                     size={14}
                     className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}

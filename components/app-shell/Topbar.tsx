@@ -52,7 +52,7 @@ export function Topbar({ title, actions }: TopbarProps) {
             {/* Right: Actions */}
             <div className="flex items-center gap-3">
                 {/* Global Create Button */}
-                <GlobalCreateButton />
+                {/* Global Create Button removed from here - moved to page headers */}
 
                 {/* Notifications */}
                 <button className="cv-btn-ghost relative p-2">
