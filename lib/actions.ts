@@ -387,6 +387,40 @@ export async function deleteProgram(programId: string) {
 export async function getClients(type: 'athlete' | 'gym') {
     const supabase = createServerClient();
 
+    // Check for Service Key to potentially bypass RLS
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        try {
+            const adminSupabase = createSupabaseClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.SUPABASE_SERVICE_ROLE_KEY
+            );
+
+            // We need to filter by Coach ID to mimic RLS.
+            // But first we need the coach ID of the current user.
+            // Note: ensureCoach uses 'supabase' (user client) to find coach by auth.uid().
+            // If coach table RLS is also broken, ensureCoach might fail. 
+            // But typically 'coaches' RLS is simpler.
+            const coachId = await ensureCoach(supabase); // Use user session to identify coach
+
+            const { data, error } = await adminSupabase
+                .from('clients')
+                .select('*')
+                .eq('type', type)
+                .eq('coach_id', coachId) // Manual RLS
+                .order('name');
+
+            if (error) {
+                console.error('getClients [Admin Bypass] Error:', error);
+                return [];
+            }
+            return data;
+        } catch (err) {
+            console.error('getClients: Admin Bypass Failed', err);
+            // Fallback to normal
+        }
+    }
+
+    // Fallback normal RLS
     const { data, error } = await supabase
         .from('clients')
         .select('*')
@@ -475,7 +509,8 @@ export async function createClient(clientData: {
 
     } catch (error: any) {
         console.error('--- ACTION: createClient FATAL ERROR ---', error);
-        return { error: error.message || 'Unknown Server Error' };
+        // THROWING to ensure client UI handles it correctly (stops loading)
+        throw new Error(error.message || 'Unknown Server Error');
     }
 }
 
@@ -485,6 +520,36 @@ export async function deleteClient(id: string) {
     revalidatePath('/athletes');
     revalidatePath('/gyms');
     revalidatePath('/');
+}
+
+export async function getAdminClients() {
+    const supabase = createServerClient();
+
+    // Check for admin role
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        console.warn('Unauthorized access to getAdminClients');
+        return [];
+    }
+
+    const { data, error } = await supabase
+        .from('clients')
+        .select('*, coach:coaches(full_name, business_name)')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching admin clients:', error);
+        return [];
+    }
+    return data;
 }
 
 // ==========================================
@@ -504,6 +569,23 @@ export async function getFullProgramData(programId: string) {
     }
 
     // Fetch Program + Client
+    // Check if user is admin to bypass RLS (Admins should see everything)
+    // We need to fetch profile first
+    if (user && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (profile?.role === 'admin') {
+            supabase = createSupabaseClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.SUPABASE_SERVICE_ROLE_KEY
+            ) as any;
+        }
+    }
+
     const { data: program, error: progError } = await supabase
         .from('programs')
         .select('*, client:clients(*)')
