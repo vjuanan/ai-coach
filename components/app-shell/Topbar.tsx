@@ -16,7 +16,7 @@ export function Topbar({ title, actions }: TopbarProps) {
     return (
         <header
             className={`
-        fixed top-0 right-0 h-12 bg-cv-bg-primary/80 backdrop-blur-xl border-b border-cv-border
+        fixed top-0 right-0 h-12 bg-red-50 bg-cv-bg-primary/80 backdrop-blur-xl border-b border-cv-border
         flex items-center justify-between px-6 z-30 transition-all duration-300
         ${isSidebarCollapsed ? 'left-16' : 'left-64'}
       `}
