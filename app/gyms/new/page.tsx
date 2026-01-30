@@ -4,15 +4,14 @@ import { AppShell } from '@/components/app-shell';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient, getEquipmentCatalog } from '@/lib/actions';
-import { ArrowLeft, Save, Loader2, Upload, Plus, Trash2, CheckSquare, Square, ChevronDown, ChevronRight, Info } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Upload, CheckSquare, Square, ChevronDown, ChevronRight, Info } from 'lucide-react';
 import Link from 'next/link';
 import type { EquipmentCatalog } from '@/lib/supabase/types';
 
 interface InventoryItem {
     id: string;
     quantity: number;
-    details?: string; // For general notes
-    variants?: { weight: string; quantity: number }[]; // For measurable items
+    details?: string;
 }
 
 export default function NewGymPage() {
@@ -21,29 +20,46 @@ export default function NewGymPage() {
     const [catalog, setCatalog] = useState<EquipmentCatalog[]>([]);
     const [inventory, setInventory] = useState<Record<string, InventoryItem>>({});
 
-    // Limitations State
     const [limitations, setLimitations] = useState({
         spacePerClient: 0,
         runningArea: false,
         notes: ''
     });
 
-    // Logo State
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Accordion State
     const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
         'Cardio': true,
-        'Strength': true,
-        'Gymnastics': false,
-        'Accessories': false
+        'Barras': true,
+        'Mancuernas': false, // Collapsed by default as it is long
+        'Kettlebells': false,
+        'Discos': false
     });
 
     useEffect(() => {
         const fetchCatalog = async () => {
             const data = await getEquipmentCatalog();
-            setCatalog(data);
+            if (data && data.length > 0) {
+                setCatalog(data);
+            } else {
+                // FALLBACK MOCK FOR UI VERIFICATION
+                console.warn('Using Mock Catalog for UI Verification');
+                setCatalog([
+                    { id: 'm1', category: 'Cardio', name: 'Concept2 RowErg', created_at: '' },
+                    { id: 'm2', category: 'Cardio', name: 'Assault Bike', created_at: '' },
+                    { id: 'b1', category: 'Barras', name: 'Barra Olímpica Masc (20kg)', created_at: '' },
+                    { id: 'b2', category: 'Barras', name: 'Barra Olímpica Fem (15kg)', created_at: '' },
+                    { id: 'b3', category: 'Barras', name: 'Barra Técnica (10kg)', created_at: '' },
+                    { id: 'd1', category: 'Mancuernas', name: 'Par Mancuernas 10 kg', created_at: '' },
+                    { id: 'd2', category: 'Mancuernas', name: 'Par Mancuernas 12.5 kg', created_at: '' },
+                    { id: 'd3', category: 'Mancuernas', name: 'Par Mancuernas 15 kg', created_at: '' },
+                    { id: 'k1', category: 'Kettlebells', name: 'KB 16 kg', created_at: '' },
+                    { id: 'k2', category: 'Kettlebells', name: 'KB 24 kg', created_at: '' },
+                    { id: 'x1', category: 'Gimnasia', name: 'Anillas', created_at: '' },
+                    { id: 'x2', category: 'Gimnasia', name: 'Cajón de Salto', created_at: '' },
+                ]);
+            }
         };
         fetchCatalog();
     }, []);
@@ -71,8 +87,7 @@ export default function NewGymPage() {
             } else {
                 next[item.id] = {
                     id: item.id,
-                    quantity: 1,
-                    variants: item.is_weight_measurable ? [{ weight: '', quantity: 1 }] : undefined
+                    quantity: 1
                 };
             }
             return next;
@@ -86,35 +101,20 @@ export default function NewGymPage() {
         }));
     };
 
-    const addVariant = (id: string) => {
-        setInventory(prev => ({
-            ...prev,
-            [id]: {
-                ...prev[id],
-                variants: [...(prev[id].variants || []), { weight: '', quantity: 1 }]
-            }
-        }));
-    };
+    const toggleAllInCategory = (categoryMembers: EquipmentCatalog[]) => {
+        // If all are selected, deselect all. Otherwise select all.
+        const allSelected = categoryMembers.every(item => inventory[item.id]);
 
-    const updateVariant = (itemId: string, index: number, field: 'weight' | 'quantity', value: string | number) => {
         setInventory(prev => {
-            const variants = [...(prev[itemId].variants || [])];
-            variants[index] = { ...variants[index], [field]: value } as any;
-            return {
-                ...prev,
-                [itemId]: { ...prev[itemId], variants }
-            };
-        });
-    };
-
-    const removeVariant = (itemId: string, index: number) => {
-        setInventory(prev => {
-            const variants = [...(prev[itemId].variants || [])];
-            variants.splice(index, 1);
-            return {
-                ...prev,
-                [itemId]: { ...prev[itemId], variants }
-            };
+            const next = { ...prev };
+            categoryMembers.forEach(item => {
+                if (allSelected) {
+                    delete next[item.id];
+                } else if (!next[item.id]) {
+                    next[item.id] = { id: item.id, quantity: 1 };
+                }
+            });
+            return next;
         });
     };
 
@@ -136,7 +136,7 @@ export default function NewGymPage() {
                     location,
                     owner,
                     members,
-                    logo_url: logoPreview, // Saving base64 for MVP
+                    logo_url: logoPreview,
                     limitations,
                     inventory
                 }
@@ -152,7 +152,6 @@ export default function NewGymPage() {
         }
     }
 
-    // Group catalog
     const groupedCatalog = catalog.reduce((acc, item) => {
         if (!acc[item.category]) acc[item.category] = [];
         acc[item.category].push(item);
@@ -173,7 +172,6 @@ export default function NewGymPage() {
 
                     {/* 1. Basic Info & Logo */}
                     <div className="cv-card p-6 grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {/* Logo Upload */}
                         <div className="flex flex-col items-center gap-4">
                             <div
                                 className="w-32 h-32 rounded-full bg-cv-bg-tertiary border-2 border-dashed border-cv-border flex items-center justify-center overflow-hidden cursor-pointer hover:border-cv-accent transition-colors relative"
@@ -197,7 +195,6 @@ export default function NewGymPage() {
                             />
                         </div>
 
-                        {/* Basic Fields */}
                         <div className="md:col-span-2 space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
@@ -274,88 +271,61 @@ export default function NewGymPage() {
 
                         {Object.entries(groupedCatalog).map(([category, items]) => (
                             <div key={category} className="cv-card overflow-hidden">
-                                <button
-                                    type="button"
-                                    onClick={() => toggleCategory(category)}
-                                    className="w-full flex items-center justify-between p-4 bg-cv-bg-secondary hover:bg-cv-bg-tertiary transition-colors"
-                                >
-                                    <span className="font-semibold text-cv-text-primary">{category}</span>
-                                    {expandedCategories[category] ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-                                </button>
+                                <div className="flex items-center justify-between p-4 bg-cv-bg-secondary hover:bg-cv-bg-tertiary transition-colors">
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleCategory(category)}
+                                        className="flex-1 flex items-center justify-between"
+                                    >
+                                        <span className="font-semibold text-cv-text-primary">{category}</span>
+                                        {expandedCategories[category] ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                                    </button>
+
+                                    {/* Select All shortcut */}
+                                    {expandedCategories[category] && (
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleAllInCategory(items)}
+                                            className="ml-4 text-xs text-cv-accent hover:underline hidden sm:block"
+                                        >
+                                            Seleccionar Todos
+                                        </button>
+                                    )}
+                                </div>
 
                                 {expandedCategories[category] && (
-                                    <div className="p-4 space-y-4 border-t border-cv-border animate-in slide-in-from-top-2">
+                                    <div className="p-4 bg-cv-bg-primary border-t border-cv-border grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in slide-in-from-top-1">
                                         {items.map(item => {
                                             const isSelected = !!inventory[item.id];
                                             const itemData = inventory[item.id];
 
                                             return (
-                                                <div key={item.id} className={`p-4 rounded-lg border transition-all ${isSelected ? 'bg-cv-bg-secondary border-cv-accent/50' : 'bg-transparent border-cv-border border-dashed opacity-75'}`}>
-                                                    <div className="flex items-start gap-4">
+                                                <div key={item.id} className={`p-3 rounded-md border transition-all ${isSelected ? 'bg-cv-bg-secondary border-cv-accent/50 shadow-sm' : 'bg-transparent border-cv-border border-dashed opacity-80 hover:opacity-100 hover:border-gray-400'}`}>
+                                                    <div className="flex items-center gap-3">
                                                         <button
                                                             type="button"
                                                             onClick={() => toggleItem(item)}
-                                                            className={`mt-1 flex-shrink-0 transition-colors ${isSelected ? 'text-cv-accent' : 'text-cv-text-muted hover:text-cv-text-primary'}`}
+                                                            className={`flex-shrink-0 transition-colors ${isSelected ? 'text-cv-accent' : 'text-cv-text-muted hover:text-cv-text-primary'}`}
                                                         >
                                                             {isSelected ? <CheckSquare size={20} /> : <Square size={20} />}
                                                         </button>
 
-                                                        <div className="flex-1 space-y-3">
-                                                            <div className="flex items-center justify-between">
-                                                                <span className={`font-medium ${isSelected ? 'text-cv-text-primary' : 'text-cv-text-secondary'}`}>
-                                                                    {item.name}
-                                                                </span>
-                                                            </div>
+                                                        <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 overflow-hidden">
+                                                            <span className={`text-sm font-medium truncate ${isSelected ? 'text-cv-text-primary' : 'text-cv-text-secondary'}`} title={item.name}>
+                                                                {item.name}
+                                                            </span>
 
                                                             {isSelected && (
-                                                                <div className="animate-in fade-in space-y-3">
-                                                                    {!item.is_weight_measurable ? (
-                                                                        <div className="flex items-center gap-3">
-                                                                            <span className="text-sm text-cv-text-secondary">Cantidad:</span>
-                                                                            <input
-                                                                                type="number"
-                                                                                min={1}
-                                                                                value={itemData.quantity}
-                                                                                onChange={(e) => updateItemQuantity(item.id, Number(e.target.value))}
-                                                                                className="w-20 h-8 px-2 rounded bg-cv-bg-primary border border-cv-border text-center text-sm"
-                                                                            />
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div className="space-y-2">
-                                                                            {itemData.variants?.map((variant, idx) => (
-                                                                                <div key={idx} className="flex items-center gap-2">
-                                                                                    <input
-                                                                                        placeholder="Peso (ej. 15kg)"
-                                                                                        className="w-32 h-8 px-2 rounded bg-cv-bg-primary border border-cv-border text-sm"
-                                                                                        value={variant.weight}
-                                                                                        onChange={e => updateVariant(item.id, idx, 'weight', e.target.value)}
-                                                                                    />
-                                                                                    <span className="text-sm text-cv-text-secondary">x</span>
-                                                                                    <input
-                                                                                        type="number"
-                                                                                        placeholder="Cant."
-                                                                                        className="w-20 h-8 px-2 rounded bg-cv-bg-primary border border-cv-border text-center text-sm"
-                                                                                        value={variant.quantity}
-                                                                                        onChange={e => updateVariant(item.id, idx, 'quantity', Number(e.target.value))}
-                                                                                    />
-                                                                                    <button
-                                                                                        type="button"
-                                                                                        onClick={() => removeVariant(item.id, idx)}
-                                                                                        className="text-red-400 hover:text-red-300 p-1"
-                                                                                    >
-                                                                                        <Trash2 size={14} />
-                                                                                    </button>
-                                                                                </div>
-                                                                            ))}
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => addVariant(item.id)}
-                                                                                className="text-xs text-cv-accent hover:underline flex items-center gap-1"
-                                                                            >
-                                                                                <Plus size={12} /> Agregar variante de peso
-                                                                            </button>
-                                                                        </div>
-                                                                    )}
+                                                                <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
+                                                                    <span className="text-xs text-cv-text-secondary whitespace-nowrap">Cant:</span>
+                                                                    <input
+                                                                        type="number"
+                                                                        min={1}
+                                                                        value={itemData.quantity}
+                                                                        onChange={(e) => updateItemQuantity(item.id, Number(e.target.value))}
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                        className="w-16 h-7 px-1 rounded bg-cv-bg-tertiary border border-cv-border text-center text-sm focus:ring-1 focus:ring-cv-accent focus:outline-none"
+                                                                    />
                                                                 </div>
                                                             )}
                                                         </div>
