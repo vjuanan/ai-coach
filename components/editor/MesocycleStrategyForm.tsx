@@ -57,119 +57,133 @@ export function MesocycleStrategyForm({
         <AnimatePresence>
             {isOpen && (
                 <>
+                    {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
                         onClick={onClose}
                     />
 
+                    {/* Modal */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-auto bg-cv-bg-secondary border border-cv-border rounded-xl shadow-cv-lg z-50"
+                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] flex flex-col bg-white border border-slate-200 rounded-xl shadow-2xl z-[70] overflow-hidden font-sans"
                     >
                         {/* Header */}
-                        <div className="sticky top-0 flex items-center justify-between p-4 border-b border-cv-border bg-cv-bg-secondary/95 backdrop-blur-sm">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white sticky top-0 z-10">
                             <div>
-                                <h2 className="font-semibold text-cv-text-primary">
-                                    Estrategia del Programa
+                                <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+                                    Estrategia del Mesociclo
                                 </h2>
-                                <p className="text-sm text-cv-text-tertiary">
-                                    Semana {weekNumber} - Configuración y contexto
+                                <p className="text-sm text-slate-500 font-medium">
+                                    Semana {weekNumber} — Definición de Contexto
                                 </p>
                             </div>
-                            <button onClick={onClose} className="cv-btn-ghost p-2">
-                                <X size={18} />
+                            <button
+                                onClick={onClose}
+                                className="p-2 -mr-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors"
+                            >
+                                <X size={20} />
                             </button>
                         </div>
 
-                        {/* Form */}
-                        <div className="p-6 space-y-6">
-                            {/* Mesocycle Focus */}
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-2 text-sm font-medium text-cv-text-primary">
-                                    <Target size={16} className="text-cv-accent" />
-                                    Enfoque del Mesociclo
+                        {/* Form Body - Scrollable */}
+                        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+
+                            {/* Section: Focus */}
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    <Target size={14} className="text-indigo-500" />
+                                    Enfoque Principal
                                 </label>
-                                <input
-                                    type="text"
-                                    value={strategy.focus}
-                                    onChange={(e) => handleChange('focus', e.target.value)}
-                                    placeholder="Ej: Fuerza de Cadena Posterior & Capacidad Aeróbica"
-                                    className="cv-input w-full"
-                                />
-                                <p className="text-xs text-cv-text-tertiary">
-                                    Define el objetivo principal de esta semana/mesociclo
-                                </p>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={strategy.focus}
+                                        onChange={(e) => handleChange('focus', e.target.value)}
+                                        placeholder="Ej: Fuerza Máxima & Resistencia Muscular Local"
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium"
+                                    />
+                                    <p className="mt-2 text-xs text-slate-400">
+                                        Define el objetivo "North Star" para este bloque de entrenamiento.
+                                    </p>
+                                </div>
                             </div>
 
-                            {/* Coach's Considerations */}
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-2 text-sm font-medium text-cv-text-primary">
-                                    <MessageSquare size={16} className="text-emerald-500" />
-                                    Consideraciones del Coach
-                                </label>
-                                <textarea
-                                    value={strategy.considerations}
-                                    onChange={(e) => handleChange('considerations', e.target.value)}
-                                    placeholder="Ej: Dormir 8h es obligatorio esta semana. Enfocarse en tempo excéntrico. Priorizar recuperación..."
-                                    rows={4}
-                                    className="cv-input w-full resize-none"
-                                />
-                                <p className="text-xs text-cv-text-tertiary">
-                                    Instrucciones importantes, notas sobre estilo de vida, prioridades
-                                </p>
-                            </div>
+                            <hr className="border-slate-100" />
 
-                            {/* Technical Clarifications */}
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-2 text-sm font-medium text-cv-text-primary">
-                                    <Wrench size={16} className="text-blue-500" />
-                                    Aclaraciones Técnicas
-                                </label>
-                                <textarea
-                                    value={strategy.technicalClarifications}
-                                    onChange={(e) => handleChange('technicalClarifications', e.target.value)}
-                                    placeholder="Ej: Tempo 30X1 significa 3s bajada, 0s pausa abajo, explosivo arriba, 1s pausa arriba..."
-                                    rows={3}
-                                    className="cv-input w-full resize-none"
-                                />
-                                <p className="text-xs text-cv-text-tertiary">
-                                    Explicaciones de notación, terminología, o conceptos técnicos
-                                </p>
-                            </div>
+                            <div className="grid grid-cols-1 gap-8">
+                                {/* Section: Considerations */}
+                                <div className="space-y-3">
+                                    <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                        <MessageSquare size={14} className="text-emerald-500" />
+                                        Consideraciones del Coach
+                                    </label>
+                                    <textarea
+                                        value={strategy.considerations}
+                                        onChange={(e) => handleChange('considerations', e.target.value)}
+                                        placeholder="Notas sobre estilo de vida, sueño, nutrición o foco mental para esta semana..."
+                                        rows={3}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none leading-relaxed"
+                                    />
+                                </div>
 
-                            {/* Scaling & Alternatives */}
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-2 text-sm font-medium text-cv-text-primary">
-                                    <RefreshCw size={16} className="text-orange-500" />
-                                    Escalado & Alternativas
-                                </label>
-                                <textarea
-                                    value={strategy.scalingAlternatives}
-                                    onChange={(e) => handleChange('scalingAlternatives', e.target.value)}
-                                    placeholder="Ej: Si duele el hombro en SNATCH, sustituir por CLEAN PULLS. Si no hay barbell, usar KB..."
-                                    rows={4}
-                                    className="cv-input w-full resize-none"
-                                />
-                                <p className="text-xs text-cv-text-tertiary">
-                                    <span className="text-orange-500 font-medium">CRÍTICO</span> para coaching remoto: alternativas por lesiones, falta de equipo, etc.
-                                </p>
+                                {/* Section: Technical */}
+                                <div className="space-y-3">
+                                    <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                        <Wrench size={14} className="text-blue-500" />
+                                        Aclaraciones Técnicas
+                                    </label>
+                                    <textarea
+                                        value={strategy.technicalClarifications}
+                                        onChange={(e) => handleChange('technicalClarifications', e.target.value)}
+                                        placeholder="Explicación de tempos, RPEs, o ejecuciones específicas..."
+                                        rows={3}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none leading-relaxed"
+                                    />
+                                </div>
+
+                                {/* Section: Scaling */}
+                                <div className="space-y-3">
+                                    <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                        <RefreshCw size={14} className="text-orange-500" />
+                                        Escalado & Alternativas
+                                    </label>
+                                    <div className="relative">
+                                        <textarea
+                                            value={strategy.scalingAlternatives}
+                                            onChange={(e) => handleChange('scalingAlternatives', e.target.value)}
+                                            placeholder="Opciones para atletas lesionados o sin equipo específico..."
+                                            rows={3}
+                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-none leading-relaxed"
+                                        />
+                                        <div className="absolute top-3 right-3">
+                                            <span className="flex h-2 w-2">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         {/* Footer */}
-                        <div className="sticky bottom-0 flex items-center justify-end gap-3 p-4 border-t border-cv-border bg-cv-bg-secondary/95 backdrop-blur-sm">
-                            <button onClick={onClose} className="cv-btn-ghost">
+                        <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-xl sticky bottom-0">
+                            <button
+                                onClick={onClose}
+                                className="px-5 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-white border border-transparent hover:border-slate-200 rounded-lg transition-all"
+                            >
                                 Cancelar
                             </button>
                             <button
                                 onClick={handleSave}
                                 disabled={isSaving}
-                                className="cv-btn-primary min-w-[120px]"
+                                className="px-6 py-2.5 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-lg shadow-slate-900/20 hover:shadow-slate-900/30 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                             >
                                 {isSaving ? (
                                     <>

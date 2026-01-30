@@ -305,8 +305,16 @@ export async function createProgram(
         const coachId = await ensureCoach(supabase);
         console.log('createProgram: Using coachId', coachId);
 
+        // Define Write Client (Admin if available to bypass RLS, otherwise default)
+        const writeClient = process.env.SUPABASE_SERVICE_ROLE_KEY
+            ? createSupabaseClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.SUPABASE_SERVICE_ROLE_KEY
+            )
+            : supabase;
+
         // 1. Create Program
-        const { data: program, error: progError } = await supabase
+        const { data: program, error: progError } = await writeClient
             .from('programs')
             .insert({
                 coach_id: coachId,
@@ -331,7 +339,7 @@ export async function createProgram(
             focus: i === 0 && focus ? focus : (i === duration - 1 ? 'Deload' : 'Accumulation'),
         }));
 
-        const { data: createdMesos, error: mesoError } = await supabase
+        const { data: createdMesos, error: mesoError } = await writeClient
             .from('mesocycles')
             .insert(mesocycles)
             .select();
@@ -353,7 +361,7 @@ export async function createProgram(
             }
         }
 
-        const { error: daysError } = await supabase.from('days').insert(days);
+        const { error: daysError } = await writeClient.from('days').insert(days);
         if (daysError) {
             console.error('createProgram: Error inserting days', daysError);
             return { error: `DB Error (Days): ${daysError.message}` };
