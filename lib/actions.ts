@@ -403,39 +403,64 @@ export async function createClient(clientData: {
     email?: string,
     details?: Record<string, any>
 }) {
-    console.log('createClient: Starting', clientData);
+    console.log('--- ACTION: createClient STARTED ---');
+    console.log('Payload:', JSON.stringify(clientData));
+
+    // Create client safely
+    // NOTE: We need to ensure we are using a client that has cookie access!
+    // actions.ts usually imports createServerClient from ./supabase/server
     const supabase = createServerClient();
 
     try {
+        console.log('Getting User...');
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError) console.error('Auth Error:', userError);
+        if (!user) console.error('No User Found');
+        else console.log('User Found:', user.id);
+
+        console.log('Ensuring Coach...');
         const coachId = await ensureCoach(supabase);
-        console.log('createClient: Using coachId', coachId);
+        console.log('Coach ID resolved:', coachId);
+
+        console.log('Inserting into clients table...');
+        const row = {
+            coach_id: coachId,
+            type: clientData.type,
+            name: clientData.name,
+            email: clientData.email || null, // Ensure null if undefined
+            details: clientData.details || {},
+            // status: 'active' // REMOVED: Schema does not seem to have 'status' column in 001_schema.sql. 
+            // LET ME CHECK SCHEMA 001 AGAIN. 
+            // Line 36-48 of 001_schema.sql: 
+            // id, coach_id, type, name, logo_url, email, phone, details, created_at, updated_at, deleted_at.
+            // NO status column!
+        };
+        console.log('Row to insert:', JSON.stringify(row));
 
         const { data, error } = await supabase
             .from('clients')
-            .insert({
-                coach_id: coachId,
-                type: clientData.type,
-                name: clientData.name,
-                email: clientData.email,
-                details: clientData.details || {},
-                status: 'active'
-            })
+            .insert(row)
             .select()
             .single();
 
         if (error) {
-            console.error('createClient: Error inserting client', error);
-            throw new Error(error.message);
+            console.error('--- INSERT ERROR ---');
+            console.error('Code:', error.code);
+            console.error('Message:', error.message);
+            console.error('Details:', error.details);
+            console.error('Hint:', error.hint);
+            throw new Error(`Database Error: ${error.message}`);
         }
 
-        console.log('createClient: Success', data.id);
+        console.log('--- ACTION: createClient SUCCESS ---', data.id);
         revalidatePath(clientData.type === 'athlete' ? '/athletes' : '/gyms');
         revalidatePath('/');
         return data;
 
     } catch (error: any) {
-        console.error('createClient: UNHANDLED ERROR', error);
-        throw new Error(error.message);
+        console.error('--- ACTION: createClient FATAL ERROR ---', error);
+        // Returning detailed error to client for debugging the browser subagent result
+        return { error: error.message || 'Unknown Server Error' };
     }
 }
 
