@@ -32,7 +32,7 @@ export default function NewGymPage() {
     const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
         'Cardio': true,
         'Barras': true,
-        'Mancuernas': false, // Collapsed by default as it is long
+        'Mancuernas': false,
         'Kettlebells': false,
         'Discos': false
     });
@@ -40,26 +40,7 @@ export default function NewGymPage() {
     useEffect(() => {
         const fetchCatalog = async () => {
             const data = await getEquipmentCatalog();
-            if (data && data.length > 0) {
-                setCatalog(data);
-            } else {
-                // FALLBACK MOCK FOR UI VERIFICATION
-                console.warn('Using Mock Catalog for UI Verification');
-                setCatalog([
-                    { id: 'm1', category: 'Cardio', name: 'Concept2 RowErg', created_at: '' },
-                    { id: 'm2', category: 'Cardio', name: 'Assault Bike', created_at: '' },
-                    { id: 'b1', category: 'Barras', name: 'Barra Olímpica Masc (20kg)', created_at: '' },
-                    { id: 'b2', category: 'Barras', name: 'Barra Olímpica Fem (15kg)', created_at: '' },
-                    { id: 'b3', category: 'Barras', name: 'Barra Técnica (10kg)', created_at: '' },
-                    { id: 'd1', category: 'Mancuernas', name: 'Par Mancuernas 10 kg', created_at: '' },
-                    { id: 'd2', category: 'Mancuernas', name: 'Par Mancuernas 12.5 kg', created_at: '' },
-                    { id: 'd3', category: 'Mancuernas', name: 'Par Mancuernas 15 kg', created_at: '' },
-                    { id: 'k1', category: 'Kettlebells', name: 'KB 16 kg', created_at: '' },
-                    { id: 'k2', category: 'Kettlebells', name: 'KB 24 kg', created_at: '' },
-                    { id: 'x1', category: 'Gimnasia', name: 'Anillas', created_at: '' },
-                    { id: 'x2', category: 'Gimnasia', name: 'Cajón de Salto', created_at: '' },
-                ]);
-            }
+            setCatalog(data);
         };
         fetchCatalog();
     }, []);
@@ -102,7 +83,6 @@ export default function NewGymPage() {
     };
 
     const toggleAllInCategory = (categoryMembers: EquipmentCatalog[]) => {
-        // If all are selected, deselect all. Otherwise select all.
         const allSelected = categoryMembers.every(item => inventory[item.id]);
 
         setInventory(prev => {
