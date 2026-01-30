@@ -69,8 +69,8 @@ async function ensureCoach(supabase: any) {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
     if (userError || !user) {
-        console.error('ensureCoach: Authentication error or no user', userError);
-        throw new Error('User not authenticated');
+        console.error('ensureCoach: Auth error', userError);
+        throw new Error('Debes iniciar sesión para crear un programa.');
     }
 
     // 1. Try to find existing coach
@@ -82,53 +82,33 @@ async function ensureCoach(supabase: any) {
 
     if (coach) return coach.id;
 
-    console.log('ensureCoach: No coach found, creating one for user', user.id);
+    console.log('ensureCoach: Creating coach profile for', user.id);
 
-    // 2. Try to create coach with normal auth (assuming RLS allows it)
+    // 2. Try to create coach with normal auth
     const { data: newCoach, error: insertError } = await supabase
         .from('coaches')
         .insert({
             user_id: user.id,
-            full_name: user?.user_metadata?.full_name || 'Coach',
+            full_name: user.user_metadata?.full_name || 'Coach',
         })
         .select('id')
         .single();
 
-    if (!insertError && newCoach) {
-        return newCoach.id;
-    }
-
-    // 3. Fallback to Admin if normal insert failed (likely RLS) and Key exists
-    if (serviceRoleKey) {
-        console.log('ensureCoach: Normal insert failed, trying Admin');
-        const supabaseAdmin = createSupabaseClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            serviceRoleKey
-        );
-
-        const { data: adminCoach, error: adminError } = await supabaseAdmin
+    if (insertError) {
+        console.error('ensureCoach: Creation failed', insertError);
+        // Retry fetch just in case of race condition
+        const { data: existing } = await supabase
             .from('coaches')
-            .insert({
-                user_id: user.id,
-                full_name: user?.user_metadata?.full_name || 'Coach',
-            })
             .select('id')
+            .eq('user_id', user.id)
             .single();
 
-        if (adminError) {
-            // Check if it was created in race condition
-            const { data: existing } = await supabaseAdmin.from('coaches').select('id').eq('user_id', user.id).single();
-            if (existing) return existing.id;
+        if (existing) return existing.id;
 
-            console.error('ensureCoach: Admin creation failed', adminError);
-            throw new Error(`Failed to create coach profile: ${adminError.message}`);
-        }
-        return adminCoach.id;
+        throw new Error(`Error al crear perfil de coach: ${insertError.message}`);
     }
 
-    // If we're here, we failed to create and don't have admin key
-    console.error('ensureCoach: Failed to create coach and no Service Role Key available', insertError);
-    throw new Error('Failed to create coach profile. Please contact support.');
+    return newCoach.id;
 }
 
 export async function createProgram(
