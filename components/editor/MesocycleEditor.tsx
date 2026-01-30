@@ -46,19 +46,82 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         };
     }, [currentMesocycle]);
 
-    // Format for export - include strategy
-    const exportContent = currentMesocycle ? {
-        dayName: `Semana ${selectedWeek}`,
-        blocks: currentMesocycle.days
-            .filter(d => !d.is_rest_day)
-            .flatMap(d => d.blocks.map(b => ({
-                type: b.type,
-                name: b.name || b.type,
-                content: convertConfigToText(b.type, b.config)
-            })))
-    } : { dayName: '', blocks: [] };
+    // Build monthly export data with all weeks
+    const exportWeeks = useMemo(() => {
+        return mesocycles
+            .sort((a, b) => a.week_number - b.week_number)
+            .map(meso => ({
+                weekNumber: meso.week_number,
+                focus: meso.focus || '',
+                blocks: meso.days
+                    .filter(d => !d.is_rest_day)
+                    .flatMap(d => d.blocks.map(b => ({
+                        type: b.type,
+                        name: b.name || b.type,
+                        content: convertConfigToText(b.type, b.config)
+                    })))
+            }));
+    }, [mesocycles]);
 
-    // Export strategy for PDF
+    // Build monthly strategy with progressions
+    const monthlyStrategy = useMemo(() => {
+        // Get the first mesocycle's focus as the main focus
+        const firstMeso = mesocycles.find(m => m.week_number === 1);
+        const firstAttrs = (firstMeso?.attributes || {}) as Record<string, unknown>;
+
+        // Extract progressions from strength blocks across all weeks
+        const progressionMap = new Map<string, string[]>();
+
+        mesocycles
+            .sort((a, b) => a.week_number - b.week_number)
+            .forEach(meso => {
+                meso.days.forEach(day => {
+                    day.blocks.forEach(block => {
+                        if (block.type === 'strength_linear' && block.name) {
+                            const config = block.config as Record<string, unknown>;
+                            const percentage = config.percentage as string || '';
+                            const sets = config.sets as number || 0;
+                            const reps = config.reps as number || 0;
+                            const value = percentage || `${sets}x${reps}`;
+
+                            if (!progressionMap.has(block.name)) {
+                                progressionMap.set(block.name, []);
+                            }
+                            const arr = progressionMap.get(block.name)!;
+                            // Fill gaps if needed
+                            while (arr.length < meso.week_number - 1) {
+                                arr.push('-');
+                            }
+                            arr.push(value);
+                        }
+                    });
+                });
+            });
+
+        const progressions = Array.from(progressionMap.entries()).map(([name, progression]) => ({
+            name,
+            progression,
+        }));
+
+        // Build objectives from all weeks' strategy considerations
+        const objectives: string[] = [];
+        mesocycles.forEach(meso => {
+            const attrs = (meso.attributes || {}) as Record<string, unknown>;
+            if (attrs.considerations && typeof attrs.considerations === 'string') {
+                const lines = attrs.considerations.split('\n').filter(l => l.trim());
+                objectives.push(...lines.slice(0, 1)); // Take first line from each week
+            }
+        });
+
+        return {
+            focus: (firstAttrs.focus as string) || firstMeso?.focus || programName,
+            duration: `${mesocycles.length} semanas`,
+            objectives: Array.from(new Set(objectives)).slice(0, 4), // Unique, max 4
+            progressions,
+        };
+    }, [mesocycles, programName]);
+
+    // Export strategy for PDF (current week - backwards compat)
     const exportStrategy = currentStrategy;
 
     const handleSave = useCallback(async () => {
@@ -225,9 +288,11 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             <ExportPreview
                 isOpen={showExport}
                 onClose={() => setShowExport(false)}
-                workoutContent={exportContent}
+                programName={programName}
                 clientInfo={{ name: 'Cliente' }}
                 coachName="Coach"
+                monthlyStrategy={monthlyStrategy}
+                weeks={exportWeeks}
                 strategy={exportStrategy}
             />
         </div>

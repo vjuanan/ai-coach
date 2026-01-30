@@ -1,1 +1,1 @@
-export { ExportPreview, ExportDemo } from './ExportPreview';
+export { ExportPreview } from './ExportPreview';

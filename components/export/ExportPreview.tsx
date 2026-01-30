@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { X, Download, Image, FileText, Loader2 } from 'lucide-react';
+import { X, Download, Image, FileText, Loader2, Calendar, Target, TrendingUp, Dumbbell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface MesocycleStrategy {
@@ -13,32 +13,54 @@ interface MesocycleStrategy {
     scalingAlternatives: string;
 }
 
+interface WorkoutBlock {
+    type: string;
+    name: string;
+    content: string[];
+}
+
+interface WeekData {
+    weekNumber: number;
+    focus: string;
+    blocks: WorkoutBlock[];
+}
+
+interface MonthlyProgression {
+    name: string;
+    progression: string[]; // e.g., ["70%", "75%", "80%", "85%"] for each week
+    notes?: string;
+}
+
 interface ExportPreviewProps {
     isOpen: boolean;
     onClose: () => void;
-    workoutContent: {
-        dayName: string;
-        date?: string;
-        blocks: Array<{
-            type: string;
-            name: string;
-            content: string[];
-        }>;
-    };
+    // Monthly view data
+    programName: string;
     clientInfo: {
         name: string;
         logo?: string;
     };
     coachName: string;
+    monthlyStrategy?: {
+        focus: string;
+        duration: string; // e.g., "4 semanas"
+        objectives: string[];
+        progressions: MonthlyProgression[];
+    };
+    // Weekly breakdown
+    weeks: WeekData[];
+    // Current week strategy (for backwards compatibility)
     strategy?: MesocycleStrategy;
 }
 
 export function ExportPreview({
     isOpen,
     onClose,
-    workoutContent,
+    programName,
     clientInfo,
     coachName,
+    monthlyStrategy,
+    weeks,
     strategy,
 }: ExportPreviewProps) {
     const exportRef = useRef<HTMLDivElement>(null);
@@ -59,7 +81,7 @@ export function ExportPreview({
 
             if (exportFormat === 'png') {
                 const link = document.createElement('a');
-                link.download = `${clientInfo.name}-${workoutContent.dayName}.png`;
+                link.download = `${clientInfo.name}-${programName}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             } else {
@@ -70,7 +92,7 @@ export function ExportPreview({
                     format: [canvas.width / 2, canvas.height / 2],
                 });
                 pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
-                pdf.save(`${clientInfo.name}-${workoutContent.dayName}.pdf`);
+                pdf.save(`${clientInfo.name}-${programName}.pdf`);
             }
         } catch (error) {
             console.error('Export failed:', error);
@@ -95,10 +117,10 @@ export function ExportPreview({
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-auto bg-cv-bg-secondary border border-cv-border rounded-xl shadow-cv-lg z-50"
+                        className="fixed inset-4 md:inset-8 lg:inset-12 bg-cv-bg-secondary border border-cv-border rounded-xl shadow-cv-lg z-50 flex flex-col overflow-hidden"
                     >
-                        {/* Header */}
-                        <div className="sticky top-0 flex items-center justify-between p-4 border-b border-cv-border bg-cv-bg-secondary">
+                        {/* Header - Fixed */}
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-cv-border bg-cv-bg-secondary shrink-0">
                             <h2 className="font-semibold text-cv-text-primary">Vista Previa Exportación</h2>
                             <div className="flex items-center gap-3">
                                 {/* Format Toggle */}
@@ -141,61 +163,147 @@ export function ExportPreview({
                             </div>
                         </div>
 
-                        {/* Preview */}
-                        <div className="p-6">
+                        {/* Scrollable Preview Area */}
+                        <div className="flex-1 overflow-auto p-4 md:p-6">
                             <div
                                 ref={exportRef}
-                                className="bg-[#0A0A0B] rounded-xl overflow-hidden"
-                                style={{ minWidth: '400px' }}
+                                className="bg-[#0A0A0B] rounded-xl overflow-hidden max-w-3xl mx-auto"
+                                style={{ minWidth: '500px' }}
                             >
-                                {/* Export Header - Client Branding */}
+                                {/* ============================================ */}
+                                {/* HEADER - Client & Program Info */}
+                                {/* ============================================ */}
                                 <div className="p-6 border-b border-gray-800">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            {clientInfo.logo ? (
-                                                <img
-                                                    src={clientInfo.logo}
-                                                    alt={clientInfo.name}
-                                                    className="w-12 h-12 rounded-lg object-cover"
-                                                />
-                                            ) : (
-                                                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cv-accent to-orange-600 flex items-center justify-center text-white font-bold text-lg">
-                                                    {clientInfo.name.charAt(0)}
-                                                </div>
-                                            )}
-                                            <div>
-                                                <h1 className="text-xl font-bold text-white">{clientInfo.name}</h1>
-                                                <p className="text-gray-400 text-sm">{workoutContent.date || workoutContent.dayName}</p>
+                                    <div className="flex items-center gap-4">
+                                        {clientInfo.logo ? (
+                                            <img
+                                                src={clientInfo.logo}
+                                                alt={clientInfo.name}
+                                                className="w-14 h-14 rounded-xl object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-cv-accent to-orange-600 flex items-center justify-center text-white font-bold text-xl">
+                                                {clientInfo.name.charAt(0)}
                                             </div>
+                                        )}
+                                        <div className="flex-1">
+                                            <h1 className="text-2xl font-bold text-white">{clientInfo.name}</h1>
+                                            <p className="text-gray-400">{programName}</p>
                                         </div>
+                                        {monthlyStrategy?.duration && (
+                                            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-900 rounded-lg">
+                                                <Calendar size={16} className="text-cv-accent" />
+                                                <span className="text-sm text-gray-300">{monthlyStrategy.duration}</span>
+                                            </div>
+                                        )}
                                     </div>
+                                </div>
 
-                                    {/* Strategy Section - Focus & Considerations */}
-                                    {strategy && (strategy.focus || strategy.considerations) && (
-                                        <div className="mt-4 pt-4 border-t border-gray-800">
-                                            {strategy.focus && (
+                                {/* ============================================ */}
+                                {/* MONTHLY OVERVIEW - Progressions as Main Focus */}
+                                {/* ============================================ */}
+                                {monthlyStrategy && (
+                                    <div className="p-6 border-b border-gray-800 bg-gradient-to-b from-gray-900/50 to-transparent">
+                                        {/* Main Focus */}
+                                        {monthlyStrategy.focus && (
+                                            <div className="mb-6">
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <Target size={18} className="text-cv-accent" />
+                                                    <h2 className="text-lg font-semibold text-cv-accent uppercase tracking-wide">
+                                                        Foco del Mesociclo
+                                                    </h2>
+                                                </div>
+                                                <p className="text-gray-200 text-lg">{monthlyStrategy.focus}</p>
+                                            </div>
+                                        )}
+
+                                        {/* Progressions - THE MAIN FOCUS */}
+                                        {monthlyStrategy.progressions && monthlyStrategy.progressions.length > 0 && (
+                                            <div className="mb-6">
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <TrendingUp size={18} className="text-green-500" />
+                                                    <h2 className="text-lg font-semibold text-green-500 uppercase tracking-wide">
+                                                        Progresiones
+                                                    </h2>
+                                                </div>
+                                                <div className="bg-gray-900/70 rounded-xl p-4 space-y-4">
+                                                    {/* Header Row */}
+                                                    <div className="grid grid-cols-5 gap-2 text-center">
+                                                        <div className="text-left text-gray-500 text-xs uppercase tracking-wide">Ejercicio</div>
+                                                        <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 1</div>
+                                                        <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 2</div>
+                                                        <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 3</div>
+                                                        <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 4</div>
+                                                    </div>
+                                                    {/* Progression Rows */}
+                                                    {monthlyStrategy.progressions.map((prog, idx) => (
+                                                        <div key={idx} className="grid grid-cols-5 gap-2 items-center py-2 border-t border-gray-800">
+                                                            <div className="text-left">
+                                                                <span className="text-white font-medium">{prog.name}</span>
+                                                                {prog.notes && (
+                                                                    <p className="text-gray-500 text-xs mt-0.5">{prog.notes}</p>
+                                                                )}
+                                                            </div>
+                                                            {prog.progression.map((value, weekIdx) => (
+                                                                <div key={weekIdx} className="text-center">
+                                                                    <span className={`font-mono text-sm ${weekIdx === prog.progression.length - 1 ? 'text-green-400 font-bold' : 'text-gray-300'
+                                                                        }`}>
+                                                                        {value}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                            {/* Fill empty cells if less than 4 weeks */}
+                                                            {Array.from({ length: 4 - prog.progression.length }).map((_, i) => (
+                                                                <div key={`empty-${i}`} className="text-center text-gray-600">-</div>
+                                                            ))}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Objectives */}
+                                        {monthlyStrategy.objectives && monthlyStrategy.objectives.length > 0 && (
+                                            <div>
+                                                <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Objetivos del Ciclo</p>
+                                                <ul className="space-y-1">
+                                                    {monthlyStrategy.objectives.map((obj, idx) => (
+                                                        <li key={idx} className="flex items-start gap-2 text-sm text-gray-300">
+                                                            <span className="text-cv-accent mt-1">•</span>
+                                                            {obj}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Strategy section from current week (backwards compatibility) */}
+                                {!monthlyStrategy && strategy && (strategy.focus || strategy.considerations) && (
+                                    <div className="p-6 border-b border-gray-800">
+                                        {strategy.focus && (
+                                            <>
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <div className="w-1 h-4 rounded-full bg-cv-accent" />
                                                     <span className="text-sm font-semibold text-cv-accent uppercase tracking-wide">
                                                         Enfoque
                                                     </span>
                                                 </div>
-                                            )}
-                                            {strategy.focus && (
                                                 <p className="text-gray-300 text-sm mb-3">{strategy.focus}</p>
-                                            )}
-                                            {strategy.considerations && (
-                                                <div className="bg-gray-900/50 rounded-lg p-3 mt-2">
-                                                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Consideraciones del Coach</p>
-                                                    <p className="text-gray-300 text-sm whitespace-pre-line">{strategy.considerations}</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
+                                            </>
+                                        )}
+                                        {strategy.considerations && (
+                                            <div className="bg-gray-900/50 rounded-lg p-3 mt-2">
+                                                <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Consideraciones del Coach</p>
+                                                <p className="text-gray-300 text-sm whitespace-pre-line">{strategy.considerations}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
-                                {/* Technical Clarifications & Scaling */}
-                                {strategy && (strategy.technicalClarifications || strategy.scalingAlternatives) && (
+                                {/* Technical Clarifications & Scaling (backwards compatibility) */}
+                                {!monthlyStrategy && strategy && (strategy.technicalClarifications || strategy.scalingAlternatives) && (
                                     <div className="px-6 py-4 border-b border-gray-800 bg-gray-900/30">
                                         <div className="grid grid-cols-2 gap-4">
                                             {strategy.technicalClarifications && (
@@ -214,33 +322,63 @@ export function ExportPreview({
                                     </div>
                                 )}
 
-                                {/* Workout Content */}
-                                <div className="p-6 space-y-6">
-                                    {workoutContent.blocks.map((block, index) => (
-                                        <div key={index} className="space-y-2">
-                                            <div className="flex items-center gap-2">
-                                                <div className={`w-1 h-6 rounded-full ${block.type === 'strength_linear' ? 'bg-red-500' :
-                                                    block.type === 'metcon_structured' ? 'bg-orange-500' :
-                                                        block.type === 'warmup' ? 'bg-green-500' :
-                                                            block.type === 'skill' ? 'bg-blue-500' :
-                                                                'bg-gray-500'
-                                                    }`} />
-                                                <h3 className="text-lg font-semibold text-white uppercase tracking-wide">
-                                                    {block.name}
-                                                </h3>
-                                            </div>
-                                            <div className="pl-3 space-y-1">
-                                                {block.content.map((line, lineIndex) => (
-                                                    <p key={lineIndex} className="text-gray-300 font-mono text-sm">
-                                                        {line}
-                                                    </p>
-                                                ))}
-                                            </div>
+                                {/* ============================================ */}
+                                {/* WEEKLY BREAKDOWN */}
+                                {/* ============================================ */}
+                                {weeks && weeks.length > 0 && (
+                                    <div className="p-6 space-y-6">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <Dumbbell size={18} className="text-orange-500" />
+                                            <h2 className="text-lg font-semibold text-orange-500 uppercase tracking-wide">
+                                                Detalle Semanal
+                                            </h2>
                                         </div>
-                                    ))}
-                                </div>
 
-                                {/* Footer - Coach Signature */}
+                                        {weeks.map((week, weekIdx) => (
+                                            <div key={weekIdx} className="bg-gray-900/40 rounded-xl p-4">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <h3 className="text-white font-semibold">
+                                                        Semana {week.weekNumber}
+                                                    </h3>
+                                                    {week.focus && (
+                                                        <span className="text-xs text-gray-400 bg-gray-800 px-2 py-1 rounded">
+                                                            {week.focus}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    {week.blocks.map((block, blockIdx) => (
+                                                        <div key={blockIdx} className="border-l-2 border-gray-700 pl-3">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <div className={`w-2 h-2 rounded-full ${block.type === 'strength_linear' ? 'bg-red-500' :
+                                                                    block.type === 'metcon_structured' ? 'bg-orange-500' :
+                                                                        block.type === 'warmup' ? 'bg-green-500' :
+                                                                            block.type === 'skill' ? 'bg-blue-500' :
+                                                                                'bg-gray-500'
+                                                                    }`} />
+                                                                <span className="text-sm font-medium text-white uppercase">
+                                                                    {block.name}
+                                                                </span>
+                                                            </div>
+                                                            <div className="space-y-0.5">
+                                                                {block.content.map((line, lineIdx) => (
+                                                                    <p key={lineIdx} className="text-gray-400 font-mono text-xs">
+                                                                        {line}
+                                                                    </p>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* ============================================ */}
+                                {/* FOOTER - Coach Signature */}
+                                {/* ============================================ */}
                                 <div className="px-6 py-4 border-t border-gray-800 flex items-center justify-between">
                                     <p className="text-gray-500 text-xs uppercase tracking-wider">
                                         Programado por {coachName}
@@ -255,61 +393,5 @@ export function ExportPreview({
                 </>
             )}
         </AnimatePresence>
-    );
-}
-
-// Demo component showing how to use ExportPreview
-export function ExportDemo() {
-    const [isOpen, setIsOpen] = useState(false);
-
-    const mockWorkout = {
-        dayName: 'Monday',
-        date: 'January 27, 2026',
-        blocks: [
-            {
-                type: 'warmup',
-                name: 'Warm-up',
-                content: [
-                    '500m Row',
-                    '3 Rounds:',
-                    '  10 Air Squats',
-                    '  10 Push-ups',
-                    '  10 Ring Rows',
-                ],
-            },
-            {
-                type: 'strength_linear',
-                name: 'Back Squat',
-                content: [
-                    '5 x 5 @ 75%',
-                    'Rest 2:00 between sets',
-                    'Focus on depth and speed out of hole',
-                ],
-            },
-            {
-                type: 'metcon_structured',
-                name: 'AMRAP 12',
-                content: [
-                    '15 Wall Balls (20/14)',
-                    '10 Burpees',
-                    '5 Pull-ups',
-                ],
-            },
-        ],
-    };
-
-    return (
-        <>
-            <button onClick={() => setIsOpen(true)} className="cv-btn-primary">
-                Export Preview Demo
-            </button>
-            <ExportPreview
-                isOpen={isOpen}
-                onClose={() => setIsOpen(false)}
-                workoutContent={mockWorkout}
-                clientInfo={{ name: 'John Doe' }}
-                coachName="Coach Mike"
-            />
-        </>
     );
 }
