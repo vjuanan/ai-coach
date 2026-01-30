@@ -6,6 +6,13 @@ import { jsPDF } from 'jspdf';
 import { X, Download, Image, FileText, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+interface MesocycleStrategy {
+    focus: string;
+    considerations: string;
+    technicalClarifications: string;
+    scalingAlternatives: string;
+}
+
 interface ExportPreviewProps {
     isOpen: boolean;
     onClose: () => void;
@@ -23,6 +30,7 @@ interface ExportPreviewProps {
         logo?: string;
     };
     coachName: string;
+    strategy?: MesocycleStrategy;
 }
 
 export function ExportPreview({
@@ -31,6 +39,7 @@ export function ExportPreview({
     workoutContent,
     clientInfo,
     coachName,
+    strategy,
 }: ExportPreviewProps) {
     const exportRef = useRef<HTMLDivElement>(null);
     const [isExporting, setIsExporting] = useState(false);
@@ -160,7 +169,50 @@ export function ExportPreview({
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Strategy Section - Focus & Considerations */}
+                                    {strategy && (strategy.focus || strategy.considerations) && (
+                                        <div className="mt-4 pt-4 border-t border-gray-800">
+                                            {strategy.focus && (
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <div className="w-1 h-4 rounded-full bg-cv-accent" />
+                                                    <span className="text-sm font-semibold text-cv-accent uppercase tracking-wide">
+                                                        Enfoque
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {strategy.focus && (
+                                                <p className="text-gray-300 text-sm mb-3">{strategy.focus}</p>
+                                            )}
+                                            {strategy.considerations && (
+                                                <div className="bg-gray-900/50 rounded-lg p-3 mt-2">
+                                                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Consideraciones del Coach</p>
+                                                    <p className="text-gray-300 text-sm whitespace-pre-line">{strategy.considerations}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
+
+                                {/* Technical Clarifications & Scaling */}
+                                {strategy && (strategy.technicalClarifications || strategy.scalingAlternatives) && (
+                                    <div className="px-6 py-4 border-b border-gray-800 bg-gray-900/30">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {strategy.technicalClarifications && (
+                                                <div>
+                                                    <p className="text-xs text-blue-400 uppercase tracking-wide mb-1">🔧 Aclaraciones Técnicas</p>
+                                                    <p className="text-gray-400 text-xs whitespace-pre-line">{strategy.technicalClarifications}</p>
+                                                </div>
+                                            )}
+                                            {strategy.scalingAlternatives && (
+                                                <div>
+                                                    <p className="text-xs text-orange-400 uppercase tracking-wide mb-1">⚠️ Escalado & Alternativas</p>
+                                                    <p className="text-gray-400 text-xs whitespace-pre-line">{strategy.scalingAlternatives}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Workout Content */}
                                 <div className="p-6 space-y-6">

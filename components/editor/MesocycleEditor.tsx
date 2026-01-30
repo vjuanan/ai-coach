@@ -1,10 +1,11 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { useEditorStore } from '@/lib/store';
 import { WeekView } from './WeekView';
 import { BlockEditor } from './BlockEditor';
-import { Save, Undo, Redo, Download, Eye, Settings2, Loader2, CheckCircle2, Maximize2, Minimize2 } from 'lucide-react';
+import { MesocycleStrategyForm, type MesocycleStrategy } from './MesocycleStrategyForm';
+import { Save, Undo, Redo, Download, Eye, Target, Loader2, CheckCircle2, Maximize2, Minimize2 } from 'lucide-react';
 import { saveMesocycleChanges } from '@/lib/actions';
 import { ExportPreview } from '@/components/export';
 
@@ -22,16 +23,30 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         selectedBlockId,
         hasUnsavedChanges,
         selectWeek,
-        markAsClean
+        markAsClean,
+        updateMesocycle
     } = useEditorStore();
 
     const [isSaving, setIsSaving] = useState(false);
     const [showExport, setShowExport] = useState(false);
+    const [showStrategy, setShowStrategy] = useState(false);
 
     // Get current state for export
     const currentMesocycle = mesocycles.find(m => m.week_number === selectedWeek);
 
-    // Format for export
+    // Extract current strategy from mesocycle attributes
+    const currentStrategy = useMemo((): MesocycleStrategy | undefined => {
+        if (!currentMesocycle?.attributes) return undefined;
+        const attrs = currentMesocycle.attributes as Record<string, unknown>;
+        return {
+            focus: (attrs.focus as string) || currentMesocycle.focus || '',
+            considerations: (attrs.considerations as string) || '',
+            technicalClarifications: (attrs.technicalClarifications as string) || '',
+            scalingAlternatives: (attrs.scalingAlternatives as string) || '',
+        };
+    }, [currentMesocycle]);
+
+    // Format for export - include strategy
     const exportContent = currentMesocycle ? {
         dayName: `Semana ${selectedWeek}`,
         blocks: currentMesocycle.days
@@ -42,6 +57,9 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                 content: convertConfigToText(b.type, b.config)
             })))
     } : { dayName: '', blocks: [] };
+
+    // Export strategy for PDF
+    const exportStrategy = currentStrategy;
 
     const handleSave = useCallback(async () => {
         setIsSaving(true);
@@ -60,6 +78,29 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         }
     }, [programId, mesocycles, markAsClean]);
 
+    const handleSaveStrategy = useCallback((strategy: MesocycleStrategy) => {
+        // Update the current mesocycle's focus and attributes
+        updateMesocycle(selectedWeek, {
+            focus: strategy.focus,
+            attributes: {
+                ...(currentMesocycle?.attributes || {}),
+                focus: strategy.focus,
+                considerations: strategy.considerations,
+                technicalClarifications: strategy.technicalClarifications,
+                scalingAlternatives: strategy.scalingAlternatives,
+            }
+        });
+        setShowStrategy(false);
+    }, [selectedWeek, updateMesocycle, currentMesocycle]);
+
+    // Check if strategy has content to show indicator
+    const hasStrategy = Boolean(
+        currentStrategy?.focus ||
+        currentStrategy?.considerations ||
+        currentStrategy?.technicalClarifications ||
+        currentStrategy?.scalingAlternatives
+    );
+
     return (
         <div className="flex flex-col h-[calc(100vh-4rem)]">
             {/* Editor Header */}
@@ -68,6 +109,18 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                     <h2 className="text-xl font-semibold text-cv-text-primary">
                         {programName}
                     </h2>
+                    {/* Strategy Button */}
+                    <button
+                        onClick={() => setShowStrategy(true)}
+                        className={`cv-btn-ghost px-3 py-1.5 flex items-center gap-2 text-sm ${hasStrategy ? 'text-cv-accent' : ''}`}
+                        title="Estrategia del Mesociclo"
+                    >
+                        <Target size={16} />
+                        Estrategia
+                        {hasStrategy && (
+                            <span className="w-2 h-2 rounded-full bg-cv-accent animate-pulse" />
+                        )}
+                    </button>
                     {hasUnsavedChanges ? (
                         <span className="cv-badge-warning">Cambios sin guardar</span>
                     ) : (
@@ -115,9 +168,6 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                     >
                         <Download size={18} />
                     </button>
-                    <button className="cv-btn-ghost p-2" title="Settings">
-                        <Settings2 size={18} />
-                    </button>
                     {onToggleFullScreen && (
                         <button
                             onClick={onToggleFullScreen}
@@ -162,6 +212,15 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                 )}
             </div>
 
+            {/* Strategy Modal */}
+            <MesocycleStrategyForm
+                isOpen={showStrategy}
+                onClose={() => setShowStrategy(false)}
+                weekNumber={selectedWeek}
+                initialData={currentStrategy}
+                onSave={handleSaveStrategy}
+            />
+
             {/* Export Modal */}
             <ExportPreview
                 isOpen={showExport}
@@ -169,6 +228,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                 workoutContent={exportContent}
                 clientInfo={{ name: 'Cliente' }}
                 coachName="Coach"
+                strategy={exportStrategy}
             />
         </div>
     );
