@@ -26,11 +26,20 @@ export function GlobalCreateButton() {
         setIsCreatingProgram(true);
         setIsOpen(false);
         try {
-            const newProgram = await createProgram('Nuevo Programa', null);
-            router.push(`/editor/${newProgram.id}`);
+            const result = await createProgram('Nuevo Programa', null);
+
+            if (result.error) {
+                console.error('Server Action Error:', result.error);
+                alert(`Error: ${result.error}`);
+                return;
+            }
+
+            if (result.data) {
+                router.push(`/editor/${result.data.id}`);
+            }
         } catch (err) {
-            console.error('Failed to create program:', err);
-            alert('No se pudo crear el programa.');
+            console.error('Client Error calling createProgram:', err);
+            alert('Error inesperado al crear el programa.');
         } finally {
             setIsCreatingProgram(false);
         }
