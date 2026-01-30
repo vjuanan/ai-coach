@@ -13,7 +13,8 @@ import {
     Check,
     Save,
     Loader2,
-    Camera
+    Camera,
+    LogOut
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -73,6 +74,11 @@ export default function SettingsPage() {
         }
     };
 
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        router.push('/login');
+    };
+
     if (loading) {
         return (
             <AppShell title="Configuración">
@@ -85,24 +91,22 @@ export default function SettingsPage() {
 
     return (
         <AppShell title="Configuración">
-            <div className="max-w-2xl mx-auto pb-12">
-                {/* Header removed as per user request */}
-
-                {/* Settings Sections */}
-                <div className="space-y-6">
-                    {/* Profile */}
-                    <div className="cv-card">
-                        <div className="flex items-center justify-between mb-4">
+            <div className="h-full">
+                {/* 2-Column Layout Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
+                    {/* Left Column - Profile */}
+                    <div className="cv-card h-fit">
+                        <div className="flex items-center justify-between mb-3">
                             <h2 className="font-semibold text-cv-text-primary flex items-center gap-2">
                                 <User size={18} />
                                 Perfil
                             </h2>
                         </div>
-                        <div className="space-y-6">
-                            {/* Avatar Section */}
-                            <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6 pb-6 border-b border-cv-border">
-                                <div className="relative group">
-                                    <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-cv-border bg-cv-bg-tertiary">
+                        <div className="space-y-4">
+                            {/* Avatar and Photo Section - Inline */}
+                            <div className="flex items-center gap-4 pb-4 border-b border-cv-border">
+                                <div className="relative group flex-shrink-0">
+                                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-cv-border bg-cv-bg-tertiary">
                                         {profile.avatar_url ? (
                                             <img
                                                 src={profile.avatar_url}
@@ -110,7 +114,7 @@ export default function SettingsPage() {
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-cv-accent/10 text-cv-accent text-3xl font-bold">
+                                            <div className="w-full h-full flex items-center justify-center bg-cv-accent/10 text-cv-accent text-xl font-bold">
                                                 {profile.full_name
                                                     ? profile.full_name
                                                         .split(' ')
@@ -122,8 +126,8 @@ export default function SettingsPage() {
                                             </div>
                                         )}
                                         {/* Overlay for hover */}
-                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                            <Camera size={24} className="text-white" />
+                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-full">
+                                            <Camera size={18} className="text-white" />
                                         </div>
                                     </div>
                                     <input
@@ -178,122 +182,140 @@ export default function SettingsPage() {
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                     />
                                 </div>
-                                <div className="flex-1 space-y-1 text-center sm:text-left">
-                                    <h3 className="font-medium text-cv-text-primary">Foto de Perfil</h3>
-                                    <p className="text-sm text-cv-text-tertiary">
-                                        Recomendado: Imagen cuadrada, min 400x400px.
+                                <div className="flex-1">
+                                    <h3 className="font-medium text-cv-text-primary text-sm">Foto de Perfil</h3>
+                                    <p className="text-xs text-cv-text-tertiary">
+                                        Click para cambiar. Min 400x400px.
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
+                            {/* Form Fields - Compact */}
+                            <div className="grid grid-cols-1 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Nombre completo</label>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-1">Nombre completo</label>
                                     <input
                                         type="text"
                                         value={profile.full_name || ''}
                                         onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
-                                        className="cv-input"
+                                        className="cv-input py-2"
                                         placeholder="Tu nombre"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Correo</label>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-1">Correo</label>
                                     <input
                                         type="email"
                                         value={profile.email || user?.email || ''}
-                                        className="cv-input opacity-60 cursor-not-allowed"
+                                        className="cv-input py-2 opacity-60 cursor-not-allowed"
                                         disabled
                                     />
-                                    <p className="text-xs text-cv-text-tertiary mt-1">El correo no se puede cambiar</p>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">WhatsApp</label>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-1">WhatsApp</label>
                                     <input
                                         type="tel"
                                         value={profile.whatsapp_number || ''}
                                         onChange={(e) => setProfile({ ...profile, whatsapp_number: e.target.value })}
-                                        className="cv-input"
+                                        className="cv-input py-2"
                                         placeholder="+54 9 11 1234 5678"
                                     />
                                 </div>
 
-                                <div className="flex justify-end pt-2">
+                                <div className="flex justify-end pt-1">
                                     <button
                                         onClick={handleSaveProfile}
                                         disabled={saving}
-                                        className="cv-btn-primary flex items-center gap-2 px-4 py-2"
+                                        className="cv-btn-primary flex items-center gap-2 px-4 py-2 text-sm"
                                     >
-                                        {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                                        Guardar Cambios
+                                        {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                                        Guardar
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Appearance */}
-                    <div className="cv-card">
-                        <h2 className="font-semibold text-cv-text-primary mb-4 flex items-center gap-2">
-                            <Palette size={18} />
-                            Apariencia
-                        </h2>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="font-medium text-cv-text-primary">Modo Oscuro</p>
-                                <p className="text-sm text-cv-text-tertiary">Usar tema oscuro</p>
+                    {/* Right Column - Other Settings */}
+                    <div className="space-y-4">
+                        {/* Appearance */}
+                        <div className="cv-card">
+                            <h2 className="font-semibold text-cv-text-primary mb-3 flex items-center gap-2">
+                                <Palette size={18} />
+                                Apariencia
+                            </h2>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="font-medium text-cv-text-primary text-sm">Modo Oscuro</p>
+                                    <p className="text-xs text-cv-text-tertiary">Usar tema oscuro</p>
+                                </div>
+                                <button
+                                    onClick={() => setDarkMode(!darkMode)}
+                                    className={`w-11 h-6 rounded-full transition-colors relative ${darkMode ? 'bg-cv-accent' : 'bg-cv-bg-tertiary'}`}
+                                >
+                                    <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${darkMode ? 'left-6' : 'left-1'}`} />
+                                </button>
                             </div>
-                            <button
-                                onClick={() => setDarkMode(!darkMode)}
-                                className={`w-12 h-6 rounded-full transition-colors relative ${darkMode ? 'bg-cv-accent' : 'bg-cv-bg-tertiary'}`}
-                            >
-                                <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${darkMode ? 'left-7' : 'left-1'}`} />
-                            </button>
                         </div>
-                    </div>
 
-                    {/* Notifications */}
-                    <div className="cv-card">
-                        <h2 className="font-semibold text-cv-text-primary mb-4 flex items-center gap-2">
-                            <Bell size={18} />
-                            Notificaciones
-                        </h2>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="font-medium text-cv-text-primary">Notificaciones por Correo</p>
-                                <p className="text-sm text-cv-text-tertiary">Recibir actualizaciones por correo</p>
+                        {/* Notifications */}
+                        <div className="cv-card">
+                            <h2 className="font-semibold text-cv-text-primary mb-3 flex items-center gap-2">
+                                <Bell size={18} />
+                                Notificaciones
+                            </h2>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="font-medium text-cv-text-primary text-sm">Notificaciones por Correo</p>
+                                    <p className="text-xs text-cv-text-tertiary">Recibir actualizaciones por correo</p>
+                                </div>
+                                <button
+                                    onClick={() => setNotifications(!notifications)}
+                                    className={`w-11 h-6 rounded-full transition-colors relative ${notifications ? 'bg-cv-accent' : 'bg-cv-bg-tertiary'}`}
+                                >
+                                    <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${notifications ? 'left-6' : 'left-1'}`} />
+                                </button>
                             </div>
-                            <button
-                                onClick={() => setNotifications(!notifications)}
-                                className={`w-12 h-6 rounded-full transition-colors relative ${notifications ? 'bg-cv-accent' : 'bg-cv-bg-tertiary'}`}
-                            >
-                                <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${notifications ? 'left-7' : 'left-1'}`} />
-                            </button>
                         </div>
-                    </div>
 
-                    {/* Database */}
-                    <div className="cv-card">
-                        <h2 className="font-semibold text-cv-text-primary mb-4 flex items-center gap-2">
-                            <Database size={18} />
-                            Datos
-                        </h2>
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between p-3 bg-cv-bg-tertiary rounded-lg">
-                                <span className="text-cv-text-primary">Conexión Supabase</span>
-                                <span className="cv-badge-success flex items-center gap-1">
-                                    <Check size={12} />
-                                    Conectado
-                                </span>
-                            </div>
-                            {profile.role && (
-                                <div className="flex items-center justify-between p-3 bg-cv-bg-tertiary rounded-lg">
-                                    <span className="text-cv-text-primary">Rol de Usuario</span>
-                                    <span className="text-sm font-mono px-2 py-1 bg-cv-bg-secondary rounded border border-cv-border capitalize">
-                                        {profile.role}
+                        {/* Database */}
+                        <div className="cv-card">
+                            <h2 className="font-semibold text-cv-text-primary mb-3 flex items-center gap-2">
+                                <Database size={18} />
+                                Datos
+                            </h2>
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between p-2 bg-cv-bg-tertiary rounded-lg">
+                                    <span className="text-cv-text-primary text-sm">Conexión Supabase</span>
+                                    <span className="cv-badge-success flex items-center gap-1 text-xs">
+                                        <Check size={10} />
+                                        Conectado
                                     </span>
                                 </div>
-                            )}
+                                {profile.role && (
+                                    <div className="flex items-center justify-between p-2 bg-cv-bg-tertiary rounded-lg">
+                                        <span className="text-cv-text-primary text-sm">Rol de Usuario</span>
+                                        <span className="text-xs font-mono px-2 py-0.5 bg-cv-bg-secondary rounded border border-cv-border capitalize">
+                                            {profile.role}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Logout Button */}
+                        <div className="cv-card border-red-500/20">
+                            <h2 className="font-semibold text-cv-text-primary mb-3 flex items-center gap-2">
+                                <LogOut size={18} />
+                                Sesión
+                            </h2>
+                            <button
+                                onClick={handleLogout}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors text-sm font-medium"
+                            >
+                                <LogOut size={16} />
+                                Cerrar Sesión
+                            </button>
                         </div>
                     </div>
                 </div>
