@@ -435,15 +435,29 @@ export async function createClient(clientData: {
         };
         console.log('Row to insert:', JSON.stringify(row));
 
-        // Use Admin Client to bypass complex RLS (e.g. if User is Admin but policy only allows 'coach' role)
+        // Check Env Var
+        if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+            console.error('CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing!');
+            throw new Error('Server Misconfiguration: Missing Admin Key');
+        }
+
+        // Use Admin Client to bypass complex RLS
         const adminSupabase = createSupabaseClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
+            process.env.SUPABASE_SERVICE_ROLE_KEY
         );
 
+        // Minimal Insert to avoid Schema issues
+        // We will update details later if needed, or assume details column exists as JSONB
         const { data, error } = await adminSupabase
             .from('clients')
-            .insert(row)
+            .insert({
+                coach_id: coachId,
+                type: clientData.type,
+                name: clientData.name,
+                email: clientData.email || null,
+                // details: clientData.details || {}, // TEMPORARY REMOVE to debug
+            })
             .select()
             .single();
 
