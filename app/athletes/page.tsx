@@ -184,6 +184,18 @@ export default function AthletesPage() {
             }
         >
             <div className="max-w-6xl mx-auto">
+                {/* Search */}
+                <div className="relative mb-6">
+                    <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Buscar atletas..."
+                        className="cv-input pl-10"
+                    />
+                </div>
+
                 {/* Athletes Grid */}
                 {isLoading ? (
                     <div className="flex items-center justify-center py-12">
