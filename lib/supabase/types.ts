@@ -168,10 +168,38 @@ export interface EquipmentCatalog {
     created_at: string;
 }
 
+
+export interface Profile {
+    id: string;
+    email: string | null;
+    full_name: string | null;
+    role: 'coach' | 'athlete' | 'admin' | null;
+    birth_date?: string | null;
+    height?: number | null;
+    weight?: number | null;
+    main_goal?: string | null;
+    training_place?: string | null;
+    equipment_list?: string[] | null;
+    days_per_week?: number | null;
+    minutes_per_session?: number | null;
+    experience_level?: string | null;
+    injuries?: string | null;
+    training_preferences?: string | null;
+    whatsapp_number?: string | null;
+    avatar_url?: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
 // Supabase Database Type (for typed client)
 export interface Database {
     public: {
         Tables: {
+            profiles: {
+                Row: Profile;
+                Insert: Omit<Profile, 'created_at' | 'updated_at'>;
+                Update: Partial<Omit<Profile, 'id' | 'created_at' | 'updated_at'>>;
+            };
             coaches: {
                 Row: Coach;
                 Insert: Omit<Coach, 'id' | 'created_at' | 'updated_at'>;
@@ -213,6 +241,8 @@ export interface Database {
             block_type: BlockType;
             workout_format: WorkoutFormat;
             exercise_category: ExerciseCategory;
+            user_role: 'coach' | 'athlete' | 'admin';
         };
     };
 }
+

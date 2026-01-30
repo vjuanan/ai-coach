@@ -1,8 +1,9 @@
 'use client';
 
 import { useAppStore } from '@/lib/store';
-import { Search, Command, Bell } from 'lucide-react';
-import { GlobalCreateButton } from './GlobalCreateButton';
+import { Search, Command } from 'lucide-react';
+import { NotificationBell } from './NotificationBell';
+import { UserAvatar } from './UserAvatar';
 
 interface TopbarProps {
     title?: string;
@@ -51,19 +52,12 @@ export function Topbar({ title, actions }: TopbarProps) {
 
             {/* Right: Actions */}
             <div className="flex items-center gap-3">
-                {/* Global Create Button */}
-                {/* Global Create Button removed from here - moved to page headers */}
 
                 {/* Notifications */}
-                <button className="cv-btn-ghost relative p-2">
-                    <Bell size={20} />
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-cv-accent rounded-full" />
-                </button>
+                <NotificationBell />
 
                 {/* User Avatar */}
-                <button className="w-8 h-8 rounded-full bg-cv-accent/20 border border-cv-border flex items-center justify-center text-cv-accent font-medium text-sm">
-                    JD
-                </button>
+                <UserAvatar />
 
                 {actions}
             </div>

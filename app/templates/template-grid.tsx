@@ -13,31 +13,31 @@ interface TemplateGridProps {
 }
 
 export function TemplateGrid({ templates }: TemplateGridProps) {
-    const [isPending, startTransition] = useTransition();
-    const router = useRouter();
     const [copyingId, setCopyingId] = useState<string | null>(null);
+    const router = useRouter();
 
-    const handleUseTemplate = (template: Program) => {
+    const handleUseTemplate = async (template: Program) => {
         if (copyingId) return;
 
         setCopyingId(template.id);
-        startTransition(async () => {
-            try {
-                const res = await copyTemplateToProgram(template.id);
-                if (res.error) {
-                    alert('Error copying template: ' + res.error);
-                    setCopyingId(null);
-                    return;
-                }
+        try {
+            const res = await copyTemplateToProgram(template.id);
+            if (res.error) {
+                alert('Error copying template: ' + res.error);
+                setCopyingId(null);
+                return;
+            }
 
-                if (res.data) {
-                    router.push(`/editor/${res.data.id}`);
-                }
-            } catch (e) {
-                console.error(e);
+            if (res.data) {
+                // Force navigation since router.push was unreliable in verification
+                window.location.assign(`/editor/${res.data.id}`);
+            } else {
                 setCopyingId(null);
             }
-        });
+        } catch (e) {
+            console.error(e);
+            setCopyingId(null);
+        }
     };
 
     const getVisuals = (program: Program) => {

@@ -1,0 +1,135 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - link "Logo AI Coach" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - img "Logo" [ref=e6]
+          - generic [ref=e8]: AI Coach
+        - button [ref=e9] [cursor=pointer]:
+          - img [ref=e10]
+      - navigation [ref=e12]:
+        - link "Panel" [ref=e13] [cursor=pointer]:
+          - /url: /
+          - img [ref=e14]
+          - generic [ref=e19]: Panel
+        - link "Atletas" [ref=e20] [cursor=pointer]:
+          - /url: /athletes
+          - img [ref=e21]
+          - generic [ref=e26]: Atletas
+        - link "Gimnasios" [ref=e27] [cursor=pointer]:
+          - /url: /gyms
+          - img [ref=e28]
+          - generic [ref=e32]: Gimnasios
+        - link "Programas" [ref=e33] [cursor=pointer]:
+          - /url: /programs
+          - img [ref=e34]
+          - generic [ref=e42]: Programas
+        - link "Plantillas" [ref=e43] [cursor=pointer]:
+          - /url: /templates
+          - img [ref=e44]
+          - generic [ref=e47]: Plantillas
+      - link "Configuración" [ref=e49] [cursor=pointer]:
+        - /url: /settings
+        - img [ref=e50]
+        - generic [ref=e53]: Configuración
+    - banner [ref=e54]:
+      - heading "Atletas" [level=1] [ref=e56]
+      - button "Buscar... K" [ref=e57] [cursor=pointer]:
+        - img [ref=e58]
+        - generic [ref=e61]: Buscar...
+        - generic [ref=e62]:
+          - img [ref=e64]
+          - generic [ref=e66]: K
+      - generic [ref=e67]:
+        - button [ref=e68] [cursor=pointer]:
+          - img [ref=e69]
+        - button "JD" [ref=e73] [cursor=pointer]
+    - main [ref=e74]:
+      - generic [ref=e76]:
+        - generic [ref=e77]:
+          - generic [ref=e78]:
+            - heading "Atletas" [level=1] [ref=e79]
+            - paragraph [ref=e80]: Gestiona tus atletas individuales
+          - button "Añadir Atleta" [ref=e81] [cursor=pointer]:
+            - img [ref=e82]
+            - text: Añadir Atleta
+        - generic [ref=e83]:
+          - img [ref=e84]
+          - textbox "Buscar atletas..." [ref=e87]
+        - generic [ref=e88]:
+          - img [ref=e89]
+          - paragraph [ref=e92]: No hay atletas aún
+          - button "Añade tu primer atleta" [ref=e93] [cursor=pointer]:
+            - img [ref=e94]
+            - text: Añade tu primer atleta
+        - generic [ref=e96]:
+          - generic [ref=e97]:
+            - heading "Nuevo Atleta / Cliente" [level=2] [ref=e98]
+            - button [ref=e99] [cursor=pointer]:
+              - img [ref=e100]
+          - generic [ref=e103]:
+            - generic [ref=e104]:
+              - generic [ref=e105]: Tipo
+              - generic [ref=e106]:
+                - button "Atleta Individual" [ref=e107] [cursor=pointer]
+                - button "Gimnasio / Box" [ref=e108] [cursor=pointer]
+            - generic [ref=e109]:
+              - generic [ref=e110]: Nombre *
+              - textbox "John Doe" [ref=e111]: Test Athlete Auto
+            - generic [ref=e112]:
+              - generic [ref=e113]: Correo
+              - textbox "john@example.com" [ref=e114]: auto@test.com
+            - generic [ref=e115]:
+              - generic [ref=e116]: Perfil Físico
+              - generic [ref=e117]:
+                - generic [ref=e118]:
+                  - generic [ref=e119]: Fecha Nac.
+                  - textbox [ref=e120]
+                - generic [ref=e121]:
+                  - generic [ref=e122]: Género
+                  - combobox [ref=e123]:
+                    - option "Masculino" [selected]
+                    - option "Femenino"
+                    - option "Otro"
+                - generic [ref=e124]:
+                  - generic [ref=e125]: Altura (cm)
+                  - spinbutton [ref=e126]
+                - generic [ref=e127]:
+                  - generic [ref=e128]: Peso (kg)
+                  - spinbutton [ref=e129]
+            - generic [ref=e130]:
+              - generic [ref=e131]: Nivel
+              - combobox [ref=e132]:
+                - option "Scaled"
+                - option "RX" [selected]
+                - option "Elite"
+                - option "Master"
+            - generic [ref=e133]:
+              - generic [ref=e134]: Objetivo Principal
+              - 'textbox "Ej: Competition Prep, Strength Bias..." [ref=e135]'
+            - generic [ref=e136]:
+              - generic [ref=e137]: Lesiones / Limitaciones
+              - 'textbox "Ej: Shoulder impingement, bajo movilidad de tobillo..." [ref=e138]'
+            - generic [ref=e139]:
+              - generic [ref=e140]: Benchmarks (1RM en kg)
+              - generic [ref=e141]:
+                - spinbutton [ref=e142]
+                - spinbutton [ref=e143]
+                - spinbutton [ref=e144]
+                - spinbutton [ref=e145]
+                - spinbutton [ref=e146]
+                - spinbutton [ref=e147]
+              - generic [ref=e148]:
+                - generic [ref=e149]: Fran Time (segundos)
+                - spinbutton [ref=e150]
+          - generic [ref=e151]:
+            - button "Cancelar" [ref=e152] [cursor=pointer]
+            - button "Guardar" [ref=e153] [cursor=pointer]:
+              - img [ref=e154]
+              - text: Guardar
+  - alert [ref=e155]
+```
