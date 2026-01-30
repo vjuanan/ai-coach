@@ -32,7 +32,7 @@ export function AppShell({ children, title, actions, fullScreen = false }: AppSh
 
             <main
                 className={`
-          pt-16 min-h-screen transition-all duration-300
+          pt-12 min-h-screen transition-all duration-300
           ${isSidebarCollapsed ? 'pl-16' : 'pl-64'}
         `}
             >

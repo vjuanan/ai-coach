@@ -87,7 +87,7 @@ export function Sidebar() {
             {/* Logo - Horizontal layout matching reference */}
             <div className={`
                 flex items-center bg-white border-b border-cv-border transition-all duration-300 relative
-                ${isSidebarCollapsed ? 'h-16 justify-center px-2' : 'h-12 px-4'}
+                ${isSidebarCollapsed ? 'h-12 justify-center px-2' : 'h-12 px-4'}
             `}>
                 <Link href="/" className="flex items-center">
                     {/* Logo - Increased size to h-10 w-10 */}
