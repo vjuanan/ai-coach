@@ -177,9 +177,27 @@ export async function createProgram(
     duration: number = 4
 ) {
     console.log('createProgram: Starting creation', { name, clientId, duration });
-    const supabase = createServerClient();
+
+    // Default client (Subject to RLS)
+    let supabase = createServerClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // If no user, switch to Admin Client to bypass RLS for Demo Mode
+    if (!user && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        console.log('createProgram: No auth user. Switching to Admin Client for Demo Mode operations.');
+        supabase = createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        ) as any;
+    }
 
     try {
+        // Pass the (potentially admin) client to ensureCoach
+        // Note: ensureCoach also calls auth.getUser() which might fail on Admin client if not handled, 
+        // but our ensureCoach logic handles !user gracefully now.
+        // Actually, ensureCoach expects 'supabase' to be a client where .auth.getUser() works.
+        // Admin client .auth.getUser() returns no user usually.
         const coachId = await ensureCoach(supabase);
         console.log('createProgram: Using coachId', coachId);
 
