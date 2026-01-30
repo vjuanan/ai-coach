@@ -431,6 +431,36 @@ export async function getClients(type: 'athlete' | 'gym') {
     return data;
 }
 
+export async function getClient(id: string) {
+    const supabase = createServerClient();
+    const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (error) {
+        console.error('Error fetching client:', error);
+        return null;
+    }
+    return data;
+}
+
+export async function getClientPrograms(clientId: string) {
+    const supabase = createServerClient();
+    const { data, error } = await supabase
+        .from('programs')
+        .select('*')
+        .eq('client_id', clientId)
+        .order('updated_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching client programs:', error);
+        return [];
+    }
+    return data;
+}
+
 export async function createClient(clientData: {
     type: 'athlete' | 'gym',
     name: string,

@@ -96,17 +96,11 @@ export default function ProgramsPage() {
     );
 
     return (
-        <AppShell title="Programas">
+        <AppShell
+            title="Programas"
+            actions={<GlobalCreateButton />}
+        >
             <div className="max-w-6xl mx-auto">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h1 className="text-2xl font-bold text-cv-text-primary">Programas</h1>
-                        <p className="text-cv-text-secondary">Tus programas de entrenamiento y mesociclos</p>
-                    </div>
-                    <GlobalCreateButton />
-                </div>
-
                 {/* Search */}
                 <div className="relative mb-6">
                     <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
@@ -135,7 +129,11 @@ export default function ProgramsPage() {
                 ) : (
                     <div className="space-y-3">
                         {filteredPrograms.map((program) => (
-                            <div key={program.id} className="cv-card flex items-center justify-between group">
+                            <Link
+                                key={program.id}
+                                href={`/editor/${program.id}`}
+                                className="cv-card flex items-center justify-between group hover:border-cv-accent transition-all cursor-pointer block"
+                            >
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-lg bg-cv-accent-muted flex items-center justify-center">
                                         <Dumbbell size={20} className="text-cv-accent" />
@@ -152,21 +150,22 @@ export default function ProgramsPage() {
                                         {program.status}
                                     </span>
                                     <button
-                                        onClick={() => promptDelete(program.id)}
-                                        className="cv-btn-ghost p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            promptDelete(program.id);
+                                        }}
+                                        className="cv-btn-ghost p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors relative z-10"
                                         title="Eliminar Programa"
                                     >
                                         <Trash2 size={16} />
                                     </button>
-                                    <Link
-                                        href={`/editor/${program.id}`}
-                                        className="cv-btn-secondary"
-                                    >
+                                    <div className="cv-btn-secondary pointer-events-none">
                                         <Edit2 size={16} />
                                         Editar
-                                    </Link>
+                                    </div>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 )}

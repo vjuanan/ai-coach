@@ -2,6 +2,7 @@
 
 import { AppShell } from '@/components/app-shell';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
     getClients,
     createClient,
@@ -33,6 +34,8 @@ interface Athlete {
 export default function AthletesPage() {
     const [athletes, setAthletes] = useState<Athlete[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    // Search is now handled globally or ignored as per instruction to remove local duplicate.
+    // Ideally we would sync with URL params, but for now we remove the local input as requested.
     const [searchQuery, setSearchQuery] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
 
@@ -141,7 +144,9 @@ export default function AthletesPage() {
         setIsAdding(false);
     }
 
-    function promptDelete(id: string) {
+    function promptDelete(e: React.MouseEvent, id: string) {
+        e.preventDefault(); // Prevent navigation
+        e.stopPropagation();
         setAthleteToDelete(id);
     }
 
@@ -165,35 +170,19 @@ export default function AthletesPage() {
     );
 
     return (
-        <AppShell title="Atletas">
+        <AppShell
+            title="Atletas"
+            actions={
+                <button
+                    onClick={() => setShowAddModal(true)}
+                    className="cv-btn-primary"
+                >
+                    <Plus size={18} />
+                    Añadir Atleta
+                </button>
+            }
+        >
             <div className="max-w-6xl mx-auto">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h1 className="text-2xl font-bold text-cv-text-primary">Atletas</h1>
-                        <p className="text-cv-text-secondary">Gestiona tus atletas individuales</p>
-                    </div>
-                    <button
-                        onClick={() => setShowAddModal(true)}
-                        className="cv-btn-primary"
-                    >
-                        <Plus size={18} />
-                        Añadir Atleta
-                    </button>
-                </div>
-
-                {/* Search */}
-                <div className="relative mb-6">
-                    <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Buscar atletas..."
-                        className="cv-input pl-10"
-                    />
-                </div>
-
                 {/* Athletes Grid */}
                 {isLoading ? (
                     <div className="flex items-center justify-center py-12">
@@ -214,14 +203,18 @@ export default function AthletesPage() {
                 ) : (
                     <div className="grid grid-cols-3 gap-4">
                         {filteredAthletes.map((athlete) => (
-                            <div key={athlete.id} className="cv-card group relative">
+                            <Link
+                                key={athlete.id}
+                                href={`/athletes/${athlete.id}`}
+                                className="cv-card group relative block hover:border-cv-accent/50 transition-colors cursor-pointer"
+                            >
                                 <div className="flex items-start justify-between mb-3">
                                     <div className="w-12 h-12 rounded-full bg-cv-accent-muted flex items-center justify-center text-cv-accent font-bold text-lg">
                                         {athlete.name.charAt(0).toUpperCase()}
                                     </div>
                                     <button
-                                        onClick={() => promptDelete(athlete.id)}
-                                        className="cv-btn-ghost p-1.5 opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:bg-red-500/10"
+                                        onClick={(e) => promptDelete(e, athlete.id)}
+                                        className="cv-btn-ghost p-1.5 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:bg-red-500/10 z-10 relative"
                                         title="Eliminar Atleta"
                                     >
                                         <Trash2 size={16} />
@@ -237,7 +230,7 @@ export default function AthletesPage() {
                                 <div className="mt-4 pt-3 border-t border-cv-border">
                                     <span className="cv-badge-accent">Atleta</span>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 )}

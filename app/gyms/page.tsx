@@ -2,6 +2,7 @@
 
 import { AppShell } from '@/components/app-shell';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import {
     Plus,
@@ -45,6 +46,8 @@ export default function GymsPage() {
         }
     });
     const [isAdding, setIsAdding] = useState(false);
+
+    const router = useRouter();
 
     useEffect(() => {
         fetchGyms();
@@ -97,7 +100,8 @@ export default function GymsPage() {
         setIsAdding(false);
     }
 
-    async function handleDelete(id: string) {
+    async function handleDelete(e: React.MouseEvent, id: string) {
+        e.stopPropagation(); // Prevent navigation when clicking delete
         if (!confirm('¿Estás seguro de que quieres eliminar este gimnasio?')) return;
         await deleteClient(id);
         fetchGyms();
@@ -108,23 +112,19 @@ export default function GymsPage() {
     );
 
     return (
-        <AppShell title="Gimnasios">
+        <AppShell
+            title="Gimnasios"
+            actions={
+                <button
+                    onClick={() => setShowAddModal(true)}
+                    className="cv-btn-primary"
+                >
+                    <Plus size={18} />
+                    Añadir Gimnasio
+                </button>
+            }
+        >
             <div className="max-w-6xl mx-auto">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h1 className="text-2xl font-bold text-cv-text-primary">Gimnasios</h1>
-                        <p className="text-cv-text-secondary">Gestiona tus gimnasios clientes</p>
-                    </div>
-                    <button
-                        onClick={() => setShowAddModal(true)}
-                        className="cv-btn-primary"
-                    >
-                        <Plus size={18} />
-                        Añadir Gimnasio
-                    </button>
-                </div>
-
                 {/* Search */}
                 <div className="relative mb-6">
                     <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
@@ -157,13 +157,17 @@ export default function GymsPage() {
                 ) : (
                     <div className="grid grid-cols-3 gap-4">
                         {filteredGyms.map((gym) => (
-                            <div key={gym.id} className="cv-card group">
+                            <div
+                                key={gym.id}
+                                className="cv-card group cursor-pointer hover:border-cv-accent/50 transition-all"
+                                onClick={() => router.push(`/gyms/${gym.id}`)}
+                            >
                                 <div className="flex items-start justify-between mb-3">
                                     <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400">
                                         <Building2 size={24} />
                                     </div>
                                     <button
-                                        onClick={() => handleDelete(gym.id)}
+                                        onClick={(e) => handleDelete(e, gym.id)}
                                         className="cv-btn-ghost p-1.5 opacity-0 group-hover:opacity-100 transition-opacity text-red-400"
                                     >
                                         <Trash2 size={16} />
