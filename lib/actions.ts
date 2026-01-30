@@ -432,7 +432,17 @@ export async function getClients(type: 'athlete' | 'gym') {
 }
 
 export async function getClient(id: string) {
-    const supabase = createServerClient();
+    // Use admin client to bypass RLS, similar to createClient
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        console.error('CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing!');
+        throw new Error('Server Misconfiguration: Missing Admin Key');
+    }
+
+    const supabase = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
     const { data, error } = await supabase
         .from('clients')
         .select('*')
@@ -447,7 +457,17 @@ export async function getClient(id: string) {
 }
 
 export async function getClientPrograms(clientId: string) {
-    const supabase = createServerClient();
+    // Use admin client to bypass RLS
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        console.error('CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing!');
+        throw new Error('Server Misconfiguration: Missing Admin Key');
+    }
+
+    const supabase = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
     const { data, error } = await supabase
         .from('programs')
         .select('*')
