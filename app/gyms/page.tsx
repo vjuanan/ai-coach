@@ -1,3 +1,4 @@
+// Force rebuild - deployment sync 2026-01-30
 'use client';
 
 import { AppShell } from '@/components/app-shell';
