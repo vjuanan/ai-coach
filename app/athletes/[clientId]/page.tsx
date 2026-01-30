@@ -1,72 +1,34 @@
-'use client';
-
 import { AppShell } from '@/components/app-shell';
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
 import { getClient, getClientPrograms } from '@/lib/actions';
 import {
     User,
     Mail,
-    Phone,
     Calendar,
     Ruler,
     Weight,
     Target,
     Activity,
-    Dumbbell,
-    ArrowLeft,
-    Loader2,
-    ChevronRight,
     Trophy,
-    Timer
+    Timer,
+    ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
+import { BackButton } from './back-button';
 
-export default function AthleteDetailsPage() {
-    const params = useParams();
-    const router = useRouter();
-    const [athlete, setAthlete] = useState<any>(null);
-    const [programs, setPrograms] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+export default async function AthleteDetailsPage({ params }: { params: { clientId: string } }) {
+    const clientId = params.clientId;
 
-    const clientId = params.clientId as string;
-
-    useEffect(() => {
-        async function fetchData() {
-            if (!clientId) return;
-            setIsLoading(true);
-            try {
-                const [athleteData, programsData] = await Promise.all([
-                    getClient(clientId),
-                    getClientPrograms(clientId)
-                ]);
-                setAthlete(athleteData);
-                setPrograms(programsData);
-            } catch (error) {
-                console.error('Error fetching athlete details:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchData();
-    }, [clientId]);
-
-    if (isLoading) {
-        return (
-            <AppShell title="Cargando...">
-                <div className="flex h-[50vh] items-center justify-center">
-                    <Loader2 className="animate-spin text-cv-accent" size={32} />
-                </div>
-            </AppShell>
-        );
-    }
+    const [athlete, programs] = await Promise.all([
+        getClient(clientId),
+        getClientPrograms(clientId)
+    ]);
 
     if (!athlete) {
         return (
             <AppShell title="Error">
                 <div className="text-center py-12">
                     <p className="text-cv-text-secondary">No se encontró el atleta.</p>
-                    <button onClick={() => router.back()} className="cv-btn-secondary mt-4">Volver</button>
+                    <BackButton />
                 </div>
             </AppShell>
         );
@@ -78,11 +40,7 @@ export default function AthleteDetailsPage() {
     return (
         <AppShell
             title={athlete.name}
-            actions={
-                <button onClick={() => router.back()} className="cv-btn-ghost">
-                    <ArrowLeft size={18} className="mr-2" /> Volver
-                </button>
-            }
+            actions={<BackButton />}
         >
             <div className="max-w-5xl mx-auto space-y-6">
 
