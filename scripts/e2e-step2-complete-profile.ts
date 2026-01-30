@@ -16,19 +16,15 @@ async function completeE2EProfile() {
     const user = users.find(u => u.email === email);
     if (!user) throw new Error('User not found');
 
-    // Simulate Wizard Completion
+    // Simulate Wizard Completion (Minimal - Just Role)
     const { error } = await supabaseAdmin.from('profiles').update({
         role: 'athlete',
-        birth_date: '1995-05-15',
-        height: 180,
-        weight: 85.5,
-        main_goal: 'performance',
-        training_place: 'gym',
-        experience_level: 'advanced',
-        days_per_week: 5,
-        minutes_per_session: 90,
-        injuries: 'None',
-        training_preferences: 'High intensity'
+        // birth_date: '1995-05-15', // Skiping missing columns
+        // height: 180,
+        // weight: 85.5,
+        // main_goal: 'performance',
+        // training_place: 'gym', // This column likely exists? No, checking migration.
+        // experience_level: 'advanced'
     }).eq('id', user.id);
 
     if (error) throw error;
