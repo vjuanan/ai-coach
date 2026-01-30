@@ -68,9 +68,68 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 async function ensureCoach(supabase: any) {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
+    // ==========================================
+    // NO-AUTH FALLBACK (DEMO MODE)
+    // ==========================================
     if (userError || !user) {
-        console.error('ensureCoach: Auth error', userError);
-        throw new Error('Debes iniciar sesión para crear un programa.');
+        console.log('ensureCoach: No authenticated user. Attempting Public/Demo Mode.');
+
+        // 1. Try to find any existing coach to attach to (Demo Mode)
+        const { data: coaches } = await supabase
+            .from('coaches')
+            .select('id')
+            .limit(1);
+
+        if (coaches && coaches.length > 0) {
+            console.log('ensureCoach: Using existing public coach', coaches[0].id);
+            return coaches[0].id;
+        }
+
+        // 2. If no coaches exist, we need to create one.
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!serviceRoleKey) {
+            console.error('ensureCoach: No user and no Service Role Key. Cannot create public coach.');
+            throw new Error('Modo Demo no configurado: Falta Service Role Key.');
+        }
+
+        try {
+            const supabaseAdmin = createSupabaseClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                serviceRoleKey
+            );
+
+            const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+
+            if (listError || !users || users.length === 0) {
+                throw new Error('No hay usuarios en la base de datos para asignar el coach demo.');
+            }
+
+            const fallbackUserId = users[0].id;
+
+            const { data: newCoach, error: insError } = await supabaseAdmin
+                .from('coaches')
+                .insert({
+                    user_id: fallbackUserId,
+                    full_name: 'Coach Demo',
+                    business_name: 'AI Coach Public'
+                })
+                .select('id')
+                .single();
+
+            if (insError) {
+                // Check if already exists
+                const { data: existing } = await supabaseAdmin.from('coaches').select('id').eq('user_id', fallbackUserId).single();
+                if (existing) return existing.id;
+                throw insError;
+            }
+
+            return newCoach.id;
+
+        } catch (adminError: any) {
+            console.error('ensureCoach: Admin fallback failed', adminError);
+            throw new Error(`Error en configuración Demo: ${adminError.message}`);
+        }
     }
 
     // 1. Try to find existing coach
