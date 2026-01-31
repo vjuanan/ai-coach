@@ -172,7 +172,8 @@ export default function AthletesPage() {
     }
 
     const filteredAthletes = athletes.filter(a =>
-        a.name.toLowerCase().includes(searchQuery.toLowerCase())
+        a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (a.email || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (

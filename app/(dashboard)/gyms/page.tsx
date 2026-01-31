@@ -34,6 +34,9 @@ export default function GymsPage() {
     const searchQuery = searchParams.get('q') || '';
 
     const [showAddModal, setShowAddModal] = useState(false);
+    const [selectedGyms, setSelectedGyms] = useState<string[]>([]);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     // Enhanced Gym Form State
     const [formData, setFormData] = useState({
         name: '',
@@ -113,8 +116,34 @@ export default function GymsPage() {
         fetchGyms();
     }
 
+    function toggleSelect(id: string) {
+        setSelectedGyms(prev => {
+            if (prev.includes(id)) {
+                return prev.filter(p => p !== id);
+            }
+            return [...prev, id];
+        });
+    }
+
+    async function handleBulkDelete() {
+        if (!confirm(`¿Estás seguro de que quieres eliminar ${selectedGyms.length} gimnasios seleccionados? Esta acción es irreversible.`)) return;
+
+        setIsDeleting(true);
+        try {
+            await Promise.all(selectedGyms.map(id => deleteClient(id)));
+            setSelectedGyms([]);
+            fetchGyms();
+        } catch (e) {
+            console.error('Error deleting gyms:', e);
+            alert('Hubo un error al eliminar algunos gimnasios');
+        }
+        setIsDeleting(false);
+    }
+
     const filteredGyms = gyms.filter(g =>
-        g.name.toLowerCase().includes(searchQuery.toLowerCase())
+        g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (g.details?.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (g as any).email?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -123,22 +152,64 @@ export default function GymsPage() {
                 title="Gimnasios"
                 actions={
                     <>
-                        <div className="bg-slate-100 px-3 py-1.5 rounded-md flex items-center gap-2">
-                            <Building2 className="text-cv-text-secondary" size={16} />
-                            <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredGyms.length}</span>
-                        </div>
-                        <button
-                            onClick={() => setShowAddModal(true)}
-                            className="cv-btn-primary flex items-center gap-2 py-1.5 px-3 text-sm"
-                        >
-                            <Plus size={16} />
-                            Añadir Gimnasio
-                        </button>
+                        {selectedGyms.length > 0 ? (
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-cv-text-secondary mr-2">
+                                    {selectedGyms.length} seleccionados
+                                </span>
+                                <button
+                                    onClick={handleBulkDelete}
+                                    className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-1.5 rounded-md flex items-center gap-2 text-sm font-medium transition-colors"
+                                >
+                                    <Trash2 size={16} />
+                                    Eliminar Selección
+                                </button>
+                                <button
+                                    onClick={() => setSelectedGyms([])}
+                                    className="cv-btn-ghost px-3 py-1.5 text-sm"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="bg-slate-100 px-3 py-1.5 rounded-md flex items-center gap-2">
+                                    <Building2 className="text-cv-text-secondary" size={16} />
+                                    <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredGyms.length}</span>
+                                </div>
+                                <button
+                                    onClick={() => setShowAddModal(true)}
+                                    className="cv-btn-primary flex items-center gap-2 py-1.5 px-3 text-sm"
+                                >
+                                    <Plus size={16} />
+                                    Añadir Gimnasio
+                                </button>
+                            </>
+                        )}
                     </>
                 }
             />
             <div className="max-w-6xl mx-auto">
-                {/* Search removed - using global Topbar search */}
+
+                {filteredGyms.length > 0 && (
+                    <div className="mb-4 flex items-center justify-end px-1">
+                        <button
+                            onClick={() => {
+                                if (selectedGyms.length === filteredGyms.length) {
+                                    setSelectedGyms([]);
+                                } else {
+                                    setSelectedGyms(filteredGyms.map(g => g.id));
+                                }
+                            }}
+                            className="text-sm text-cv-text-secondary hover:text-cv-text-primary transition-colors flex items-center gap-2"
+                        >
+                            <div className={`w-4 h-4 rounded border transition-colors flex items-center justify-center ${selectedGyms.length === filteredGyms.length ? 'bg-cv-text-primary border-cv-text-primary text-white' : 'border-cv-border'}`}>
+                                {selectedGyms.length === filteredGyms.length && <Plus size={10} className="transform rotate-45" />}
+                            </div>
+                            {selectedGyms.length === filteredGyms.length ? 'Deseleccionar todos' : 'Seleccionar todos'}
+                        </button>
+                    </div>
+                )}
 
                 {/* Gyms Grid */}
                 {isLoading ? (
@@ -159,29 +230,50 @@ export default function GymsPage() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-3 gap-4">
-                        {filteredGyms.map((gym) => (
-                            <div
-                                key={gym.id}
-                                className="cv-card group cursor-pointer hover:border-cv-accent/50 transition-all"
-                                onClick={() => router.push(`/gyms/${gym.id}`)}
-                            >
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400">
-                                        <Building2 size={24} />
+                        {filteredGyms.map((gym) => {
+                            const isSelected = selectedGyms.includes(gym.id);
+                            return (
+                                <div
+                                    key={gym.id}
+                                    className={`cv-card group cursor-pointer transition-all relative ${isSelected ? 'ring-2 ring-cv-accent border-cv-accent' : 'hover:border-cv-accent/50'}`}
+                                    onClick={() => {
+                                        if (selectedGyms.length > 0) {
+                                            toggleSelect(gym.id);
+                                        } else {
+                                            router.push(`/gyms/${gym.id}`);
+                                        }
+                                    }}
+                                >
+                                    <div className="absolute top-3 right-3 z-10">
+                                        <div
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleSelect(gym.id);
+                                            }}
+                                            className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-cv-accent border-cv-accent text-white' : 'bg-white/50 border-cv-border hover:border-cv-accent'}`}
+                                        >
+                                            {isSelected && <Plus size={12} className="transform rotate-45" />}
+                                        </div>
                                     </div>
-                                    <button
-                                        onClick={(e) => handleDelete(e, gym.id)}
-                                        className="cv-btn-ghost p-1.5 opacity-0 group-hover:opacity-100 transition-opacity text-red-400"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
+
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400">
+                                            <Building2 size={24} />
+                                        </div>
+                                    </div>
+                                    <h3 className="font-semibold text-cv-text-primary">{gym.name}</h3>
+                                    {(gym as any).email && (
+                                        <p className="text-sm text-cv-text-tertiary flex items-center gap-1 mt-1 truncate">
+                                            <Building2 size={12} className="shrink-0" />
+                                            {(gym as any).email}
+                                        </p>
+                                    )}
+                                    <div className="mt-4 pt-3 border-t border-cv-border">
+                                        <span className="cv-badge bg-purple-500/15 text-purple-400">Gimnasio</span>
+                                    </div>
                                 </div>
-                                <h3 className="font-semibold text-cv-text-primary">{gym.name}</h3>
-                                <div className="mt-4 pt-3 border-t border-cv-border">
-                                    <span className="cv-badge bg-purple-500/15 text-purple-400">Gimnasio</span>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
 
