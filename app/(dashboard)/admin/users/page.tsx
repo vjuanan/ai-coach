@@ -89,9 +89,7 @@ export default function AdminUsersPage() {
         } finally {
             setUpdatingId(null);
         }
-
     }
-
 
 
     async function handleDeleteUser(userId: string) {
