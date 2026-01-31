@@ -1081,3 +1081,23 @@ export async function getEquipmentCatalog() {
     }
     return data;
 }
+
+// ==========================================
+// TRAINING METHODOLOGIES
+// ==========================================
+
+export async function getTrainingMethodologies() {
+    const supabase = createServerClient();
+
+    const { data, error } = await supabase
+        .from('training_methodologies')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+    if (error) {
+        console.error('Error fetching training methodologies:', error);
+        return [];
+    }
+    return data;
+}
+

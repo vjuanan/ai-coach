@@ -190,6 +190,33 @@ export interface EquipmentCatalog {
     created_at: string;
 }
 
+export interface TrainingMethodologyFormField {
+    key: string;
+    label: string;
+    type: 'number' | 'text' | 'select' | 'movements_list';
+    placeholder?: string;
+    options?: string[];
+    default?: unknown;
+    required?: boolean;
+    help?: string;
+}
+
+export interface TrainingMethodology {
+    id: string;
+    code: string;
+    name: string;
+    description: string;
+    category: 'metcon' | 'strength' | 'hiit' | 'conditioning';
+    form_config: {
+        fields: TrainingMethodologyFormField[];
+    };
+    default_values: Record<string, unknown>;
+    icon: string;
+    sort_order: number;
+    created_at: string;
+    updated_at: string;
+}
+
 
 export interface Profile {
     id: string;

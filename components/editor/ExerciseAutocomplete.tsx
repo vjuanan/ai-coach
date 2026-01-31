@@ -9,19 +9,25 @@ interface ExerciseAutocompleteProps {
     onChange: (value: string) => void;
     placeholder?: string;
     className?: string;
+    inputRef?: React.RefObject<HTMLInputElement>;
 }
 
 export function ExerciseAutocomplete({
     value,
     onChange,
     placeholder = "Buscar ejercicio...",
-    className
+    className,
+    inputRef
 }: ExerciseAutocompleteProps) {
     const [query, setQuery] = useState(value);
     const [results, setResults] = useState<any[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const internalRef = useRef<HTMLInputElement>(null);
+
+    // Use external ref if provided, otherwise internal
+    const actualInputRef = inputRef || internalRef;
 
     // Debounce logic manually since we don't have the hook file yet
     useEffect(() => {
@@ -75,6 +81,7 @@ export function ExerciseAutocomplete({
         <div ref={wrapperRef} className="relative w-full">
             <div className="relative">
                 <input
+                    ref={actualInputRef}
                     type="text"
                     value={query}
                     onChange={(e) => {
