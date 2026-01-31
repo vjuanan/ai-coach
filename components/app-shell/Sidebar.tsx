@@ -40,6 +40,7 @@ const navItems: NavItem[] = [
 ];
 
 export function Sidebar() {
+    // Re-verify deployment trigger
     const { isSidebarCollapsed, toggleSidebar } = useAppStore();
     const pathname = usePathname();
     const supabase = createClient();
