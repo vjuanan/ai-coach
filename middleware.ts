@@ -64,7 +64,13 @@ export async function middleware(request: NextRequest) {
     const isPublic = path.startsWith('/api') || path.includes('.'); // Asset/API exclusions
 
     // 2. Auth Protection
+    // TEMPORARY BYPASS: Set to true to disable login requirement
+    const TEMPORARY_BYPASS_AUTH = true;
+
     if (!user && !isAuthPage && !isPublic) {
+        if (TEMPORARY_BYPASS_AUTH) {
+            return response;
+        }
         return NextResponse.redirect(new URL('/login', request.url));
     }
 

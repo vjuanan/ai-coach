@@ -14,7 +14,16 @@ type Client = Database['public']['Tables']['clients']['Row'];
 // ==========================================
 
 export async function getDashboardStats() {
-    const supabase = createServerClient();
+    let supabase = createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // DEMO/BYPASS MODE: Use Admin Client if no user
+    if (!user && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        supabase = createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        ) as any;
+    }
 
     // Run parallel queries for speed
     const [
@@ -38,7 +47,17 @@ export async function getDashboardStats() {
 }
 
 export async function getPrograms() {
-    const supabase = createServerClient();
+    let supabase = createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // DEMO/BYPASS MODE: Use Admin Client if no user
+    if (!user && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        supabase = createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        ) as any;
+    }
+
     const { data, error } = await supabase
         .from('programs')
         .select(`*, client:clients(*)`)
