@@ -184,7 +184,7 @@ export default function AdminUsersPage() {
                                         <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Usuario</th>
                                         <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Email</th>
                                         <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Rol Actual</th>
-                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold text-right">Acciones (v2)</th>
+                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold text-right">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-cv-border-subtle">
@@ -222,7 +222,7 @@ export default function AdminUsersPage() {
                                                     </select>
                                                 </div>
                                             </td>
-                                            <td className="p-4 text-right flex items-center justify-end gap-2">
+                                            <td className="p-4 text-right">
                                                 <button
                                                     onClick={() => handlePasswordReset(user.id)}
                                                     disabled={updatingId === user.id}
@@ -238,16 +238,13 @@ export default function AdminUsersPage() {
                                                 <button
                                                     onClick={() => handleDeleteUser(user.id)}
                                                     disabled={updatingId === user.id}
-                                                    className="p-2 hover:bg-red-500/10 rounded-lg text-cv-text-tertiary hover:text-red-500 transition-colors flex items-center gap-1"
+                                                    className="p-2 hover:bg-red-500/10 rounded-lg text-cv-text-tertiary hover:text-red-500 transition-colors"
                                                     title="Eliminar Usuario"
                                                 >
                                                     {updatingId === user.id ? (
                                                         <Loader2 size={18} className="animate-spin" />
                                                     ) : (
-                                                        <>
-                                                            <Trash2 size={18} />
-                                                            <span className="text-xs font-bold">ELIMINAR</span>
-                                                        </>
+                                                        <Trash2 size={18} />
                                                     )}
                                                 </button>
                                             </td>
