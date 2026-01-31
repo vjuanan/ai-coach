@@ -82,14 +82,46 @@ export async function middleware(request: NextRequest) {
 
     // 4. RBAC & Onboarding Check (Only for authenticated users accessing app routes)
     if (user && !isAuthPage) {
-        // Fetch User Profile to check Role
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
+        let role = null;
 
-        const role = profile?.role;
+        // OPTIMIZATION: Check for cached role in cookies
+        const roleCookie = request.cookies.get('user_role');
+        if (roleCookie && roleCookie.value) {
+            const [cookieUserId, cookieRole] = roleCookie.value.split(':');
+            // Verify the cookie belongs to the current user
+            if (cookieUserId === user.id) {
+                role = cookieRole;
+            }
+        }
+
+        // If no valid cached role, fetch from DB
+        if (!role) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single();
+
+            role = profile?.role;
+
+            // Cache the role for future requests
+            if (role) {
+                const cookieValue = `${user.id}:${role}`;
+                // Set in response to client
+                response.cookies.set({
+                    name: 'user_role',
+                    value: cookieValue,
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    path: '/',
+                    maxAge: 60 * 60 * 24 * 7 // 1 week
+                });
+
+                // Also update the request cookies for immediate downstream use if needed
+                // (Though we mainly stick to the `role` variable here)
+            }
+        }
 
         // SCENARIO A: No Role -> Force Onboarding
         if (!role) {

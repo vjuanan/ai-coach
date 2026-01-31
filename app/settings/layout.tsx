@@ -10,7 +10,6 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
     const tabs = [
         { name: 'Perfil', href: '/settings', icon: User },
-        { name: 'Estímulos', href: '/settings/stimuli', icon: Zap },
     ];
 
     return (

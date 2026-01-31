@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Dumbbell, UserCog, ChevronRight, ChevronLeft, Calendar, Ruler, Weight, Target, MapPin, Clock, Activity, AlertCircle, MessageSquare, Camera, Upload, Check } from 'lucide-react';
+import { refreshUserRoleReference } from '../auth/actions';
 
 // --- Step Components ---
 
@@ -109,6 +110,8 @@ export default function OnboardingPage() {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 await supabase.from('profiles').update({ role: selectedRole }).eq('id', user.id);
+                // Refresh cookie so middleware knows we have a role now
+                await refreshUserRoleReference();
             }
             if (selectedRole === 'coach') {
                 router.push('/');

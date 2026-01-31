@@ -27,7 +27,14 @@ export default function ForgotPasswordPage() {
 
             setSuccess(true);
         } catch (err: any) {
-            setError(err.message || 'Error al enviar el correo de recuperación');
+            let message = err.message || 'Error al enviar el correo de recuperación';
+
+            // Translate common Supabase errors
+            if (message.toLowerCase().includes('rate limit') || message.toLowerCase().includes('too many requests')) {
+                message = 'Has excedido el límite de intentos. Por favor, espera 60 segundos antes de intentar de nuevo.';
+            }
+
+            setError(message);
         } finally {
             setIsLoading(false);
         }
