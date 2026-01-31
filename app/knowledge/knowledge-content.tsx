@@ -23,7 +23,8 @@ interface KnowledgeContentProps {
 }
 
 // Group by objective
-type ObjectiveType = 'Athletic Performance' | 'Strength' | 'Hypertrophy';
+// Group by objective
+type ObjectiveType = 'crossfit' | 'strength' | 'hypertrophy';
 
 const objectiveConfig: Record<ObjectiveType, {
     label: string;
@@ -32,21 +33,21 @@ const objectiveConfig: Record<ObjectiveType, {
     bgClass: string;
     description: string;
 }> = {
-    'Athletic Performance': {
+    'crossfit': {
         label: 'CrossFit / Performance Atlética',
         icon: <Flame size={24} />,
         gradient: 'from-[#FF416C] to-[#FF4B2B]',
         bgClass: 'bg-gradient-to-br from-[#FF416C]/10 to-[#FF4B2B]/10',
         description: 'Metodologías para atletas funcionales y de alto rendimiento'
     },
-    'Strength': {
+    'strength': {
         label: 'Fuerza / Powerlifting',
         icon: <Dumbbell size={24} />,
         gradient: 'from-[#2193b0] to-[#6dd5ed]',
         bgClass: 'bg-gradient-to-br from-[#2193b0]/10 to-[#6dd5ed]/10',
         description: 'Principios para maximizar la producción de fuerza'
     },
-    'Hypertrophy': {
+    'hypertrophy': {
         label: 'Hipertrofia / Estética',
         icon: <TrendingUp size={24} />,
         gradient: 'from-[#8A2387] via-[#E94057] to-[#F27121]',

@@ -110,10 +110,8 @@ async function runMigration() {
     ];
 
     for (const principle of galpinPrinciples) {
-        const { error } = await supabase.from('training_principles').upsert(principle, {
-            onConflict: 'title,author'
-        });
-        if (error && !error.message.includes('does not exist')) {
+        const { error } = await supabase.from('training_principles').insert(principle);
+        if (error) {
             console.log(`   Warning: ${error.message}`);
         }
     }
