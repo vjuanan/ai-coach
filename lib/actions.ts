@@ -660,17 +660,65 @@ export async function getClient(id: string) {
         process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    const { data, error } = await supabase
+    const { data: clientData, error } = await supabase
         .from('clients')
         .select('*')
         .eq('id', id)
         .single();
 
-    if (error) {
-        console.error('Error fetching client:', error);
-        return null;
+    if (!error && clientData) {
+        return clientData;
     }
-    return data;
+
+    // Fallback: Check profiles for self-registered users
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (profile) {
+        // Map profile to Client shape
+        const isGym = profile.role === 'gym';
+        const isAthlete = profile.role === 'athlete';
+
+        if (!isGym && !isAthlete) return null;
+
+        return {
+            id: profile.id,
+            coach_id: null, // Not assigned
+            type: isGym ? 'gym' : 'athlete',
+            name: isGym ? (profile.gym_name || profile.full_name || 'Gym') : (profile.full_name || 'Athlete'),
+            email: profile.email,
+            phone: profile.contact_phone || null,
+            logo_url: profile.logo_url || null,
+            details: isGym ? {
+                source: 'self-registered',
+                gym_type: profile.gym_type,
+                location: profile.gym_location,
+                member_count: profile.member_count,
+                equipment: profile.equipment_available,
+                ownerName: profile.full_name,
+                operating_hours: profile.operating_hours,
+                website: profile.website_url
+            } : {
+                source: 'self-registered',
+                dob: profile.birth_date,
+                height: profile.height,
+                weight: profile.weight,
+                goal: profile.main_goal,
+                training_place: profile.training_place,
+                level: profile.experience_level,
+                injuries: profile.injuries,
+                preferences: profile.training_preferences
+            },
+            created_at: profile.created_at,
+            updated_at: profile.updated_at,
+            deleted_at: null
+        } as any; // Cast as any or appropriate Client type intersection
+    }
+
+    return null;
 }
 
 export async function getClientPrograms(clientId: string) {

@@ -122,13 +122,19 @@ export default function GymsPage() {
             <Topbar
                 title="Gimnasios"
                 actions={
-                    <button
-                        onClick={() => setShowAddModal(true)}
-                        className="cv-btn-primary"
-                    >
-                        <Plus size={18} />
-                        Añadir Gimnasio
-                    </button>
+                    <>
+                        <div className="bg-slate-100 px-3 py-1.5 rounded-md flex items-center gap-2">
+                            <Building2 className="text-cv-text-secondary" size={16} />
+                            <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredGyms.length}</span>
+                        </div>
+                        <button
+                            onClick={() => setShowAddModal(true)}
+                            className="cv-btn-primary flex items-center gap-2 py-1.5 px-3 text-sm"
+                        >
+                            <Plus size={16} />
+                            Añadir Gimnasio
+                        </button>
+                    </>
                 }
             />
             <div className="max-w-6xl mx-auto">
