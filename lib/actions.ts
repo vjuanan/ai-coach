@@ -751,6 +751,68 @@ export async function resetUserPassword(userId: string) {
     return { success: true, message: `Correo de restablecimiento enviado a ${email}` };
 }
 
+export async function createUser(data: {
+    email: string;
+    password?: string;
+    fullName: string;
+    role: 'coach' | 'athlete' | 'admin';
+}) {
+    const supabase = createServerClient();
+
+    // Verify Admin
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthorized');
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') throw new Error('Forbidden: Admins only');
+
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        throw new Error('Server Config Error: Missing Admin Key');
+    }
+
+    const adminSupabase = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
+    // 1. Create User in Auth
+    const { data: newUser, error: createError } = await adminSupabase.auth.admin.createUser({
+        email: data.email,
+        password: data.password || 'tempPass123!', // Default temp password if not provided
+        email_confirm: true,
+        user_metadata: { full_name: data.fullName }
+    });
+
+    if (createError) throw new Error(createError.message);
+    if (!newUser.user) throw new Error('Failed to create user object');
+
+    // 2. Force Role Update (Profile should be created by trigger, but we ensure role here)
+    // Wait a brief moment for trigger? Or just upsert. Upsert is safer.
+    const { error: profileError } = await adminSupabase
+        .from('profiles')
+        .upsert({
+            id: newUser.user.id,
+            email: data.email,
+            full_name: data.fullName,
+            role: data.role,
+            updated_at: new Date().toISOString()
+        });
+
+    if (profileError) {
+        console.error('Error setting profile role:', profileError);
+        // Don't throw, user is created. Just warn.
+        return { success: true, message: 'Usuario creado, pero hubo un error asignando el rol. Por favor verifique.', userId: newUser.user.id };
+    }
+
+    revalidatePath('/admin/users');
+    return { success: true, message: 'Usuario creado correctamente.', userId: newUser.user.id };
+}
+
 // ==========================================
 // MESOCYCLE & EDITOR ACTIONS
 // ==========================================

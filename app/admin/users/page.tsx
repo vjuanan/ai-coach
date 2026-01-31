@@ -1,7 +1,7 @@
 'use client';
 
 import { AppShell } from '@/components/app-shell';
-import { getProfiles, updateUserRole, resetUserPassword } from '@/lib/actions';
+import { getProfiles, updateUserRole, resetUserPassword, createUser } from '@/lib/actions';
 import { useState, useEffect } from 'react';
 import {
     Users,
@@ -11,7 +11,10 @@ import {
     Loader2,
     CheckCircle2,
     AlertCircle,
-    MoreVertical
+    MoreVertical,
+    UserPlus,
+    X,
+    ChevronDown
 } from 'lucide-react';
 
 interface Profile {
@@ -29,6 +32,16 @@ export default function AdminUsersPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
+
+    // Create Modal State
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
+    const [newUser, setNewUser] = useState({
+        email: '',
+        fullName: '',
+        password: '',
+        role: 'athlete' as 'coach' | 'athlete' | 'admin'
+    });
 
     useEffect(() => {
         loadProfiles();
@@ -75,6 +88,35 @@ export default function AdminUsersPage() {
         }
     }
 
+    async function handleCreateUser(e: React.FormEvent) {
+        e.preventDefault();
+        setIsCreating(true);
+        setMessage(null);
+
+        try {
+            const res = await createUser({
+                email: newUser.email,
+                password: newUser.password || undefined,
+                fullName: newUser.fullName,
+                role: newUser.role
+            });
+
+            if (res.success) {
+                setMessage({ text: res.message || 'Usuario creado', type: 'success' });
+                setIsCreateOpen(false);
+                setNewUser({ email: '', fullName: '', password: '', role: 'athlete' }); // Reset form
+                loadProfiles();
+            } else {
+                setMessage({ text: 'Error desconocido', type: 'error' });
+            }
+        } catch (err: any) {
+            console.error(err);
+            setMessage({ text: err.message || 'Error al crear usuario', type: 'error' });
+        } finally {
+            setIsCreating(false);
+        }
+    }
+
     const filteredProfiles = profiles.filter(p =>
         (p.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
         (p.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '')
@@ -91,9 +133,18 @@ export default function AdminUsersPage() {
                             <h1 className="text-2xl font-bold text-cv-text-primary">Usuarios y Roles</h1>
                             <p className="text-cv-text-secondary">Gestiona el acceso y roles de todos los usuarios de la plataforma.</p>
                         </div>
-                        <div className="bg-cv-bg-tertiary p-2 rounded-lg border border-cv-border-subtle flex items-center gap-2">
-                            <Users className="text-cv-text-secondary" size={20} />
-                            <span className="font-mono font-bold text-cv-text-primary">{profiles.length}</span>
+                        <div className="flex items-center gap-4">
+                            <div className="bg-cv-bg-tertiary p-2 rounded-lg border border-cv-border-subtle flex items-center gap-2">
+                                <Users className="text-cv-text-secondary" size={20} />
+                                <span className="font-mono font-bold text-cv-text-primary">{profiles.length}</span>
+                            </div>
+                            <button
+                                onClick={() => setIsCreateOpen(true)}
+                                className="cv-btn-primary flex items-center gap-2"
+                            >
+                                <UserPlus size={18} />
+                                Crear Usuario
+                            </button>
                         </div>
                     </div>
 
@@ -157,9 +208,9 @@ export default function AdminUsersPage() {
                                                         value={user.role || ''}
                                                         onChange={(e) => handleRoleUpdate(user.id, e.target.value as any)}
                                                         className={`bg-transparent text-sm font-medium border-none focus:ring-0 cursor-pointer py-1 px-2 rounded ${user.role === 'admin' ? 'text-purple-400 bg-purple-500/10' :
-                                                                user.role === 'coach' ? 'text-blue-400 bg-blue-500/10' :
-                                                                    user.role === 'athlete' ? 'text-green-400 bg-green-500/10' :
-                                                                        'text-yellow-400 bg-yellow-500/10'
+                                                            user.role === 'coach' ? 'text-blue-400 bg-blue-500/10' :
+                                                                user.role === 'athlete' ? 'text-green-400 bg-green-500/10' :
+                                                                    'text-yellow-400 bg-yellow-500/10'
                                                             }`}
                                                         disabled={updatingId === user.id}
                                                     >
@@ -196,6 +247,83 @@ export default function AdminUsersPage() {
                         </div>
                     )}
                 </div>
+
+                {/* Create User Modal */}
+                {isCreateOpen && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div className="bg-cv-bg-secondary rounded-xl shadow-xl w-full max-w-md border border-cv-border-subtle animate-in fade-in zoom-in-95 duration-200">
+                            <div className="p-6 border-b border-cv-border-subtle flex justify-between items-center">
+                                <h2 className="text-xl font-bold text-cv-text-primary">Crear Nuevo Usuario</h2>
+                                <button onClick={() => setIsCreateOpen(false)} className="text-cv-text-tertiary hover:text-cv-text-primary">
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <form onSubmit={handleCreateUser} className="p-6 space-y-4">
+                                <div className="space-y-1">
+                                    <label className="text-sm font-medium text-cv-text-secondary">Nombre Completo</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full p-2 rounded-lg bg-cv-bg-tertiary border border-cv-border-subtle text-cv-text-primary focus:outline-none focus:border-cv-accent"
+                                        value={newUser.fullName}
+                                        onChange={e => setNewUser({ ...newUser, fullName: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-sm font-medium text-cv-text-secondary">Email</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        className="w-full p-2 rounded-lg bg-cv-bg-tertiary border border-cv-border-subtle text-cv-text-primary focus:outline-none focus:border-cv-accent"
+                                        value={newUser.email}
+                                        onChange={e => setNewUser({ ...newUser, email: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-sm font-medium text-cv-text-secondary">Contraseña (Opcional)</label>
+                                    <input
+                                        type="password"
+                                        placeholder="Por defecto: tempPass123!"
+                                        className="w-full p-2 rounded-lg bg-cv-bg-tertiary border border-cv-border-subtle text-cv-text-primary focus:outline-none focus:border-cv-accent"
+                                        value={newUser.password}
+                                        onChange={e => setNewUser({ ...newUser, password: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-sm font-medium text-cv-text-secondary">Rol Inicial</label>
+                                    <div className="relative">
+                                        <select
+                                            className="w-full p-2 rounded-lg bg-cv-bg-tertiary border border-cv-border-subtle text-cv-text-primary focus:outline-none focus:border-cv-accent appearance-none"
+                                            value={newUser.role}
+                                            onChange={e => setNewUser({ ...newUser, role: e.target.value as any })}
+                                        >
+                                            <option value="athlete">Atleta</option>
+                                            <option value="coach">Entrenador</option>
+                                            <option value="admin">Administrador</option>
+                                        </select>
+                                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary pointer-events-none" size={16} />
+                                    </div>
+                                </div>
+                                <div className="pt-4 flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCreateOpen(false)}
+                                        className="cv-btn-secondary flex-1 justify-center"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isCreating}
+                                        className="cv-btn-primary flex-1 justify-center"
+                                    >
+                                        {isCreating ? <Loader2 className="animate-spin" /> : 'Crear Usuario'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </div>
         </AppShell>
     );
