@@ -44,14 +44,15 @@ export function Topbar({ title, actions, prefixActions }: TopbarProps) {
             </div>
 
             {/* Center: Search */}
-            <div className="relative group min-w-[320px]">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary group-hover:text-cv-text-secondary transition-colors" />
-                <input
-                    type="text"
-                    placeholder="Buscar..."
-                    defaultValue={searchParams.get('q')?.toString()}
-                    onChange={(e) => handleSearch(e.target.value)}
-                    className="
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[320px]">
+                <div className="relative group w-full">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary group-hover:text-cv-text-secondary transition-colors" />
+                    <input
+                        type="text"
+                        placeholder="Buscar..."
+                        defaultValue={searchParams.get('q')?.toString()}
+                        onChange={(e) => handleSearch(e.target.value)}
+                        className="
                         w-full pl-10 pr-4 py-2 rounded-full
                         bg-slate-100
                         text-sm text-cv-text-primary
@@ -59,9 +60,10 @@ export function Topbar({ title, actions, prefixActions }: TopbarProps) {
                         focus:outline-none focus:ring-1 focus:ring-cv-accent
                         transition-all duration-200
                     "
-                />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
-                    {/* Hidden for now unless we implement global shortcut again */}
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
+                        {/* Hidden for now unless we implement global shortcut again */}
+                    </div>
                 </div>
             </div>
 
