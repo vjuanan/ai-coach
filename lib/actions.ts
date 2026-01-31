@@ -13,7 +13,21 @@ type Client = Database['public']['Tables']['clients']['Row'];
 // USER ROLE - For Sidebar SSR
 // ==========================================
 
+import { cookies } from 'next/headers';
+
 export async function getUserRole(): Promise<'admin' | 'coach' | 'athlete'> {
+    const cookieStore = cookies();
+
+    // FAST PATH: Read cached role from middleware cookie (no DB call!)
+    const roleCookie = cookieStore.get('user_role');
+    if (roleCookie?.value) {
+        const [_userId, cachedRole] = roleCookie.value.split(':');
+        if (cachedRole === 'admin' || cachedRole === 'coach' || cachedRole === 'athlete') {
+            return cachedRole;
+        }
+    }
+
+    // SLOW PATH: Fallback to DB if no cookie (first request after login)
     const supabase = createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 
