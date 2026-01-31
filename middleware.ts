@@ -63,14 +63,20 @@ export async function middleware(request: NextRequest) {
     const isOnboardingPage = path.startsWith('/onboarding');
     const isPublic = path.startsWith('/api') || path.includes('.'); // Asset/API exclusions
 
-    // 2. Auth Protection
-    // TEMPORARY BYPASS: Set to true to disable login requirement
+    // ============================================
+    // 🚨 TEMPORARY BYPASS FOR TESTING 🚨
+    // Set to false to re-enable auth protection
+    // ============================================
     const TEMPORARY_BYPASS_AUTH = true;
 
+    if (TEMPORARY_BYPASS_AUTH) {
+        // Skip ALL auth and RBAC checks - full access for testing
+        return response;
+    }
+    // ============================================
+
+    // 2. Auth Protection
     if (!user && !isAuthPage && !isPublic) {
-        if (TEMPORARY_BYPASS_AUTH) {
-            return response;
-        }
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
