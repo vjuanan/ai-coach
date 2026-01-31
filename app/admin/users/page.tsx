@@ -3,11 +3,11 @@
 import { AppShell } from '@/components/app-shell';
 import { getProfiles, updateUserRole, resetUserPassword, createUser } from '@/lib/actions';
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
     Users,
     Shield,
     Lock,
-    Search,
     Loader2,
     CheckCircle2,
     AlertCircle,
@@ -29,7 +29,8 @@ interface Profile {
 export default function AdminUsersPage() {
     const [profiles, setProfiles] = useState<Profile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
+    const searchParams = useSearchParams();
+    const searchTerm = searchParams.get('q') || '';
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
@@ -127,30 +128,18 @@ export default function AdminUsersPage() {
             <div className="max-w-7xl mx-auto space-y-4">
 
                 {/* Action Buttons & Feedback */}
-                <div className="flex items-center justify-between gap-4">
-                    <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" size={18} />
-                        <input
-                            type="text"
-                            placeholder="Buscar por nombre o email..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-cv-bg-tertiary border border-cv-border-subtle rounded-lg text-cv-text-primary text-sm focus:outline-none focus:border-cv-accent transition-colors"
-                        />
+                <div className="flex items-center justify-end gap-3">
+                    <div className="bg-cv-bg-tertiary p-2 rounded-lg border border-cv-border-subtle flex items-center gap-2">
+                        <Users className="text-cv-text-secondary" size={18} />
+                        <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredProfiles.length}</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <div className="bg-cv-bg-tertiary p-2 rounded-lg border border-cv-border-subtle flex items-center gap-2">
-                            <Users className="text-cv-text-secondary" size={18} />
-                            <span className="font-mono font-bold text-cv-text-primary text-sm">{profiles.length}</span>
-                        </div>
-                        <button
-                            onClick={() => setIsCreateOpen(true)}
-                            className="cv-btn-primary flex items-center gap-2"
-                        >
-                            <UserPlus size={18} />
-                            Crear Usuario
-                        </button>
-                    </div>
+                    <button
+                        onClick={() => setIsCreateOpen(true)}
+                        className="cv-btn-primary flex items-center gap-2"
+                    >
+                        <UserPlus size={18} />
+                        Crear Usuario
+                    </button>
                 </div>
 
                 {message && (
