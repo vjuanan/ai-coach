@@ -35,6 +35,7 @@ export interface DraftDay {
     name: string | null;
     is_rest_day: boolean;
     notes: string | null;
+    stimulus_id?: string | null; // Added stimulus_id
     blocks: DraftWorkoutBlock[];
     isDirty?: boolean;
 }
@@ -57,6 +58,9 @@ interface EditorState {
     programClient: Client | null;
     programAttributes: Record<string, unknown> | null;
 
+    // Global Configs
+    stimulusFeatures: Array<{ id: string; name: string; color: string; }>;
+
     // Draft state (local changes)
     mesocycles: DraftMesocycle[];
 
@@ -64,6 +68,7 @@ interface EditorState {
     selectedWeek: number;
     selectedDayId: string | null;
     selectedBlockId: string | null;
+    referenceBlock: DraftWorkoutBlock | null; // The block from previous week
     isLoading: boolean;
     isSaving: boolean;
     hasUnsavedChanges: boolean;
@@ -73,7 +78,7 @@ interface EditorState {
     dropTargetDayId: string | null;
 
     // Actions
-    initializeEditor: (programId: string, name: string, client: Client | null, attributes?: Record<string, unknown> | null) => void;
+    initializeEditor: (programId: string, name: string, client: Client | null, attributes?: Record<string, unknown> | null, stimulusFeatures?: any[]) => void;
     loadMesocycles: (mesocycles: DraftMesocycle[]) => void;
     resetEditor: () => void;
 
@@ -115,10 +120,12 @@ export const useEditorStore = create<EditorState>()(
             programName: '',
             programClient: null,
             programAttributes: null,
+            stimulusFeatures: [],
             mesocycles: [],
             selectedWeek: 1,
             selectedDayId: null,
             selectedBlockId: null,
+            referenceBlock: null,
             isLoading: false,
             isSaving: false,
             hasUnsavedChanges: false,
@@ -126,12 +133,13 @@ export const useEditorStore = create<EditorState>()(
             dropTargetDayId: null,
 
             // Initialize editor with a program
-            initializeEditor: (programId, name, client, attributes) => {
+            initializeEditor: (programId, name, client, attributes, stimulusFeatures) => {
                 set({
                     programId,
                     programName: name,
                     programClient: client,
                     programAttributes: attributes || null,
+                    stimulusFeatures: stimulusFeatures || [],
                     selectedWeek: 1,
                     selectedDayId: null,
                     selectedBlockId: null,
@@ -144,25 +152,65 @@ export const useEditorStore = create<EditorState>()(
                 set({ mesocycles, isLoading: false });
             },
 
-            // Reset editor state
             resetEditor: () => {
                 set({
                     programId: null,
                     programName: '',
                     programClient: null,
                     programAttributes: null,
+                    stimulusFeatures: [],
                     mesocycles: [],
                     selectedWeek: 1,
                     selectedDayId: null,
                     selectedBlockId: null,
+                    referenceBlock: null,
                     hasUnsavedChanges: false,
                 });
             },
 
             // Selection actions
             selectWeek: (week) => set({ selectedWeek: week, selectedDayId: null, selectedBlockId: null }),
-            selectDay: (dayId) => set({ selectedDayId: dayId, selectedBlockId: null }),
-            selectBlock: (blockId) => set({ selectedBlockId: blockId }),
+            selectDay: (dayId) => set({ selectedDayId: dayId, selectedBlockId: null, referenceBlock: null }),
+            selectBlock: (blockId) => {
+                const { mesocycles } = get();
+                let referenceBlock: DraftWorkoutBlock | null = null;
+
+                // Find selected block
+                let selectedBlock: DraftWorkoutBlock | null = null;
+                let currentMesoIndex = -1;
+                let currentDayIndex = -1;
+
+                if (blockId) {
+                    mesocycles.forEach((meso, mIdx) => {
+                        meso.days.forEach((day, dIdx) => {
+                            const found = day.blocks.find(b => b.id === blockId);
+                            if (found) {
+                                selectedBlock = found;
+                                currentMesoIndex = mIdx; // Assuming mesocycles are sorted by week
+                                currentDayIndex = dIdx;
+                            }
+                        });
+                    });
+                }
+
+                // Find reference block (Previous Week, Same Day, Same Order)
+                if (selectedBlock && currentMesoIndex > 0) {
+                    const prevMeso = mesocycles[currentMesoIndex - 1]; // Previous week
+                    // Try to match by day_number (more robust than index)
+                    const currentDayNumber = mesocycles[currentMesoIndex].days[currentDayIndex].day_number;
+                    const prevDay = prevMeso.days.find(d => d.day_number === currentDayNumber);
+
+                    if (prevDay) {
+                        // Try to match by order_index
+                        const foundRef = prevDay.blocks.find(b => b.order_index === selectedBlock!.order_index);
+                        if (foundRef) {
+                            referenceBlock = foundRef;
+                        }
+                    }
+                }
+
+                set({ selectedBlockId: blockId, referenceBlock });
+            },
 
             // Add a new block to a day
             addBlock: (dayId, type, format) => {

@@ -1009,7 +1009,8 @@ export async function saveMesocycleChanges(
                     .from('days')
                     .update({
                         is_rest_day: day.is_rest_day,
-                        notes: day.notes
+                        notes: day.notes,
+                        stimulus_id: day.stimulus_id
                     })
                     .eq('id', day.id);
 
@@ -1101,3 +1102,108 @@ export async function getTrainingMethodologies() {
     return data;
 }
 
+export async function updateTrainingMethodology(id: string, updates: Record<string, any>) {
+    const supabase = createServerClient();
+
+    const { data, error } = await supabase
+        .from('training_methodologies')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error updating training methodology:', error);
+        return { error: error.message };
+    }
+
+    revalidatePath('/editor');
+    revalidatePath('/knowledge');
+    return { data };
+}
+
+
+// ==========================================
+// STIMULUS ACTIONS
+// ==========================================
+
+export async function getStimulusFeatures() {
+    const supabase = createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Fetch defaults (coach_id is null) AND user specific ones
+    // Or just user specific ones if we assume coaches create their own from scratch
+    // For now, let's fetch both if user exists
+    let query = supabase
+        .from('stimulus_features')
+        .select('*')
+        .order('name', { ascending: true });
+
+    if (user) {
+        query = query.or(`coach_id.is.null,coach_id.eq.${user.id}`);
+    } else {
+        query = query.is('coach_id', null);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error('Error fetching stimulus features:', error);
+        return [];
+    }
+    return data;
+}
+
+export async function createStimulusFeature(feature: { name: string; color: string; description?: string }) {
+    const supabase = createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { error: 'Unauthorized' };
+
+    // Get coach profile to link
+    const { data: coach } = await supabase.from('coaches').select('id').eq('user_id', user.id).single();
+    if (!coach) return { error: 'Coach profile not found' };
+
+    const { data, error } = await supabase
+        .from('stimulus_features')
+        .insert({
+            coach_id: coach.id,
+            name: feature.name,
+            color: feature.color,
+            description: feature.description
+        })
+        .select()
+        .single();
+
+    if (error) return { error: error.message };
+    revalidatePath('/settings'); // Revalidate potential settings page
+    return { data };
+}
+
+export async function updateStimulusFeature(id: string, updates: Partial<{ name: string; color: string; description: string }>) {
+    const supabase = createServerClient();
+
+    const { data, error } = await supabase
+        .from('stimulus_features')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) return { error: error.message };
+    revalidatePath('/settings');
+    return { data };
+}
+
+export async function deleteStimulusFeature(id: string) {
+    const supabase = createServerClient();
+
+    const { error } = await supabase
+        .from('stimulus_features')
+        .delete()
+        .eq('id', id);
+
+    if (error) return { error: error.message };
+    revalidatePath('/settings');
+    return { success: true };
+}

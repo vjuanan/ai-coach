@@ -9,9 +9,10 @@ import { UserAvatar } from './UserAvatar';
 interface TopbarProps {
     title?: string;
     actions?: React.ReactNode;
+    prefixActions?: React.ReactNode;
 }
 
-export function Topbar({ title, actions }: TopbarProps) {
+export function Topbar({ title, actions, prefixActions }: TopbarProps) {
     const { isSidebarCollapsed } = useAppStore();
     const searchParams = useSearchParams();
     const pathname = usePathname();
@@ -66,6 +67,8 @@ export function Topbar({ title, actions }: TopbarProps) {
 
             {/* Right: Actions */}
             <div className="flex items-center gap-3">
+
+                {prefixActions}
 
                 {/* Notifications */}
                 <NotificationBell />

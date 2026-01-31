@@ -147,6 +147,16 @@ export interface Mesocycle {
     updated_at: string;
 }
 
+export interface StimulusFeature {
+    id: string;
+    coach_id: string | null;
+    name: string;
+    color: string;
+    description: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface Day {
     id: string;
     mesocycle_id: string;
@@ -155,8 +165,12 @@ export interface Day {
     date: string | null;
     is_rest_day: boolean;
     notes: string | null;
+    stimulus_id: string | null;
+    stimulus?: StimulusFeature | null; // Joined
     created_at: string;
     updated_at: string;
+    // Joined fields
+    blocks?: WorkoutBlock[];
 }
 
 export interface WorkoutBlock {
@@ -283,6 +297,11 @@ export interface Database {
                 Row: Exercise;
                 Insert: Omit<Exercise, 'id' | 'created_at'>;
                 Update: Partial<Omit<Exercise, 'id'>>;
+            };
+            stimulus_features: {
+                Row: StimulusFeature;
+                Insert: Omit<StimulusFeature, 'id' | 'created_at' | 'updated_at'>;
+                Update: Partial<Omit<StimulusFeature, 'id' | 'created_at' | 'updated_at'>>;
             };
         };
         Enums: {

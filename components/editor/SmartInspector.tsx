@@ -22,7 +22,7 @@ const QUICK_PRESETS = [
 ];
 
 export function SmartInspector({ isOpen, onClose }: SmartInspectorProps) {
-    const { selectedBlockId, selectBlock, mesocycles, updateBlock } = useEditorStore();
+    const { selectedBlockId, selectBlock, mesocycles, updateBlock, referenceBlock } = useEditorStore();
     const panelRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -144,6 +144,28 @@ export function SmartInspector({ isOpen, onClose }: SmartInspectorProps) {
                 <div className="flex-1 overflow-y-auto">
                     {selectedBlockId && selectedBlock ? (
                         <>
+                            {/* Reference Block Context (Previous Week) */}
+                            {referenceBlock && (
+                                <div className="mx-4 mt-4 p-3 bg-slate-50/80 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-600 opacity-90">
+                                    <div className="flex items-center gap-2 mb-2 text-cv-text-tertiary">
+                                        <Clock size={12} />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider">Semana Anterior</span>
+                                    </div>
+                                    <p className="text-sm font-medium text-cv-text-secondary mb-1">
+                                        {referenceBlock.config.content || referenceBlock.name || 'Sin nombre'}
+                                    </p>
+                                    {referenceBlock.config.reps && (
+                                        <div className="flex gap-2 text-xs text-cv-text-tertiary font-mono">
+                                            <span>{referenceBlock.config.sets} sets</span>
+                                            <span>x</span>
+                                            <span>{referenceBlock.config.reps} reps</span>
+                                            {referenceBlock.config.percentage && <span>@ {referenceBlock.config.percentage}</span>}
+                                        </div>
+                                    )}
+                                    {/* Add other config previews as needed */}
+                                </div>
+                            )}
+
                             {/* "The Brain" - Quick Context */}
                             {selectedBlock.type === 'strength_linear' && (
                                 <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-b border-amber-100 dark:border-amber-800/30">

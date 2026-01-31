@@ -16,10 +16,12 @@ import {
     Zap,
     Brain
 } from 'lucide-react';
-import type { TrainingPrinciple } from '@/lib/supabase/types';
+import type { TrainingPrinciple, TrainingMethodology } from '@/lib/supabase/types';
+import { MethodologySection } from './methodology-section';
 
 interface KnowledgeContentProps {
     principles: TrainingPrinciple[];
+    methodologies: TrainingMethodology[];
 }
 
 // Group by objective
@@ -409,7 +411,10 @@ function renderContentSection(content: Record<string, unknown>) {
     return elements.length > 0 ? <div className="space-y-4">{elements}</div> : null;
 }
 
-export function KnowledgeContent({ principles }: KnowledgeContentProps) {
+export function KnowledgeContent({ principles, methodologies }: KnowledgeContentProps) {
+    const [activeTab, setActiveTab] = useState<'principles' | 'methodologies'>('principles');
+
+    // Principles Logic
     const [selectedObjective, setSelectedObjective] = useState<ObjectiveType | 'all'>('all');
     const [selectedAuthor, setSelectedAuthor] = useState<string | 'all'>('all');
 
@@ -433,115 +438,142 @@ export function KnowledgeContent({ principles }: KnowledgeContentProps) {
 
     // Stats
     const totalPrinciples = principles.length;
-    const totalAuthors = authors.length;
-    const totalCategories = Array.from(new Set(principles.map(p => p.category))).length;
+    const totalMethodologies = methodologies.length;
 
     return (
-        <div className="space-y-5">
-            {/* Stats Cards - Compact inline */}
-            <div className="flex flex-wrap gap-3">
-                <div className="flex items-center gap-2 bg-white rounded-lg border border-cv-border/60 px-3 py-2">
-                    <div className="w-7 h-7 rounded-md bg-cv-accent/10 flex items-center justify-center">
-                        <BookOpen className="text-cv-accent" size={14} />
-                    </div>
-                    <div className="flex items-baseline gap-1.5">
-                        <span className="text-lg font-semibold text-cv-text-primary">{totalPrinciples}</span>
-                        <span className="text-xs text-cv-text-secondary">Principios</span>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2 bg-white rounded-lg border border-cv-border/60 px-3 py-2">
-                    <div className="w-7 h-7 rounded-md bg-purple-50 flex items-center justify-center">
-                        <User className="text-purple-500" size={14} />
-                    </div>
-                    <div className="flex items-baseline gap-1.5">
-                        <span className="text-lg font-semibold text-cv-text-primary">{totalAuthors}</span>
-                        <span className="text-xs text-cv-text-secondary">Expertos</span>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2 bg-white rounded-lg border border-cv-border/60 px-3 py-2">
-                    <div className="w-7 h-7 rounded-md bg-amber-50 flex items-center justify-center">
-                        <Layers className="text-amber-500" size={14} />
-                    </div>
-                    <div className="flex items-baseline gap-1.5">
-                        <span className="text-lg font-semibold text-cv-text-primary">{totalCategories}</span>
-                        <span className="text-xs text-cv-text-secondary">Categorías</span>
-                    </div>
+        <div className="space-y-6">
+            {/* Main Tabs */}
+            <div className="flex items-center justify-between">
+                <div className="flex p-1 bg-cv-bg-tertiary rounded-lg">
+                    <button
+                        onClick={() => setActiveTab('principles')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'principles'
+                                ? 'bg-white text-cv-text-primary shadow-sm'
+                                : 'text-cv-text-secondary hover:text-cv-text-primary'
+                            }`}
+                    >
+                        Principios ({totalPrinciples})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('methodologies')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'methodologies'
+                                ? 'bg-white text-cv-text-primary shadow-sm'
+                                : 'text-cv-text-secondary hover:text-cv-text-primary'
+                            }`}
+                    >
+                        Metodologías ({totalMethodologies})
+                    </button>
                 </div>
             </div>
 
-            {/* Filters - Compact inline */}
-            <div className="flex flex-wrap items-center gap-2">
-                <select
-                    value={selectedObjective}
-                    onChange={(e) => setSelectedObjective(e.target.value as ObjectiveType | 'all')}
-                    className="px-3 py-1.5 rounded-md border border-cv-border/60 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-cv-accent/30"
-                >
-                    <option value="all">Todos los objetivos</option>
-                    {Object.entries(objectiveConfig).map(([key, config]) => (
-                        <option key={key} value={key}>{config.label}</option>
-                    ))}
-                </select>
-                <select
-                    value={selectedAuthor}
-                    onChange={(e) => setSelectedAuthor(e.target.value)}
-                    className="px-3 py-1.5 rounded-md border border-cv-border/60 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-cv-accent/30"
-                >
-                    <option value="all">Todos los expertos</option>
-                    {Array.from(authors).map(author => (
-                        <option key={author} value={author}>{author}</option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Content by Objective */}
-            {selectedObjective === 'all' ? (
-                // Show all grouped by objective
-                Object.entries(objectiveConfig).map(([objectiveKey, config]) => {
-                    const objectivePrinciples = (groupedByObjective[objectiveKey as ObjectiveType] || [])
-                        .filter(p => selectedAuthor === 'all' || p.author === selectedAuthor);
-
-                    if (objectivePrinciples.length === 0) return null;
-
-                    return (
-                        <div key={objectiveKey} className="space-y-2">
-                            {/* Objective Header - Compact */}
-                            <div className={`rounded-lg px-3 py-2.5 ${config.bgClass}`}>
-                                <div className="flex items-center gap-2.5">
-                                    <div className={`w-8 h-8 rounded-md bg-gradient-to-br ${config.gradient} text-white flex items-center justify-center`}>
-                                        {React.cloneElement(config.icon as React.ReactElement, { size: 16 })}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="text-sm font-semibold text-cv-text-primary">{config.label}</h3>
-                                        <p className="text-[11px] text-cv-text-secondary truncate">{config.description}</p>
-                                    </div>
-                                    <span className="text-[10px] font-medium text-cv-text-tertiary bg-white/70 px-2 py-0.5 rounded-full">
-                                        {objectivePrinciples.length}
-                                    </span>
+            {activeTab === 'principles' ? (
+                <div className="space-y-5 animate-in fade-in zoom-in-95 duration-200">
+                    {/* Stats & Filters Row */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        {/* Stats - Compact inline */}
+                        <div className="flex flex-wrap gap-3">
+                            <div className="flex items-center gap-2 bg-white rounded-lg border border-cv-border/60 px-3 py-2">
+                                <div className="w-7 h-7 rounded-md bg-purple-50 flex items-center justify-center">
+                                    <User className="text-purple-500" size={14} />
+                                </div>
+                                <div className="flex items-baseline gap-1.5">
+                                    <span className="text-lg font-semibold text-cv-text-primary">{authors.length}</span>
+                                    <span className="text-xs text-cv-text-secondary">Expertos</span>
                                 </div>
                             </div>
-
-                            {/* Principles */}
-                            <div className="space-y-1.5 pl-3 border-l border-cv-border/50">
-                                {objectivePrinciples.map(principle => (
-                                    <PrincipleCard key={principle.id} principle={principle} />
-                                ))}
+                            <div className="flex items-center gap-2 bg-white rounded-lg border border-cv-border/60 px-3 py-2">
+                                <div className="w-7 h-7 rounded-md bg-amber-50 flex items-center justify-center">
+                                    <Layers className="text-amber-500" size={14} />
+                                </div>
+                                <div className="flex items-baseline gap-1.5">
+                                    <span className="text-lg font-semibold text-cv-text-primary">
+                                        {Array.from(new Set(principles.map(p => p.category))).length}
+                                    </span>
+                                    <span className="text-xs text-cv-text-secondary">Categorías</span>
+                                </div>
                             </div>
                         </div>
-                    );
-                })
-            ) : (
-                // Show filtered
-                <div className="space-y-1.5">
-                    {filteredPrinciples.map(principle => (
-                        <PrincipleCard key={principle.id} principle={principle} />
-                    ))}
-                </div>
-            )}
 
-            {filteredPrinciples.length === 0 && (
-                <div className="text-center py-12 bg-cv-bg-secondary rounded-xl">
-                    <BookOpen className="mx-auto text-cv-text-tertiary mb-3" size={48} />
-                    <p className="text-cv-text-secondary">No hay principios que coincidan con los filtros seleccionados.</p>
+                        {/* Filters */}
+                        <div className="flex items-center gap-2">
+                            <select
+                                value={selectedObjective}
+                                onChange={(e) => setSelectedObjective(e.target.value as ObjectiveType | 'all')}
+                                className="px-3 py-1.5 rounded-md border border-cv-border/60 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-cv-accent/30"
+                            >
+                                <option value="all">Todos los objetivos</option>
+                                {Object.entries(objectiveConfig).map(([key, config]) => (
+                                    <option key={key} value={key}>{config.label}</option>
+                                ))}
+                            </select>
+                            <select
+                                value={selectedAuthor}
+                                onChange={(e) => setSelectedAuthor(e.target.value)}
+                                className="px-3 py-1.5 rounded-md border border-cv-border/60 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-cv-accent/30"
+                            >
+                                <option value="all">Todos los expertos</option>
+                                {Array.from(authors).map(author => (
+                                    <option key={author} value={author}>{author}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Content by Objective */}
+                    {selectedObjective === 'all' ? (
+                        // Show all grouped by objective
+                        Object.entries(objectiveConfig).map(([objectiveKey, config]) => {
+                            const objectivePrinciples = (groupedByObjective[objectiveKey as ObjectiveType] || [])
+                                .filter(p => selectedAuthor === 'all' || p.author === selectedAuthor);
+
+                            if (objectivePrinciples.length === 0) return null;
+
+                            return (
+                                <div key={objectiveKey} className="space-y-2">
+                                    {/* Objective Header - Compact */}
+                                    <div className={`rounded-lg px-3 py-2.5 ${config.bgClass}`}>
+                                        <div className="flex items-center gap-2.5">
+                                            <div className={`w-8 h-8 rounded-md bg-gradient-to-br ${config.gradient} text-white flex items-center justify-center`}>
+                                                {React.cloneElement(config.icon as React.ReactElement, { size: 16 })}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="text-sm font-semibold text-cv-text-primary">{config.label}</h3>
+                                                <p className="text-[11px] text-cv-text-secondary truncate">{config.description}</p>
+                                            </div>
+                                            <span className="text-[10px] font-medium text-cv-text-tertiary bg-white/70 px-2 py-0.5 rounded-full">
+                                                {objectivePrinciples.length}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Principles */}
+                                    <div className="space-y-1.5 pl-3 border-l border-cv-border/50">
+                                        {objectivePrinciples.map(principle => (
+                                            <PrincipleCard key={principle.id} principle={principle} />
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        // Show filtered
+                        <div className="space-y-1.5">
+                            {filteredPrinciples.map(principle => (
+                                <PrincipleCard key={principle.id} principle={principle} />
+                            ))}
+                        </div>
+                    )}
+
+                    {filteredPrinciples.length === 0 && (
+                        <div className="text-center py-12 bg-cv-bg-secondary rounded-xl">
+                            <BookOpen className="mx-auto text-cv-text-tertiary mb-3" size={48} />
+                            <p className="text-cv-text-secondary">No hay principios que coincidan con los filtros seleccionados.</p>
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <div className="animate-in fade-in zoom-in-95 duration-200">
+                    <MethodologySection methodologies={methodologies} />
                 </div>
             )}
         </div>

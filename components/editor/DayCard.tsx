@@ -2,8 +2,9 @@
 
 import { useEditorStore } from '@/lib/store';
 import { WorkoutBlockCard } from './WorkoutBlockCard';
-import { Plus, Moon, MoreHorizontal, Edit3, Sun } from 'lucide-react';
+import { Plus, Moon, MoreHorizontal, Sun, Target } from 'lucide-react';
 import type { BlockType } from '@/lib/supabase/types';
+import * as Popover from '@radix-ui/react-popover';
 
 interface DraftWorkoutBlock {
     id: string;
@@ -25,6 +26,7 @@ interface DraftDay {
     name: string | null;
     is_rest_day: boolean;
     notes: string | null;
+    stimulus_id?: string | null;
     blocks: DraftWorkoutBlock[];
     isDirty?: boolean;
 }
@@ -44,10 +46,13 @@ const blockTypeOptions: { type: BlockType; label: string; color: string }[] = [
 ];
 
 export function DayCard({ day, dayName }: DayCardProps) {
-    const { addBlock, toggleRestDay, selectDay, selectedDayId, dropTargetDayId } = useEditorStore();
+    const { addBlock, toggleRestDay, selectDay, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures } = useEditorStore();
 
     const isSelected = selectedDayId === day.id;
     const isDropTarget = dropTargetDayId === day.id;
+
+    // Resolve Stimulus Color
+    const activeStimulus = day.stimulus_id ? stimulusFeatures.find(s => s.id === day.stimulus_id) : null;
 
     const handleAddBlock = (type: BlockType) => {
         addBlock(day.id, type);
@@ -103,15 +108,24 @@ export function DayCard({ day, dayName }: DayCardProps) {
     return (
         <div
             className={`
-                cv-card h-full flex flex-col p-4
+                cv-card h-full flex flex-col p-4 relative overflow-hidden
                 ${isSelected ? 'ring-2 ring-cv-accent shadow-lg' : ''}
                 ${isDropTarget ? 'cv-drop-target ring-2 ring-cv-accent/50' : ''}
                 transition-all duration-200 cursor-pointer hover:shadow-md
             `}
             onClick={() => selectDay(day.id)}
+            style={activeStimulus ? { borderColor: activeStimulus.color + '40' } : {}}
         >
+            {/* Stimulus Blur Effect */}
+            {activeStimulus && (
+                <div
+                    className="absolute inset-x-0 top-0 h-24 opacity-15 pointer-events-none blur-xl z-0"
+                    style={{ backgroundColor: activeStimulus.color }}
+                />
+            )}
+
             {/* Header - Improved hierarchy */}
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
+            <div className="relative z-10 flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex-1">
                     <div className="flex items-center gap-2">
                         <h3 className="text-base font-bold text-cv-text-primary">{dayName}</h3>
@@ -121,9 +135,67 @@ export function DayCard({ day, dayName }: DayCardProps) {
                             </span>
                         )}
                     </div>
-                    <p className="text-xs text-cv-text-tertiary mt-0.5">Día {day.day_number}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-xs text-cv-text-tertiary">Día {day.day_number}</p>
+                        {activeStimulus && (
+                            <span
+                                className="text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider"
+                                style={{
+                                    color: activeStimulus.color,
+                                    borderColor: activeStimulus.color + '40',
+                                    backgroundColor: activeStimulus.color + '10'
+                                }}
+                            >
+                                {activeStimulus.name}
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div className="flex items-center gap-1">
+                    {/* Stimulus Selector */}
+                    <Popover.Root>
+                        <Popover.Trigger asChild>
+                            <button
+                                className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                title="Cambiar foco del día"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <Target size={14} className={activeStimulus ? '' : 'opacity-40'} style={activeStimulus ? { color: activeStimulus.color } : {}} />
+                            </button>
+                        </Popover.Trigger>
+                        <Popover.Portal>
+                            <Popover.Content
+                                className="min-w-[220px] bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-2 z-50 animate-in fade-in zoom-in-95 duration-200"
+                                sideOffset={5}
+                            >
+                                <p className="text-xs font-semibold text-cv-text-tertiary mb-2 px-2">Foco / Estímulo</p>
+                                <div className="space-y-1">
+                                    <button
+                                        onClick={() => updateDay(day.id, { stimulus_id: null })}
+                                        className="w-full text-left px-2 py-1.5 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-cv-text-secondary flex items-center gap-2"
+                                    >
+                                        <div className="w-3 h-3 rounded-full border border-slate-300 dark:border-slate-600" />
+                                        <span>Sin asignar</span>
+                                    </button>
+                                    {stimulusFeatures.map(s => (
+                                        <button
+                                            key={s.id}
+                                            onClick={() => updateDay(day.id, { stimulus_id: s.id })}
+                                            className="w-full text-left px-2 py-1.5 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-cv-text-primary flex items-center gap-2"
+                                        >
+                                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: s.color }} />
+                                            <span>{s.name}</span>
+                                        </button>
+                                    ))}
+                                    {stimulusFeatures.length === 0 && (
+                                        <p className="text-xs text-cv-text-tertiary px-2 italic">Configura estímulos en ajustes</p>
+                                    )}
+                                </div>
+                                <Popover.Arrow className="fill-white dark:fill-slate-900 border-t border-l border-slate-200 dark:border-slate-700" />
+                            </Popover.Content>
+                        </Popover.Portal>
+                    </Popover.Root>
+
                     <button
                         onClick={(e) => { e.stopPropagation(); toggleRestDay(day.id); }}
                         className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors opacity-60 hover:opacity-100"

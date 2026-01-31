@@ -3,6 +3,23 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+    // ============================================
+    // 🚨 TEMPORARY BYPASS FOR TESTING 🚨
+    // Set to false to re-enable auth protection
+    // ============================================
+    const TEMPORARY_BYPASS_AUTH = true;
+
+    if (TEMPORARY_BYPASS_AUTH) {
+        // Skip ALL auth and RBAC checks - full access for testing
+        // Return next() immediately without creating Supabase client
+        return NextResponse.next({
+            request: {
+                headers: request.headers,
+            },
+        });
+    }
+    // ============================================
+
     let response = NextResponse.next({
         request: {
             headers: request.headers,
@@ -63,17 +80,6 @@ export async function middleware(request: NextRequest) {
     const isOnboardingPage = path.startsWith('/onboarding');
     const isPublic = path.startsWith('/api') || path.includes('.'); // Asset/API exclusions
 
-    // ============================================
-    // 🚨 TEMPORARY BYPASS FOR TESTING 🚨
-    // Set to false to re-enable auth protection
-    // ============================================
-    const TEMPORARY_BYPASS_AUTH = true;
-
-    if (TEMPORARY_BYPASS_AUTH) {
-        // Skip ALL auth and RBAC checks - full access for testing
-        return response;
-    }
-    // ============================================
 
     // 2. Auth Protection
     if (!user && !isAuthPage && !isPublic) {

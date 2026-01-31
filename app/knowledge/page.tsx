@@ -1,9 +1,11 @@
 import { AppShell } from '@/components/app-shell';
 import { getTrainingPrinciples } from './actions';
+import { getTrainingMethodologies } from '@/lib/actions';
 import { KnowledgeContent } from './knowledge-content';
 
 export default async function KnowledgePage() {
     const { data: principles, error } = await getTrainingPrinciples();
+    const methodologies = await getTrainingMethodologies();
 
     return (
         <AppShell title="Conocimiento">
@@ -21,7 +23,10 @@ export default async function KnowledgePage() {
                         <p className="text-sm mt-1">{error}</p>
                     </div>
                 ) : (
-                    <KnowledgeContent principles={principles || []} />
+                    <KnowledgeContent
+                        principles={principles || []}
+                        methodologies={methodologies || []}
+                    />
                 )}
             </div>
         </AppShell>

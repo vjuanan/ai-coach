@@ -5,13 +5,13 @@ import { useParams } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
 import { MesocycleEditor } from '@/components/editor';
 import { useEditorStore } from '@/lib/store';
-import { getFullProgramData } from '@/lib/actions';
+import { getFullProgramData, getStimulusFeatures } from '@/lib/actions';
 import { Loader2 } from 'lucide-react';
 
 export default function EditorPage() {
     const params = useParams();
     const programId = params.programId as string;
-    const { initializeEditor, loadMesocycles, resetEditor } = useEditorStore();
+    const { initializeEditor, loadMesocycles, resetEditor, programName } = useEditorStore();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -24,23 +24,27 @@ export default function EditorPage() {
             resetEditor();
 
             try {
-                const data = await getFullProgramData(programId);
+                const [programData, stimulusFeatures] = await Promise.all([
+                    getFullProgramData(programId),
+                    getStimulusFeatures()
+                ]);
 
-                if (!data || !data.program) {
+                if (!programData || !programData.program) {
                     setError('Programa no encontrado');
                     return;
                 }
 
                 initializeEditor(
-                    data.program.id,
-                    data.program.name,
-                    data.program.client,
-                    data.program.attributes
+                    programData.program.id,
+                    programData.program.name,
+                    programData.program.client,
+                    programData.program.attributes,
+                    stimulusFeatures || []
                 );
 
                 // Transform the DB structure to match Zustand store expected types
                 // The getFullProgramData action already does some sorting but we need to ensure types match
-                loadMesocycles(data.mesocycles as any); // Cast to any to bypass strict checks just for initial load
+                loadMesocycles(programData.mesocycles as any); // Cast to any to bypass strict checks just for initial load
 
             } catch (err) {
                 console.error(err);
@@ -77,7 +81,7 @@ export default function EditorPage() {
         <AppShell fullScreen={isFullScreen}>
             <MesocycleEditor
                 programId={programId}
-                programName={useEditorStore.getState().programName} // Use store name in case it changes
+                programName={programName}
                 isFullScreen={isFullScreen}
                 onToggleFullScreen={() => setIsFullScreen(!isFullScreen)}
             />
