@@ -106,9 +106,31 @@ export interface Program {
     description: string | null;
     status: 'draft' | 'active' | 'archived';
     is_template?: boolean;
+    attributes?: {
+        inspired_by?: string;
+        methodology?: string[];
+        gradient?: string;
+        focus?: string;
+        duration_weeks?: number;
+        days_per_week?: number;
+        key_concepts?: string[];
+    } | null;
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
+}
+
+export interface TrainingPrinciple {
+    id: string;
+    objective: string; // 'crossfit', 'strength', 'hypertrophy'
+    author: string;
+    category: string;
+    title: string;
+    content: Record<string, unknown>;
+    decision_framework: string | null;
+    context_factors: string[] | null;
+    tags: string[] | null;
+    created_at: string;
 }
 
 export interface Mesocycle {

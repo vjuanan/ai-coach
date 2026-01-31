@@ -124,50 +124,42 @@ export default function AdminUsersPage() {
 
     return (
         <AppShell title="Administración de Usuarios">
-            <div className="max-w-7xl mx-auto space-y-6">
+            <div className="max-w-7xl mx-auto space-y-4">
 
-                {/* Header & Feedback */}
-                <div className="flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold text-cv-text-primary">Usuarios y Roles</h1>
-                            <p className="text-cv-text-secondary">Gestiona el acceso y roles de todos los usuarios de la plataforma.</p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <div className="bg-cv-bg-tertiary p-2 rounded-lg border border-cv-border-subtle flex items-center gap-2">
-                                <Users className="text-cv-text-secondary" size={20} />
-                                <span className="font-mono font-bold text-cv-text-primary">{profiles.length}</span>
-                            </div>
-                            <button
-                                onClick={() => setIsCreateOpen(true)}
-                                className="cv-btn-primary flex items-center gap-2"
-                            >
-                                <UserPlus size={18} />
-                                Crear Usuario
-                            </button>
-                        </div>
+                {/* Action Buttons & Feedback */}
+                <div className="flex items-center justify-between gap-4">
+                    <div className="relative flex-1 max-w-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Buscar por nombre o email..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 bg-cv-bg-tertiary border border-cv-border-subtle rounded-lg text-cv-text-primary text-sm focus:outline-none focus:border-cv-accent transition-colors"
+                        />
                     </div>
-
-                    {message && (
-                        <div className={`p-4 rounded-lg flex items-center gap-2 ${message.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
-                            }`}>
-                            {message.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-                            {message.text}
+                    <div className="flex items-center gap-3">
+                        <div className="bg-cv-bg-tertiary p-2 rounded-lg border border-cv-border-subtle flex items-center gap-2">
+                            <Users className="text-cv-text-secondary" size={18} />
+                            <span className="font-mono font-bold text-cv-text-primary text-sm">{profiles.length}</span>
                         </div>
-                    )}
+                        <button
+                            onClick={() => setIsCreateOpen(true)}
+                            className="cv-btn-primary flex items-center gap-2"
+                        >
+                            <UserPlus size={18} />
+                            Crear Usuario
+                        </button>
+                    </div>
                 </div>
 
-                {/* Search */}
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" size={18} />
-                    <input
-                        type="text"
-                        placeholder="Buscar por nombre o email..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-cv-bg-tertiary border border-cv-border-subtle rounded-lg text-cv-text-primary focus:outline-none focus:border-cv-accent transition-colors"
-                    />
-                </div>
+                {message && (
+                    <div className={`p-3 rounded-lg flex items-center gap-2 text-sm ${message.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
+                        }`}>
+                        {message.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                        {message.text}
+                    </div>
+                )}
 
                 {/* Table */}
                 <div className="bg-cv-bg-secondary rounded-xl overflow-hidden shadow-sm border border-cv-border-subtle">

@@ -34,7 +34,7 @@ interface WeekViewProps {
         id: string;
         week_number: number;
         focus: string | null;
-        attributes?: Record<string, unknown>;
+        attributes?: Record<string, unknown> | null;
         days: DraftDay[];
     };
 }

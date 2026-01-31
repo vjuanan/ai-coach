@@ -1,12 +1,9 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import { Dumbbell, Flame, Clock, Copy, Loader2, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { Dumbbell, Flame, Clock, Loader2, ArrowRight, Sparkles, Copy } from 'lucide-react';
 import { copyTemplateToProgram } from '@/lib/actions';
-import type { Database } from '@/lib/supabase/types';
-
-type Program = Database['public']['Tables']['programs']['Row'];
+import type { Program } from '@/lib/supabase/types';
 
 interface TemplateGridProps {
     templates: Program[];
@@ -14,7 +11,6 @@ interface TemplateGridProps {
 
 export function TemplateGrid({ templates }: TemplateGridProps) {
     const [copyingId, setCopyingId] = useState<string | null>(null);
-    const router = useRouter();
 
     const handleUseTemplate = async (template: Program) => {
         if (copyingId) return;
@@ -23,13 +19,12 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
         try {
             const res = await copyTemplateToProgram(template.id);
             if (res.error) {
-                alert('Error copying template: ' + res.error);
+                alert('Error al duplicar template: ' + res.error);
                 setCopyingId(null);
                 return;
             }
 
             if (res.data) {
-                // Force navigation since router.push was unreliable in verification
                 window.location.assign(`/editor/${res.data.id}`);
             } else {
                 setCopyingId(null);
@@ -41,11 +36,39 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
     };
 
     const getVisuals = (program: Program) => {
+        // Use gradient from attributes if available
+        const attrs = program.attributes;
+        if (attrs?.gradient) {
+            const focus = attrs.focus || 'general';
+            let icon = Flame;
+            let label = 'General';
+
+            if (focus === 'crossfit' || program.name.toLowerCase().includes('crossfit')) {
+                icon = Flame;
+                label = 'CrossFit';
+            } else if (focus === 'strength' || program.name.toLowerCase().includes('fuerza')) {
+                icon = Dumbbell;
+                label = 'Fuerza';
+            } else if (focus === 'hypertrophy' || program.name.toLowerCase().includes('hipertrofia')) {
+                icon = Dumbbell;
+                label = 'Hipertrofia';
+            }
+
+            return {
+                icon,
+                bgClass: `bg-gradient-to-br ${attrs.gradient}`,
+                label,
+                textColor: 'text-white',
+                iconColor: 'text-white'
+            };
+        }
+
+        // Fallback to name-based detection
         const name = program.name.toLowerCase();
         if (name.includes('fuerza') || name.includes('strength')) {
             return {
                 icon: Dumbbell,
-                bgClass: 'bg-gradient-to-br from-[#FF416C] to-[#FF4B2B]',
+                bgClass: 'bg-gradient-to-br from-[#2193b0] to-[#6dd5ed]',
                 label: 'Fuerza',
                 textColor: 'text-white',
                 iconColor: 'text-white'
@@ -60,11 +83,11 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
                 iconColor: 'text-white'
             };
         }
-        if (name.includes('cardio') || name.includes('aerob') || name.includes('run')) {
+        if (name.includes('crossfit') || name.includes('galpin')) {
             return {
-                icon: Clock,
-                bgClass: 'bg-gradient-to-br from-[#11998e] to-[#38ef7d]',
-                label: 'Cardio',
+                icon: Flame,
+                bgClass: 'bg-gradient-to-br from-[#FF416C] to-[#FF4B2B]',
+                label: 'CrossFit',
                 textColor: 'text-white',
                 iconColor: 'text-white'
             };
@@ -92,23 +115,23 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
             {templates.map((template) => {
                 const { icon: Icon, bgClass, label, textColor, iconColor } = getVisuals(template);
                 const isCopying = copyingId === template.id;
+                const attrs = template.attributes;
 
                 return (
                     <div
                         key={template.id}
-                        onClick={() => handleUseTemplate(template)}
                         className={`
                             group relative overflow-hidden rounded-2xl p-6 h-full flex flex-col
-                            transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl hover:-translate-y-1
+                            transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1
                             ${bgClass}
-                            ${isCopying ? 'opacity-70 pointer-events-none' : ''}
                         `}
                     >
-                        {/* Overlay texture/gradient for depth */}
+                        {/* Overlay texture for depth */}
                         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                         <div className="relative z-10 flex flex-col h-full">
-                            <div className="flex justify-between items-start mb-6">
+                            {/* Header */}
+                            <div className="flex justify-between items-start mb-4">
                                 <div className={`w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center ${iconColor}`}>
                                     <Icon size={24} />
                                 </div>
@@ -117,24 +140,72 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
                                 </div>
                             </div>
 
-                            <h3 className={`text-xl font-bold mb-3 ${textColor}`}>
+                            {/* Title */}
+                            <h3 className={`text-xl font-bold mb-2 ${textColor}`}>
                                 {template.name}
                             </h3>
 
-                            <p className={`text-sm opacity-90 line-clamp-3 mb-6 flex-grow ${textColor}`}>
+                            {/* Inspired By Badge */}
+                            {attrs?.inspired_by && (
+                                <div className={`flex items-center gap-1 mb-3 ${textColor} opacity-80`}>
+                                    <Sparkles size={14} />
+                                    <span className="text-xs font-medium">Inspirado en {attrs.inspired_by}</span>
+                                </div>
+                            )}
+
+                            {/* Description */}
+                            <p className={`text-sm opacity-90 line-clamp-3 mb-4 flex-grow ${textColor}`}>
                                 {template.description || 'Sin descripción'}
                             </p>
 
-                            <div className={`flex items-center justify-between text-sm pt-4 border-t border-white/20 ${textColor}`}>
-                                <span className="font-medium opacity-90">
-                                    Click para usar
-                                </span>
+                            {/* Methodology Tags */}
+                            {attrs?.methodology && attrs.methodology.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mb-4">
+                                    {attrs.methodology.slice(0, 3).map((method, idx) => (
+                                        <span
+                                            key={idx}
+                                            className={`px-2 py-0.5 rounded-md bg-black/20 text-xs ${textColor} opacity-80`}
+                                        >
+                                            {method}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Duration info */}
+                            {attrs?.duration_weeks && (
+                                <div className={`text-xs mb-4 ${textColor} opacity-80`}>
+                                    {attrs.duration_weeks} semanas • {attrs.days_per_week || 4} días/semana
+                                </div>
+                            )}
+
+                            {/* Action Button */}
+                            <button
+                                onClick={() => handleUseTemplate(template)}
+                                disabled={isCopying}
+                                className={`
+                                    w-full flex items-center justify-center gap-2 
+                                    py-3 px-4 rounded-xl
+                                    bg-white/20 hover:bg-white/30 
+                                    backdrop-blur-sm border border-white/10
+                                    transition-all duration-200
+                                    ${textColor} font-medium
+                                    ${isCopying ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
+                                `}
+                            >
                                 {isCopying ? (
-                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <span>Duplicando...</span>
+                                    </>
                                 ) : (
-                                    <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-all" />
+                                    <>
+                                        <Copy className="w-4 h-4" />
+                                        <span>Duplicar y Editar</span>
+                                        <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-1 transition-transform" />
+                                    </>
                                 )}
-                            </div>
+                            </button>
                         </div>
                     </div>
                 );
