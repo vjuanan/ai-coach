@@ -55,6 +55,7 @@ interface EditorState {
     programId: string | null;
     programName: string;
     programClient: Client | null;
+    programAttributes: Record<string, unknown> | null;
 
     // Draft state (local changes)
     mesocycles: DraftMesocycle[];
@@ -72,7 +73,7 @@ interface EditorState {
     dropTargetDayId: string | null;
 
     // Actions
-    initializeEditor: (programId: string, name: string, client: Client | null) => void;
+    initializeEditor: (programId: string, name: string, client: Client | null, attributes?: Record<string, unknown> | null) => void;
     loadMesocycles: (mesocycles: DraftMesocycle[]) => void;
     resetEditor: () => void;
 
@@ -113,6 +114,7 @@ export const useEditorStore = create<EditorState>()(
             programId: null,
             programName: '',
             programClient: null,
+            programAttributes: null,
             mesocycles: [],
             selectedWeek: 1,
             selectedDayId: null,
@@ -124,11 +126,12 @@ export const useEditorStore = create<EditorState>()(
             dropTargetDayId: null,
 
             // Initialize editor with a program
-            initializeEditor: (programId, name, client) => {
+            initializeEditor: (programId, name, client, attributes) => {
                 set({
                     programId,
                     programName: name,
                     programClient: client,
+                    programAttributes: attributes || null,
                     selectedWeek: 1,
                     selectedDayId: null,
                     selectedBlockId: null,
@@ -147,6 +150,7 @@ export const useEditorStore = create<EditorState>()(
                     programId: null,
                     programName: '',
                     programClient: null,
+                    programAttributes: null,
                     mesocycles: [],
                     selectedWeek: 1,
                     selectedDayId: null,

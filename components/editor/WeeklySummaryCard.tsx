@@ -1,6 +1,6 @@
 'use client';
 
-import { Target, TrendingUp, Dumbbell, Clock } from 'lucide-react';
+import { Target, TrendingUp, Dumbbell, Clock, Crosshair } from 'lucide-react';
 import type { DraftMesocycle } from '@/lib/store';
 
 interface WeeklySummaryCardProps {
@@ -16,9 +16,10 @@ interface WeeklySummaryCardProps {
             }>;
         }>;
     };
+    programGlobalFocus?: string | null;
 }
 
-export function WeeklySummaryCard({ mesocycle }: WeeklySummaryCardProps) {
+export function WeeklySummaryCard({ mesocycle, programGlobalFocus }: WeeklySummaryCardProps) {
     // Calculate weekly stats
     const totalBlocks = mesocycle.days.reduce((acc, day) => acc + day.blocks.length, 0);
     const trainingDays = mesocycle.days.filter(d => d.blocks.length > 0).length;
@@ -40,6 +41,21 @@ export function WeeklySummaryCard({ mesocycle }: WeeklySummaryCardProps) {
 
     return (
         <div className="cv-card h-full flex flex-col bg-gradient-to-br from-slate-50/80 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/30 border-slate-200 dark:border-slate-700">
+            {/* Mesocycle Goal Banner - Show if programGlobalFocus exists */}
+            {programGlobalFocus && (
+                <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-cv-accent/15 via-purple-500/10 to-cv-accent/5 border border-cv-accent/20">
+                    <div className="flex items-center gap-2 mb-1">
+                        <Crosshair size={14} className="text-cv-accent" />
+                        <span className="text-xs font-semibold text-cv-accent uppercase tracking-wide">
+                            🎯 Objetivo del Mesociclo
+                        </span>
+                    </div>
+                    <p className="text-sm font-medium text-cv-text-primary leading-snug">
+                        {programGlobalFocus}
+                    </p>
+                </div>
+            )}
+
             {/* Header */}
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-2">
@@ -104,7 +120,7 @@ export function WeeklySummaryCard({ mesocycle }: WeeklySummaryCardProps) {
             )}
 
             {/* Empty state if no focus */}
-            {!focus && !considerations && (
+            {!focus && !considerations && !programGlobalFocus && (
                 <div className="flex-1 flex items-center justify-center text-cv-text-tertiary">
                     <p className="text-xs text-center">
                         Usa "Estrategia" para añadir<br />notas de enfoque semanal
@@ -114,3 +130,4 @@ export function WeeklySummaryCard({ mesocycle }: WeeklySummaryCardProps) {
         </div>
     );
 }
+

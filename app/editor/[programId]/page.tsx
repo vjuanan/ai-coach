@@ -34,7 +34,8 @@ export default function EditorPage() {
                 initializeEditor(
                     data.program.id,
                     data.program.name,
-                    data.program.client
+                    data.program.client,
+                    data.program.attributes
                 );
 
                 // Transform the DB structure to match Zustand store expected types

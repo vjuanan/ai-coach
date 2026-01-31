@@ -59,7 +59,8 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         selectedBlockId,
         selectWeek,
         selectBlock,
-        updateMesocycle
+        updateMesocycle,
+        programAttributes
     } = useEditorStore();
 
     // Auto-save hook
@@ -71,6 +72,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
     // Get current state for export
     const currentMesocycle = mesocycles.find(m => m.week_number === selectedWeek);
+    const globalFocus = (programAttributes?.global_focus as string) || null;
 
     // Open inspector when a block is selected
     useEffect(() => {
@@ -286,7 +288,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             {/* Main Editor Area - Full Bento Grid without sidebar squish */}
             <div className="flex-1 overflow-auto p-6 bg-gradient-to-br from-slate-50 to-white dark:from-cv-bg-primary dark:to-cv-bg-secondary">
                 {currentMesocycle ? (
-                    <WeekView mesocycle={currentMesocycle} />
+                    <WeekView mesocycle={currentMesocycle} programGlobalFocus={globalFocus} />
                 ) : (
                     <div className="flex items-center justify-center h-full">
                         <div className="text-center">

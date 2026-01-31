@@ -302,10 +302,16 @@ async function ensureCoach(supabase: any) {
 export async function createProgram(
     name: string,
     clientId: string | null,
-    focus?: string,
-    duration: number = 4
+    options?: {
+        globalFocus?: string;
+        startDate?: string;
+        endDate?: string;
+        duration?: number;
+        weeklyFocusLabels?: string[];
+    }
 ) {
-    console.log('createProgram: Starting creation', { name, clientId, duration });
+    const duration = options?.duration || 4;
+    console.log('createProgram: Starting creation', { name, clientId, duration, options });
 
     // Default client (Subject to RLS)
     let supabase = createServerClient();
@@ -333,6 +339,14 @@ export async function createProgram(
             )
             : supabase;
 
+        // Build attributes object with new meta-fields
+        const attributes: Record<string, any> = {};
+        if (options?.globalFocus) attributes.global_focus = options.globalFocus;
+        if (options?.startDate) attributes.start_date = options.startDate;
+        if (options?.endDate) attributes.end_date = options.endDate;
+        if (options?.duration) attributes.duration_weeks = options.duration;
+        if (options?.weeklyFocusLabels?.length) attributes.weekly_focus_labels = options.weeklyFocusLabels;
+
         // 1. Create Program
         const { data: program, error: progError } = await writeClient
             .from('programs')
@@ -340,7 +354,8 @@ export async function createProgram(
                 coach_id: coachId,
                 name,
                 client_id: clientId || null,
-                status: 'draft'
+                status: 'draft',
+                attributes: Object.keys(attributes).length > 0 ? attributes : null
             })
             .select()
             .single();
@@ -352,12 +367,20 @@ export async function createProgram(
 
         console.log('createProgram: Created program', program.id);
 
-        // 2. Create Mesocycles
-        const mesocycles = Array.from({ length: duration }).map((_, i) => ({
-            program_id: program.id,
-            week_number: i + 1,
-            focus: i === 0 && focus ? focus : (i === duration - 1 ? 'Deload' : 'Accumulation'),
-        }));
+        // 2. Create Mesocycles with optional weekly labels
+        const weeklyLabels = options?.weeklyFocusLabels || [];
+        const mesocycles = Array.from({ length: duration }).map((_, i) => {
+            // Use weekly label if provided, otherwise default
+            let focus = weeklyLabels[i] || '';
+            if (!focus) {
+                focus = i === duration - 1 ? 'Deload' : 'Accumulation';
+            }
+            return {
+                program_id: program.id,
+                week_number: i + 1,
+                focus,
+            };
+        });
 
         const { data: createdMesos, error: mesoError } = await writeClient
             .from('mesocycles')

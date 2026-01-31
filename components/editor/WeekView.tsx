@@ -37,11 +37,12 @@ interface WeekViewProps {
         attributes?: Record<string, unknown> | null;
         days: DraftDay[];
     };
+    programGlobalFocus?: string | null;
 }
 
 const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
-export function WeekView({ mesocycle }: WeekViewProps) {
+export function WeekView({ mesocycle, programGlobalFocus }: WeekViewProps) {
     // Ensure we have 7 days
     const days = Array.from({ length: 7 }, (_, i) => {
         const dayNumber = i + 1;
@@ -102,8 +103,9 @@ export function WeekView({ mesocycle }: WeekViewProps) {
                 ))}
 
                 {/* Weekly Summary - 8th slot */}
-                <WeeklySummaryCard mesocycle={mesocycle} />
+                <WeeklySummaryCard mesocycle={mesocycle} programGlobalFocus={programGlobalFocus} />
             </div>
         </div>
     );
 }
+
