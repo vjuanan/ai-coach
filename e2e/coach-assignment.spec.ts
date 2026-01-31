@@ -53,7 +53,7 @@ test.describe('Coach Assignment E2E', () => {
         await page.goto('/admin/clients');
         await page.screenshot({ path: 'e2e-screenshots/admin_clients_debug.png' });
 
-        const clientRow = page.locator('tr').filter({ hasText: 'Gofit' });
+        const clientRow = page.locator('tr').filter({ hasText: 'Gofit' }).first();
         await expect(clientRow).toBeVisible();
 
         // Find the coach select in that row
