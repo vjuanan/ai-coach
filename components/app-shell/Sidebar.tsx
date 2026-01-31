@@ -15,6 +15,7 @@ import {
     ChevronRight,
     Briefcase,
     Shield,
+    BookOpen,
 } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
@@ -33,6 +34,7 @@ const navItems: NavItem[] = [
     { label: 'Gimnasios', href: '/gyms', icon: <Building2 size={20} /> },
     { label: 'Programas', href: '/programs', icon: <Dumbbell size={20} /> },
     { label: 'Plantillas', href: '/templates', icon: <FileText size={20} /> },
+    { label: 'Conocimiento', href: '/knowledge', icon: <BookOpen size={20} /> },
     { label: 'Clientes', href: '/admin/clients', icon: <Briefcase size={20} /> },
     { label: 'Usuarios', href: '/admin/users', icon: <Shield size={20} /> },
 ];
