@@ -25,21 +25,26 @@ export async function getDashboardStats() {
         ) as any;
     }
 
-    // Run parallel queries for speed
+    // Run parallel queries for speed - include profile fetch for dynamic name
     const [
         { count: athletes },
         { count: gyms },
         { count: programs },
-        { count: blocks }
+        { count: blocks },
+        profileResult
     ] = await Promise.all([
         supabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'athlete'),
         supabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'gym'),
         supabase.from('programs').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-        supabase.from('workout_blocks').select('*', { count: 'exact', head: true })
+        supabase.from('workout_blocks').select('*', { count: 'exact', head: true }),
+        user ? supabase.from('profiles').select('full_name').eq('id', user.id).single() : Promise.resolve({ data: null })
     ]);
 
+    // Use profile name (most up-to-date), fallback to user_metadata, then 'Coach'
+    const userName = profileResult?.data?.full_name || user?.user_metadata?.full_name || 'Coach';
+
     return {
-        userName: user?.user_metadata?.full_name || 'Coach',
+        userName,
         athletes: athletes || 0,
         gyms: gyms || 0,
         activePrograms: programs || 0,
