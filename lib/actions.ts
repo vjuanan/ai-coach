@@ -39,6 +39,7 @@ export async function getDashboardStats() {
     ]);
 
     return {
+        userName: user?.user_metadata?.full_name || 'Coach',
         athletes: athletes || 0,
         gyms: gyms || 0,
         activePrograms: programs || 0,

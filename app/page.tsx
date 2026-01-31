@@ -22,7 +22,7 @@ import { useRouter } from 'next/navigation';
 export default function DashboardPage() {
     const { currentView } = useAppStore();
     const [programs, setPrograms] = useState<any[]>([]);
-    const [stats, setStats] = useState({ athletes: 0, gyms: 0, activePrograms: 0, totalBlocks: 0 });
+    const [stats, setStats] = useState({ athletes: 0, gyms: 0, activePrograms: 0, totalBlocks: 0, userName: 'Coach' });
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
@@ -53,7 +53,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold text-cv-text-primary">
-                            Bienvenido, Coach
+                            Bienvenido, {stats.userName}
                         </h1>
                         <p className="text-cv-text-secondary mt-1">
                             Resumen de actividad de tus {currentView === 'athletes' ? 'atletas' : 'gimnasios'} hoy.
@@ -168,7 +168,7 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </div>
-        </AppShell>
+        </AppShell >
     );
 }
 
