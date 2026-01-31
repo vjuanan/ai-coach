@@ -43,15 +43,39 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
     const getVisuals = (program: Program) => {
         const name = program.name.toLowerCase();
         if (name.includes('fuerza') || name.includes('strength')) {
-            return { icon: Dumbbell, color: 'text-red-400 bg-red-500/15', label: 'Fuerza' };
+            return {
+                icon: Dumbbell,
+                bgClass: 'bg-gradient-to-br from-[#FF416C] to-[#FF4B2B]',
+                label: 'Fuerza',
+                textColor: 'text-white',
+                iconColor: 'text-white'
+            };
         }
         if (name.includes('hipertrofia') || name.includes('hypertrophy')) {
-            return { icon: Dumbbell, color: 'text-purple-400 bg-purple-500/15', label: 'Hipertrofia' };
+            return {
+                icon: Dumbbell,
+                bgClass: 'bg-gradient-to-br from-[#8A2387] via-[#E94057] to-[#F27121]',
+                label: 'Hipertrofia',
+                textColor: 'text-white',
+                iconColor: 'text-white'
+            };
         }
         if (name.includes('cardio') || name.includes('aerob') || name.includes('run')) {
-            return { icon: Clock, color: 'text-green-400 bg-green-500/15', label: 'Cardio' };
+            return {
+                icon: Clock,
+                bgClass: 'bg-gradient-to-br from-[#11998e] to-[#38ef7d]',
+                label: 'Cardio',
+                textColor: 'text-white',
+                iconColor: 'text-white'
+            };
         }
-        return { icon: Flame, color: 'text-cv-accent bg-cv-accent-muted', label: 'General' };
+        return {
+            icon: Flame,
+            bgClass: 'bg-gradient-to-br from-[#2193b0] to-[#6dd5ed]',
+            label: 'General',
+            textColor: 'text-white',
+            iconColor: 'text-white'
+        };
     };
 
     if (templates.length === 0) {
@@ -66,7 +90,7 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {templates.map((template) => {
-                const { icon: Icon, color, label } = getVisuals(template);
+                const { icon: Icon, bgClass, label, textColor, iconColor } = getVisuals(template);
                 const isCopying = copyingId === template.id;
 
                 return (
@@ -74,39 +98,41 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
                         key={template.id}
                         onClick={() => handleUseTemplate(template)}
                         className={`
-                            group relative overflow-hidden rounded-xl border border-white/5 bg-cv-bg-surface p-6
-                            hover:border-cv-accent/50 transition-all duration-300 cursor-pointer
+                            group relative overflow-hidden rounded-2xl p-6 h-full flex flex-col
+                            transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl hover:-translate-y-1
+                            ${bgClass}
                             ${isCopying ? 'opacity-70 pointer-events-none' : ''}
                         `}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-cv-accent/0 to-cv-accent/0 group-hover:from-cv-accent/5 group-hover:to-transparent transition-all duration-500" />
+                        {/* Overlay texture/gradient for depth */}
+                        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                        <div className="relative z-10">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className={`w-12 h-12 rounded-lg ${color} flex items-center justify-center`}>
+                        <div className="relative z-10 flex flex-col h-full">
+                            <div className="flex justify-between items-start mb-6">
+                                <div className={`w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center ${iconColor}`}>
                                     <Icon size={24} />
                                 </div>
-                                <div className="px-2 py-1 rounded bg-white/5 text-xs text-cv-text-secondary border border-white/5">
+                                <div className={`px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-xs font-medium ${textColor} border border-white/10`}>
                                     {label}
                                 </div>
                             </div>
 
-                            <h3 className="text-lg font-semibold text-cv-text-primary mb-2 group-hover:text-cv-accent transition-colors">
+                            <h3 className={`text-xl font-bold mb-3 ${textColor}`}>
                                 {template.name}
                             </h3>
 
-                            <p className="text-sm text-cv-text-secondary line-clamp-2 h-10 mb-6">
+                            <p className={`text-sm opacity-90 line-clamp-3 mb-6 flex-grow ${textColor}`}>
                                 {template.description || 'Sin descripción'}
                             </p>
 
-                            <div className="flex items-center justify-between text-sm pt-4 border-t border-white/5">
-                                <span className="text-cv-text-tertiary">
+                            <div className={`flex items-center justify-between text-sm pt-4 border-t border-white/20 ${textColor}`}>
+                                <span className="font-medium opacity-90">
                                     Click para usar
                                 </span>
                                 {isCopying ? (
-                                    <Loader2 className="w-5 h-5 animate-spin text-cv-accent" />
+                                    <Loader2 className="w-5 h-5 animate-spin" />
                                 ) : (
-                                    <ArrowRight className="w-5 h-5 text-cv-text-secondary group-hover:text-cv-accent transform group-hover:translate-x-1 transition-all" />
+                                    <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-all" />
                                 )}
                             </div>
                         </div>
