@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
     BookOpen,
     Flame,
@@ -77,42 +77,42 @@ function PrincipleCard({ principle }: { principle: TrainingPrinciple }) {
 
     return (
         <div
-            className="bg-white rounded-xl border border-cv-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
+            className="bg-white rounded-lg border border-cv-border/60 hover:border-cv-border transition-all duration-150 overflow-hidden"
         >
             {/* Header - Always visible */}
             <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full p-5 flex items-start gap-4 text-left hover:bg-gray-50/50 transition-colors"
+                className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-gray-50/40 transition-colors"
             >
-                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-cv-bg-tertiary flex items-center justify-center text-cv-accent">
-                    {categoryIcons[principle.category] || <BookOpen size={18} />}
+                <div className="flex-shrink-0 w-8 h-8 rounded-md bg-cv-bg-tertiary flex items-center justify-center text-cv-accent">
+                    {categoryIcons[principle.category] || <BookOpen size={16} />}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-medium text-cv-accent bg-cv-accent/10 px-2 py-0.5 rounded-full">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-medium text-cv-accent">
                             {categoryLabel}
                         </span>
                     </div>
-                    <h4 className="font-semibold text-cv-text-primary text-lg">
+                    <h4 className="font-medium text-cv-text-primary text-sm leading-tight">
                         {principle.title}
                     </h4>
                     {typeof content.summary === 'string' && (
-                        <p className="text-sm text-cv-text-secondary mt-1 line-clamp-2">
+                        <p className="text-xs text-cv-text-secondary mt-0.5 line-clamp-1">
                             {String(content.summary)}
                         </p>
                     )}
                 </div>
 
                 <div className="flex-shrink-0 text-cv-text-tertiary">
-                    {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                    {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                 </div>
             </button>
 
             {/* Expanded Content */}
             {isExpanded && (
-                <div className="px-5 pb-5 border-t border-cv-border bg-gray-50/30">
-                    <div className="pt-4 space-y-4">
+                <div className="px-4 pb-4 border-t border-cv-border/50 bg-gray-50/20">
+                    <div className="pt-3 space-y-3">
                         {/* Main Content - Render based on structure */}
                         {renderContentSection(content)}
 
@@ -437,72 +437,60 @@ export function KnowledgeContent({ principles }: KnowledgeContentProps) {
     const totalCategories = Array.from(new Set(principles.map(p => p.category))).length;
 
     return (
-        <div className="space-y-8">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white rounded-xl border border-cv-border p-5">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-cv-accent/10 flex items-center justify-center">
-                            <BookOpen className="text-cv-accent" size={24} />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-cv-text-primary">{totalPrinciples}</p>
-                            <p className="text-sm text-cv-text-secondary">Principios</p>
-                        </div>
+        <div className="space-y-5">
+            {/* Stats Cards - Compact inline */}
+            <div className="flex flex-wrap gap-3">
+                <div className="flex items-center gap-2 bg-white rounded-lg border border-cv-border/60 px-3 py-2">
+                    <div className="w-7 h-7 rounded-md bg-cv-accent/10 flex items-center justify-center">
+                        <BookOpen className="text-cv-accent" size={14} />
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                        <span className="text-lg font-semibold text-cv-text-primary">{totalPrinciples}</span>
+                        <span className="text-xs text-cv-text-secondary">Principios</span>
                     </div>
                 </div>
-                <div className="bg-white rounded-xl border border-cv-border p-5">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                            <User className="text-purple-600" size={24} />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-cv-text-primary">{totalAuthors}</p>
-                            <p className="text-sm text-cv-text-secondary">Expertos</p>
-                        </div>
+                <div className="flex items-center gap-2 bg-white rounded-lg border border-cv-border/60 px-3 py-2">
+                    <div className="w-7 h-7 rounded-md bg-purple-50 flex items-center justify-center">
+                        <User className="text-purple-500" size={14} />
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                        <span className="text-lg font-semibold text-cv-text-primary">{totalAuthors}</span>
+                        <span className="text-xs text-cv-text-secondary">Expertos</span>
                     </div>
                 </div>
-                <div className="bg-white rounded-xl border border-cv-border p-5">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
-                            <Layers className="text-amber-600" size={24} />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-cv-text-primary">{totalCategories}</p>
-                            <p className="text-sm text-cv-text-secondary">Categorías</p>
-                        </div>
+                <div className="flex items-center gap-2 bg-white rounded-lg border border-cv-border/60 px-3 py-2">
+                    <div className="w-7 h-7 rounded-md bg-amber-50 flex items-center justify-center">
+                        <Layers className="text-amber-500" size={14} />
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                        <span className="text-lg font-semibold text-cv-text-primary">{totalCategories}</span>
+                        <span className="text-xs text-cv-text-secondary">Categorías</span>
                     </div>
                 </div>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-wrap gap-3 p-4 bg-white rounded-xl border border-cv-border">
-                <div className="flex-1 min-w-[200px]">
-                    <label className="text-xs font-medium text-cv-text-tertiary mb-1 block">Objetivo</label>
-                    <select
-                        value={selectedObjective}
-                        onChange={(e) => setSelectedObjective(e.target.value as ObjectiveType | 'all')}
-                        className="w-full px-3 py-2 rounded-lg border border-cv-border bg-cv-bg-primary text-sm focus:outline-none focus:ring-2 focus:ring-cv-accent/20"
-                    >
-                        <option value="all">Todos los objetivos</option>
-                        {Object.entries(objectiveConfig).map(([key, config]) => (
-                            <option key={key} value={key}>{config.label}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="flex-1 min-w-[200px]">
-                    <label className="text-xs font-medium text-cv-text-tertiary mb-1 block">Experto</label>
-                    <select
-                        value={selectedAuthor}
-                        onChange={(e) => setSelectedAuthor(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-cv-border bg-cv-bg-primary text-sm focus:outline-none focus:ring-2 focus:ring-cv-accent/20"
-                    >
-                        <option value="all">Todos los expertos</option>
-                        {Array.from(authors).map(author => (
-                            <option key={author} value={author}>{author}</option>
-                        ))}
-                    </select>
-                </div>
+            {/* Filters - Compact inline */}
+            <div className="flex flex-wrap items-center gap-2">
+                <select
+                    value={selectedObjective}
+                    onChange={(e) => setSelectedObjective(e.target.value as ObjectiveType | 'all')}
+                    className="px-3 py-1.5 rounded-md border border-cv-border/60 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-cv-accent/30"
+                >
+                    <option value="all">Todos los objetivos</option>
+                    {Object.entries(objectiveConfig).map(([key, config]) => (
+                        <option key={key} value={key}>{config.label}</option>
+                    ))}
+                </select>
+                <select
+                    value={selectedAuthor}
+                    onChange={(e) => setSelectedAuthor(e.target.value)}
+                    className="px-3 py-1.5 rounded-md border border-cv-border/60 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-cv-accent/30"
+                >
+                    <option value="all">Todos los expertos</option>
+                    {Array.from(authors).map(author => (
+                        <option key={author} value={author}>{author}</option>
+                    ))}
+                </select>
             </div>
 
             {/* Content by Objective */}
@@ -515,25 +503,25 @@ export function KnowledgeContent({ principles }: KnowledgeContentProps) {
                     if (objectivePrinciples.length === 0) return null;
 
                     return (
-                        <div key={objectiveKey} className="space-y-4">
-                            {/* Objective Header */}
-                            <div className={`rounded-xl p-5 ${config.bgClass}`}>
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${config.gradient} text-white flex items-center justify-center`}>
-                                        {config.icon}
+                        <div key={objectiveKey} className="space-y-2">
+                            {/* Objective Header - Compact */}
+                            <div className={`rounded-lg px-3 py-2.5 ${config.bgClass}`}>
+                                <div className="flex items-center gap-2.5">
+                                    <div className={`w-8 h-8 rounded-md bg-gradient-to-br ${config.gradient} text-white flex items-center justify-center`}>
+                                        {React.cloneElement(config.icon as React.ReactElement, { size: 16 })}
                                     </div>
-                                    <div>
-                                        <h3 className="text-lg font-bold text-cv-text-primary">{config.label}</h3>
-                                        <p className="text-sm text-cv-text-secondary">{config.description}</p>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-sm font-semibold text-cv-text-primary">{config.label}</h3>
+                                        <p className="text-[11px] text-cv-text-secondary truncate">{config.description}</p>
                                     </div>
-                                    <span className="ml-auto px-3 py-1 bg-white/80 rounded-full text-sm font-medium text-cv-text-secondary">
-                                        {objectivePrinciples.length} principios
+                                    <span className="text-[10px] font-medium text-cv-text-tertiary bg-white/70 px-2 py-0.5 rounded-full">
+                                        {objectivePrinciples.length}
                                     </span>
                                 </div>
                             </div>
 
                             {/* Principles */}
-                            <div className="space-y-3 pl-4 border-l-2 border-cv-border">
+                            <div className="space-y-1.5 pl-3 border-l border-cv-border/50">
                                 {objectivePrinciples.map(principle => (
                                     <PrincipleCard key={principle.id} principle={principle} />
                                 ))}
@@ -543,7 +531,7 @@ export function KnowledgeContent({ principles }: KnowledgeContentProps) {
                 })
             ) : (
                 // Show filtered
-                <div className="space-y-3">
+                <div className="space-y-1.5">
                     {filteredPrinciples.map(principle => (
                         <PrincipleCard key={principle.id} principle={principle} />
                     ))}
