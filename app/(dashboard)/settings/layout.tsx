@@ -1,6 +1,6 @@
 'use client';
 
-import { AppShell } from '@/components/app-shell';
+import { Topbar } from '@/components/app-shell/Topbar';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { User, Zap } from 'lucide-react';
@@ -12,8 +12,10 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
         { name: 'Perfil', href: '/settings', icon: User },
     ];
 
+
     return (
-        <AppShell title="Configuración">
+        <>
+            <Topbar title="Configuración" />
             <div className="flex flex-col h-full bg-cv-bg-primary">
                 {/* Tabs Navigation */}
                 <div className="flex items-center gap-1 border-b border-cv-border px-6 pt-4 mb-6">
@@ -43,6 +45,6 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                     {children}
                 </div>
             </div>
-        </AppShell>
+        </>
     );
 }

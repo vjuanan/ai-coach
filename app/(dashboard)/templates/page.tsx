@@ -1,5 +1,5 @@
 
-import { AppShell } from '@/components/app-shell';
+import { Topbar } from '@/components/app-shell/Topbar';
 import { getTemplates } from '@/lib/actions';
 import { TemplateGrid } from './template-grid';
 
@@ -8,8 +8,10 @@ export const dynamic = 'force-dynamic';
 export default async function TemplatesPage() {
     const templates = await getTemplates();
 
+
     return (
-        <AppShell title="Plantillas">
+        <>
+            <Topbar title="Plantillas" />
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="mb-6">
@@ -25,6 +27,6 @@ export default async function TemplatesPage() {
                     <p>Más plantillas próximamente...</p>
                 </div>
             </div>
-        </AppShell>
+        </>
     );
 }

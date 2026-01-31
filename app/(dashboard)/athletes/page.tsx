@@ -176,18 +176,20 @@ export default function AthletesPage() {
     );
 
     return (
-        <AppShell
-            title="Atletas"
-            prefixActions={
-                <button
-                    onClick={() => setShowAddModal(true)}
-                    className="cv-btn-secondary p-1.5 h-9 w-9 flex items-center justify-center bg-transparent border-0 ring-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-                    title="Añadir Atleta"
-                >
-                    <Plus size={20} className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors" />
-                </button>
-            }
-        >
+
+        <>
+            <Topbar
+                title="Atletas"
+                prefixActions={
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        className="cv-btn-secondary p-1.5 h-9 w-9 flex items-center justify-center bg-transparent border-0 ring-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        title="Añadir Atleta"
+                    >
+                        <Plus size={20} className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors" />
+                    </button>
+                }
+            />
             <div className="max-w-6xl mx-auto">
                 {/* Search removed - using global Topbar search */}
 
@@ -506,7 +508,7 @@ export default function AthletesPage() {
                     </>
                 )}
             </div>
-        </div>
+
         </>
     );
 }

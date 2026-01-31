@@ -1,6 +1,6 @@
 'use client';
 
-import { AppShell } from '@/components/app-shell';
+import { Topbar } from '@/components/app-shell/Topbar';
 import { GlobalCreateButton } from '@/components/app-shell/GlobalCreateButton';
 import { useState, useEffect } from 'react';
 import { useEscapeKey } from '@/hooks/use-escape-key';
@@ -99,10 +99,12 @@ export default function ProgramsPage() {
     );
 
     return (
-        <AppShell
-            title="Programas"
-            actions={<GlobalCreateButton />}
-        >
+
+        <>
+            <Topbar
+                title="Programas"
+                actions={<GlobalCreateButton />}
+            />
             <div className="max-w-6xl mx-auto">
                 {/* Search removed - using global Topbar search */}
 
@@ -201,6 +203,6 @@ export default function ProgramsPage() {
                     </>
                 )}
             </div>
-        </AppShell>
+        </>
     );
 }

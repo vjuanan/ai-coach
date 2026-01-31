@@ -1,4 +1,4 @@
-import { AppShell } from '@/components/app-shell';
+import { Topbar } from '@/components/app-shell/Topbar';
 import { getTrainingPrinciples } from './actions';
 import { getTrainingMethodologies } from '@/lib/actions';
 import { KnowledgeContent } from './knowledge-content';
@@ -8,7 +8,9 @@ export default async function KnowledgePage() {
     const methodologies = await getTrainingMethodologies();
 
     return (
-        <AppShell title="Conocimiento">
+
+        <>
+            <Topbar title="Conocimiento" />
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
@@ -29,6 +31,6 @@ export default async function KnowledgePage() {
                     />
                 )}
             </div>
-        </AppShell>
+        </>
     );
 }

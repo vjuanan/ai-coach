@@ -810,6 +810,49 @@ export async function updateUserRole(userId: string, newRole: 'coach' | 'athlete
     return { success: true };
 }
 
+export async function deleteUser(userId: string) {
+    const supabase = createServerClient();
+
+    // Verify Admin
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthorized');
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') throw new Error('Forbidden: Admins only');
+
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        throw new Error('Server Config Error: Missing Admin Key');
+    }
+
+    const adminSupabase = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
+    // 1. Delete from Auth (This usually cascades if set up correctly, but we can't rely on it fully for all tables without foreign keys)
+    const { error: authError } = await adminSupabase.auth.admin.deleteUser(userId);
+    if (authError) throw new Error(authError.message);
+
+    // 2. Explicitly delete from profiles (Optional if cascade is set, but good for safety)
+    const { error: profileError } = await adminSupabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+    // Ignore profile error if it's already gone due to cascade
+    if (profileError && profileError.code !== 'PGRST116') {
+        console.warn('Profile deletion warning:', profileError);
+    }
+
+    revalidatePath('/admin/users');
+    return { success: true };
+}
+
 export async function resetUserPassword(userId: string) {
     // Note: This sends a password reset email if Supabase Auth SMTP is configured.
     const supabase = createServerClient();

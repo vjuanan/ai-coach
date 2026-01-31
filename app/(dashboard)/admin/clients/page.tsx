@@ -1,4 +1,4 @@
-import { AppShell } from '@/components/app-shell';
+import { Topbar } from '@/components/app-shell/Topbar';
 import { getAdminClients, getCoaches } from '@/lib/actions';
 import { ClientsTable } from '@/components/admin/clients-table';
 
@@ -11,7 +11,8 @@ export default async function AdminClientsPage() {
     ]);
 
     return (
-        <AppShell title="Administración de Clientes">
+        <>
+            <Topbar title="Administración de Clientes" />
             <div className="space-y-6">
                 <div>
                     <p className="text-cv-text-secondary">
@@ -21,6 +22,6 @@ export default async function AdminClientsPage() {
 
                 <ClientsTable clients={clients} coaches={coaches} />
             </div>
-        </AppShell>
+        </>
     );
 }
