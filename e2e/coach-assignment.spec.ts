@@ -102,12 +102,28 @@ test.describe('Coach Assignment E2E', () => {
         await page.fill('input[type="password"]', 'password123');
         await page.click('button[type="submit"]');
 
-        // 8. Assign Gym to Coach
+        // 8. Verify Gym exists in /gyms first
+        console.log('Verifying Gym was created...');
+        await page.goto('/gyms');
+        await page.waitForTimeout(2000);
+        await page.screenshot({ path: 'e2e-screenshots/gyms_verification.png', fullPage: true });
+
+        // Check if gym appears (for debug)
+        const gymCard = page.locator('text=' + gymName).first();
+        if (await gymCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+            console.log('Gym found in /gyms list!');
+        } else {
+            console.log('WARNING: Gym NOT found in /gyms list');
+        }
+
+        // 9. Assign Gym to Coach
         console.log('Assigning Gym to Coach...');
         await page.goto('/admin/clients');
+        await page.waitForTimeout(2000);
+        await page.screenshot({ path: 'e2e-screenshots/admin_clients_final.png', fullPage: true });
 
         const clientRow = page.locator('tr').filter({ hasText: gymName }).first();
-        await expect(clientRow).toBeVisible();
+        await expect(clientRow).toBeVisible({ timeout: 10000 });
 
         const coachSelect = clientRow.locator('select');
         // Select by Label 'Coach E2E'

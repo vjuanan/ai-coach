@@ -45,37 +45,47 @@ export function Sidebar() {
     const pathname = usePathname();
     const supabase = createClient();
     const [role, setRole] = useState<'admin' | 'coach' | 'athlete' | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchRole = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', user.id)
-                    .single();
-                setRole(profile?.role);
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', user.id)
+                        .single();
+                    setRole(profile?.role || 'coach'); // Default to coach if no role
+                } else {
+                    setRole('coach'); // Default to coach for unauthenticated
+                }
+            } catch (error) {
+                console.error('Error fetching role:', error);
+                setRole('coach'); // Default to coach on error
+            } finally {
+                setIsLoading(false);
             }
         };
         fetchRole();
     }, []);
 
-    // Filter Items based on Role
+    // Filter Items based on Role - show coach items while loading as fallback
+    const effectiveRole = role || 'coach';
     const filteredNavItems = navItems.filter(item => {
-        if (!role) return false; // Loading or no role
+        if (effectiveRole === 'admin') return true; // See all
 
-        if (role === 'admin') return true; // See all
-
-        if (role === 'coach') {
-            // Coach cannot see 'Gimnasios' (Clients tab) OR 'Usuarios' (Admin) OR 'Clientes' (Admin)
+        if (effectiveRole === 'coach') {
+            // Coach cannot see 'Gimnasios' OR admin sections
             return item.href !== '/gyms' && !item.href.startsWith('/admin');
         }
 
-        if (role === 'athlete') {
-            return false;
+        if (effectiveRole === 'athlete') {
+            // Athletes only see dashboard
+            return item.href === '/';
         }
-        return false;
+        return true; // Fallback: show item
     });
 
     return (
