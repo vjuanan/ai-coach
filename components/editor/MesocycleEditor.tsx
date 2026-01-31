@@ -1,13 +1,25 @@
 'use client';
 
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo, useEffect } from 'react';
 import { useEditorStore } from '@/lib/store';
 import { WeekView } from './WeekView';
-import { BlockEditor } from './BlockEditor';
+import { SmartInspector } from './SmartInspector';
 import { MesocycleStrategyForm, type MesocycleStrategy } from './MesocycleStrategyForm';
-import { Save, Undo, Redo, Download, Eye, Target, Loader2, CheckCircle2, Maximize2, Minimize2, ArrowLeft } from 'lucide-react';
+import { useAutoSave, type SaveStatus } from './useAutoSave';
+import {
+    Undo,
+    Redo,
+    Download,
+    Eye,
+    Target,
+    Loader2,
+    CheckCircle2,
+    Cloud,
+    CloudOff,
+    Edit3,
+    ArrowLeft
+} from 'lucide-react';
 import Link from 'next/link';
-import { saveMesocycleChanges } from '@/lib/actions';
 import { ExportPreview } from '@/components/export';
 
 interface MesocycleEditorProps {
@@ -17,23 +29,61 @@ interface MesocycleEditorProps {
     onToggleFullScreen?: () => void;
 }
 
+// Save status indicator component
+function SaveStatusIndicator({ status }: { status: SaveStatus }) {
+    const configs = {
+        idle: { icon: Cloud, text: '', className: 'text-cv-text-tertiary' },
+        typing: { icon: Edit3, text: 'Editando...', className: 'text-amber-500' },
+        saving: { icon: Loader2, text: 'Guardando...', className: 'text-cv-accent animate-pulse' },
+        saved: { icon: CheckCircle2, text: 'Guardado', className: 'text-emerald-500' },
+        error: { icon: CloudOff, text: 'Error', className: 'text-red-500' },
+    };
+
+    const config = configs[status];
+    const Icon = config.icon;
+
+    if (status === 'idle') return null;
+
+    return (
+        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 ${config.className} transition-all`}>
+            <Icon size={14} className={status === 'saving' ? 'animate-spin' : ''} />
+            <span className="text-xs font-medium">{config.text}</span>
+        </div>
+    );
+}
+
 export function MesocycleEditor({ programId, programName, isFullScreen = false, onToggleFullScreen }: MesocycleEditorProps) {
     const {
         mesocycles,
         selectedWeek,
         selectedBlockId,
-        hasUnsavedChanges,
         selectWeek,
-        markAsClean,
+        selectBlock,
         updateMesocycle
     } = useEditorStore();
 
-    const [isSaving, setIsSaving] = useState(false);
+    // Auto-save hook
+    const { status: saveStatus, forceSave } = useAutoSave({ programId, debounceMs: 500 });
+
     const [showExport, setShowExport] = useState(false);
     const [showStrategy, setShowStrategy] = useState(false);
+    const [inspectorOpen, setInspectorOpen] = useState(false);
 
     // Get current state for export
     const currentMesocycle = mesocycles.find(m => m.week_number === selectedWeek);
+
+    // Open inspector when a block is selected
+    useEffect(() => {
+        if (selectedBlockId) {
+            setInspectorOpen(true);
+        }
+    }, [selectedBlockId]);
+
+    // Close inspector and deselect block
+    const handleCloseInspector = useCallback(() => {
+        setInspectorOpen(false);
+        selectBlock(null);
+    }, [selectBlock]);
 
     // Extract current strategy from mesocycle attributes
     const currentStrategy = useMemo((): MesocycleStrategy | undefined => {
@@ -66,13 +116,10 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
     // Build monthly strategy with progressions
     const monthlyStrategy = useMemo(() => {
-        // Get the first mesocycle's focus as the main focus
         const firstMeso = mesocycles.find(m => m.week_number === 1);
         const firstAttrs = (firstMeso?.attributes || {}) as Record<string, unknown>;
 
-        // Extract progressions from strength blocks across all weeks
         const progressionMap = new Map<string, string[]>();
-
         mesocycles
             .sort((a, b) => a.week_number - b.week_number)
             .forEach(meso => {
@@ -89,7 +136,6 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                                 progressionMap.set(block.name, []);
                             }
                             const arr = progressionMap.get(block.name)!;
-                            // Fill gaps if needed
                             while (arr.length < meso.week_number - 1) {
                                 arr.push('-');
                             }
@@ -104,46 +150,26 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             progression,
         }));
 
-        // Build objectives from all weeks' strategy considerations
         const objectives: string[] = [];
         mesocycles.forEach(meso => {
             const attrs = (meso.attributes || {}) as Record<string, unknown>;
             if (attrs.considerations && typeof attrs.considerations === 'string') {
                 const lines = attrs.considerations.split('\n').filter(l => l.trim());
-                objectives.push(...lines.slice(0, 1)); // Take first line from each week
+                objectives.push(...lines.slice(0, 1));
             }
         });
 
         return {
             focus: (firstAttrs.focus as string) || firstMeso?.focus || programName,
             duration: `${mesocycles.length} semanas`,
-            objectives: Array.from(new Set(objectives)).slice(0, 4), // Unique, max 4
+            objectives: Array.from(new Set(objectives)).slice(0, 4),
             progressions,
         };
     }, [mesocycles, programName]);
 
-    // Export strategy for PDF (current week - backwards compat)
     const exportStrategy = currentStrategy;
 
-    const handleSave = useCallback(async () => {
-        setIsSaving(true);
-        try {
-            const result = await saveMesocycleChanges(programId, mesocycles);
-            if (result.success) {
-                markAsClean();
-            } else {
-                alert('Error al guardar cambios');
-            }
-        } catch (error) {
-            console.error(error);
-            alert('Error saving changes');
-        } finally {
-            setIsSaving(false);
-        }
-    }, [programId, mesocycles, markAsClean]);
-
     const handleSaveStrategy = useCallback((strategy: MesocycleStrategy) => {
-        // Update the current mesocycle's focus and attributes
         updateMesocycle(selectedWeek, {
             focus: strategy.focus,
             attributes: {
@@ -157,7 +183,6 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         setShowStrategy(false);
     }, [selectedWeek, updateMesocycle, currentMesocycle]);
 
-    // Check if strategy has content to show indicator
     const hasStrategy = Boolean(
         currentStrategy?.focus ||
         currentStrategy?.considerations ||
@@ -166,124 +191,116 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
     );
 
     return (
-        <div className="flex flex-col h-[calc(100vh-4rem)]">
-            {/* Editor Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-cv-border bg-cv-bg-secondary/50">
+        <div className="flex flex-col h-screen">
+            {/* Editor Header - Refined with more height */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-cv-border bg-white/80 dark:bg-cv-bg-secondary/80 backdrop-blur-sm flex-shrink-0">
+                {/* Left Section - Breadcrumbs & Save Status */}
                 <div className="flex items-center gap-4">
                     {/* Back Button */}
                     <Link
                         href="/programs"
-                        className="cv-btn-ghost p-2 flex items-center gap-2 text-cv-text-secondary hover:text-cv-text-primary transition-colors"
+                        className="cv-btn-ghost p-2.5 rounded-xl flex items-center gap-2 text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         title="Volver a Programas"
                     >
                         <ArrowLeft size={20} />
                     </Link>
-                    <div className="w-px h-6 bg-cv-border" />
-                    <h2 className="text-xl font-semibold text-cv-text-primary">
-                        {programName}
-                    </h2>
-                    {/* Strategy Button */}
-                    <button
-                        onClick={() => setShowStrategy(true)}
-                        className={`cv-btn-ghost px-3 py-1.5 flex items-center gap-2 text-sm ${hasStrategy ? 'text-cv-accent' : ''}`}
-                        title="Estrategia del Mesociclo"
-                    >
-                        <Target size={16} />
-                        Estrategia
-                        {hasStrategy && (
-                            <span className="w-2 h-2 rounded-full bg-cv-accent animate-pulse" />
-                        )}
-                    </button>
-                    {hasUnsavedChanges ? (
-                        <span className="cv-badge-warning">Cambios sin guardar</span>
-                    ) : (
-                        <span className="cv-badge-success flex items-center gap-1">
-                            <CheckCircle2 size={12} />
-                            Guardado
-                        </span>
-                    )}
+
+                    <div className="w-px h-8 bg-cv-border" />
+
+                    {/* Program Name (Editable feel) */}
+                    <div>
+                        <h2 className="text-lg font-bold text-cv-text-primary flex items-center gap-2">
+                            {programName}
+                            {currentMesocycle?.focus && (
+                                <>
+                                    <span className="text-cv-text-tertiary">/</span>
+                                    <span className="text-cv-accent font-medium">{currentMesocycle.focus}</span>
+                                </>
+                            )}
+                        </h2>
+                    </div>
+
+                    {/* Save Status Indicator */}
+                    <SaveStatusIndicator status={saveStatus} />
                 </div>
 
-                {/* Week Tabs */}
-                <div className="flex items-center gap-1 bg-cv-bg-tertiary rounded-lg p-1">
+                {/* Center - Week Tabs */}
+                <div className="flex items-center gap-1 bg-slate-100 dark:bg-cv-bg-tertiary rounded-xl p-1">
                     {[1, 2, 3, 4].map(week => (
                         <button
                             key={week}
                             onClick={() => selectWeek(week)}
                             className={`
-                px-4 py-1.5 rounded-md text-sm font-medium transition-all
-                ${selectedWeek === week
-                                    ? 'bg-cv-accent text-white shadow-cv-sm'
-                                    : 'text-cv-text-secondary hover:text-cv-text-primary hover:bg-cv-bg-elevated'}
-              `}
+                                px-5 py-2 rounded-lg text-sm font-medium transition-all
+                                ${selectedWeek === week
+                                    ? 'bg-white dark:bg-cv-accent text-cv-text-primary dark:text-white shadow-sm'
+                                    : 'text-cv-text-secondary hover:text-cv-text-primary hover:bg-white/50 dark:hover:bg-cv-bg-elevated'}
+                            `}
                         >
                             Semana {week}
                         </button>
                     ))}
                 </div>
 
-                {/* Actions */}
+                {/* Right Section - Actions */}
                 <div className="flex items-center gap-2">
-                    <button className="cv-btn-ghost p-2" title="Undo">
+                    {/* Strategy Button */}
+                    <button
+                        onClick={() => setShowStrategy(true)}
+                        className={`cv-btn-ghost px-4 py-2.5 rounded-xl flex items-center gap-2 text-sm font-medium transition-colors
+                            ${hasStrategy ? 'text-cv-accent bg-cv-accent/5' : 'text-cv-text-secondary hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        title="Estrategia del Mesociclo"
+                    >
+                        <Target size={16} />
+                        Estrategia
+                        {hasStrategy && (
+                            <span className="w-2 h-2 rounded-full bg-cv-accent" />
+                        )}
+                    </button>
+
+                    <div className="w-px h-6 bg-cv-border mx-1" />
+
+                    <button className="cv-btn-ghost p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800" title="Undo">
                         <Undo size={18} />
                     </button>
-                    <button className="cv-btn-ghost p-2" title="Redo">
+                    <button className="cv-btn-ghost p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800" title="Redo">
                         <Redo size={18} />
                     </button>
+
                     <div className="w-px h-6 bg-cv-border mx-1" />
-                    <button className="cv-btn-ghost p-2" title="Preview">
+
+                    <button className="cv-btn-ghost p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800" title="Preview">
                         <Eye size={18} />
                     </button>
                     <button
                         onClick={() => setShowExport(true)}
-                        className="cv-btn-ghost p-2"
-                        title="Export"
+                        className="cv-btn-secondary px-4 py-2.5 rounded-xl flex items-center gap-2 text-sm font-medium"
+                        title="Exportar PDF"
                     >
-                        <Download size={18} />
-                    </button>
-                    {onToggleFullScreen && (
-                        <button
-                            onClick={onToggleFullScreen}
-                            className="cv-btn-ghost p-2"
-                            title={isFullScreen ? "Exit Full Screen" : "Full Screen"}
-                        >
-                            {isFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-                        </button>
-                    )}
-                    <div className="w-px h-6 bg-cv-border mx-1" />
-                    <button
-                        onClick={handleSave}
-                        disabled={!hasUnsavedChanges || isSaving}
-                        className="cv-btn-primary min-w-[100px]"
-                    >
-                        {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                        {isSaving ? 'Guardando' : 'Guardar'}
+                        <Download size={16} />
+                        Exportar
                     </button>
                 </div>
             </div>
 
-            {/* Main Editor Area */}
-            <div className="flex flex-1 overflow-hidden">
-                {/* Canvas */}
-                <div className="flex-1 overflow-auto p-6 bg-grid">
-                    {currentMesocycle ? (
-                        <WeekView mesocycle={currentMesocycle} />
-                    ) : (
-                        <div className="flex items-center justify-center h-full">
-                            <div className="text-center">
-                                <p className="text-cv-text-tertiary mb-4">No hay datos para la Semana {selectedWeek}</p>
-                            </div>
+            {/* Main Editor Area - Full Bento Grid without sidebar squish */}
+            <div className="flex-1 overflow-auto p-6 bg-gradient-to-br from-slate-50 to-white dark:from-cv-bg-primary dark:to-cv-bg-secondary">
+                {currentMesocycle ? (
+                    <WeekView mesocycle={currentMesocycle} />
+                ) : (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="text-center">
+                            <p className="text-cv-text-tertiary mb-4">No hay datos para la Semana {selectedWeek}</p>
                         </div>
-                    )}
-                </div>
-
-                {/* Block Editor Panel */}
-                {selectedBlockId && (
-                    <div className="w-96 border-l border-cv-border bg-cv-bg-secondary overflow-y-auto">
-                        <BlockEditor blockId={selectedBlockId} />
                     </div>
                 )}
             </div>
+
+            {/* Floating Smart Inspector */}
+            <SmartInspector
+                isOpen={inspectorOpen}
+                onClose={handleCloseInspector}
+            />
 
             {/* Strategy Modal */}
             <MesocycleStrategyForm

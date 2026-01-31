@@ -72,19 +72,8 @@ export function BlockEditor({ blockId }: BlockEditorProps) {
     };
 
     return (
-        <div className="flex flex-col h-full">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-cv-border">
-                <h3 className="font-semibold text-cv-text-primary">Ajustes del Bloque</h3>
-                <button
-                    onClick={() => selectBlock(null)}
-                    className="cv-btn-ghost p-1"
-                >
-                    <X size={18} />
-                </button>
-            </div>
-
-            {/* Content */}
+        <div className="flex flex-col">
+            {/* Content - No header since SmartInspector provides it */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6">
                 {/* Block Name */}
                 <div>
