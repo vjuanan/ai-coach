@@ -588,6 +588,48 @@ export async function getClients(type: 'athlete' | 'gym') {
                 return [...clientsList, ...uniqueProfiles];
             }
 
+            // For gyms, also fetch self-registered gyms from profiles table
+            if (type === 'gym') {
+                const { data: profilesData, error: profilesError } = await adminSupabase
+                    .from('profiles')
+                    .select('id, email, full_name, role, created_at, gym_name, gym_location, gym_type, member_count, equipment_available')
+                    .eq('role', 'gym')
+                    .order('full_name');
+
+                if (profilesError) {
+                    console.error('getClients [Gym Profiles] Error:', profilesError);
+                }
+
+                // Merge both sources - convert profiles to client-like format
+                const profilesAsGyms = (profilesData || []).map(p => ({
+                    id: p.id,
+                    name: p.gym_name || p.full_name || p.email || 'Gimnasio Sin Nombre',
+                    email: p.email,
+                    phone: null,
+                    details: {
+                        source: 'self-registered',
+                        gym_type: p.gym_type,
+                        location: p.gym_location,
+                        member_count: p.member_count,
+                        equipment: p.equipment_available
+                    },
+                    created_at: p.created_at,
+                    type: 'gym' as const,
+                    coach_id: null,
+                    _isFromProfiles: true
+                }));
+
+                // Combine and deduplicate by email
+                const clientsList = clientsData || [];
+                const clientEmails = new Set(clientsList.map(c => c.email?.toLowerCase()).filter(Boolean));
+
+                const uniqueProfiles = profilesAsGyms.filter(
+                    p => !p.email || !clientEmails.has(p.email.toLowerCase())
+                );
+
+                return [...clientsList, ...uniqueProfiles];
+            }
+
             return clientsData || [];
         } catch (err) {
             console.error('getClients: Admin Bypass Failed', err);

@@ -4,20 +4,25 @@
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Dumbbell, UserCog, ChevronRight, ChevronLeft, Calendar, Ruler, Weight, Target, MapPin, Clock, Activity, AlertCircle, MessageSquare, Camera, Upload, Check } from 'lucide-react';
+import {
+    Dumbbell, UserCog, Building2, ChevronRight, ChevronLeft,
+    Calendar, Ruler, Weight, Target, MapPin, Clock, Activity,
+    AlertCircle, MessageSquare, Camera, Upload, Check,
+    Users, Globe, Phone, Settings
+} from 'lucide-react';
 import { refreshUserRoleReference } from '../auth/actions';
 
 // --- Step Components ---
 
-const Step0RoleSelection = ({ onSelect, isLoading }: { onSelect: (role: 'coach' | 'athlete') => void, isLoading: boolean }) => (
+const Step0RoleSelection = ({ onSelect, isLoading }: { onSelect: (role: 'coach' | 'athlete' | 'gym') => void, isLoading: boolean }) => (
     <div className="space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
         <h1 className="text-3xl font-bold text-gray-900">Bienvenido a AI Coach</h1>
         <p className="text-gray-500">¿Cómo quieres usar la plataforma?</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
             <button
                 disabled={isLoading}
                 onClick={() => onSelect('athlete')}
-                className="group p-8 border-2 border-gray-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50"
+                className="group p-6 border-2 border-gray-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50"
             >
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
                     <Dumbbell />
@@ -29,10 +34,23 @@ const Step0RoleSelection = ({ onSelect, isLoading }: { onSelect: (role: 'coach' 
             </button>
             <button
                 disabled={isLoading}
-                onClick={() => onSelect('coach')}
-                className="group p-8 border-2 border-gray-100 rounded-2xl hover:border-purple-500 hover:bg-purple-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50"
+                onClick={() => onSelect('gym')}
+                className="group p-6 border-2 border-gray-100 rounded-2xl hover:border-purple-500 hover:bg-purple-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50"
             >
                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
+                    <Building2 />
+                </div>
+                <div>
+                    <h3 className="font-bold text-lg text-gray-900">Soy un Gimnasio</h3>
+                    <p className="text-sm text-gray-500">Box CrossFit, gimnasio o estudio de entrenamiento.</p>
+                </div>
+            </button>
+            <button
+                disabled={isLoading}
+                onClick={() => onSelect('coach')}
+                className="group p-6 border-2 border-gray-100 rounded-2xl hover:border-green-500 hover:bg-green-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50"
+            >
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 group-hover:scale-110 transition-transform">
                     <UserCog />
                 </div>
                 <div>
@@ -58,14 +76,14 @@ export default function OnboardingPage() {
     const router = useRouter();
     const supabase = createClient();
     const [step, setStep] = useState(0);
-    const [role, setRole] = useState<'coach' | 'athlete' | null>(null);
+    const [role, setRole] = useState<'coach' | 'athlete' | 'gym' | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Form State
-    const [formData, setFormData] = useState({
+    // Athlete Form State
+    const [athleteData, setAthleteData] = useState({
         birth_date: '',
-        height: 170, // cm
-        weight: 70.0, // kg
+        height: 170,
+        weight: 70.0,
         main_goal: 'hypertrophy',
         training_place: 'gym',
         equipment_list: [] as string[],
@@ -78,18 +96,44 @@ export default function OnboardingPage() {
         avatar_url: ''
     });
 
-    const updateField = (field: string, value: any) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
+    // Gym Form State
+    const [gymData, setGymData] = useState({
+        gym_name: '',
+        gym_type: 'crossfit',
+        gym_location: '',
+        operating_hours: '',
+        member_count: 50,
+        equipment_available: {
+            rig: true,
+            rowers: false,
+            skiErgs: false,
+            assaultBikes: false,
+            sleds: false,
+            pool: false,
+            dumbbells: true,
+            barbells: true,
+            kettlebells: true
+        },
+        contact_phone: '',
+        website_url: '',
+        logo_url: ''
+    });
+
+    const updateAthleteField = (field: string, value: any) => {
+        setAthleteData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const updateGymField = (field: string, value: any) => {
+        setGymData(prev => ({ ...prev, [field]: value }));
     };
 
     // Save to DB
-    const saveProgress = async (currentStepData: Partial<typeof formData>) => {
+    const saveAthleteProgress = async (currentStepData: Partial<typeof athleteData>) => {
         setIsLoading(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            // Simple update: Send the current state
             const { error } = await supabase
                 .from('profiles')
                 .update(currentStepData)
@@ -103,14 +147,42 @@ export default function OnboardingPage() {
         }
     };
 
-    const handleRoleSelect = async (selectedRole: 'coach' | 'athlete') => {
+    const saveGymProgress = async () => {
+        setIsLoading(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    gym_name: gymData.gym_name,
+                    gym_type: gymData.gym_type,
+                    gym_location: gymData.gym_location,
+                    operating_hours: gymData.operating_hours,
+                    member_count: gymData.member_count,
+                    equipment_available: gymData.equipment_available,
+                    contact_phone: gymData.contact_phone,
+                    website_url: gymData.website_url,
+                    logo_url: gymData.logo_url
+                })
+                .eq('id', user.id);
+
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error saving gym:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleRoleSelect = async (selectedRole: 'coach' | 'athlete' | 'gym') => {
         setIsLoading(true);
         setRole(selectedRole);
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 await supabase.from('profiles').update({ role: selectedRole }).eq('id', user.id);
-                // Refresh cookie so middleware knows we have a role now
                 await refreshUserRoleReference();
             }
             if (selectedRole === 'coach') {
@@ -122,8 +194,8 @@ export default function OnboardingPage() {
         setIsLoading(false);
     };
 
-    const nextStep = async () => {
-        await saveProgress(formData);
+    const nextAthleteStep = async () => {
+        await saveAthleteProgress(athleteData);
         if (step === 11) {
             router.push('/athlete/dashboard');
         } else {
@@ -131,24 +203,33 @@ export default function OnboardingPage() {
         }
     };
 
+    const nextGymStep = async () => {
+        await saveGymProgress();
+        if (step === 6) {
+            router.push('/');
+        } else {
+            setStep(s => s + 1);
+        }
+    };
+
     const prevStep = () => setStep(s => s - 1);
 
-    // Render Steps
-    const renderStep = () => {
+    // Render Athlete Steps
+    const renderAthleteStep = () => {
         switch (step) {
-            case 1: // Birth Date
+            case 1:
                 return (
                     <div>
                         <InputLabel icon={Calendar} label="¿Cuándo naciste?" />
                         <input
                             type="date"
                             className="w-full p-4 text-xl border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none"
-                            value={formData.birth_date}
-                            onChange={(e) => updateField('birth_date', e.target.value)}
+                            value={athleteData.birth_date}
+                            onChange={(e) => updateAthleteField('birth_date', e.target.value)}
                         />
                     </div>
                 );
-            case 2: // Height
+            case 2:
                 return (
                     <div>
                         <InputLabel icon={Ruler} label="¿Cuánto mides (cm)?" />
@@ -156,28 +237,28 @@ export default function OnboardingPage() {
                             <input
                                 type="range" min="120" max="220"
                                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                                value={formData.height}
-                                onChange={(e) => updateField('height', parseInt(e.target.value))}
+                                value={athleteData.height}
+                                onChange={(e) => updateAthleteField('height', parseInt(e.target.value))}
                             />
-                            <span className="text-3xl font-bold w-24 text-center">{formData.height} cm</span>
+                            <span className="text-3xl font-bold w-24 text-center">{athleteData.height} cm</span>
                         </div>
                     </div>
                 );
-            case 3: // Weight
+            case 3:
                 return (
                     <div>
                         <InputLabel icon={Weight} label="¿Cuánto pesas (kg)?" />
                         <div className="flex justify-center items-center gap-8">
-                            <button onClick={() => updateField('weight', formData.weight - 0.5)} className="w-12 h-12 rounded-full bg-gray-100 hover:bg-gray-200 text-xl font-bold">-</button>
+                            <button onClick={() => updateAthleteField('weight', athleteData.weight - 0.5)} className="w-12 h-12 rounded-full bg-gray-100 hover:bg-gray-200 text-xl font-bold">-</button>
                             <div className="text-center">
-                                <span className="text-4xl font-bold text-blue-600">{formData.weight.toFixed(1)}</span>
+                                <span className="text-4xl font-bold text-blue-600">{athleteData.weight.toFixed(1)}</span>
                                 <span className="text-gray-400 ml-2">kg</span>
                             </div>
-                            <button onClick={() => updateField('weight', formData.weight + 0.5)} className="w-12 h-12 rounded-full bg-gray-100 hover:bg-gray-200 text-xl font-bold">+</button>
+                            <button onClick={() => updateAthleteField('weight', athleteData.weight + 0.5)} className="w-12 h-12 rounded-full bg-gray-100 hover:bg-gray-200 text-xl font-bold">+</button>
                         </div>
                     </div>
                 );
-            case 4: // Goal
+            case 4:
                 return (
                     <div>
                         <InputLabel icon={Target} label="¿Cuál es tu objetivo principal?" />
@@ -190,8 +271,8 @@ export default function OnboardingPage() {
                             ].map(opt => (
                                 <button
                                     key={opt.id}
-                                    onClick={() => updateField('main_goal', opt.id)}
-                                    className={`p-4 rounded-xl text-left border-2 transition-all ${formData.main_goal === opt.id ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-100 hover:bg-gray-50'}`}
+                                    onClick={() => updateAthleteField('main_goal', opt.id)}
+                                    className={`p-4 rounded-xl text-left border-2 transition-all ${athleteData.main_goal === opt.id ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-100 hover:bg-gray-50'}`}
                                 >
                                     <span className="font-medium text-lg">{opt.label}</span>
                                 </button>
@@ -199,7 +280,7 @@ export default function OnboardingPage() {
                         </div>
                     </div>
                 );
-            case 5: // Place
+            case 5:
                 return (
                     <div>
                         <InputLabel icon={MapPin} label="¿Dónde entrenas?" />
@@ -211,8 +292,8 @@ export default function OnboardingPage() {
                             ].map(opt => (
                                 <button
                                     key={opt.id}
-                                    onClick={() => updateField('training_place', opt.id)}
-                                    className={`p-4 rounded-xl text-center border-2 transition-all ${formData.training_place === opt.id ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-100 hover:bg-gray-50'}`}
+                                    onClick={() => updateAthleteField('training_place', opt.id)}
+                                    className={`p-4 rounded-xl text-center border-2 transition-all ${athleteData.training_place === opt.id ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-100 hover:bg-gray-50'}`}
                                 >
                                     <span className="font-medium">{opt.label}</span>
                                 </button>
@@ -220,13 +301,13 @@ export default function OnboardingPage() {
                         </div>
                     </div>
                 );
-            case 6: // Equipment (Conditional)
-                if (formData.training_place !== 'home') {
+            case 6:
+                if (athleteData.training_place !== 'home') {
                     return (
                         <div className="text-center py-12">
                             <Check className="w-16 h-16 text-green-500 mx-auto mb-4" />
                             <h3 className="text-xl font-medium">No necesitas registrar equipo</h3>
-                            <p className="text-gray-500">Al entrenar en {formData.training_place === 'gym' ? 'Gimnasio' : 'Box'}, asumimos que tienes el equipo necesario.</p>
+                            <p className="text-gray-500">Al entrenar en {athleteData.training_place === 'gym' ? 'Gimnasio' : 'Box'}, asumimos que tienes el equipo necesario.</p>
                         </div>
                     );
                 }
@@ -236,34 +317,34 @@ export default function OnboardingPage() {
                         <textarea
                             className="w-full p-4 border-2 border-gray-200 rounded-xl h-32"
                             placeholder="Ej: Mancuernas de 10kg, Barra, Banda elástica..."
-                            value={formData.equipment_list.join(', ')}
-                            onChange={(e) => updateField('equipment_list', e.target.value.split(','))}
+                            value={athleteData.equipment_list.join(', ')}
+                            onChange={(e) => updateAthleteField('equipment_list', e.target.value.split(','))}
                         />
                         <p className="text-xs text-gray-400 mt-2">Separa los items por comas</p>
                     </div>
                 );
-            case 7: // Availability
+            case 7:
                 return (
                     <div>
                         <InputLabel icon={Clock} label="Disponibilidad Semanal" />
                         <div className="space-y-6">
                             <div>
-                                <label className="block text-sm text-gray-500 mb-2">Días por semana: <strong className="text-gray-900">{formData.days_per_week}</strong></label>
+                                <label className="block text-sm text-gray-500 mb-2">Días por semana: <strong className="text-gray-900">{athleteData.days_per_week}</strong></label>
                                 <input
                                     type="range" min="1" max="7"
                                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                                    value={formData.days_per_week}
-                                    onChange={(e) => updateField('days_per_week', parseInt(e.target.value))}
+                                    value={athleteData.days_per_week}
+                                    onChange={(e) => updateAthleteField('days_per_week', parseInt(e.target.value))}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm text-gray-500 mb-2">Minutos por sesión: <strong className="text-gray-900">{formData.minutes_per_session}</strong></label>
+                                <label className="block text-sm text-gray-500 mb-2">Minutos por sesión: <strong className="text-gray-900">{athleteData.minutes_per_session}</strong></label>
                                 <div className="flex gap-2">
                                     {[30, 45, 60, 90, 120].map(m => (
                                         <button
                                             key={m}
-                                            onClick={() => updateField('minutes_per_session', m)}
-                                            className={`px-4 py-2 rounded-lg text-sm border transition-all ${formData.minutes_per_session === m ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-gray-200 hover:bg-gray-50'}`}
+                                            onClick={() => updateAthleteField('minutes_per_session', m)}
+                                            className={`px-4 py-2 rounded-lg text-sm border transition-all ${athleteData.minutes_per_session === m ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-gray-200 hover:bg-gray-50'}`}
                                         >
                                             {m}m
                                         </button>
@@ -273,7 +354,7 @@ export default function OnboardingPage() {
                         </div>
                     </div>
                 );
-            case 8: // Experience
+            case 8:
                 return (
                     <div>
                         <InputLabel icon={Activity} label="Nivel de Experiencia" />
@@ -285,8 +366,8 @@ export default function OnboardingPage() {
                             ].map(opt => (
                                 <button
                                     key={opt.id}
-                                    onClick={() => updateField('experience_level', opt.id)}
-                                    className={`p-4 rounded-xl text-left border-2 transition-all ${formData.experience_level === opt.id ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-100 hover:bg-gray-50'}`}
+                                    onClick={() => updateAthleteField('experience_level', opt.id)}
+                                    className={`p-4 rounded-xl text-left border-2 transition-all ${athleteData.experience_level === opt.id ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-100 hover:bg-gray-50'}`}
                                 >
                                     <span className="font-bold block">{opt.label}</span>
                                     <span className="text-sm opacity-75">{opt.desc}</span>
@@ -295,7 +376,7 @@ export default function OnboardingPage() {
                         </div>
                     </div>
                 );
-            case 9: // Details (Injuries)
+            case 9:
                 return (
                     <div className="space-y-6">
                         <div>
@@ -303,8 +384,8 @@ export default function OnboardingPage() {
                             <textarea
                                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 h-24"
                                 placeholder="Describe lesiones o molestias actuales. Deja vacío si no tienes."
-                                value={formData.injuries}
-                                onChange={(e) => updateField('injuries', e.target.value)}
+                                value={athleteData.injuries}
+                                onChange={(e) => updateAthleteField('injuries', e.target.value)}
                             />
                         </div>
                         <div>
@@ -312,13 +393,13 @@ export default function OnboardingPage() {
                             <textarea
                                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 h-24"
                                 placeholder="Ej: No me gusta correr, prefiero ejercicios con barra..."
-                                value={formData.training_preferences}
-                                onChange={(e) => updateField('training_preferences', e.target.value)}
+                                value={athleteData.training_preferences}
+                                onChange={(e) => updateAthleteField('training_preferences', e.target.value)}
                             />
                         </div>
                     </div>
                 );
-            case 10: // WhatsApp
+            case 10:
                 return (
                     <div>
                         <InputLabel icon={MessageSquare} label="Tu WhatsApp" />
@@ -327,12 +408,12 @@ export default function OnboardingPage() {
                             type="tel"
                             className="w-full p-4 text-xl border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none"
                             placeholder="+54 9 11 1234 5678"
-                            value={formData.whatsapp_number}
-                            onChange={(e) => updateField('whatsapp_number', e.target.value)}
+                            value={athleteData.whatsapp_number}
+                            onChange={(e) => updateAthleteField('whatsapp_number', e.target.value)}
                         />
                     </div>
                 );
-            case 11: // Avatar
+            case 11:
                 return (
                     <div className="text-center">
                         <InputLabel icon={Camera} label="Foto de Perfil" />
@@ -346,6 +427,164 @@ export default function OnboardingPage() {
         }
     };
 
+    // Render Gym Steps
+    const renderGymStep = () => {
+        switch (step) {
+            case 1:
+                return (
+                    <div className="space-y-6">
+                        <div>
+                            <InputLabel icon={Building2} label="Nombre de tu Gimnasio / Box" />
+                            <input
+                                type="text"
+                                className="w-full p-4 text-xl border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                                placeholder="CrossFit Buenos Aires"
+                                value={gymData.gym_name}
+                                onChange={(e) => updateGymField('gym_name', e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Establecimiento</label>
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    { id: 'crossfit', label: '🏋️ Box CrossFit' },
+                                    { id: 'globo', label: '🏢 Gimnasio Tradicional' },
+                                    { id: 'boutique', label: '✨ Estudio Boutique' },
+                                    { id: 'functional', label: '⚡ Funcional / HIIT' }
+                                ].map(opt => (
+                                    <button
+                                        key={opt.id}
+                                        onClick={() => updateGymField('gym_type', opt.id)}
+                                        className={`p-4 rounded-xl text-left border-2 transition-all ${gymData.gym_type === opt.id ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-100 hover:bg-gray-50'}`}
+                                    >
+                                        <span className="font-medium">{opt.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 2:
+                return (
+                    <div className="space-y-6">
+                        <div>
+                            <InputLabel icon={MapPin} label="Ubicación" />
+                            <input
+                                type="text"
+                                className="w-full p-4 text-xl border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                                placeholder="Buenos Aires, Argentina"
+                                value={gymData.gym_location}
+                                onChange={(e) => updateGymField('gym_location', e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <InputLabel icon={Clock} label="Horarios de Operación" />
+                            <input
+                                type="text"
+                                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                                placeholder="Lun-Vie 6:00-22:00, Sáb 8:00-14:00"
+                                value={gymData.operating_hours}
+                                onChange={(e) => updateGymField('operating_hours', e.target.value)}
+                            />
+                        </div>
+                    </div>
+                );
+            case 3:
+                return (
+                    <div>
+                        <InputLabel icon={Users} label="¿Cuántos miembros tienes aproximadamente?" />
+                        <div className="flex justify-center items-center gap-8 py-8">
+                            <button onClick={() => updateGymField('member_count', Math.max(1, gymData.member_count - 10))} className="w-14 h-14 rounded-full bg-gray-100 hover:bg-gray-200 text-2xl font-bold">-</button>
+                            <div className="text-center">
+                                <span className="text-5xl font-bold text-purple-600">{gymData.member_count}</span>
+                                <span className="text-gray-400 ml-2 text-xl">miembros</span>
+                            </div>
+                            <button onClick={() => updateGymField('member_count', gymData.member_count + 10)} className="w-14 h-14 rounded-full bg-gray-100 hover:bg-gray-200 text-2xl font-bold">+</button>
+                        </div>
+                        <p className="text-center text-sm text-gray-500">Usa los botones o escribe directamente</p>
+                    </div>
+                );
+            case 4:
+                return (
+                    <div>
+                        <InputLabel icon={Settings} label="Equipamiento Disponible" />
+                        <div className="grid grid-cols-2 gap-3">
+                            {[
+                                { key: 'rig', label: '🏗️ Rig / Estructura' },
+                                { key: 'rowers', label: '🚣 Remos (Concept2)' },
+                                { key: 'skiErgs', label: '⛷️ SkiErgs' },
+                                { key: 'assaultBikes', label: '🚴 Assault / Echo Bikes' },
+                                { key: 'sleds', label: '🛷 Trineos / Prowler' },
+                                { key: 'pool', label: '🏊 Piscina' },
+                                { key: 'dumbbells', label: '🏋️ Mancuernas' },
+                                { key: 'barbells', label: '🏋️ Barras Olímpicas' },
+                                { key: 'kettlebells', label: '🔔 Kettlebells' }
+                            ].map(item => (
+                                <label
+                                    key={item.key}
+                                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${gymData.equipment_available[item.key as keyof typeof gymData.equipment_available]
+                                            ? 'border-purple-500 bg-purple-50'
+                                            : 'border-gray-100 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={gymData.equipment_available[item.key as keyof typeof gymData.equipment_available]}
+                                        onChange={(e) => updateGymField('equipment_available', {
+                                            ...gymData.equipment_available,
+                                            [item.key]: e.target.checked
+                                        })}
+                                        className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                                    />
+                                    <span className="font-medium">{item.label}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                );
+            case 5:
+                return (
+                    <div className="space-y-6">
+                        <div>
+                            <InputLabel icon={Phone} label="Teléfono de Contacto" />
+                            <input
+                                type="tel"
+                                className="w-full p-4 text-xl border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                                placeholder="+54 9 11 1234 5678"
+                                value={gymData.contact_phone}
+                                onChange={(e) => updateGymField('contact_phone', e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <InputLabel icon={Globe} label="Sitio Web (opcional)" />
+                            <input
+                                type="url"
+                                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                                placeholder="https://www.migym.com"
+                                value={gymData.website_url}
+                                onChange={(e) => updateGymField('website_url', e.target.value)}
+                            />
+                        </div>
+                    </div>
+                );
+            case 6:
+                return (
+                    <div className="text-center">
+                        <InputLabel icon={Camera} label="Logo del Gimnasio" />
+                        <div className="w-40 h-40 bg-purple-50 rounded-2xl mx-auto mb-6 flex items-center justify-center border-4 border-dashed border-purple-200">
+                            <Upload className="text-purple-400 w-10 h-10" />
+                        </div>
+                        <p className="text-gray-500 mb-6">Sube tu logo (opcional)</p>
+                    </div>
+                );
+            default: return null;
+        }
+    };
+
+    const totalSteps = role === 'athlete' ? 11 : 6;
+    const isGym = role === 'gym';
+    const accentColor = isGym ? 'purple' : 'blue';
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-xl mx-auto w-full">
@@ -356,16 +595,18 @@ export default function OnboardingPage() {
                         {/* Progress Bar */}
                         <div className="w-full bg-gray-200 rounded-full h-2">
                             <div
-                                className="bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out"
-                                style={{ width: `${((step - 1) / 10) * 100}%` }}
+                                className={`h-2 rounded-full transition-all duration-500 ease-out ${isGym ? 'bg-purple-600' : 'bg-blue-600'}`}
+                                style={{ width: `${((step - 1) / (totalSteps - 1)) * 100}%` }}
                             ></div>
                         </div>
-                        <div className="text-right text-xs text-gray-400 font-medium">Paso {step} de 11</div>
+                        <div className="text-right text-xs text-gray-400 font-medium">
+                            Paso {step} de {totalSteps}
+                        </div>
 
                         {/* Card */}
                         <div className="bg-white shadow-xl shadow-blue-900/5 rounded-3xl p-8 border border-white min-h-[400px] flex flex-col relative overflow-hidden">
                             <div className="flex-1">
-                                {renderStep()}
+                                {isGym ? renderGymStep() : renderAthleteStep()}
                             </div>
 
                             {/* Navigation Buttons */}
@@ -377,11 +618,14 @@ export default function OnboardingPage() {
                                     <ChevronLeft size={20} /> Atrás
                                 </button>
                                 <button
-                                    onClick={nextStep}
-                                    disabled={isLoading}
-                                    className="flex items-center gap-2 bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95 disabled:opacity-50"
+                                    onClick={isGym ? nextGymStep : nextAthleteStep}
+                                    disabled={isLoading || (isGym && step === 1 && !gymData.gym_name.trim())}
+                                    className={`flex items-center gap-2 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg active:scale-95 disabled:opacity-50 ${isGym
+                                            ? 'bg-purple-600 hover:bg-purple-700 shadow-purple-600/20'
+                                            : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'
+                                        }`}
                                 >
-                                    {isLoading ? 'Guardando...' : step === 11 ? 'Finalizar' : 'Siguiente'}
+                                    {isLoading ? 'Guardando...' : step === totalSteps ? 'Finalizar' : 'Siguiente'}
                                     {!isLoading && <ChevronRight size={20} />}
                                 </button>
                             </div>

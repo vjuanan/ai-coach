@@ -41,6 +41,8 @@ export async function GET(request: Request) {
                 next = '/onboarding';
             } else if (profile.role === 'athlete') {
                 next = '/athlete/dashboard';
+            } else if (profile.role === 'gym') {
+                next = '/'; // Gyms go to main dashboard
             }
             // Coaches and Admins go to default '/'
 

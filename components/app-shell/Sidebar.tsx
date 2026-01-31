@@ -37,10 +37,10 @@ const navItems: NavItem[] = [
 
 interface SidebarProps {
     /** Role passed from server - NO async loading, immediate render */
-    role: 'admin' | 'coach' | 'athlete';
+    role?: 'admin' | 'coach' | 'athlete' | 'gym';
 }
 
-export function Sidebar({ role }: SidebarProps) {
+export function Sidebar({ role = 'coach' }: SidebarProps) {
     const { isSidebarCollapsed, toggleSidebar } = useAppStore();
     const pathname = usePathname();
 
