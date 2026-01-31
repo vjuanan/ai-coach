@@ -5,7 +5,8 @@ import { useEditorStore } from '@/lib/store';
 import { WeekView } from './WeekView';
 import { BlockEditor } from './BlockEditor';
 import { MesocycleStrategyForm, type MesocycleStrategy } from './MesocycleStrategyForm';
-import { Save, Undo, Redo, Download, Eye, Target, Loader2, CheckCircle2, Maximize2, Minimize2 } from 'lucide-react';
+import { Save, Undo, Redo, Download, Eye, Target, Loader2, CheckCircle2, Maximize2, Minimize2, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import { saveMesocycleChanges } from '@/lib/actions';
 import { ExportPreview } from '@/components/export';
 
@@ -169,6 +170,15 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             {/* Editor Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-cv-border bg-cv-bg-secondary/50">
                 <div className="flex items-center gap-4">
+                    {/* Back Button */}
+                    <Link
+                        href="/programs"
+                        className="cv-btn-ghost p-2 flex items-center gap-2 text-cv-text-secondary hover:text-cv-text-primary transition-colors"
+                        title="Volver a Programas"
+                    >
+                        <ArrowLeft size={20} />
+                    </Link>
+                    <div className="w-px h-6 bg-cv-border" />
                     <h2 className="text-xl font-semibold text-cv-text-primary">
                         {programName}
                     </h2>
