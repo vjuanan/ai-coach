@@ -1,13 +1,13 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createServerClient } from '@/lib/supabase/server';
 import type { TrainingPrinciple } from '@/lib/supabase/types';
 
 export async function getTrainingPrinciples(): Promise<{
     data: TrainingPrinciple[] | null;
     error: string | null;
 }> {
-    const supabase = await createClient();
+    const supabase = createServerClient();
 
     const { data, error } = await supabase
         .from('training_principles')
@@ -28,7 +28,7 @@ export async function addTrainingPrinciple(principle: Omit<TrainingPrinciple, 'i
     data: TrainingPrinciple | null;
     error: string | null;
 }> {
-    const supabase = await createClient();
+    const supabase = createServerClient();
 
     const { data, error } = await supabase
         .from('training_principles')

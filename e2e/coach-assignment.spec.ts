@@ -43,9 +43,15 @@ test.describe('Coach Assignment E2E', () => {
         // Wait a bit for server action to persist
         await page.waitForTimeout(3000);
 
+        // Check if Gofit exists in /gyms list
+        console.log('Verifying Gofit in /gyms...');
+        await page.goto('/gyms');
+        await page.screenshot({ path: 'e2e-screenshots/gyms_list_debug.png' });
+
         // 4. Assign Pana2 to Gofit
         console.log('Assigning Coach to Gym...');
         await page.goto('/admin/clients');
+        await page.screenshot({ path: 'e2e-screenshots/admin_clients_debug.png' });
 
         const clientRow = page.locator('tr').filter({ hasText: 'Gofit' });
         await expect(clientRow).toBeVisible();

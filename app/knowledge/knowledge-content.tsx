@@ -96,7 +96,7 @@ function PrincipleCard({ principle }: { principle: TrainingPrinciple }) {
                     <h4 className="font-semibold text-cv-text-primary text-lg">
                         {principle.title}
                     </h4>
-                    {content.summary && (
+                    {typeof content.summary === 'string' && (
                         <p className="text-sm text-cv-text-secondary mt-1 line-clamp-2">
                             {String(content.summary)}
                         </p>
@@ -413,7 +413,7 @@ export function KnowledgeContent({ principles }: KnowledgeContentProps) {
     const [selectedAuthor, setSelectedAuthor] = useState<string | 'all'>('all');
 
     // Get unique authors
-    const authors = [...new Set(principles.map(p => p.author))];
+    const authors = Array.from(new Set(principles.map(p => p.author)));
 
     // Group principles by objective
     const groupedByObjective = principles.reduce((acc, principle) => {
