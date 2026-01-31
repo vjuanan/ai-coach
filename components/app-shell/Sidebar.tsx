@@ -10,16 +10,12 @@ import {
     Building2,
     Dumbbell,
     FileText,
-    Settings,
     ChevronLeft,
     ChevronRight,
     Briefcase,
     Shield,
     BookOpen,
 } from 'lucide-react';
-
-import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
 
 interface NavItem {
     label: string;
@@ -39,37 +35,16 @@ const navItems: NavItem[] = [
     { label: 'Usuarios', href: '/admin/users', icon: <Shield size={20} /> },
 ];
 
-export function Sidebar() {
-    // Re-verify deployment trigger
+interface SidebarProps {
+    /** Role passed from server - NO async loading, immediate render */
+    role: 'admin' | 'coach' | 'athlete';
+}
+
+export function Sidebar({ role }: SidebarProps) {
     const { isSidebarCollapsed, toggleSidebar } = useAppStore();
     const pathname = usePathname();
-    const supabase = createClient();
-    // Start with 'coach' role to render immediately without flash - this is the most common role
-    // and will update if the actual role is different (rare case)
-    const [role, setRole] = useState<'admin' | 'coach' | 'athlete'>('coach');
 
-    useEffect(() => {
-        const fetchRole = async () => {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (user) {
-                    const { data: profile } = await supabase
-                        .from('profiles')
-                        .select('role')
-                        .eq('id', user.id)
-                        .single();
-                    if (profile?.role && profile.role !== role) {
-                        setRole(profile.role);
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching role:', error);
-            }
-        };
-        fetchRole();
-    }, []);
-
-    // Filter Items based on Role - role is never null now, always starts as 'coach'
+    // Filter Items based on Role - role is passed from server, no loading state!
     const filteredNavItems = navItems.filter(item => {
         if (role === 'admin') return true; // See all
 

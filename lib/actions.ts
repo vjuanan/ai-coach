@@ -10,6 +10,25 @@ type Program = Database['public']['Tables']['programs']['Row'];
 type Client = Database['public']['Tables']['clients']['Row'];
 
 // ==========================================
+// USER ROLE - For Sidebar SSR
+// ==========================================
+
+export async function getUserRole(): Promise<'admin' | 'coach' | 'athlete'> {
+    const supabase = createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return 'coach'; // Default for unauthenticated
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    return (profile?.role as 'admin' | 'coach' | 'athlete') || 'coach';
+}
+
+// ==========================================
 // PROGRAMS ACTIONS
 // ==========================================
 
