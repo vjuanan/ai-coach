@@ -2,7 +2,7 @@
 
 import { AppShell } from '@/components/app-shell';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
     getClients,
@@ -35,9 +35,10 @@ interface Athlete {
 export default function AthletesPage() {
     const [athletes, setAthletes] = useState<Athlete[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    // Search is now handled globally or ignored as per instruction to remove local duplicate.
-    // Ideally we would sync with URL params, but for now we remove the local input as requested.
-    const [searchQuery, setSearchQuery] = useState('');
+
+    const searchParams = useSearchParams();
+    const searchQuery = searchParams.get('q') || '';
+
     const [showAddModal, setShowAddModal] = useState(false);
 
     // Enhanced Form State with Full Athlete Profile
@@ -184,17 +185,7 @@ export default function AthletesPage() {
             }
         >
             <div className="max-w-6xl mx-auto">
-                {/* Search */}
-                <div className="relative mb-6">
-                    <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Buscar atletas..."
-                        className="cv-input pl-10"
-                    />
-                </div>
+                {/* Search removed - using global Topbar search */}
 
                 {/* Athletes Grid */}
                 {isLoading ? (

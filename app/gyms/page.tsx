@@ -3,7 +3,7 @@
 
 import { AppShell } from '@/components/app-shell';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import {
     Plus,
@@ -29,7 +29,9 @@ interface Gym {
 export default function GymsPage() {
     const [gyms, setGyms] = useState<Gym[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
+    const searchParams = useSearchParams();
+    const searchQuery = searchParams.get('q') || '';
+
     const [showAddModal, setShowAddModal] = useState(false);
     // Enhanced Gym Form State
     const [formData, setFormData] = useState({
@@ -126,17 +128,7 @@ export default function GymsPage() {
             }
         >
             <div className="max-w-6xl mx-auto">
-                {/* Search */}
-                <div className="relative mb-6">
-                    <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Buscar gimnasios..."
-                        className="cv-input pl-10"
-                    />
-                </div>
+                {/* Search removed - using global Topbar search */}
 
                 {/* Gyms Grid */}
                 {isLoading ? (

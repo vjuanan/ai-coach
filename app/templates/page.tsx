@@ -13,7 +13,6 @@ export default async function TemplatesPage() {
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-cv-text-primary">Plantillas Profesionales</h1>
                     <p className="text-cv-text-secondary">
                         Programas diseñados por expertos (Mike Israetel, Andy Galpin) listos para usar.
                     </p>

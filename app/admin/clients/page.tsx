@@ -11,7 +11,6 @@ export default async function AdminClientsPage() {
         <AppShell title="Administración de Clientes">
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-cv-text-primary">Gestión de Clientes</h1>
                     <p className="text-cv-text-secondary">
                         Vista administrativa global de todos los atletas y gimnasios suscritos.
                     </p>

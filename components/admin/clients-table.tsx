@@ -78,15 +78,6 @@ export function ClientsTable({ clients }: ClientsTableProps) {
         <Card className="w-full">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <CardTitle className="text-xl font-bold">Listado de Clientes</CardTitle>
-                <div className="relative w-64">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Buscar cliente..."
-                        className="pl-8"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
             </CardHeader>
             <CardContent>
                 <div className="rounded-md border">

@@ -3,7 +3,7 @@
 import { AppShell } from '@/components/app-shell';
 import { GlobalCreateButton } from '@/components/app-shell/GlobalCreateButton';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
     Plus,
     Search,
@@ -41,8 +41,8 @@ export default function ProgramsPage() {
     const [programs, setPrograms] = useState<Program[]>([]);
     const [clients, setClients] = useState<Client[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
-    // State cleaned up
+    const searchParams = useSearchParams();
+    const searchQuery = searchParams.get('q') || '';
 
     // New State for Delete Modal
     const [programToDelete, setProgramToDelete] = useState<string | null>(null);
@@ -101,17 +101,7 @@ export default function ProgramsPage() {
             actions={<GlobalCreateButton />}
         >
             <div className="max-w-6xl mx-auto">
-                {/* Search */}
-                <div className="relative mb-6">
-                    <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Buscar programas..."
-                        className="cv-input pl-10"
-                    />
-                </div>
+                {/* Search removed - using global Topbar search */}
 
                 {/* Programs List */}
                 {isLoading ? (
