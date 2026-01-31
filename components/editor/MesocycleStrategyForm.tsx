@@ -109,7 +109,7 @@ export function MesocycleStrategyForm({
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium"
                                     />
                                     <p className="mt-2 text-xs text-slate-400">
-                                        Define el objetivo "North Star" para este bloque de entrenamiento.
+                                        Define el objetivo &quot;North Star&quot; para este bloque de entrenamiento.
                                     </p>
                                 </div>
                             </div>

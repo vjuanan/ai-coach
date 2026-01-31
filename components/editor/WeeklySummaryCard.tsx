@@ -123,7 +123,7 @@ export function WeeklySummaryCard({ mesocycle, programGlobalFocus }: WeeklySumma
             {!focus && !considerations && !programGlobalFocus && (
                 <div className="flex-1 flex items-center justify-center text-cv-text-tertiary">
                     <p className="text-xs text-center">
-                        Usa "Estrategia" para añadir<br />notas de enfoque semanal
+                        Usa &quot;Estrategia&quot; para añadir<br />notas de enfoque semanal
                     </p>
                 </div>
             )}

@@ -158,7 +158,7 @@ export function CommandPalette() {
                             <div className="max-h-80 overflow-y-auto py-2">
                                 {filteredResults.length === 0 ? (
                                     <div className="px-4 py-8 text-center text-cv-text-tertiary">
-                                        No results found for "{query}"
+                                        No results found for &quot;{query}&quot;
                                     </div>
                                 ) : (
                                     filteredResults.map((result, index) => (
