@@ -91,14 +91,14 @@ export function Sidebar() {
     return (
         <aside
             className={`
-        fixed left-0 top-0 h-screen bg-cv-bg-secondary border-r border-cv-border
+        fixed left-0 top-0 h-screen bg-slate-50
         flex flex-col transition-all duration-300 ease-in-out z-40
         ${isSidebarCollapsed ? 'w-16' : 'w-64'}
       `}
         >
             {/* Logo - Horizontal layout matching reference */}
             <div className={`
-                flex items-center bg-white border-b border-cv-border transition-all duration-300 relative
+                flex items-center bg-transparent transition-all duration-300 relative
                 ${isSidebarCollapsed ? 'h-12 justify-center px-2' : 'h-12 px-4'}
             `}>
                 <Link href="/" className="flex items-center">
@@ -170,7 +170,7 @@ export function Sidebar() {
             </nav>
 
             {/* Bottom Section */}
-            <div className="p-3 border-t border-cv-border">
+            <div className="p-3">
                 {/* Settings link removed as it is now accessible via the User Avatar in Topbar */}
             </div>
         </aside>

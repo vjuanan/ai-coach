@@ -26,7 +26,7 @@ export function AppShell({ children, title, actions, prefixActions, fullScreen =
     }
 
     return (
-        <div className="min-h-screen bg-cv-bg-primary">
+        <div className="min-h-screen bg-white">
             <Sidebar />
             <Topbar title={title} actions={actions} prefixActions={prefixActions} />
             <CommandPalette />

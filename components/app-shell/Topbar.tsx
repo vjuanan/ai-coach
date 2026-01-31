@@ -31,7 +31,7 @@ export function Topbar({ title, actions, prefixActions }: TopbarProps) {
     return (
         <header
             className={`
-        fixed top-0 right-0 h-12 bg-cv-bg-primary/80 backdrop-blur-xl border-b border-cv-border
+        fixed top-0 right-0 h-12 bg-white
         flex items-center justify-between px-6 z-30 transition-all duration-300
         ${isSidebarCollapsed ? 'left-16' : 'left-64'}
       `}
@@ -52,11 +52,11 @@ export function Topbar({ title, actions, prefixActions }: TopbarProps) {
                     defaultValue={searchParams.get('q')?.toString()}
                     onChange={(e) => handleSearch(e.target.value)}
                     className="
-                        w-full pl-10 pr-4 py-2 rounded-lg
-                        bg-cv-bg-secondary border border-cv-border
+                        w-full pl-10 pr-4 py-2 rounded-full
+                        bg-slate-100
                         text-sm text-cv-text-primary
                         placeholder:text-cv-text-tertiary
-                        focus:outline-none focus:border-cv-accent focus:ring-1 focus:ring-cv-accent
+                        focus:outline-none focus:ring-1 focus:ring-cv-accent
                         transition-all duration-200
                     "
                 />
