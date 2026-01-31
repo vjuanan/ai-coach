@@ -458,18 +458,56 @@ export async function getClients(type: 'athlete' | 'gym') {
             // But typically 'coaches' RLS is simpler.
             const coachId = await ensureCoach(supabase); // Use user session to identify coach
 
-            const { data, error } = await adminSupabase
+            // Fetch from clients table (manually created)
+            const { data: clientsData, error: clientsError } = await adminSupabase
                 .from('clients')
                 .select('*')
                 .eq('type', type)
                 .eq('coach_id', coachId) // Manual RLS
                 .order('name');
 
-            if (error) {
-                console.error('getClients [Admin Bypass] Error:', error);
-                return [];
+            if (clientsError) {
+                console.error('getClients [Admin Bypass] Error:', clientsError);
             }
-            return data;
+
+            // For athletes, also fetch self-registered users from profiles table
+            if (type === 'athlete') {
+                const { data: profilesData, error: profilesError } = await adminSupabase
+                    .from('profiles')
+                    .select('id, email, full_name, role, created_at')
+                    .eq('role', 'athlete')
+                    .order('full_name');
+
+                if (profilesError) {
+                    console.error('getClients [Profiles] Error:', profilesError);
+                }
+
+                // Merge both sources - convert profiles to client-like format
+                const profilesAsClients = (profilesData || []).map(p => ({
+                    id: p.id,
+                    name: p.full_name || p.email || 'Atleta Sin Nombre',
+                    email: p.email,
+                    phone: null,
+                    details: { source: 'self-registered' },
+                    created_at: p.created_at,
+                    type: 'athlete' as const,
+                    coach_id: null, // Not assigned to any coach yet
+                    _isFromProfiles: true // Internal flag
+                }));
+
+                // Combine and deduplicate by email
+                const clientsList = clientsData || [];
+                const clientEmails = new Set(clientsList.map(c => c.email?.toLowerCase()).filter(Boolean));
+
+                // Only add profiles that aren't already in clients (by email)
+                const uniqueProfiles = profilesAsClients.filter(
+                    p => !p.email || !clientEmails.has(p.email.toLowerCase())
+                );
+
+                return [...clientsList, ...uniqueProfiles];
+            }
+
+            return clientsData || [];
         } catch (err) {
             console.error('getClients: Admin Bypass Failed', err);
             // Fallback to normal
