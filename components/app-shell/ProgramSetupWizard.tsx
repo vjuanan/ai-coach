@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { X, CalendarDays, Target, Timer, Loader2, ChevronRight, Sparkles } from 'lucide-react';
 import { createProgram } from '@/lib/actions';
@@ -99,9 +100,16 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
         }
     };
 
-    if (!isOpen) return null;
+    const [mounted, setMounted] = useState(false);
 
-    return (
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    if (!isOpen || !mounted) return null;
+
+    return createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center">
             {/* Backdrop */}
             <div
@@ -301,6 +309,7 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

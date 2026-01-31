@@ -70,13 +70,13 @@ export function Topbar({ title, actions, prefixActions }: TopbarProps) {
 
                 {prefixActions}
 
+                {actions}
+
                 {/* Notifications */}
                 <NotificationBell />
 
                 {/* User Avatar */}
                 <UserAvatar />
-
-                {actions}
             </div>
         </header>
     );
