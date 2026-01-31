@@ -201,12 +201,10 @@ export default function AdminUsersPage() {
     return (
 
         <>
-            <Topbar title="Administración de Usuarios" />
-            <div className="max-w-7xl mx-auto space-y-4">
-
-                {/* Action Buttons & Feedback */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+            <Topbar
+                title="Administración de Usuarios"
+                actions={
+                    <>
                         {selectedUsers.size > 0 && (
                             <button
                                 onClick={handleBulkDelete}
@@ -217,22 +215,21 @@ export default function AdminUsersPage() {
                                 Eliminar ({selectedUsers.size})
                             </button>
                         )}
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        <div className="bg-cv-bg-tertiary p-2 rounded-lg border border-cv-border-subtle flex items-center gap-2">
-                            <Users className="text-cv-text-secondary" size={18} />
+                        <div className="bg-slate-100 px-3 py-1.5 rounded-md flex items-center gap-2">
+                            <Users className="text-cv-text-secondary" size={16} />
                             <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredProfiles.length}</span>
                         </div>
                         <button
                             onClick={() => setIsCreateOpen(true)}
-                            className="cv-btn-primary flex items-center gap-2"
+                            className="cv-btn-primary flex items-center gap-2 py-1.5 px-3 text-sm"
                         >
-                            <UserPlus size={18} />
+                            <UserPlus size={16} />
                             Crear Usuario
                         </button>
-                    </div>
-                </div>
+                    </>
+                }
+            />
+            <div className="max-w-7xl mx-auto space-y-4">
 
                 {message && (
                     <div className={`p-3 rounded-lg flex items-center gap-2 text-sm ${message.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'

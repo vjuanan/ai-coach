@@ -22,39 +22,39 @@ const Step0RoleSelection = ({ onSelect, isLoading }: { onSelect: (role: 'coach' 
             <button
                 disabled={isLoading}
                 onClick={() => onSelect('athlete')}
-                className="group p-6 border-2 border-gray-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50"
+                className="group p-6 border-2 border-gray-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50 h-full"
             >
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
                     <Dumbbell />
                 </div>
                 <div>
-                    <h3 className="font-bold text-lg text-gray-900">Soy Atleta</h3>
+                    <h3 className="font-bold text-lg text-gray-900 min-h-[3.5rem] flex items-center">Soy Atleta</h3>
                     <p className="text-sm text-gray-500">Quiero ver mis rutinas y registrar mi progreso.</p>
                 </div>
             </button>
             <button
                 disabled={isLoading}
                 onClick={() => onSelect('gym')}
-                className="group p-6 border-2 border-gray-100 rounded-2xl hover:border-purple-500 hover:bg-purple-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50"
+                className="group p-6 border-2 border-gray-100 rounded-2xl hover:border-purple-500 hover:bg-purple-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50 h-full"
             >
                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
                     <Building2 />
                 </div>
                 <div>
-                    <h3 className="font-bold text-lg text-gray-900">Soy un Gimnasio</h3>
+                    <h3 className="font-bold text-lg text-gray-900 min-h-[3.5rem] flex items-center">Soy un Gimnasio</h3>
                     <p className="text-sm text-gray-500">Box CrossFit, gimnasio o estudio de entrenamiento.</p>
                 </div>
             </button>
             <button
                 disabled={isLoading}
                 onClick={() => onSelect('coach')}
-                className="group p-6 border-2 border-gray-100 rounded-2xl hover:border-green-500 hover:bg-green-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50"
+                className="group p-6 border-2 border-gray-100 rounded-2xl hover:border-green-500 hover:bg-green-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50 h-full"
             >
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 group-hover:scale-110 transition-transform">
                     <UserCog />
                 </div>
                 <div>
-                    <h3 className="font-bold text-lg text-gray-900">Soy Coach</h3>
+                    <h3 className="font-bold text-lg text-gray-900 min-h-[3.5rem] flex items-center">Soy Coach</h3>
                     <p className="text-sm text-gray-500">Quiero gestionar atletas y crear programas.</p>
                 </div>
             </button>
