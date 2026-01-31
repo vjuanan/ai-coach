@@ -1,7 +1,8 @@
 'use client';
 
 import { useAppStore } from '@/lib/store';
-import { Search, Command } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { NotificationBell } from './NotificationBell';
 import { UserAvatar } from './UserAvatar';
 
@@ -11,7 +12,20 @@ interface TopbarProps {
 }
 
 export function Topbar({ title, actions }: TopbarProps) {
-    const { openCommandPalette, isSidebarCollapsed } = useAppStore();
+    const { isSidebarCollapsed } = useAppStore();
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
+    const router = useRouter();
+
+    const handleSearch = (term: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (term) {
+            params.set('q', term);
+        } else {
+            params.delete('q');
+        }
+        router.replace(`${pathname}?${params.toString()}`);
+    };
 
     return (
         <header
@@ -29,26 +43,26 @@ export function Topbar({ title, actions }: TopbarProps) {
             </div>
 
             {/* Center: Search */}
-            <button
-                onClick={openCommandPalette}
-                className="
-          flex items-center gap-3 px-4 py-2 rounded-lg
-          bg-cv-bg-secondary border border-cv-border
-          text-cv-text-tertiary hover:text-cv-text-secondary hover:border-cv-text-tertiary
-          transition-all duration-200 group min-w-[280px]
-        "
-            >
-                <Search size={16} className="text-cv-text-tertiary group-hover:text-cv-text-secondary" />
-                <span className="text-sm flex-1 text-left">Buscar...</span>
-                <div className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 rounded bg-cv-bg-tertiary text-2xs font-mono text-cv-text-tertiary">
-                        <Command size={10} className="inline" />
-                    </kbd>
-                    <kbd className="px-1.5 py-0.5 rounded bg-cv-bg-tertiary text-2xs font-mono text-cv-text-tertiary">
-                        K
-                    </kbd>
+            <div className="relative group min-w-[320px]">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary group-hover:text-cv-text-secondary transition-colors" />
+                <input
+                    type="text"
+                    placeholder="Buscar..."
+                    defaultValue={searchParams.get('q')?.toString()}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    className="
+                        w-full pl-10 pr-4 py-2 rounded-lg
+                        bg-cv-bg-secondary border border-cv-border
+                        text-sm text-cv-text-primary
+                        placeholder:text-cv-text-tertiary
+                        focus:outline-none focus:border-cv-accent focus:ring-1 focus:ring-cv-accent
+                        transition-all duration-200
+                    "
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
+                    {/* Hidden for now unless we implement global shortcut again */}
                 </div>
-            </button>
+            </div>
 
             {/* Right: Actions */}
             <div className="flex items-center gap-3">

@@ -158,20 +158,7 @@ export function Sidebar() {
 
             {/* Bottom Section */}
             <div className="p-3 border-t border-cv-border">
-                <Link
-                    href="/settings"
-                    className={`
-            flex items-center gap-3 px-3 py-2 rounded-lg transition-all
-            text-cv-text-secondary hover:text-cv-text-primary hover:bg-cv-bg-tertiary
-            ${isSidebarCollapsed ? 'justify-center' : ''}
-          `}
-                    title={isSidebarCollapsed ? 'Settings' : undefined}
-                >
-                    <Settings size={20} />
-                    {!isSidebarCollapsed && (
-                        <span className="font-medium text-sm">Configuración</span>
-                    )}
-                </Link>
+                {/* Settings link removed as it is now accessible via the User Avatar in Topbar */}
             </div>
         </aside>
     );
