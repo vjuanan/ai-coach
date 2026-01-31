@@ -3,6 +3,7 @@
 import { AppShell } from '@/components/app-shell';
 import { GlobalCreateButton } from '@/components/app-shell/GlobalCreateButton';
 import { useState, useEffect } from 'react';
+import { useEscapeKey } from '@/hooks/use-escape-key';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
     Plus,
@@ -47,6 +48,8 @@ export default function ProgramsPage() {
     // New State for Delete Modal
     const [programToDelete, setProgramToDelete] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    useEscapeKey(() => !isDeleting && setProgramToDelete(null), !!programToDelete);
 
     const router = useRouter();
 

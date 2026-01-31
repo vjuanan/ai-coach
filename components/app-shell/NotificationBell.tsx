@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Bell, Check, ExternalLink } from 'lucide-react';
+import { useEscapeKey } from '@/hooks/use-escape-key';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
@@ -20,6 +21,8 @@ export function NotificationBell() {
     });
 
     const unreadCount = notifications.filter(n => !n.read).length;
+
+    useEscapeKey(() => setShowDropdown(false), showDropdown);
 
     useEffect(() => {
         const fetchNotifications = async () => {

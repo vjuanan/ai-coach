@@ -3,6 +3,7 @@
 
 import { AppShell } from '@/components/app-shell';
 import { useState, useEffect } from 'react';
+import { useEscapeKey } from '@/hooks/use-escape-key';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import {
@@ -49,6 +50,8 @@ export default function GymsPage() {
         }
     });
     const [isAdding, setIsAdding] = useState(false);
+
+    useEscapeKey(() => setShowAddModal(false), showAddModal);
 
     const router = useRouter();
 

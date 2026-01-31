@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useEscapeKey } from '@/hooks/use-escape-key';
 import { useRouter, usePathname } from 'next/navigation';
 import { Plus, Users, Building2, Dumbbell, Loader2, ChevronDown } from 'lucide-react';
 import { ProgramSetupWizard } from './ProgramSetupWizard';
@@ -22,6 +23,8 @@ export function GlobalCreateButton() {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    useEscapeKey(() => setIsOpen(false), isOpen);
 
     const handleCreateProgram = () => {
         setIsOpen(false);

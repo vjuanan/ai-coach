@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, CalendarDays, Target, Timer, Loader2, ChevronRight, Sparkles } from 'lucide-react';
 import { createProgram } from '@/lib/actions';
+import { useEscapeKey } from '@/hooks/use-escape-key';
 
 interface ProgramSetupWizardProps {
     isOpen: boolean;
@@ -14,6 +15,8 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
     const router = useRouter();
     const [isCreating, setIsCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEscapeKey(onClose, isOpen);
 
     // Form State
     const [programName, setProgramName] = useState('');
