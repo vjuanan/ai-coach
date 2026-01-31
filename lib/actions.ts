@@ -602,6 +602,9 @@ export async function deleteClient(id: string) {
 
 export async function getAdminClients() {
     const supabase = createServerClient();
+    const adminSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
+        : supabase;
 
     // Check for admin role
     const { data: { user } } = await supabase.auth.getUser();
@@ -618,7 +621,7 @@ export async function getAdminClients() {
         return [];
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await adminSupabase
         .from('clients')
         .select('*, coach:coaches(full_name, business_name)')
         .order('created_at', { ascending: false });
