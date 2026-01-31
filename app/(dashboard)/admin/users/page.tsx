@@ -36,6 +36,10 @@ export default function AdminUsersPage() {
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
+    // Multi-select State
+    const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+    const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
     // Create Modal State
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
@@ -107,6 +111,64 @@ export default function AdminUsersPage() {
         }
     }
 
+    // Multi-select Handlers
+    const filteredProfiles = profiles.filter(p =>
+        (p.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (p.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '')
+    );
+
+    const toggleSelectAll = () => {
+        if (selectedUsers.size === filteredProfiles.length) {
+            setSelectedUsers(new Set());
+        } else {
+            setSelectedUsers(new Set(filteredProfiles.map(p => p.id)));
+        }
+    };
+
+    const toggleSelectUser = (userId: string) => {
+        const newSelected = new Set(selectedUsers);
+        if (newSelected.has(userId)) {
+            newSelected.delete(userId);
+        } else {
+            newSelected.add(userId);
+        }
+        setSelectedUsers(newSelected);
+    };
+
+    async function handleBulkDelete() {
+        if (selectedUsers.size === 0) return;
+        if (!confirm(`¿ESTÁS SEGURO? Se eliminarán ${selectedUsers.size} usuarios permanentemente. Esta acción no se puede deshacer.`)) return;
+
+        setIsBulkDeleting(true);
+        setMessage(null);
+
+        try {
+            const deletePromises = Array.from(selectedUsers).map(userId => deleteUser(userId));
+            const results = await Promise.allSettled(deletePromises);
+
+            const failures = results.filter(r => r.status === 'rejected');
+            const successes = results.filter(r => r.status === 'fulfilled');
+
+            if (failures.length > 0) {
+                setMessage({
+                    text: `Se eliminaron ${successes.length} usuarios. Error al eliminar ${failures.length} usuarios.`,
+                    type: 'error'
+                });
+            } else {
+                setMessage({ text: `${successes.length} usuarios eliminados correctamente`, type: 'success' });
+            }
+
+            setSelectedUsers(new Set());
+            loadProfiles();
+        } catch (err: any) {
+            setMessage({ text: 'Error crítico en eliminación masiva', type: 'error' });
+            console.error(err);
+        } finally {
+            setIsBulkDeleting(false);
+        }
+    }
+
+
     async function handleCreateUser(e: React.FormEvent) {
         e.preventDefault();
         setIsCreating(true);
@@ -136,11 +198,6 @@ export default function AdminUsersPage() {
         }
     }
 
-    const filteredProfiles = profiles.filter(p =>
-        (p.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-        (p.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '')
-    );
-
     return (
 
         <>
@@ -148,18 +205,33 @@ export default function AdminUsersPage() {
             <div className="max-w-7xl mx-auto space-y-4">
 
                 {/* Action Buttons & Feedback */}
-                <div className="flex items-center justify-end gap-3">
-                    <div className="bg-cv-bg-tertiary p-2 rounded-lg border border-cv-border-subtle flex items-center gap-2">
-                        <Users className="text-cv-text-secondary" size={18} />
-                        <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredProfiles.length}</span>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        {selectedUsers.size > 0 && (
+                            <button
+                                onClick={handleBulkDelete}
+                                disabled={isBulkDeleting}
+                                className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors animate-in fade-in"
+                            >
+                                {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                                Eliminar ({selectedUsers.size})
+                            </button>
+                        )}
                     </div>
-                    <button
-                        onClick={() => setIsCreateOpen(true)}
-                        className="cv-btn-primary flex items-center gap-2"
-                    >
-                        <UserPlus size={18} />
-                        Crear Usuario
-                    </button>
+
+                    <div className="flex items-center gap-3">
+                        <div className="bg-cv-bg-tertiary p-2 rounded-lg border border-cv-border-subtle flex items-center gap-2">
+                            <Users className="text-cv-text-secondary" size={18} />
+                            <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredProfiles.length}</span>
+                        </div>
+                        <button
+                            onClick={() => setIsCreateOpen(true)}
+                            className="cv-btn-primary flex items-center gap-2"
+                        >
+                            <UserPlus size={18} />
+                            Crear Usuario
+                        </button>
+                    </div>
                 </div>
 
                 {message && (
@@ -181,6 +253,14 @@ export default function AdminUsersPage() {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-cv-bg-tertiary border-b border-cv-border-subtle">
+                                        <th className="p-4 w-10">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
+                                                checked={filteredProfiles.length > 0 && selectedUsers.size === filteredProfiles.length}
+                                                onChange={toggleSelectAll}
+                                            />
+                                        </th>
                                         <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Usuario</th>
                                         <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Email</th>
                                         <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Rol Actual</th>
@@ -189,7 +269,15 @@ export default function AdminUsersPage() {
                                 </thead>
                                 <tbody className="divide-y divide-cv-border-subtle">
                                     {filteredProfiles.map((user) => (
-                                        <tr key={user.id} className="hover:bg-cv-bg-tertiary/50 transition-colors">
+                                        <tr key={user.id} className={`hover:bg-cv-bg-tertiary/50 transition-colors ${selectedUsers.has(user.id) ? 'bg-cv-accent/5' : ''}`}>
+                                            <td className="p-4">
+                                                <input
+                                                    type="checkbox"
+                                                    className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
+                                                    checked={selectedUsers.has(user.id)}
+                                                    onChange={() => toggleSelectUser(user.id)}
+                                                />
+                                            </td>
                                             <td className="p-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-8 h-8 rounded-full bg-cv-accent-muted flex items-center justify-center text-cv-accent font-bold">
