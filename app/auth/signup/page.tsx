@@ -3,32 +3,50 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Loader2, Dumbbell } from 'lucide-react';
+import { Loader2, Dumbbell, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
-export default function LoginPage() {
+export default function SignUpPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
 
+        if (password !== confirmPassword) {
+            setError('Las contraseñas no coinciden');
+            return;
+        }
+
+        if (password.length < 6) {
+            setError('La contraseña debe tener al menos 6 caracteres');
+            return;
+        }
+
         try {
-            const { error } = await supabase.auth.signInWithPassword({
+            const { error: signUpError } = await supabase.auth.signUp({
                 email,
                 password,
+                options: {
+                    emailRedirectTo: `${window.location.origin}/auth/callback`,
+                },
             });
 
-            if (error) throw error;
+            if (signUpError) throw signUpError;
 
-            router.push('/');
+            // Redirect to onboarding or show check email message
+            // Since we want to redirect to onboarding flow, we usually auto-signin or push to onboarding
+            router.push('/onboarding');
             router.refresh();
+
         } catch (err: any) {
-            setError(err.message || 'Error al iniciar sesión');
+            setError(err.message || 'Error al registrarse');
         } finally {
             setIsLoading(false);
         }
@@ -42,15 +60,15 @@ export default function LoginPage() {
                         <Dumbbell className="text-white" size={32} />
                     </div>
                     <h2 className="text-3xl font-bold text-cv-text-primary text-center">
-                        AI Coach
+                        Crear Cuenta
                     </h2>
                     <p className="text-cv-text-tertiary mt-2 text-center">
-                        Plataforma de Programación Inteligente
+                        Únete a AI Coach y potencia tus entrenamientos
                     </p>
                 </div>
 
                 <div className="cv-card shadow-xl border border-cv-bg-border/50">
-                    <form onSubmit={handleLogin} className="space-y-6">
+                    <form onSubmit={handleSignUp} className="space-y-6">
                         {error && (
                             <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm md:text-base">
                                 {error}
@@ -72,21 +90,27 @@ export default function LoginPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                                <label className="text-sm font-medium text-cv-text-secondary">
-                                    Contraseña
-                                </label>
-                                <a
-                                    href="/auth/forgot-password"
-                                    className="text-sm text-cv-accent hover:text-cv-accent-hover transition-colors"
-                                >
-                                    ¿Olvidaste tu contraseña?
-                                </a>
-                            </div>
+                            <label className="text-sm font-medium text-cv-text-secondary">
+                                Contraseña
+                            </label>
                             <input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                className="w-full px-4 py-3 bg-cv-bg-tertiary border border-cv-bg-border rounded-xl text-cv-text-primary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 transition-all placeholder:text-cv-text-tertiary"
+                                placeholder="••••••••"
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-cv-text-secondary">
+                                Confirmar Contraseña
+                            </label>
+                            <input
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
                                 className="w-full px-4 py-3 bg-cv-bg-tertiary border border-cv-bg-border rounded-xl text-cv-text-primary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 transition-all placeholder:text-cv-text-tertiary"
                                 placeholder="••••••••"
                                 required
@@ -101,30 +125,23 @@ export default function LoginPage() {
                             {isLoading ? (
                                 <>
                                     <Loader2 className="animate-spin" size={20} />
-                                    Entrando...
+                                    Registrando...
                                 </>
                             ) : (
-                                'Iniciar Sesión'
+                                'Registrarse'
                             )}
                         </button>
-
-                        <div className="text-center mt-4">
-                            <p className="text-sm text-cv-text-tertiary">
-                                ¿No tienes cuenta?{' '}
-                                <a
-                                    href="/auth/signup"
-                                    className="text-cv-accent hover:text-cv-accent-hover font-medium transition-colors"
-                                >
-                                    Registrarse
-                                </a>
-                            </p>
-                        </div>
                     </form>
-                </div>
 
-                <p className="text-center text-sm text-cv-text-tertiary">
-                    Acceso restringido a entrenadores autorizados.
-                </p>
+                    <div className="mt-6 text-center">
+                        <p className="text-sm text-cv-text-tertiary">
+                            ¿Ya tienes una cuenta?{' '}
+                            <Link href="/login" className="text-cv-accent hover:text-cv-accent-hover font-medium">
+                                Iniciar Sesión
+                            </Link>
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     );
