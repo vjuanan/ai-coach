@@ -44,8 +44,9 @@ export function Sidebar() {
     const { isSidebarCollapsed, toggleSidebar } = useAppStore();
     const pathname = usePathname();
     const supabase = createClient();
-    const [role, setRole] = useState<'admin' | 'coach' | 'athlete' | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    // Start with 'coach' role to render immediately without flash - this is the most common role
+    // and will update if the actual role is different (rare case)
+    const [role, setRole] = useState<'admin' | 'coach' | 'athlete'>('coach');
 
     useEffect(() => {
         const fetchRole = async () => {
@@ -57,24 +58,20 @@ export function Sidebar() {
                         .select('role')
                         .eq('id', user.id)
                         .single();
-                    setRole(profile?.role || 'coach'); // Default to coach if no role
-                } else {
-                    setRole('coach'); // Default to coach for unauthenticated
+                    if (profile?.role && profile.role !== role) {
+                        setRole(profile.role);
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching role:', error);
-                setRole('coach'); // Default to coach on error
-            } finally {
-                setIsLoading(false);
             }
         };
         fetchRole();
     }, []);
 
-    // Filter Items based on Role - show coach items while loading as fallback
-    const effectiveRole = role || 'coach';
+    // Filter Items based on Role - role is never null now, always starts as 'coach'
     const filteredNavItems = navItems.filter(item => {
-        if (effectiveRole === 'admin') return true; // See all
+        if (role === 'admin') return true; // See all
 
         if (effectiveRole === 'coach') {
             // Coach cannot see 'Gimnasios' OR admin sections
