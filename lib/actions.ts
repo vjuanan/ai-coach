@@ -630,6 +630,127 @@ export async function getAdminClients() {
 }
 
 // ==========================================
+// ADMIN USER MANAGEMENT
+// ==========================================
+
+export async function getProfiles() {
+    const supabase = createServerClient();
+
+    // Check for admin role
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        console.warn('Unauthorized access to getProfiles');
+        return [];
+    }
+
+    // Use Admin Client to ensure we see ALL profiles (RLS might limit "own profile" only)
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        throw new Error('Server Config Error: Missing Admin Key');
+    }
+
+    const adminSupabase = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
+    const { data, error } = await adminSupabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching profiles:', error);
+        return [];
+    }
+    return data;
+}
+
+export async function updateUserRole(userId: string, newRole: 'coach' | 'athlete' | 'admin') {
+    const supabase = createServerClient();
+
+    // Verify Admin
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthorized');
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') throw new Error('Forbidden: Admins only');
+
+    // Perform Update with Admin Client
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        throw new Error('Server Config Error: Missing Admin Key');
+    }
+
+    const adminSupabase = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
+    const { error } = await adminSupabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', userId);
+
+    if (error) throw new Error(error.message);
+
+    revalidatePath('/admin/users');
+    return { success: true };
+}
+
+export async function resetUserPassword(userId: string) {
+    // Note: This sends a password reset email if Supabase Auth SMTP is configured.
+    const supabase = createServerClient();
+
+    // Verify Admin
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthorized');
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') throw new Error('Forbidden: Admins only');
+
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        throw new Error('Server Config Error: Missing Admin Key');
+    }
+
+    const adminSupabase = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
+    // 1. Get User Email
+    const { data: targetUser, error: userError } = await adminSupabase.auth.admin.getUserById(userId);
+    if (userError || !targetUser.user) throw new Error('User not found');
+    const email = targetUser.user.email;
+    if (!email) throw new Error('User has no email');
+
+    // 2. Send Reset Email (Standard Supabase Flow)
+    const { error } = await adminSupabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback?next=/settings`,
+    });
+
+    if (error) throw new Error(error.message);
+
+    return { success: true, message: `Correo de restablecimiento enviado a ${email}` };
+}
+
+// ==========================================
 // MESOCYCLE & EDITOR ACTIONS
 // ==========================================
 

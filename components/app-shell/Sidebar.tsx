@@ -14,6 +14,7 @@ import {
     ChevronLeft,
     ChevronRight,
     Briefcase,
+    Shield,
 } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
@@ -33,6 +34,7 @@ const navItems: NavItem[] = [
     { label: 'Programas', href: '/programs', icon: <Dumbbell size={20} /> },
     { label: 'Plantillas', href: '/templates', icon: <FileText size={20} /> },
     { label: 'Clientes', href: '/admin/clients', icon: <Briefcase size={20} /> },
+    { label: 'Usuarios', href: '/admin/users', icon: <Shield size={20} /> },
 ];
 
 export function Sidebar() {
@@ -63,15 +65,12 @@ export function Sidebar() {
         if (role === 'admin') return true; // See all
 
         if (role === 'coach') {
-            // Coach cannot see 'Gimnasios' (Clients tab)
-            return item.href !== '/gyms';
+            // Coach cannot see 'Gimnasios' (Clients tab) OR 'Usuarios' (Admin) OR 'Clientes' (Admin)
+            return item.href !== '/gyms' && !item.href.startsWith('/admin');
         }
 
         if (role === 'athlete') {
-            // Athlete only sees dashboard (conceptually), but for now strict
-            return false; // Athlete has custom sidebar? Or specific items?
-            // If reusing sidebar for athlete:
-            // return item.href === '/athlete/dashboard'; // But navItems doesn't have it.
+            return false;
         }
         return false;
     });
