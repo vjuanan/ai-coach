@@ -1,6 +1,6 @@
 'use client';
 
-import { AppShell } from '@/components/app-shell';
+import { Topbar } from '@/components/app-shell/Topbar';
 import { GlobalCreateButton } from '@/components/app-shell/GlobalCreateButton';
 import { useAppStore } from '@/lib/store';
 import { getPrograms, createProgram, getDashboardStats } from '@/lib/actions';
@@ -47,7 +47,8 @@ export default function DashboardPage() {
     // Logic removed - moved to GlobalCreateButton
 
     return (
-        <AppShell title="Dashboard">
+        <>
+            <Topbar title="Dashboard" />
             <div className="max-w-7xl mx-auto space-y-8">
                 {/* Welcome Header */}
                 <div className="flex items-center justify-between">
@@ -168,7 +169,7 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </div>
-        </AppShell >
+        </>
     );
 }
 

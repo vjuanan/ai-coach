@@ -1,6 +1,6 @@
 'use client';
 
-import { AppShell } from '@/components/app-shell';
+import { Topbar } from '@/components/app-shell/Topbar';
 import { useState, useEffect } from 'react';
 import { useEscapeKey } from '@/hooks/use-escape-key';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -21,8 +21,7 @@ import {
     User,
     Loader2,
     AlertTriangle,
-    X,
-    Check
+    X
 } from 'lucide-react';
 
 interface Athlete {
@@ -65,10 +64,6 @@ export default function AthletesPage() {
         franTime: ''  // in seconds
     });
     const [isAdding, setIsAdding] = useState(false);
-
-    // Multi-selection state
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    const [isDeletingSelection, setIsDeletingSelection] = useState(false);
 
     // Alert Modal State
     const [athleteToDelete, setAthleteToDelete] = useState<string | null>(null);
@@ -180,33 +175,6 @@ export default function AthletesPage() {
         a.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const toggleSelection = (e: React.MouseEvent, id: string) => {
-        e.stopPropagation();
-        e.preventDefault(); // Prevent Link navigation
-        const newSelected = new Set(selectedIds);
-        if (newSelected.has(id)) {
-            newSelected.delete(id);
-        } else {
-            newSelected.add(id);
-        }
-        setSelectedIds(newSelected);
-    };
-
-    const deleteSelected = async () => {
-        if (!confirm(`¿Eliminar ${selectedIds.size} atletas seleccionados?`)) return;
-
-        setIsDeletingSelection(true);
-        try {
-            const promises = Array.from(selectedIds).map(id => deleteClient(id));
-            await Promise.all(promises);
-            setSelectedIds(new Set());
-            fetchAthletes();
-        } catch (e) {
-            alert('Error al eliminar atletas');
-        }
-        setIsDeletingSelection(false);
-    };
-
     return (
         <AppShell
             title="Atletas"
@@ -220,7 +188,7 @@ export default function AthletesPage() {
                 </button>
             }
         >
-            <div className="max-w-6xl mx-auto relative pb-20">
+            <div className="max-w-6xl mx-auto">
                 {/* Search removed - using global Topbar search */}
 
                 {/* Athletes Grid */}
@@ -241,83 +209,37 @@ export default function AthletesPage() {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filteredAthletes.map((athlete) => {
-                            const isSelected = selectedIds.has(athlete.id);
-                            return (
-                                <Link
-                                    key={athlete.id}
-                                    href={`/athletes/${athlete.id}`}
-                                    className={`cv-card group relative block transition-all hover:border-cv-accent/50 cursor-pointer ${isSelected
-                                            ? 'border-cv-accent bg-cv-accent/5'
-                                            : 'border-cv-border'
-                                        }`}
-                                >
-                                    {/* Checkbox Overlay */}
-                                    <div
-                                        className="absolute top-3 right-3 z-20"
-                                        onClick={(e) => toggleSelection(e, athlete.id)}
+                    <div className="grid grid-cols-3 gap-4">
+                        {filteredAthletes.map((athlete) => (
+                            <Link
+                                key={athlete.id}
+                                href={`/athletes/${athlete.id}`}
+                                className="cv-card group relative block hover:border-cv-accent/50 transition-colors cursor-pointer"
+                            >
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="w-12 h-12 rounded-full bg-cv-accent-muted flex items-center justify-center text-cv-accent font-bold text-lg">
+                                        {athlete.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <button
+                                        onClick={(e) => promptDelete(e, athlete.id)}
+                                        className="cv-btn-ghost p-1.5 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:bg-red-500/10 z-10 relative"
+                                        title="Eliminar Atleta"
                                     >
-                                        <div className={`
-                                            w-6 h-6 rounded-md border flex items-center justify-center transition-all bg-cv-bg-primary
-                                            ${isSelected
-                                                ? 'bg-cv-accent border-cv-accent text-white'
-                                                : 'border-cv-border hover:border-cv-accent'
-                                            }
-                                        `}>
-                                            {isSelected && <Check size={14} strokeWidth={3} />}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className="w-12 h-12 rounded-full bg-cv-accent-muted flex items-center justify-center text-cv-accent font-bold text-lg">
-                                            {athlete.name.charAt(0).toUpperCase()}
-                                        </div>
-                                        <button
-                                            onClick={(e) => promptDelete(e, athlete.id)}
-                                            className="cv-btn-ghost p-1.5 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:bg-red-500/10 z-10 relative mr-8"
-                                            title="Eliminar Atleta"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                    <h3 className="font-semibold text-cv-text-primary">{athlete.name}</h3>
-                                    {athlete.email && (
-                                        <p className="text-sm text-cv-text-tertiary flex items-center gap-1 mt-1">
-                                            <Mail size={12} />
-                                            {athlete.email}
-                                        </p>
-                                    )}
-                                    <div className="mt-4 pt-3 border-t border-cv-border">
-                                        <span className="cv-badge-accent">Atleta</span>
-                                    </div>
-                                </Link>
-                            );
-                        })}
-                    </div>
-                )}
-
-                {/* Bulk Action Bar */}
-                {selectedIds.size > 0 && (
-                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-cv-bg-secondary border border-cv-border shadow-2xl rounded-full px-6 py-3 flex items-center gap-6 z-50 animate-in slide-in-from-bottom-5">
-                        <span className="font-medium text-cv-text-primary">
-                            {selectedIds.size} seleccionados
-                        </span>
-                        <div className="h-6 w-px bg-cv-border" />
-                        <button
-                            onClick={deleteSelected}
-                            disabled={isDeletingSelection}
-                            className="flex items-center gap-2 text-red-500 hover:text-red-600 font-medium transition-colors"
-                        >
-                            {isDeletingSelection ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
-                            Eliminar
-                        </button>
-                        <button
-                            onClick={() => setSelectedIds(new Set())}
-                            className="p-1 hover:bg-cv-bg-tertiary rounded-full text-cv-text-tertiary transition-colors"
-                        >
-                            <X size={18} />
-                        </button>
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                                <h3 className="font-semibold text-cv-text-primary">{athlete.name}</h3>
+                                {athlete.email && (
+                                    <p className="text-sm text-cv-text-tertiary flex items-center gap-1 mt-1">
+                                        <Mail size={12} />
+                                        {athlete.email}
+                                    </p>
+                                )}
+                                <div className="mt-4 pt-3 border-t border-cv-border">
+                                    <span className="cv-badge-accent">Atleta</span>
+                                </div>
+                            </Link>
+                        ))}
                     </div>
                 )}
 
@@ -584,6 +506,7 @@ export default function AthletesPage() {
                     </>
                 )}
             </div>
-        </AppShell>
+        </div>
+        </>
     );
 }

@@ -1,0 +1,36 @@
+'use client';
+
+import { Sidebar } from '@/components/app-shell/Sidebar';
+import { CommandPalette } from '@/components/app-shell/CommandPalette';
+import { useAppStore } from '@/lib/store';
+
+export default function DashboardLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    const { isSidebarCollapsed } = useAppStore();
+
+    return (
+        <div className="min-h-screen bg-white">
+            <Sidebar />
+            <CommandPalette />
+
+            <main
+                className={`
+                    pt-12 min-h-screen transition-all duration-300
+                    ${isSidebarCollapsed ? 'pl-16' : 'pl-64'}
+                `}
+            >
+                {/* 
+                   We keep the padding logic here to ensure content doesn't go under the sidebar.
+                   Individual pages will render their own Topbar which handles its own positioning.
+                   The 'pt-12' accounts for the Topbar height.
+                */}
+                <div className="p-6">
+                    {children}
+                </div>
+            </main>
+        </div>
+    );
+}

@@ -1,18 +1,17 @@
 // Force rebuild - deployment sync 2026-01-30
 'use client';
 
-import { AppShell } from '@/components/app-shell';
+import { Topbar } from '@/components/app-shell/Topbar';
 import { useState, useEffect } from 'react';
 import { useEscapeKey } from '@/hooks/use-escape-key';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import {
     Plus,
+    Search,
     Building2,
     Trash2,
-    Loader2,
-    X,
-    Check
+    Loader2
 } from 'lucide-react';
 import {
     getClients,
@@ -51,10 +50,6 @@ export default function GymsPage() {
         }
     });
     const [isAdding, setIsAdding] = useState(false);
-
-    // Multi-selection state
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    const [isDeletingSelection, setIsDeletingSelection] = useState(false);
 
     useEscapeKey(() => setShowAddModal(false), showAddModal);
 
@@ -122,46 +117,21 @@ export default function GymsPage() {
         g.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const toggleSelection = (e: React.MouseEvent, id: string) => {
-        e.stopPropagation();
-        const newSelected = new Set(selectedIds);
-        if (newSelected.has(id)) {
-            newSelected.delete(id);
-        } else {
-            newSelected.add(id);
-        }
-        setSelectedIds(newSelected);
-    };
-
-    const deleteSelected = async () => {
-        if (!confirm(`¿Eliminar ${selectedIds.size} gimnasios seleccionados?`)) return;
-
-        setIsDeletingSelection(true);
-        try {
-            const promises = Array.from(selectedIds).map(id => deleteClient(id));
-            await Promise.all(promises);
-            setSelectedIds(new Set());
-            fetchGyms();
-        } catch (e) {
-            alert('Error al eliminar gimnasios');
-        }
-        setIsDeletingSelection(false);
-    };
-
     return (
-        <AppShell
-            title="Gimnasios"
-            actions={
-                <button
-                    onClick={() => setShowAddModal(true)}
-                    className="cv-btn-primary"
-                >
-                    <Plus size={18} />
-                    Añadir Gimnasio
-                </button>
-            }
-        >
-            <div className="max-w-6xl mx-auto relative pb-20">
+        <>
+            <Topbar
+                title="Gimnasios"
+                actions={
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        className="cv-btn-primary"
+                    >
+                        <Plus size={18} />
+                        Añadir Gimnasio
+                    </button>
+                }
+            />
+            <div className="max-w-6xl mx-auto">
                 {/* Search removed - using global Topbar search */}
 
                 {/* Gyms Grid */}
@@ -182,71 +152,30 @@ export default function GymsPage() {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filteredGyms.map((gym) => {
-                            const isSelected = selectedIds.has(gym.id);
-                            return (
-                                <div
-                                    key={gym.id}
-                                    className={`cv-card group cursor-pointer transition-all relative border ${isSelected
-                                            ? 'border-cv-accent bg-cv-accent/5'
-                                            : 'border-cv-border hover:border-cv-accent/50'
-                                        }`}
-                                    onClick={() => router.push(`/gyms/${gym.id}`)}
-                                >
-                                    {/* Checkbox Overlay */}
-                                    <div
-                                        className="absolute top-3 right-3 z-10"
-                                        onClick={(e) => toggleSelection(e, gym.id)}
+                    <div className="grid grid-cols-3 gap-4">
+                        {filteredGyms.map((gym) => (
+                            <div
+                                key={gym.id}
+                                className="cv-card group cursor-pointer hover:border-cv-accent/50 transition-all"
+                                onClick={() => router.push(`/gyms/${gym.id}`)}
+                            >
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400">
+                                        <Building2 size={24} />
+                                    </div>
+                                    <button
+                                        onClick={(e) => handleDelete(e, gym.id)}
+                                        className="cv-btn-ghost p-1.5 opacity-0 group-hover:opacity-100 transition-opacity text-red-400"
                                     >
-                                        <div className={`
-                                            w-6 h-6 rounded-md border flex items-center justify-center transition-all
-                                            ${isSelected
-                                                ? 'bg-cv-accent border-cv-accent text-white'
-                                                : 'border-cv-border bg-cv-bg-primary hover:border-cv-accent'
-                                            }
-                                        `}>
-                                            {isSelected && <Check size={14} strokeWidth={3} />}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400">
-                                            <Building2 size={24} />
-                                        </div>
-                                        {/* Fallback individual delete if needed, but bulk is preferred. Keeping for now but hidden if selected? */}
-                                    </div>
-                                    <h3 className="font-semibold text-cv-text-primary pr-8">{gym.name}</h3>
-                                    <div className="mt-4 pt-3 border-t border-cv-border">
-                                        <span className="cv-badge bg-purple-500/15 text-purple-400">Gimnasio</span>
-                                    </div>
+                                        <Trash2 size={16} />
+                                    </button>
                                 </div>
-                            );
-                        })}
-                    </div>
-                )}
-
-                {/* Bulk Action Bar */}
-                {selectedIds.size > 0 && (
-                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-cv-bg-secondary border border-cv-border shadow-2xl rounded-full px-6 py-3 flex items-center gap-6 z-50 animate-in slide-in-from-bottom-5">
-                        <span className="font-medium text-cv-text-primary">
-                            {selectedIds.size} seleccionados
-                        </span>
-                        <div className="h-6 w-px bg-cv-border" />
-                        <button
-                            onClick={deleteSelected}
-                            disabled={isDeletingSelection}
-                            className="flex items-center gap-2 text-red-500 hover:text-red-600 font-medium transition-colors"
-                        >
-                            {isDeletingSelection ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
-                            Eliminar
-                        </button>
-                        <button
-                            onClick={() => setSelectedIds(new Set())}
-                            className="p-1 hover:bg-cv-bg-tertiary rounded-full text-cv-text-tertiary transition-colors"
-                        >
-                            <X size={18} />
-                        </button>
+                                <h3 className="font-semibold text-cv-text-primary">{gym.name}</h3>
+                                <div className="mt-4 pt-3 border-t border-cv-border">
+                                    <span className="cv-badge bg-purple-500/15 text-purple-400">Gimnasio</span>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 )}
 
@@ -258,7 +187,7 @@ export default function GymsPage() {
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-xl font-semibold text-cv-text-primary">Nuevo Gimnasio / Cliente B2B</h2>
                                 <button onClick={() => setShowAddModal(false)} className="cv-btn-ghost p-1">
-                                    <X size={18} className="text-cv-text-tertiary" />
+                                    <Trash2 size={18} className="text-cv-text-tertiary" />
                                 </button>
                             </div>
 
@@ -357,6 +286,6 @@ export default function GymsPage() {
                     </>
                 )}
             </div>
-        </AppShell>
+        </>
     );
 }
