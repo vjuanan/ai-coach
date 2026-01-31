@@ -1250,3 +1250,38 @@ export async function deleteStimulusFeature(id: string) {
     revalidatePath('/settings');
     return { success: true };
 }
+
+// ==========================================
+// COACH DELETION HANDLING
+// ==========================================
+
+export async function getCoachStatus() {
+    const supabase = createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { hasCoach: false, isAthlete: false };
+
+    // 1. Check if user is an athlete
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'athlete') {
+        return { hasCoach: true, isAthlete: false }; // Not an athlete, so warning doesn't apply
+    }
+
+    // 2. Check if athlete has a client record with a valid coach that still exists
+    // The inner join on coaches ensures the coach record exists.
+    const { data: clientRecord } = await supabase
+        .from('clients')
+        .select('coach_id, coach:coaches!inner(id)')
+        .eq('user_id', user.id)
+        .single();
+
+    return {
+        hasCoach: !!clientRecord,
+        isAthlete: true
+    };
+}

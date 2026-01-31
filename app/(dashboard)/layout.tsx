@@ -3,6 +3,9 @@
 import { Sidebar } from '@/components/app-shell/Sidebar';
 import { CommandPalette } from '@/components/app-shell/CommandPalette';
 import { useAppStore } from '@/lib/store';
+import { CoachWarning } from '@/components/app-shell/CoachWarning';
+import { getCoachStatus } from '@/lib/actions';
+import { useEffect, useState } from 'react';
 
 export default function DashboardLayout({
     children,
@@ -10,6 +13,11 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     const { isSidebarCollapsed } = useAppStore();
+    const [status, setStatus] = useState<{ hasCoach: boolean; isAthlete: boolean } | null>(null);
+
+    useEffect(() => {
+        getCoachStatus().then(setStatus);
+    }, []);
 
     return (
         <div className="min-h-screen bg-white">
@@ -22,6 +30,13 @@ export default function DashboardLayout({
                     ${isSidebarCollapsed ? 'pl-16' : 'pl-64'}
                 `}
             >
+                {/* Warning Banner */}
+                {status && (
+                    <div className="pt-2 px-6">
+                        <CoachWarning hasCoach={status.hasCoach} isAthlete={status.isAthlete} />
+                    </div>
+                )}
+
                 {/* 
                    We keep the padding logic here to ensure content doesn't go under the sidebar.
                    Individual pages will render their own Topbar which handles its own positioning.

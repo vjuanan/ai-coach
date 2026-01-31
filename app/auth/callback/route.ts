@@ -6,7 +6,7 @@ export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get('code');
     // if "next" is in param, use it as the redirect URL
-    const next = searchParams.get('next') ?? '/';
+    let next = searchParams.get('next') ?? '/';
 
     if (code) {
         const cookieStore = cookies();
@@ -27,8 +27,23 @@ export async function GET(request: Request) {
                 },
             }
         );
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (!error) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+        if (!error && data.user) {
+            // Check if user has a role - if not, redirect to onboarding
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', data.user.id)
+                .single();
+
+            if (!profile?.role) {
+                next = '/onboarding';
+            } else if (profile.role === 'athlete') {
+                next = '/athlete/dashboard';
+            }
+            // Coaches and Admins go to default '/'
+
             return NextResponse.redirect(`${origin}${next}`);
         }
     }
@@ -36,3 +51,4 @@ export async function GET(request: Request) {
     // return the user to an error page with instructions
     return NextResponse.redirect(`${origin}/login?error=auth-code-error`);
 }
+

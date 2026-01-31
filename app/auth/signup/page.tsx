@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Loader2, Dumbbell, ArrowLeft } from 'lucide-react';
+import { Loader2, Dumbbell, ArrowLeft, Mail, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SignUpPage() {
@@ -12,6 +12,7 @@ export default function SignUpPage() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState(false);
     const router = useRouter();
 
     const handleSignUp = async (e: React.FormEvent) => {
@@ -21,11 +22,13 @@ export default function SignUpPage() {
 
         if (password !== confirmPassword) {
             setError('Las contraseñas no coinciden');
+            setIsLoading(false);
             return;
         }
 
         if (password.length < 6) {
             setError('La contraseña debe tener al menos 6 caracteres');
+            setIsLoading(false);
             return;
         }
 
@@ -40,10 +43,8 @@ export default function SignUpPage() {
 
             if (signUpError) throw signUpError;
 
-            // Redirect to onboarding or show check email message
-            // Since we want to redirect to onboarding flow, we usually auto-signin or push to onboarding
-            router.push('/onboarding');
-            router.refresh();
+            // Show success message - user needs to confirm email
+            setSuccess(true);
 
         } catch (err: any) {
             setError(err.message || 'Error al registrarse');
@@ -51,6 +52,37 @@ export default function SignUpPage() {
             setIsLoading(false);
         }
     };
+
+    // Success state - show email confirmation message
+    if (success) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-cv-bg-primary p-4">
+                <div className="w-full max-w-md space-y-8 text-center">
+                    <div className="flex flex-col items-center">
+                        <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mb-6">
+                            <CheckCircle className="text-green-500" size={40} />
+                        </div>
+                        <h2 className="text-3xl font-bold text-cv-text-primary">
+                            ¡Revisa tu Email!
+                        </h2>
+                        <p className="text-cv-text-tertiary mt-4 max-w-sm">
+                            Te hemos enviado un correo de confirmación a <strong className="text-cv-text-primary">{email}</strong>.
+                            Haz clic en el enlace para activar tu cuenta.
+                        </p>
+                    </div>
+                    <div className="cv-card p-6 bg-cv-bg-secondary border border-cv-border">
+                        <Mail className="mx-auto text-cv-accent mb-4" size={32} />
+                        <p className="text-sm text-cv-text-secondary">
+                            Una vez que confirmes tu email, serás redirigido automáticamente para completar tu perfil.
+                        </p>
+                    </div>
+                    <Link href="/login" className="text-cv-accent hover:underline text-sm">
+                        Volver a Iniciar Sesión
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-cv-bg-primary p-4">
