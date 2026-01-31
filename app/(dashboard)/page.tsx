@@ -22,7 +22,7 @@ import { useRouter } from 'next/navigation';
 export default function DashboardPage() {
     const { currentView } = useAppStore();
     const [programs, setPrograms] = useState<any[]>([]);
-    const [stats, setStats] = useState({ athletes: 0, gyms: 0, activePrograms: 0, totalBlocks: 0, userName: 'Coach' });
+    const [stats, setStats] = useState({ showStats: true, athletes: 0, gyms: 0, activePrograms: 0, totalBlocks: 0, userName: 'Coach' });
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
@@ -63,37 +63,39 @@ export default function DashboardPage() {
                     <GlobalCreateButton />
                 </div>
 
-                {/* Stats Grid - REAL DATA */}
-                <div className="grid grid-cols-4 gap-4">
-                    <StatCard
-                        icon={<Users size={20} />}
-                        label="Atletas"
-                        value={stats.athletes}
-                        trend="Total registrados"
-                        color="text-blue-400"
-                    />
-                    <StatCard
-                        icon={<Building2 size={20} />}
-                        label="Gimnasios"
-                        value={stats.gyms}
-                        trend="Total registrados"
-                        color="text-purple-400"
-                    />
-                    <StatCard
-                        icon={<Dumbbell size={20} />}
-                        label="Programas Activos"
-                        value={stats.activePrograms}
-                        trend="En curso"
-                        color="text-cv-accent"
-                    />
-                    <StatCard
-                        icon={<Calendar size={20} />}
-                        label="Bloques Totales"
-                        value={stats.totalBlocks}
-                        trend="Sesiones diseñadas"
-                        color="text-green-400"
-                    />
-                </div>
+                {/* Stats Grid - REAL DATA (hidden for athletes) */}
+                {stats.showStats && (
+                    <div className="grid grid-cols-4 gap-4">
+                        <StatCard
+                            icon={<Users size={20} />}
+                            label="Atletas"
+                            value={stats.athletes}
+                            trend="Total registrados"
+                            color="text-blue-400"
+                        />
+                        <StatCard
+                            icon={<Building2 size={20} />}
+                            label="Gimnasios"
+                            value={stats.gyms}
+                            trend="Total registrados"
+                            color="text-purple-400"
+                        />
+                        <StatCard
+                            icon={<Dumbbell size={20} />}
+                            label="Programas Activos"
+                            value={stats.activePrograms}
+                            trend="En curso"
+                            color="text-cv-accent"
+                        />
+                        <StatCard
+                            icon={<Calendar size={20} />}
+                            label="Bloques Totales"
+                            value={stats.totalBlocks}
+                            trend="Sesiones diseñadas"
+                            color="text-green-400"
+                        />
+                    </div>
+                )}
 
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-3 gap-6">

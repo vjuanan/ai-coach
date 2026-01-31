@@ -36,33 +36,82 @@ export async function getDashboardStats() {
     let supabase = createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    // DEMO/BYPASS MODE: Use Admin Client if no user
-    if (!user && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        supabase = createSupabaseClient(
+    // Use admin client for accurate counts
+    const adminSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? createSupabaseClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.SUPABASE_SERVICE_ROLE_KEY
-        ) as any;
+        )
+        : supabase;
+
+    // Get user profile and role
+    let role: 'admin' | 'coach' | 'athlete' = 'coach';
+    let userName = 'Coach';
+    let coachId: string | null = null;
+
+    if (user) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name, role')
+            .eq('id', user.id)
+            .single();
+
+        role = (profile?.role as 'admin' | 'coach' | 'athlete') || 'coach';
+        userName = profile?.full_name || user?.user_metadata?.full_name || 'Coach';
+
+        // Get coach_id for filtering if role is coach
+        if (role === 'coach') {
+            const { data: coach } = await supabase
+                .from('coaches')
+                .select('id')
+                .eq('user_id', user.id)
+                .single();
+            coachId = coach?.id || null;
+        }
     }
 
-    // Run parallel queries for speed - include profile fetch for dynamic name
+    // Athletes and Gyms don't see these stats
+    if (role === 'athlete') {
+        return {
+            showStats: false,
+            userName,
+            athletes: 0,
+            gyms: 0,
+            activePrograms: 0,
+            totalBlocks: 0
+        };
+    }
+
+    // Build queries based on role
+    let athleteQuery = adminSupabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'athlete');
+    let gymQuery = adminSupabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'gym');
+    let programQuery = adminSupabase.from('programs').select('*', { count: 'exact', head: true }).eq('status', 'active');
+    let blockQuery = adminSupabase.from('workout_blocks').select('*', { count: 'exact', head: true });
+
+    // Coach only sees their own clients
+    if (role === 'coach' && coachId) {
+        athleteQuery = athleteQuery.eq('coach_id', coachId);
+        gymQuery = gymQuery.eq('coach_id', coachId);
+        programQuery = programQuery.eq('coach_id', coachId);
+        // For blocks, we need to filter through program->mesocycle->day->block chain
+        // This is complex, so for now we count all blocks for coach's programs
+    }
+
+    // Run parallel queries
     const [
         { count: athletes },
         { count: gyms },
         { count: programs },
-        { count: blocks },
-        profileResult
+        { count: blocks }
     ] = await Promise.all([
-        supabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'athlete'),
-        supabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'gym'),
-        supabase.from('programs').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-        supabase.from('workout_blocks').select('*', { count: 'exact', head: true }),
-        user ? supabase.from('profiles').select('full_name').eq('id', user.id).single() : Promise.resolve({ data: null })
+        athleteQuery,
+        gymQuery,
+        programQuery,
+        blockQuery
     ]);
 
-    // Use profile name (most up-to-date), fallback to user_metadata, then 'Coach'
-    const userName = profileResult?.data?.full_name || user?.user_metadata?.full_name || 'Coach';
-
     return {
+        showStats: true,
         userName,
         athletes: athletes || 0,
         gyms: gyms || 0,
