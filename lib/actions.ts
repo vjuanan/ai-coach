@@ -630,6 +630,80 @@ export async function getAdminClients() {
     return data;
 }
 
+/**
+ * Get all coaches for admin dropdown
+ */
+export async function getCoaches() {
+    const supabase = createServerClient();
+    const adminSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
+        : supabase;
+
+    // Check for admin role
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        console.warn('Unauthorized access to getCoaches');
+        return [];
+    }
+
+    const { data, error } = await adminSupabase
+        .from('coaches')
+        .select('id, full_name, business_name, user_id')
+        .order('full_name', { ascending: true });
+
+    if (error) {
+        console.error('Error fetching coaches:', error);
+        return [];
+    }
+    return data || [];
+}
+
+/**
+ * Assign a client to a coach (Admin only)
+ */
+export async function assignClientToCoach(clientId: string, coachId: string) {
+    const supabase = createServerClient();
+    const adminSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
+        : supabase;
+
+    // Check for admin role
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('No autenticado');
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        throw new Error('Solo administradores pueden reasignar clientes');
+    }
+
+    // Update client's coach_id
+    const { error } = await adminSupabase
+        .from('clients')
+        .update({ coach_id: coachId })
+        .eq('id', clientId);
+
+    if (error) {
+        console.error('Error assigning client to coach:', error);
+        throw new Error('Error al asignar coach: ' + error.message);
+    }
+
+    revalidatePath('/admin/clients');
+    return { success: true, message: 'Coach asignado correctamente' };
+}
+
 // ==========================================
 // ADMIN USER MANAGEMENT
 // ==========================================

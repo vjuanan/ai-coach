@@ -1,11 +1,14 @@
 import { AppShell } from '@/components/app-shell';
-import { getAdminClients } from '@/lib/actions';
+import { getAdminClients, getCoaches } from '@/lib/actions';
 import { ClientsTable } from '@/components/admin/clients-table';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminClientsPage() {
-    const clients = await getAdminClients();
+    const [clients, coaches] = await Promise.all([
+        getAdminClients(),
+        getCoaches()
+    ]);
 
     return (
         <AppShell title="Administración de Clientes">
@@ -16,7 +19,7 @@ export default async function AdminClientsPage() {
                     </p>
                 </div>
 
-                <ClientsTable clients={clients} />
+                <ClientsTable clients={clients} coaches={coaches} />
             </div>
         </AppShell>
     );
