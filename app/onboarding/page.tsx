@@ -449,7 +449,6 @@ export default function OnboardingPage() {
                                 {[
                                     { id: 'crossfit', label: '🏋️ Box CrossFit' },
                                     { id: 'globo', label: '🏢 Gimnasio Tradicional' },
-                                    { id: 'boutique', label: '✨ Estudio Boutique' },
                                     { id: 'functional', label: '⚡ Funcional / HIIT' }
                                 ].map(opt => (
                                     <button
@@ -523,8 +522,8 @@ export default function OnboardingPage() {
                                 <label
                                     key={item.key}
                                     className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${gymData.equipment_available[item.key as keyof typeof gymData.equipment_available]
-                                            ? 'border-purple-500 bg-purple-50'
-                                            : 'border-gray-100 hover:bg-gray-50'
+                                        ? 'border-purple-500 bg-purple-50'
+                                        : 'border-gray-100 hover:bg-gray-50'
                                         }`}
                                 >
                                     <input
@@ -621,8 +620,8 @@ export default function OnboardingPage() {
                                     onClick={isGym ? nextGymStep : nextAthleteStep}
                                     disabled={isLoading || (isGym && step === 1 && !gymData.gym_name.trim())}
                                     className={`flex items-center gap-2 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg active:scale-95 disabled:opacity-50 ${isGym
-                                            ? 'bg-purple-600 hover:bg-purple-700 shadow-purple-600/20'
-                                            : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'
+                                        ? 'bg-purple-600 hover:bg-purple-700 shadow-purple-600/20'
+                                        : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'
                                         }`}
                                 >
                                     {isLoading ? 'Guardando...' : step === totalSteps ? 'Finalizar' : 'Siguiente'}

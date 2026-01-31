@@ -1,35 +1,35 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Loader2, Dumbbell } from 'lucide-react';
+import { login } from '@/app/auth/actions';
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
 
+        const formData = new FormData(e.currentTarget);
+
         try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
+            const result = await login(formData);
 
-            if (error) throw error;
+            if (result.error) {
+                throw new Error(result.error);
+            }
 
+            // Success - Redirect happens in client to avoid hydration issues, 
+            // but cookie is already set by server action!
             router.push('/');
-            router.refresh();
+            router.refresh(); // Ensure strict refresh to pick up new cookies/headers
         } catch (err: any) {
             setError(err.message || 'Error al iniciar sesión');
-        } finally {
             setIsLoading(false);
         }
     };
@@ -50,7 +50,7 @@ export default function LoginPage() {
                 </div>
 
                 <div className="cv-card shadow-xl border border-cv-bg-border/50">
-                    <form onSubmit={handleLogin} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         {error && (
                             <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm md:text-base">
                                 {error}
@@ -62,9 +62,8 @@ export default function LoginPage() {
                                 Correo Electrónico
                             </label>
                             <input
+                                name="email"
                                 type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
                                 className="w-full px-4 py-3 bg-cv-bg-tertiary border border-cv-bg-border rounded-xl text-cv-text-primary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 transition-all placeholder:text-cv-text-tertiary"
                                 placeholder="coach@ejemplo.com"
                                 required
@@ -84,9 +83,8 @@ export default function LoginPage() {
                                 </a>
                             </div>
                             <input
+                                name="password"
                                 type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
                                 className="w-full px-4 py-3 bg-cv-bg-tertiary border border-cv-bg-border rounded-xl text-cv-text-primary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 transition-all placeholder:text-cv-text-tertiary"
                                 placeholder="••••••••"
                                 required
