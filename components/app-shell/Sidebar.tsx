@@ -103,15 +103,19 @@ export function Sidebar({ role }: SidebarProps) {
                         <ChevronLeft size={16} />
                     </button>
                 )}
-                {isSidebarCollapsed && (
+            </div>
+
+            {/* Expand button when collapsed - moved outside header to avoid overlapping logo */}
+            {isSidebarCollapsed && (
+                <div className="flex justify-center py-2">
                     <button
                         onClick={toggleSidebar}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-cv-text-tertiary hover:text-cv-text-primary hover:bg-cv-bg-tertiary transition-colors"
+                        className="p-1.5 rounded-md text-cv-text-tertiary hover:text-cv-text-primary hover:bg-cv-bg-tertiary transition-colors"
                     >
                         <ChevronRight size={16} />
                     </button>
-                )}
-            </div>
+                </div>
+            )}
 
             {/* Navigation - Unified, no toggle */}
             <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
