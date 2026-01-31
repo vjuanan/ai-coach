@@ -623,7 +623,7 @@ export async function getAdminClients() {
 
     const { data, error } = await adminSupabase
         .from('clients')
-        .select('*, coach:coaches(full_name, business_name)')
+        .select('*, coach:coaches!left(full_name, business_name)')
         .order('created_at', { ascending: false });
 
     if (error) {

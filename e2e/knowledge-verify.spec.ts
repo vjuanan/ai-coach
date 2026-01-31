@@ -58,7 +58,7 @@ test('Verify Knowledge Section', async ({ page }) => {
 
     // 6. Verify Methodology Tags
     console.log('🏷️ Verifying tags...');
-    await expect(page.locator('text=#volume')).first().toBeVisible();
+    await expect(page.locator('text=#volume').first()).toBeVisible();
 
     console.log('✅ Verification Complete!');
 });
