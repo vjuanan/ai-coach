@@ -73,12 +73,12 @@ export function Sidebar() {
     const filteredNavItems = navItems.filter(item => {
         if (role === 'admin') return true; // See all
 
-        if (effectiveRole === 'coach') {
+        if (role === 'coach') {
             // Coach cannot see 'Gimnasios' OR admin sections
             return item.href !== '/gyms' && !item.href.startsWith('/admin');
         }
 
-        if (effectiveRole === 'athlete') {
+        if (role === 'athlete') {
             // Athletes only see dashboard
             return item.href === '/';
         }
