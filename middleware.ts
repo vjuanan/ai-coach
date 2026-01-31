@@ -3,22 +3,14 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-    // ============================================
-    // 🚨 TEMPORARY BYPASS FOR TESTING 🚨
-    // Set to false to re-enable auth protection
-    // ============================================
-    const TEMPORARY_BYPASS_AUTH = true;
+    // 1. Define Paths & Check Public
+    // We check this FIRST to avoid expensive Supabase initialization on static assets/API
+    const path = request.nextUrl.pathname;
+    const isPublic = path.startsWith('/api') || path.includes('.'); // Asset/API exclusions
 
-    if (TEMPORARY_BYPASS_AUTH) {
-        // Skip ALL auth and RBAC checks - full access for testing
-        // Return next() immediately without creating Supabase client
-        return NextResponse.next({
-            request: {
-                headers: request.headers,
-            },
-        });
+    if (isPublic) {
+        return NextResponse.next();
     }
-    // ============================================
 
     let response = NextResponse.next({
         request: {
@@ -72,17 +64,15 @@ export async function middleware(request: NextRequest) {
         }
     )
 
+    // Only fetch user for protected routes
     const { data: { user } } = await supabase.auth.getUser()
 
-    // 1. Define Paths
-    const path = request.nextUrl.pathname;
+    // 2. Define Context
     const isAuthPage = path.startsWith('/login') || path.startsWith('/auth');
     const isOnboardingPage = path.startsWith('/onboarding');
-    const isPublic = path.startsWith('/api') || path.includes('.'); // Asset/API exclusions
 
-
-    // 2. Auth Protection
-    if (!user && !isAuthPage && !isPublic) {
+    // 3. Auth Protection
+    if (!user && !isAuthPage) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
@@ -90,8 +80,8 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/', request.url));
     }
 
-    // 3. RBAC & Onboarding Check (Only for authenticated users accessing app routes)
-    if (user && !isPublic && !isAuthPage) {
+    // 4. RBAC & Onboarding Check (Only for authenticated users accessing app routes)
+    if (user && !isAuthPage) {
         // Fetch User Profile to check Role
         const { data: profile } = await supabase
             .from('profiles')
