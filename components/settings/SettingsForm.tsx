@@ -32,6 +32,7 @@ export function SettingsForm({ user, initialProfile }: SettingsFormProps) {
     const handleSaveProfile = async () => {
         setSaving(true);
         try {
+            // 1. Update Profile in Database
             const { error } = await supabase
                 .from('profiles')
                 .update({
@@ -41,6 +42,18 @@ export function SettingsForm({ user, initialProfile }: SettingsFormProps) {
                 .eq('id', user.id);
 
             if (error) throw error;
+
+            // 2. Update Auth Metadata (so headers/dashboard update instantly)
+            const { error: authError } = await supabase.auth.updateUser({
+                data: { full_name: profile.full_name }
+            });
+
+            if (authError) {
+                console.error('Error syncing auth metadata:', authError);
+                // We don't throw here to avoid rollback of the DB update, 
+                // but we log it. The DB is the source of truth, but Auth is used for UI.
+            }
+
             router.refresh(); // Refresh server data
         } catch (error) {
             console.error('Error updating profile:', error);
