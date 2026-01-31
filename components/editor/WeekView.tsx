@@ -1,6 +1,7 @@
 'use client';
 
 import { DayCard } from './DayCard';
+import { WeeklySummaryCard } from './WeeklySummaryCard';
 import type { DraftMesocycle } from '@/lib/store';
 
 // Define the type here since it's not exported
@@ -33,6 +34,7 @@ interface WeekViewProps {
         id: string;
         week_number: number;
         focus: string | null;
+        attributes?: Record<string, unknown>;
         days: DraftDay[];
     };
 }
@@ -59,11 +61,17 @@ export function WeekView({ mesocycle }: WeekViewProps) {
         };
     });
 
+    // Split days for Bento Grid layout
+    // Row 1: Monday, Tuesday, Wednesday, Thursday (indices 0-3)
+    // Row 2: Friday, Saturday, Sunday (indices 4-6) + Weekly Summary
+    const row1Days = days.slice(0, 4);
+    const row2Days = days.slice(4, 7);
+
     return (
-        <div className="space-y-4">
+        <div className="h-full flex flex-col">
             {/* Week Focus Header */}
             {mesocycle.focus && (
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-3 mb-4 flex-shrink-0">
                     <div className="flex-1 h-px bg-cv-border" />
                     <div className="px-4 py-1.5 rounded-full bg-cv-accent-muted text-cv-accent text-sm font-medium">
                         Enfoque: {mesocycle.focus}
@@ -72,15 +80,29 @@ export function WeekView({ mesocycle }: WeekViewProps) {
                 </div>
             )}
 
-            {/* Days Grid */}
-            <div className="grid grid-cols-7 gap-3">
-                {days.map((day, index) => (
+            {/* BENTO GRID LAYOUT */}
+            {/* Desktop: 4 cols x 2 rows | Tablet: 2 cols x 4 rows | Mobile: 1 col stack */}
+            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 grid-rows-[repeat(auto-fit,minmax(0,1fr))] xl:grid-rows-2 gap-4 min-h-0">
+                {/* Row 1: Monday - Thursday */}
+                {row1Days.map((day, index) => (
                     <DayCard
                         key={day.id}
                         day={day}
                         dayName={DAY_NAMES[index]}
                     />
                 ))}
+
+                {/* Row 2: Friday - Sunday + Weekly Summary */}
+                {row2Days.map((day, index) => (
+                    <DayCard
+                        key={day.id}
+                        day={day}
+                        dayName={DAY_NAMES[index + 4]}
+                    />
+                ))}
+
+                {/* Weekly Summary - 8th slot */}
+                <WeeklySummaryCard mesocycle={mesocycle} />
             </div>
         </div>
     );

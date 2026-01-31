@@ -2,9 +2,7 @@
 
 import { useEditorStore } from '@/lib/store';
 import { WorkoutBlockCard } from './WorkoutBlockCard';
-import { Plus, Moon, MoreHorizontal } from 'lucide-react';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { Plus, Moon, MoreHorizontal, Edit3, Sun } from 'lucide-react';
 import type { BlockType } from '@/lib/supabase/types';
 
 interface DraftWorkoutBlock {
@@ -55,109 +53,141 @@ export function DayCard({ day, dayName }: DayCardProps) {
         addBlock(day.id, type);
     };
 
+    // REST DAY CARD - Elegant empty state
     if (day.is_rest_day) {
         return (
             <div
                 className={`
-          cv-card min-h-[300px] flex flex-col opacity-60
-          ${isSelected ? 'ring-2 ring-cv-accent' : ''}
-        `}
+                    cv-card h-full flex flex-col p-4 
+                    bg-gradient-to-br from-slate-50/50 to-slate-100/30 dark:from-slate-800/30 dark:to-slate-900/20
+                    border-slate-200 dark:border-slate-700
+                    ${isSelected ? 'ring-2 ring-cv-accent' : ''}
+                    transition-all duration-200 cursor-pointer
+                `}
                 onClick={() => selectDay(day.id)}
             >
-                <div className="flex items-center justify-between mb-3">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
                     <div>
-                        <h3 className="text-sm font-semibold text-cv-text-primary">{dayName}</h3>
+                        <h3 className="text-base font-bold text-cv-text-primary">{dayName}</h3>
                         <p className="text-xs text-cv-text-tertiary">Día {day.day_number}</p>
                     </div>
                     <button
                         onClick={(e) => { e.stopPropagation(); toggleRestDay(day.id); }}
-                        className="cv-btn-ghost p-1"
+                        className="cv-btn-ghost p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                        title="Editar día"
                     >
                         <MoreHorizontal size={16} />
                     </button>
                 </div>
 
+                {/* Rest Day Content */}
                 <div className="flex-1 flex flex-col items-center justify-center text-cv-text-tertiary">
-                    <Moon size={32} className="mb-2 opacity-50" />
-                    <p className="text-sm font-medium">Día de Descanso</p>
+                    <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+                        <Moon size={28} className="text-slate-400" />
+                    </div>
+                    <p className="text-sm font-medium text-slate-500">Día de Descanso</p>
                     <button
                         onClick={(e) => { e.stopPropagation(); toggleRestDay(day.id); }}
-                        className="mt-4 text-xs text-cv-accent hover:underline"
+                        className="mt-4 flex items-center gap-1.5 text-xs text-cv-accent hover:text-cv-accent/80 transition-colors"
                     >
-                        Convertir a día de entrenamiento
+                        <Sun size={12} />
+                        Convertir a entrenamiento
                     </button>
                 </div>
             </div>
         );
     }
 
+    // TRAINING DAY CARD - Full redesign
     return (
         <div
             className={`
-        cv-card min-h-[300px] flex flex-col transition-all
-        ${isSelected ? 'ring-2 ring-cv-accent' : ''}
-        ${isDropTarget ? 'cv-drop-target' : ''}
-      `}
+                cv-card h-full flex flex-col p-4
+                ${isSelected ? 'ring-2 ring-cv-accent shadow-lg' : ''}
+                ${isDropTarget ? 'cv-drop-target ring-2 ring-cv-accent/50' : ''}
+                transition-all duration-200 cursor-pointer hover:shadow-md
+            `}
             onClick={() => selectDay(day.id)}
         >
-            {/* Header */}
-            <div className="flex items-center justify-between mb-3">
-                <div>
-                    <h3 className="text-sm font-semibold text-cv-text-primary">{dayName}</h3>
-                    <p className="text-xs text-cv-text-tertiary">Day {day.day_number}</p>
+            {/* Header - Improved hierarchy */}
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
+                <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                        <h3 className="text-base font-bold text-cv-text-primary">{dayName}</h3>
+                        {day.blocks.length > 0 && (
+                            <span className="px-2 py-0.5 bg-cv-accent/10 text-cv-accent text-xs font-medium rounded-full">
+                                {day.blocks.length} {day.blocks.length === 1 ? 'bloque' : 'bloques'}
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-xs text-cv-text-tertiary mt-0.5">Día {day.day_number}</p>
                 </div>
                 <div className="flex items-center gap-1">
                     <button
                         onClick={(e) => { e.stopPropagation(); toggleRestDay(day.id); }}
-                        className="cv-btn-ghost p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors opacity-60 hover:opacity-100"
                         title="Marcar como descanso"
                     >
                         <Moon size={14} />
                     </button>
-                    <button className="cv-btn-ghost p-1">
+                    <button
+                        className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                        title="Más opciones"
+                    >
                         <MoreHorizontal size={16} />
                     </button>
                 </div>
             </div>
 
-            {/* Workout Blocks */}
-            <div className="flex-1 space-y-2 mb-3">
+            {/* Workout Blocks - Cards within Card style */}
+            <div className="flex-1 space-y-3 mb-4 overflow-y-auto">
                 {day.blocks
                     .sort((a, b) => a.order_index - b.order_index)
                     .map(block => (
-                        <WorkoutBlockCard key={block.id} block={block} />
+                        <div
+                            key={block.id}
+                            className="bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow transition-shadow"
+                        >
+                            <WorkoutBlockCard block={block} />
+                        </div>
                     ))
                 }
 
+                {/* Empty State - Elegant */}
                 {day.blocks.length === 0 && (
-                    <div className="h-20 border border-dashed border-cv-border rounded-lg flex items-center justify-center text-cv-text-tertiary text-sm">
-                        Aún no hay bloques
+                    <div className="h-32 bg-slate-50 dark:bg-slate-800/30 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center text-cv-text-tertiary">
+                        <Plus size={20} className="mb-2 opacity-40" />
+                        <p className="text-sm">Aún no hay bloques</p>
+                        <p className="text-xs opacity-60 mt-1">Añade uno abajo</p>
                     </div>
                 )}
             </div>
 
-            {/* Add Block Button */}
-            <div className="relative group/add">
+            {/* Add Block Button - Improved dropdown */}
+            <div className="relative group/add flex-shrink-0">
                 <button
-                    className="w-full py-2 border border-dashed border-cv-border rounded-lg text-cv-text-tertiary hover:text-cv-text-primary hover:border-cv-text-tertiary transition-all flex items-center justify-center gap-2"
+                    className="w-full py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-cv-text-secondary hover:text-cv-accent hover:border-cv-accent hover:bg-cv-accent/5 transition-all flex items-center justify-center gap-2 font-medium"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <Plus size={14} />
-                    <span className="text-xs">Añadir Bloque</span>
+                    <Plus size={16} />
+                    <span className="text-sm">Añadir Bloque</span>
                 </button>
 
-                {/* Dropdown */}
-                <div className="absolute bottom-full left-0 right-0 mb-1 bg-cv-bg-tertiary border border-cv-border rounded-lg shadow-cv-lg opacity-0 invisible group-hover/add:opacity-100 group-hover/add:visible transition-all z-10">
-                    {blockTypeOptions.map(option => (
-                        <button
-                            key={option.type}
-                            onClick={(e) => { e.stopPropagation(); handleAddBlock(option.type); }}
-                            className="w-full px-3 py-2 text-left text-sm text-cv-text-secondary hover:text-cv-text-primary hover:bg-cv-bg-elevated flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg"
-                        >
-                            <span className={`w-2 h-2 rounded-full ${option.color}`} />
-                            {option.label}
-                        </button>
-                    ))}
+                {/* Dropdown Menu */}
+                <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-cv-bg-tertiary border border-slate-200 dark:border-cv-border rounded-xl shadow-xl opacity-0 invisible group-hover/add:opacity-100 group-hover/add:visible transition-all z-20 overflow-hidden">
+                    <div className="p-1">
+                        {blockTypeOptions.map(option => (
+                            <button
+                                key={option.type}
+                                onClick={(e) => { e.stopPropagation(); handleAddBlock(option.type); }}
+                                className="w-full px-3 py-2.5 text-left text-sm text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-50 dark:hover:bg-cv-bg-elevated flex items-center gap-3 rounded-lg transition-colors"
+                            >
+                                <span className={`w-3 h-3 rounded-full ${option.color}`} />
+                                <span className="font-medium">{option.label}</span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
