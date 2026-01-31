@@ -96,20 +96,9 @@ export async function getDashboardStats() {
         };
     }
 
-    // Build queries based on role
-    let athleteQuery = adminSupabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'athlete');
-    let gymQuery = adminSupabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'gym');
-    let programQuery = adminSupabase.from('programs').select('*', { count: 'exact', head: true }).eq('status', 'active');
-    let blockQuery = adminSupabase.from('workout_blocks').select('*', { count: 'exact', head: true });
-
-    // Coach only sees their own clients
-    if (role === 'coach' && coachId) {
-        athleteQuery = athleteQuery.eq('coach_id', coachId);
-        gymQuery = gymQuery.eq('coach_id', coachId);
-        programQuery = programQuery.eq('coach_id', coachId);
-        // For blocks, we need to filter through program->mesocycle->day->block chain
-        // This is complex, so for now we count all blocks for coach's programs
-    }
+    // Build and run queries based on role
+    // Admin sees ALL, Coach sees only their clients
+    const isAdmin = role === 'admin';
 
     // Run parallel queries
     const [
@@ -118,10 +107,20 @@ export async function getDashboardStats() {
         { count: programs },
         { count: blocks }
     ] = await Promise.all([
-        athleteQuery,
-        gymQuery,
-        programQuery,
-        blockQuery
+        // Athletes count
+        isAdmin
+            ? adminSupabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'athlete')
+            : adminSupabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'athlete').eq('coach_id', coachId!),
+        // Gyms count
+        isAdmin
+            ? adminSupabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'gym')
+            : adminSupabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'gym').eq('coach_id', coachId!),
+        // Programs count
+        isAdmin
+            ? adminSupabase.from('programs').select('*', { count: 'exact', head: true }).eq('status', 'active')
+            : adminSupabase.from('programs').select('*', { count: 'exact', head: true }).eq('status', 'active').eq('coach_id', coachId!),
+        // Blocks count (always all for now)
+        adminSupabase.from('workout_blocks').select('*', { count: 'exact', head: true })
     ]);
 
     return {
