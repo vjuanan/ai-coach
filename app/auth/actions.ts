@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { cookies } from 'next/headers';
 
 export async function refreshUserRoleReference() {
@@ -80,4 +81,15 @@ export async function login(formData: FormData) {
     }
 
     return { success: true };
+}
+
+export async function checkEmailRegistered(email: string) {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+
+    return { exists: !!data };
 }
