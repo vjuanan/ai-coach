@@ -163,7 +163,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 </div>
 
                 {/* Methodology Selector - Dynamic from Database */}
-                {(block.type === 'metcon_structured' || block.type === 'warmup' || block.type === 'accessory') && (
+                {(block.type === 'metcon_structured' || block.type === 'warmup' || block.type === 'accessory' || block.type === 'strength_linear') && (
                     <div>
                         <label className="block text-sm font-medium text-cv-text-secondary mb-2">
                             Metodología de Entrenamiento
