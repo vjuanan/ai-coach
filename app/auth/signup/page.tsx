@@ -12,7 +12,10 @@ export default function SignUpPage() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [fullName, setFullName] = useState('');
-    const [role, setRole] = useState<'athlete' | 'coach' | 'gym' | null>(null);
+    // Role is defaulted to 'athlete' in the database trigger if missing, 
+    // but we can also be explicit here or just let the Onboarding handle the final role choice.
+    // However, we MUST NOT allow 'gym' creation without onboarding.
+    // So default is 'athlete'.
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
@@ -22,12 +25,6 @@ export default function SignUpPage() {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
-
-        if (!role) {
-            setError('Por favor selecciona un tipo de cuenta');
-            setIsLoading(false);
-            return;
-        }
 
         if (!fullName.trim()) {
             setError('Por favor ingresa tu nombre completo');
@@ -63,7 +60,7 @@ export default function SignUpPage() {
                     emailRedirectTo: `https://aicoach.epnstore.com.ar/auth/callback`,
                     data: {
                         full_name: fullName,
-                        role: role
+                        role: 'athlete' // Default role, will be updated in Onboarding if they choose Gym
                     }
                 },
             });
@@ -149,43 +146,7 @@ export default function SignUpPage() {
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-cv-text-secondary">
-                                    Tipo de Cuenta
-                                </label>
-                                <div className="grid grid-cols-3 gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setRole('athlete')}
-                                        className={`p-3 rounded-xl border text-sm font-medium transition-all ${role === 'athlete'
-                                            ? 'bg-cv-accent text-white border-cv-accent'
-                                            : 'bg-cv-bg-tertiary text-cv-text-secondary border-cv-bg-border hover:border-cv-accent/50'
-                                            }`}
-                                    >
-                                        Atleta
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setRole('coach')}
-                                        className={`p-3 rounded-xl border text-sm font-medium transition-all ${role === 'coach'
-                                            ? 'bg-cv-accent text-white border-cv-accent'
-                                            : 'bg-cv-bg-tertiary text-cv-text-secondary border-cv-bg-border hover:border-cv-accent/50'
-                                            }`}
-                                    >
-                                        Coach
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setRole('gym')}
-                                        className={`p-3 rounded-xl border text-sm font-medium transition-all ${role === 'gym'
-                                            ? 'bg-cv-accent text-white border-cv-accent'
-                                            : 'bg-cv-bg-tertiary text-cv-text-secondary border-cv-bg-border hover:border-cv-accent/50'
-                                            }`}
-                                    >
-                                        Gimnasio
-                                    </button>
-                                </div>
-                            </div>
+                            {/* Removed Role selection UI */}
 
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-cv-text-secondary">

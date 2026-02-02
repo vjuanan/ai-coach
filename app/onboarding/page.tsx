@@ -18,47 +18,37 @@ const Step0RoleSelection = ({ onSelect, isLoading }: { onSelect: (role: 'coach' 
     <div className="space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
         <h1 className="text-3xl font-bold text-gray-900">Bienvenido a AI Coach</h1>
         <p className="text-gray-500">¿Cómo quieres usar la plataforma?</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
             <button
                 disabled={isLoading}
                 onClick={() => onSelect('athlete')}
-                className="group p-6 border-2 border-gray-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50 h-full"
+                className="group p-8 border-2 border-gray-100 rounded-3xl hover:border-blue-500 hover:bg-blue-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50 h-full shadow-sm hover:shadow-md"
             >
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                    <Dumbbell />
+                <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform shadow-inner">
+                    <Dumbbell size={28} />
                 </div>
                 <div>
-                    <h3 className="font-bold text-lg text-gray-900 min-h-[3.5rem] flex items-center">Soy Atleta</h3>
-                    <p className="text-sm text-gray-500">Quiero ver mis rutinas y registrar mi progreso.</p>
+                    <h3 className="font-bold text-xl text-gray-900 mb-2">Soy Atleta</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed">Quiero ver mis rutinas, registrar mi progreso y seguir mi evolución.</p>
                 </div>
             </button>
             <button
                 disabled={isLoading}
                 onClick={() => onSelect('gym')}
-                className="group p-6 border-2 border-gray-100 rounded-2xl hover:border-purple-500 hover:bg-purple-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50 h-full"
+                className="group p-8 border-2 border-gray-100 rounded-3xl hover:border-purple-500 hover:bg-purple-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50 h-full shadow-sm hover:shadow-md"
             >
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
-                    <Building2 />
+                <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform shadow-inner">
+                    <Building2 size={28} />
                 </div>
                 <div>
-                    <h3 className="font-bold text-lg text-gray-900 min-h-[3.5rem] flex items-center">Soy un Gimnasio</h3>
-                    <p className="text-sm text-gray-500">Box CrossFit, gimnasio o estudio de entrenamiento.</p>
-                </div>
-            </button>
-            <button
-                disabled={isLoading}
-                onClick={() => onSelect('coach')}
-                className="group p-6 border-2 border-gray-100 rounded-2xl hover:border-green-500 hover:bg-green-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50 h-full"
-            >
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 group-hover:scale-110 transition-transform">
-                    <UserCog />
-                </div>
-                <div>
-                    <h3 className="font-bold text-lg text-gray-900 min-h-[3.5rem] flex items-center">Soy Coach</h3>
-                    <p className="text-sm text-gray-500">Quiero gestionar atletas y crear programas.</p>
+                    <h3 className="font-bold text-xl text-gray-900 mb-2">Soy un Gimnasio</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed">Soy dueño de un Box o gimnasio y quiero gestionar mi negocio.</p>
                 </div>
             </button>
         </div>
+        <p className="text-xs text-gray-400 mt-4">
+            ¿Eres Coach? Pide a un administrador que te invite.
+        </p>
     </div>
 );
 
