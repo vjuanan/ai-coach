@@ -64,11 +64,10 @@ export function GlobalCreateButton() {
                             setIsOpen(!isOpen);
                         }
                     }}
-                    className="cv-btn-primary flex items-center"
+                    className="cv-btn-primary flex items-center justify-center w-10 h-10 p-0"
+                    title="Crear..."
                 >
-                    <Plus size={16} />
-
-
+                    <Plus size={20} />
                 </button>
 
                 {/* Dropdown Menu */}

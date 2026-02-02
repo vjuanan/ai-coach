@@ -189,11 +189,10 @@ export default function AthletesPage() {
                         </div>
                         <button
                             onClick={() => setShowAddModal(true)}
-                            className="cv-btn-primary flex items-center gap-2 py-1.5 px-3 text-sm"
+                            className="cv-btn-primary flex items-center justify-center w-10 h-10 p-0"
                             title="Añadir Atleta"
                         >
-                            <Plus size={16} />
-                            Añadir Atleta
+                            <Plus size={20} />
                         </button>
                     </>
                 }
