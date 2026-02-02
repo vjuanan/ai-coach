@@ -55,7 +55,8 @@ export function DayCard({ day, dayName }: DayCardProps) {
     const activeStimulus = day.stimulus_id ? stimulusFeatures.find(s => s.id === day.stimulus_id) : null;
 
     const handleAddBlock = (type: BlockType) => {
-        addBlock(day.id, type);
+        const option = blockTypeOptions.find(o => o.type === type);
+        addBlock(day.id, type, undefined, option?.label);
     };
 
     // REST DAY CARD - Elegant empty state

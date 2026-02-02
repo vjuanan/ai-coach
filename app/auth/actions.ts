@@ -85,11 +85,37 @@ export async function login(formData: FormData) {
 
 export async function checkEmailRegistered(email: string) {
     const supabase = createAdminClient();
-    const { data } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle();
+
+    // Use the secure RPC function to check auth.users directly
+    const { data, error } = await supabase.rpc('check_email_exists', {
+        email_input: email
+    });
+
+    if (error) {
+        console.warn('RPC check failed, falling back to admin listUsers strategies. Error:', error.message);
+
+        // FAILSAFE FALLBACK: Fetch users via Admin API
+        // This is less efficient but works without the RPC migration
+        try {
+            // Fetch first 1000 users (Usually sufficient for this scale)
+            const { data: { users }, error: listError } = await supabase.auth.admin.listUsers({
+                page: 1,
+                perPage: 1000
+            });
+
+            if (listError) throw listError;
+
+            // Check in-memory
+            const normalizedEmail = email.toLowerCase().trim();
+            const exists = users.some(u => u.email?.toLowerCase().trim() === normalizedEmail);
+
+            return { exists };
+
+        } catch (fallbackError: any) {
+            console.error('All email check strategies failed:', fallbackError);
+            return { exists: false }; // Open fail to avoid blocking
+        }
+    }
 
     return { exists: !!data };
 }

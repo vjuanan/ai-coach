@@ -88,7 +88,7 @@ interface EditorState {
     selectBlock: (blockId: string | null) => void;
 
     // Block operations
-    addBlock: (dayId: string, type: BlockType, format?: WorkoutFormat) => void;
+    addBlock: (dayId: string, type: BlockType, format?: WorkoutFormat, name?: string) => void;
     updateBlock: (blockId: string, updates: Partial<DraftWorkoutBlock>) => void;
     deleteBlock: (blockId: string) => void;
     reorderBlocks: (dayId: string, blockIds: string[]) => void;
@@ -213,7 +213,7 @@ export const useEditorStore = create<EditorState>()(
             },
 
             // Add a new block to a day
-            addBlock: (dayId, type, format) => {
+            addBlock: (dayId, type, format, name) => {
                 const { mesocycles } = get();
                 const tempId = generateTempId();
 
@@ -224,7 +224,7 @@ export const useEditorStore = create<EditorState>()(
                     order_index: 0,
                     type,
                     format: format || null,
-                    name: null,
+                    name: name || null,
                     config: type === 'free_text' ? { content: '' } : {} as WorkoutConfig,
                     isDirty: true,
                 };
