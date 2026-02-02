@@ -84,20 +84,30 @@ export async function login(formData: FormData) {
 }
 
 export async function checkEmailRegistered(email: string) {
+    console.log('[checkEmailRegistered] Starting check for:', email);
+
+    // Validate service key exists
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        console.error('[checkEmailRegistered] CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing!');
+        // Fail CLOSED - block registration if we can't verify
+        throw new Error('Error de configuración del servidor. Por favor, intenta más tarde.');
+    }
+
     const supabase = createAdminClient();
 
     // Use the secure RPC function to check auth.users directly
     const { data, error } = await supabase.rpc('check_email_exists', {
-        email_input: email
+        email_input: email.toLowerCase().trim()
     });
 
+    console.log('[checkEmailRegistered] RPC result:', { data, error: error?.message });
+
     if (error) {
-        console.warn('RPC check failed, falling back to admin listUsers strategies. Error:', error.message);
+        console.warn('[checkEmailRegistered] RPC check failed:', error.message);
 
         // FAILSAFE FALLBACK: Fetch users via Admin API
-        // This is less efficient but works without the RPC migration
         try {
-            // Fetch first 1000 users (Usually sufficient for this scale)
+            console.log('[checkEmailRegistered] Trying Admin API fallback...');
             const { data: { users }, error: listError } = await supabase.auth.admin.listUsers({
                 page: 1,
                 perPage: 1000
@@ -105,17 +115,19 @@ export async function checkEmailRegistered(email: string) {
 
             if (listError) throw listError;
 
-            // Check in-memory
             const normalizedEmail = email.toLowerCase().trim();
             const exists = users.some(u => u.email?.toLowerCase().trim() === normalizedEmail);
+            console.log('[checkEmailRegistered] Admin API result:', { exists, totalUsers: users.length });
 
             return { exists };
 
         } catch (fallbackError: any) {
-            console.error('All email check strategies failed:', fallbackError);
-            return { exists: false }; // Open fail to avoid blocking
+            console.error('[checkEmailRegistered] All strategies failed:', fallbackError);
+            // Fail CLOSED - don't allow registration if we can't verify
+            throw new Error('No pudimos verificar el email. Por favor, intenta más tarde.');
         }
     }
 
+    console.log('[checkEmailRegistered] Email exists:', !!data);
     return { exists: !!data };
 }
