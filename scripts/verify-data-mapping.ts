@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '../.env.local') });
 
 // Mocking getClient from lib/actions.ts by copying the logic
-async function getClientMock(id) {
+async function getClientMock(id: string) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -76,7 +76,7 @@ async function getClientMock(id) {
 
 async function run() {
     console.log('Starting verification...');
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
     // 1. Find a Gym Profile
     const { data: gym } = await supabase.from('profiles').select('id, email').eq('role', 'gym').limit(1).single();

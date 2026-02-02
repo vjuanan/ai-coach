@@ -1,4 +1,4 @@
-// Force rebuild: unified MAS only - 2026-02-02-1115
+// Force rebuild: solo MAS final - 2026-02-02-1125
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -65,7 +65,7 @@ export function GlobalCreateButton() {
                             setIsOpen(!isOpen);
                         }
                     }}
-                    className="cv-btn-primary flex items-center justify-center w-10 h-10 p-0"
+                    className="cv-btn-primary cv-btn-mas-only flex items-center justify-center w-10 h-10 p-0"
                     title="Crear..."
                 >
                     <Plus size={20} />

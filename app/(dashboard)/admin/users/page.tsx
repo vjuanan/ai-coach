@@ -1,4 +1,4 @@
-// Force rebuild: unified MAS only - 2026-02-02-1115
+// Force rebuild: solo MAS final - 2026-02-02-1125
 'use client';
 
 import { Topbar } from '@/components/app-shell/Topbar';
@@ -223,7 +223,7 @@ export default function AdminUsersPage() {
                         </div>
                         <button
                             onClick={() => setIsCreateOpen(true)}
-                            className="cv-btn-primary flex items-center justify-center w-10 h-10 p-0"
+                            className="cv-btn-primary cv-btn-mas-only flex items-center justify-center w-10 h-10 p-0"
                             title="Crear Usuario"
                         >
                             <Plus size={20} />

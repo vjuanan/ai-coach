@@ -179,7 +179,7 @@ export default function GymsPage() {
                                 </div>
                                 <button
                                     onClick={() => setShowAddModal(true)}
-                                    className="cv-btn-primary flex items-center justify-center w-10 h-10 p-0"
+                                    className="cv-btn-primary cv-btn-mas-only flex items-center justify-center w-10 h-10 p-0"
                                     title="Añadir Gimnasio"
                                 >
                                     <Plus size={20} />
