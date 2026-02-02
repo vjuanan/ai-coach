@@ -118,6 +118,12 @@ export async function middleware(request: NextRequest) {
                     maxAge: 60 * 60 * 24 * 7 // 1 week
                 });
 
+                // CRITICAL FIX: Also set on request cookies so Server Components (layout.tsx) see it IMMEDIATELY
+                request.cookies.set({
+                    name: 'user_role',
+                    value: cookieValue,
+                });
+
                 // Also update the request cookies for immediate downstream use if needed
                 // (Though we mainly stick to the `role` variable here)
             }
