@@ -6,20 +6,19 @@ import { useState, useEffect } from 'react';
 import { useEscapeKey } from '@/hooks/use-escape-key';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-    Plus,
-    Search,
     Dumbbell,
     Trash2,
     Loader2,
-    ArrowRight,
     Edit2,
     AlertTriangle,
-    X
+    Flame,
+    Target,
+    Zap,
+    Calendar
 } from 'lucide-react';
 import Link from 'next/link';
 import {
     getPrograms,
-    createProgram,
     deleteProgram,
     getClients
 } from '@/lib/actions';
@@ -38,6 +37,22 @@ interface Client {
     type: 'athlete' | 'gym';
 }
 
+// Paleta de gradientes vibrantes para las cards
+const CARD_GRADIENTS = [
+    'from-[#667eea] to-[#764ba2]',       // Púrpura vibrante
+    'from-[#f093fb] to-[#f5576c]',       // Rosa/Fucsia
+    'from-[#4facfe] to-[#00f2fe]',       // Azul cielo
+    'from-[#43e97b] to-[#38f9d7]',       // Verde turquesa
+    'from-[#fa709a] to-[#fee140]',       // Rosa a amarillo
+    'from-[#a8edea] to-[#fed6e3]',       // Pastel suave
+    'from-[#ff9a9e] to-[#fecfef]',       // Rosa pastel
+    'from-[#ffecd2] to-[#fcb69f]',       // Durazno
+    'from-[#667eea] to-[#f093fb]',       // Púrpura a rosa
+    'from-[#5ee7df] to-[#b490ca]',       // Turquesa a lavanda
+];
+
+const CARD_ICONS = [Dumbbell, Flame, Target, Zap];
+
 export default function ProgramsPage() {
     const [programs, setPrograms] = useState<Program[]>([]);
     const [clients, setClients] = useState<Client[]>([]);
@@ -45,7 +60,7 @@ export default function ProgramsPage() {
     const searchParams = useSearchParams();
     const searchQuery = searchParams.get('q') || '';
 
-    // New State for Delete Modal
+    // State for Delete Modal
     const [programToDelete, setProgramToDelete] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -73,8 +88,6 @@ export default function ProgramsPage() {
         setClients([...(athletes || []), ...(gyms || [])] as Client[]);
     }
 
-    // Create logic moved to GlobalCreateButton
-
     function promptDelete(id: string) {
         setProgramToDelete(id);
     }
@@ -84,7 +97,7 @@ export default function ProgramsPage() {
         setIsDeleting(true);
         try {
             await deleteProgram(programToDelete);
-            await fetchPrograms(); // Refresh list to ensure UI updates
+            await fetchPrograms();
         } catch (error) {
             console.error('Delete failed', error);
             alert('Error al eliminar el programa');
@@ -98,6 +111,13 @@ export default function ProgramsPage() {
         p.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    // Función para obtener gradiente e ícono basado en índice
+    const getCardStyle = (index: number) => {
+        const gradient = CARD_GRADIENTS[index % CARD_GRADIENTS.length];
+        const Icon = CARD_ICONS[index % CARD_ICONS.length];
+        return { gradient, Icon };
+    };
+
     return (
 
         <>
@@ -106,9 +126,7 @@ export default function ProgramsPage() {
                 actions={<GlobalCreateButton />}
             />
             <div className="max-w-6xl mx-auto">
-                {/* Search removed - using global Topbar search */}
-
-                {/* Programs List */}
+                {/* Programs Grid */}
                 {isLoading ? (
                     <div className="flex items-center justify-center py-12">
                         <Loader2 className="animate-spin text-cv-accent" size={32} />
@@ -122,46 +140,86 @@ export default function ProgramsPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="space-y-3">
-                        {filteredPrograms.map((program) => (
-                            <Link
-                                key={program.id}
-                                href={`/editor/${program.id}`}
-                                className="cv-card flex items-center justify-between group hover:border-cv-accent transition-all cursor-pointer block"
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-lg bg-cv-accent-muted flex items-center justify-center">
-                                        <Dumbbell size={20} className="text-cv-accent" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-cv-text-primary">{program.name}</h3>
-                                        <p className="text-sm text-cv-text-tertiary">
-                                            Act. {new Date(program.updated_at).toLocaleDateString('es-ES')}
-                                        </p>
-                                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredPrograms.map((program, index) => {
+                            const { gradient, Icon } = getCardStyle(index);
+                            const createdDate = new Date(program.created_at).toLocaleDateString('es-ES', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric'
+                            });
+                            const updatedDate = new Date(program.updated_at).toLocaleDateString('es-ES', {
+                                day: 'numeric',
+                                month: 'short'
+                            });
+
+                            return (
+                                <div
+                                    key={program.id}
+                                    className={`
+                                        group relative overflow-hidden rounded-2xl
+                                        bg-gradient-to-br ${gradient}
+                                        transition-all duration-300 
+                                        shadow-lg hover:shadow-2xl hover:-translate-y-2
+                                        cursor-pointer
+                                    `}
+                                >
+                                    {/* Overlay sutil para hover */}
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
+
+                                    {/* Efecto de brillo */}
+                                    <div className="absolute -top-24 -right-24 w-48 h-48 bg-white/20 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                                    <Link href={`/editor/${program.id}`} className="relative z-10 block p-6">
+                                        {/* Header con ícono */}
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white shadow-lg">
+                                                <Icon size={28} />
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        promptDelete(program.id);
+                                                    }}
+                                                    className="w-10 h-10 rounded-xl bg-white/10 hover:bg-red-500/80 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-all duration-200"
+                                                    title="Eliminar"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white">
+                                                    <Edit2 size={18} />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Título */}
+                                        <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
+                                            {program.name}
+                                        </h3>
+
+                                        {/* Información de fechas */}
+                                        <div className="flex items-center gap-2 text-white/80 text-sm mb-4">
+                                            <Calendar size={14} />
+                                            <span>Creado {createdDate}</span>
+                                        </div>
+
+                                        {/* Footer con última actualización */}
+                                        <div className="pt-4 border-t border-white/20">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs text-white/70">
+                                                    Actualizado {updatedDate}
+                                                </span>
+                                                <div className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-xs font-medium text-white">
+                                                    Editar →
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Link>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <span className={`cv-badge ${program.status === 'active' ? 'cv-badge-success' : 'cv-badge-warning'}`}>
-                                        {program.status}
-                                    </span>
-                                    <button
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            promptDelete(program.id);
-                                        }}
-                                        className="cv-btn-ghost p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors relative z-10"
-                                        title="Eliminar Programa"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                    <div className="cv-btn-secondary pointer-events-none">
-                                        <Edit2 size={16} />
-                                        Editar
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
 
