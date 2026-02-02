@@ -19,6 +19,9 @@ export async function getUserRole(): Promise<'admin' | 'coach' | 'athlete'> {
     const cookieStore = cookies();
 
     // FAST PATH: Read cached role from middleware cookie (no DB call!)
+    // FAST PATH: Read cached role from middleware cookie (no DB call!)
+    // DISABLE CACHE TEMPORARILY - DEBUGGING SIDEBAR ISSUE
+    /*
     const roleCookie = cookieStore.get('user_role');
     if (roleCookie?.value) {
         const [_userId, cachedRole] = roleCookie.value.split(':');
@@ -26,6 +29,7 @@ export async function getUserRole(): Promise<'admin' | 'coach' | 'athlete'> {
             return cachedRole;
         }
     }
+    */
 
     // SLOW PATH: Fallback to DB if no cookie (first request after login)
     const supabase = createServerClient();
