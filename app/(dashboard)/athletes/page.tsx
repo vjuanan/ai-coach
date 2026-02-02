@@ -21,7 +21,8 @@ import {
     User,
     Loader2,
     AlertTriangle,
-    X
+    X,
+    CheckCircle2
 } from 'lucide-react';
 
 interface Athlete {
@@ -69,6 +70,11 @@ export default function AthletesPage() {
     // Alert Modal State
     const [athleteToDelete, setAthleteToDelete] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // Multi-select State
+    const [selectedAthletes, setSelectedAthletes] = useState<Set<string>>(new Set());
+    const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+    const [bulkDeleteMessage, setBulkDeleteMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
     useEscapeKey(() => setShowAddModal(false), showAddModal);
     useEscapeKey(() => !isDeleting && setAthleteToDelete(null), !!athleteToDelete);
@@ -177,6 +183,57 @@ export default function AthletesPage() {
         (a.email || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const toggleSelectAll = () => {
+        if (selectedAthletes.size === filteredAthletes.length) {
+            setSelectedAthletes(new Set());
+        } else {
+            setSelectedAthletes(new Set(filteredAthletes.map(a => a.id)));
+        }
+    };
+
+    const toggleSelectAthlete = (id: string) => {
+        const newSelected = new Set(selectedAthletes);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedAthletes(newSelected);
+    };
+
+    async function handleBulkDelete() {
+        if (selectedAthletes.size === 0) return;
+        if (!confirm(`¿ESTÁS SEGURO? Se eliminarán ${selectedAthletes.size} atletas permanentemente. Esta acción no se puede deshacer.`)) return;
+
+        setIsBulkDeleting(true);
+        setBulkDeleteMessage(null);
+
+        try {
+            const deletePromises = Array.from(selectedAthletes).map(id => deleteClient(id));
+            const results = await Promise.allSettled(deletePromises);
+
+            const failures = results.filter(r => r.status === 'rejected');
+            const successes = results.filter(r => r.status === 'fulfilled');
+
+            if (failures.length > 0) {
+                setBulkDeleteMessage({
+                    text: `Se eliminaron ${successes.length} atletas. Error al eliminar ${failures.length} atletas.`,
+                    type: 'error'
+                });
+            } else {
+                setBulkDeleteMessage({ text: `${successes.length} atletas eliminados correctamente`, type: 'success' });
+            }
+
+            setSelectedAthletes(new Set());
+            fetchAthletes();
+        } catch (err: any) {
+            console.error(err);
+            setBulkDeleteMessage({ text: 'Error crítico en eliminación masiva', type: 'error' });
+        } finally {
+            setIsBulkDeleting(false);
+        }
+    }
+
     return (
 
         <>
@@ -184,6 +241,16 @@ export default function AthletesPage() {
                 title="Atletas"
                 actions={
                     <>
+                        {selectedAthletes.size > 0 && (
+                            <button
+                                onClick={handleBulkDelete}
+                                disabled={isBulkDeleting}
+                                className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors mr-2"
+                            >
+                                {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                                Eliminar ({selectedAthletes.size})
+                            </button>
+                        )}
                         <div className="bg-slate-100 px-3 py-1.5 rounded-md flex items-center gap-2">
                             <User className="text-cv-text-secondary" size={16} />
                             <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredAthletes.length}</span>
@@ -200,6 +267,14 @@ export default function AthletesPage() {
             />
             <div className="max-w-6xl mx-auto">
                 {/* Search removed - using global Topbar search */}
+
+                {bulkDeleteMessage && (
+                    <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${bulkDeleteMessage.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
+                        }`}>
+                        {bulkDeleteMessage.type === 'success' ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
+                        {bulkDeleteMessage.text}
+                    </div>
+                )}
 
                 {/* Content */}
                 <div className="bg-cv-bg-secondary rounded-xl overflow-hidden shadow-sm border border-cv-border-subtle">
@@ -224,6 +299,14 @@ export default function AthletesPage() {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-cv-bg-tertiary border-b border-cv-border-subtle">
+                                        <th className="p-4 w-10">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
+                                                checked={filteredAthletes.length > 0 && selectedAthletes.size === filteredAthletes.length}
+                                                onChange={toggleSelectAll}
+                                            />
+                                        </th>
                                         <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Atleta</th>
                                         <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Correo</th>
                                         <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Registrado</th>
@@ -236,9 +319,17 @@ export default function AthletesPage() {
                                         .map((athlete) => (
                                             <tr
                                                 key={athlete.id}
-                                                className="hover:bg-cv-bg-tertiary/50 transition-colors group cursor-pointer"
+                                                className={`hover:bg-cv-bg-tertiary/50 transition-colors group cursor-pointer ${selectedAthletes.has(athlete.id) ? 'bg-cv-accent/5' : ''}`}
                                                 onClick={() => router.push(`/athletes/${athlete.id}`)}
                                             >
+                                                <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                                                    <input
+                                                        type="checkbox"
+                                                        className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
+                                                        checked={selectedAthletes.has(athlete.id)}
+                                                        onChange={() => toggleSelectAthlete(athlete.id)}
+                                                    />
+                                                </td>
                                                 <td className="p-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-10 h-10 rounded-full bg-cv-accent-muted flex items-center justify-center text-cv-accent font-bold text-lg">

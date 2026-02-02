@@ -1,7 +1,8 @@
-import { AppShell } from '@/components/app-shell';
+import { Topbar } from '@/components/app-shell/Topbar';
 import { getClient, getClientPrograms } from '@/lib/actions';
+import { getCoaches } from '@/lib/actions-coach';
+import { CoachAssigner } from '@/components/athletes/CoachAssigner';
 import {
-    User,
     Mail,
     Calendar,
     Ruler,
@@ -18,19 +19,21 @@ import { BackButton } from './back-button';
 export default async function AthleteDetailsPage({ params }: { params: { clientId: string } }) {
     const clientId = params.clientId;
 
-    const [athlete, programs] = await Promise.all([
+    const [athlete, programs, coaches] = await Promise.all([
         getClient(clientId),
-        getClientPrograms(clientId)
+        getClientPrograms(clientId),
+        getCoaches()
     ]);
 
     if (!athlete) {
         return (
-            <AppShell title="Error">
+            <>
+                <Topbar title="Error" actions={<BackButton />} />
                 <div className="text-center py-12">
                     <p className="text-cv-text-secondary">No se encontró el atleta.</p>
                     <BackButton />
                 </div>
-            </AppShell>
+            </>
         );
     }
 
@@ -38,10 +41,11 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
     const benchmarks = details?.oneRmStats || {};
 
     return (
-        <AppShell
-            title={athlete.name}
-            actions={<BackButton />}
-        >
+        <>
+            <Topbar
+                title={athlete.name}
+                actions={<BackButton />}
+            />
             <div className="max-w-5xl mx-auto space-y-6">
 
                 {/* Athlete Header Card */}
@@ -86,6 +90,14 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Left Column: Benchmarks & Goals */}
                     <div className="space-y-6">
+
+                        {/* Coach Assignment */}
+                        <CoachAssigner
+                            athleteId={athlete.id}
+                            currentCoachId={athlete.coach_id}
+                            coaches={coaches}
+                        />
+
                         {/* Benchmarks */}
                         <div className="cv-card">
                             <h3 className="font-semibold text-cv-text-primary mb-4 flex items-center gap-2">
@@ -193,6 +205,6 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
                     </div>
                 </div>
             </div>
-        </AppShell>
+        </>
     );
 }
