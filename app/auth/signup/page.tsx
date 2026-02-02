@@ -11,6 +11,8 @@ export default function SignUpPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [fullName, setFullName] = useState('');
+    const [role, setRole] = useState<'athlete' | 'coach' | 'gym' | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
@@ -20,6 +22,18 @@ export default function SignUpPage() {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
+
+        if (!role) {
+            setError('Por favor selecciona un tipo de cuenta');
+            setIsLoading(false);
+            return;
+        }
+
+        if (!fullName.trim()) {
+            setError('Por favor ingresa tu nombre completo');
+            setIsLoading(false);
+            return;
+        }
 
         if (password !== confirmPassword) {
             setError('Las contraseñas no coinciden');
@@ -47,6 +61,10 @@ export default function SignUpPage() {
                 password,
                 options: {
                     emailRedirectTo: `https://aicoach.epnstore.com.ar/auth/callback`,
+                    data: {
+                        full_name: fullName,
+                        role: role
+                    }
                 },
             });
 
@@ -116,46 +134,100 @@ export default function SignUpPage() {
                             </div>
                         )}
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-cv-text-secondary">
-                                Correo Electrónico
-                            </label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3 bg-cv-bg-tertiary border border-cv-bg-border rounded-xl text-cv-text-primary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 transition-all placeholder:text-cv-text-tertiary"
-                                placeholder="coach@ejemplo.com"
-                                required
-                            />
-                        </div>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-cv-text-secondary">
+                                    Nombre Completo / Razón Social
+                                </label>
+                                <input
+                                    type="text"
+                                    value={fullName}
+                                    onChange={(e) => setFullName(e.target.value)}
+                                    className="w-full px-4 py-3 bg-cv-bg-tertiary border border-cv-bg-border rounded-xl text-cv-text-primary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 transition-all placeholder:text-cv-text-tertiary"
+                                    placeholder="Ej: Juan Pérez"
+                                    required
+                                />
+                            </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-cv-text-secondary">
-                                Contraseña
-                            </label>
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3 bg-cv-bg-tertiary border border-cv-bg-border rounded-xl text-cv-text-primary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 transition-all placeholder:text-cv-text-tertiary"
-                                placeholder="••••••••"
-                                required
-                            />
-                        </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-cv-text-secondary">
+                                    Tipo de Cuenta
+                                </label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setRole('athlete')}
+                                        className={`p-3 rounded-xl border text-sm font-medium transition-all ${role === 'athlete'
+                                            ? 'bg-cv-accent text-white border-cv-accent'
+                                            : 'bg-cv-bg-tertiary text-cv-text-secondary border-cv-bg-border hover:border-cv-accent/50'
+                                            }`}
+                                    >
+                                        Atleta
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setRole('coach')}
+                                        className={`p-3 rounded-xl border text-sm font-medium transition-all ${role === 'coach'
+                                            ? 'bg-cv-accent text-white border-cv-accent'
+                                            : 'bg-cv-bg-tertiary text-cv-text-secondary border-cv-bg-border hover:border-cv-accent/50'
+                                            }`}
+                                    >
+                                        Coach
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setRole('gym')}
+                                        className={`p-3 rounded-xl border text-sm font-medium transition-all ${role === 'gym'
+                                            ? 'bg-cv-accent text-white border-cv-accent'
+                                            : 'bg-cv-bg-tertiary text-cv-text-secondary border-cv-bg-border hover:border-cv-accent/50'
+                                            }`}
+                                    >
+                                        Gimnasio
+                                    </button>
+                                </div>
+                            </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-cv-text-secondary">
-                                Confirmar Contraseña
-                            </label>
-                            <input
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full px-4 py-3 bg-cv-bg-tertiary border border-cv-bg-border rounded-xl text-cv-text-primary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 transition-all placeholder:text-cv-text-tertiary"
-                                placeholder="••••••••"
-                                required
-                            />
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-cv-text-secondary">
+                                    Correo Electrónico
+                                </label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full px-4 py-3 bg-cv-bg-tertiary border border-cv-bg-border rounded-xl text-cv-text-primary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 transition-all placeholder:text-cv-text-tertiary"
+                                    placeholder="usuario@ejemplo.com"
+                                    required
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-cv-text-secondary">
+                                    Contraseña
+                                </label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-4 py-3 bg-cv-bg-tertiary border border-cv-bg-border rounded-xl text-cv-text-primary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 transition-all placeholder:text-cv-text-tertiary"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-cv-text-secondary">
+                                    Confirmar Contraseña
+                                </label>
+                                <input
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="w-full px-4 py-3 bg-cv-bg-tertiary border border-cv-bg-border rounded-xl text-cv-text-primary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 transition-all placeholder:text-cv-text-tertiary"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <button
