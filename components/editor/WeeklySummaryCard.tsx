@@ -57,20 +57,28 @@ export function WeeklySummaryCard({ mesocycle, programGlobalFocus }: WeeklySumma
             )}
 
             {/* Header */}
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-cv-accent/10 flex items-center justify-center">
                         <Target size={16} className="text-cv-accent" />
                     </div>
                     <div>
                         <h3 className="text-sm font-semibold text-cv-text-primary">Resumen Semanal</h3>
-                        <p className="text-xs text-cv-text-tertiary">Semana {mesocycle.week_number}</p>
+                        <div className="flex items-center gap-2 text-xs text-cv-text-tertiary">
+                            <span>Semana {mesocycle.week_number}</span>
+                            {focus && (
+                                <>
+                                    <span className="w-1 h-1 rounded-full bg-cv-text-tertiary/40" />
+                                    <span className="text-cv-accent font-medium">{focus}</span>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="grid grid-cols-2 gap-3 mb-3">
                 <div className="bg-white/60 dark:bg-slate-800/40 rounded-lg p-3 border border-slate-100 dark:border-slate-700">
                     <div className="flex items-center gap-2 text-cv-text-tertiary mb-1">
                         <Clock size={12} />
@@ -102,14 +110,8 @@ export function WeeklySummaryCard({ mesocycle, programGlobalFocus }: WeeklySumma
             </div>
 
             {/* Focus/Notes */}
-            {(focus || considerations) && (
+            {(considerations) && (
                 <div className="flex-1 bg-white/60 dark:bg-slate-800/40 rounded-lg p-3 border border-slate-100 dark:border-slate-700">
-                    {focus && (
-                        <div className="mb-2">
-                            <span className="text-xs font-medium text-cv-accent">Enfoque:</span>
-                            <p className="text-sm text-cv-text-primary mt-0.5">{focus}</p>
-                        </div>
-                    )}
                     {considerations && (
                         <div>
                             <span className="text-xs font-medium text-cv-text-tertiary">Notas:</span>
