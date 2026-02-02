@@ -195,23 +195,23 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
     return (
         <div className="flex flex-col h-screen">
             {/* Editor Header - Refined with more height */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-cv-border bg-white/80 dark:bg-cv-bg-secondary/80 backdrop-blur-sm flex-shrink-0">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-cv-border bg-white/80 dark:bg-cv-bg-secondary/80 backdrop-blur-sm flex-shrink-0">
                 {/* Left Section - Breadcrumbs & Save Status */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                     {/* Back Button */}
                     <Link
                         href="/programs"
-                        className="cv-btn-ghost p-2.5 rounded-xl flex items-center gap-2 text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="cv-btn-ghost p-1.5 rounded-lg flex items-center gap-1 text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         title="Volver a Programas"
                     >
-                        <ArrowLeft size={20} />
+                        <ArrowLeft size={16} />
                     </Link>
 
-                    <div className="w-px h-8 bg-cv-border" />
+                    <div className="w-px h-5 bg-cv-border" />
 
                     {/* Program Name (Editable feel) */}
                     <div>
-                        <h2 className="text-lg font-bold text-cv-text-primary flex items-center gap-2">
+                        <h2 className="text-sm font-semibold text-cv-text-primary flex items-center gap-1.5">
                             {programName}
                             {currentMesocycle?.focus && (
                                 <>
@@ -227,13 +227,13 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                 </div>
 
                 {/* Center - Week Tabs */}
-                <div className="flex items-center gap-1 bg-slate-100 dark:bg-cv-bg-tertiary rounded-xl p-1">
+                <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-cv-bg-tertiary rounded-lg p-0.5">
                     {[1, 2, 3, 4].map(week => (
                         <button
                             key={week}
                             onClick={() => selectWeek(week)}
                             className={`
-                                px-5 py-2 rounded-lg text-sm font-medium transition-all
+                                px-3 py-1 rounded-md text-xs font-medium transition-all
                                 ${selectedWeek === week
                                     ? 'bg-white dark:bg-cv-accent text-cv-text-primary dark:text-white shadow-sm'
                                     : 'text-cv-text-secondary hover:text-cv-text-primary hover:bg-white/50 dark:hover:bg-cv-bg-elevated'}
@@ -245,48 +245,48 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                 </div>
 
                 {/* Right Section - Actions */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                     {/* Strategy Button */}
                     <button
                         onClick={() => setShowStrategy(true)}
-                        className={`cv-btn-ghost px-4 py-2.5 rounded-xl flex items-center gap-2 text-sm font-medium transition-colors
+                        className={`cv-btn-ghost px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-medium transition-colors
                             ${hasStrategy ? 'text-cv-accent bg-cv-accent/5' : 'text-cv-text-secondary hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         title="Estrategia del Mesociclo"
                     >
-                        <Target size={16} />
+                        <Target size={14} />
                         Estrategia
                         {hasStrategy && (
                             <span className="w-2 h-2 rounded-full bg-cv-accent" />
                         )}
                     </button>
 
-                    <div className="w-px h-6 bg-cv-border mx-1" />
+                    <div className="w-px h-4 bg-cv-border" />
 
-                    <button className="cv-btn-ghost p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800" title="Undo">
-                        <Undo size={18} />
+                    <button className="cv-btn-ghost p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Undo">
+                        <Undo size={14} />
                     </button>
-                    <button className="cv-btn-ghost p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800" title="Redo">
-                        <Redo size={18} />
+                    <button className="cv-btn-ghost p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Redo">
+                        <Redo size={14} />
                     </button>
 
-                    <div className="w-px h-6 bg-cv-border mx-1" />
+                    <div className="w-px h-4 bg-cv-border" />
 
-                    <button className="cv-btn-ghost p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800" title="Preview">
-                        <Eye size={18} />
+                    <button className="cv-btn-ghost p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Preview">
+                        <Eye size={14} />
                     </button>
                     <button
                         onClick={() => setShowExport(true)}
-                        className="cv-btn-secondary px-4 py-2.5 rounded-xl flex items-center gap-2 text-sm font-medium"
+                        className="cv-btn-secondary px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-medium"
                         title="Exportar PDF"
                     >
-                        <Download size={16} />
+                        <Download size={14} />
                         Exportar
                     </button>
                 </div>
             </div>
 
             {/* Main Editor Area - Full Bento Grid without sidebar squish */}
-            <div className="flex-1 overflow-auto p-6 bg-gradient-to-br from-slate-50 to-white dark:from-cv-bg-primary dark:to-cv-bg-secondary">
+            <div className="flex-1 overflow-auto p-4 bg-gradient-to-br from-slate-50 to-white dark:from-cv-bg-primary dark:to-cv-bg-secondary">
                 {currentMesocycle ? (
                     <WeekView mesocycle={currentMesocycle} programGlobalFocus={globalFocus} />
                 ) : (

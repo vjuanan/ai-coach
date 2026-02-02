@@ -72,9 +72,9 @@ export function WeekView({ mesocycle, programGlobalFocus }: WeekViewProps) {
         <div className="h-full flex flex-col">
             {/* Week Focus Header */}
             {mesocycle.focus && (
-                <div className="flex items-center gap-3 mb-4 flex-shrink-0">
+                <div className="flex items-center gap-2 mb-2 flex-shrink-0">
                     <div className="flex-1 h-px bg-cv-border" />
-                    <div className="px-4 py-1.5 rounded-full bg-cv-accent-muted text-cv-accent text-sm font-medium">
+                    <div className="px-3 py-1 rounded-full bg-cv-accent-muted text-cv-accent text-xs font-medium">
                         Enfoque: {mesocycle.focus}
                     </div>
                     <div className="flex-1 h-px bg-cv-border" />
