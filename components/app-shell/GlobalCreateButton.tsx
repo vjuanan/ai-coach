@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useEscapeKey } from '@/hooks/use-escape-key';
 import { useRouter, usePathname } from 'next/navigation';
-import { Plus, Users, Building2, Dumbbell, Loader2, ChevronDown } from 'lucide-react';
+import { Plus, Users, Building2, Dumbbell, Loader2 } from 'lucide-react';
 import { ProgramSetupWizard } from './ProgramSetupWizard';
 
 export function GlobalCreateButton() {
@@ -64,16 +64,11 @@ export function GlobalCreateButton() {
                             setIsOpen(!isOpen);
                         }
                     }}
-                    className="cv-btn-primary flex items-center gap-2"
+                    className="cv-btn-primary flex items-center"
                 >
                     <Plus size={16} />
 
-                    {pathname !== '/programs' && (
-                        <ChevronDown
-                            size={14}
-                            className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-                        />
-                    )}
+
                 </button>
 
                 {/* Dropdown Menu */}

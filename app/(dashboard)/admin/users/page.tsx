@@ -6,6 +6,7 @@ import { getProfiles, updateUserRole, resetUserPassword, createUser, deleteUser 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
+    Plus,
     Users,
     Shield,
     Lock,
@@ -223,7 +224,7 @@ export default function AdminUsersPage() {
                             onClick={() => setIsCreateOpen(true)}
                             className="cv-btn-primary flex items-center gap-2 py-1.5 px-3 text-sm"
                         >
-                            <UserPlus size={16} />
+                            <Plus size={16} />
                             Crear Usuario
                         </button>
                     </>
