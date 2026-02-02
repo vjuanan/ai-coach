@@ -831,7 +831,25 @@ export async function createClient(clientData: {
 
 export async function deleteClient(id: string) {
     const supabase = createServerClient();
-    await supabase.from('clients').delete().eq('id', id);
+
+    // Check authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+        throw new Error('Unauthorized');
+    }
+
+    // Use Admin Client if available to ensure operation succeeds
+    const adminSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
+        : supabase;
+
+    const { error } = await adminSupabase.from('clients').delete().eq('id', id);
+
+    if (error) {
+        console.error('Error deleting client:', error);
+        throw new Error(`Error deleting client: ${error.message}`);
+    }
+
     revalidatePath('/athletes');
     revalidatePath('/gyms');
     revalidatePath('/admin/clients');
