@@ -103,3 +103,5 @@ export function Topbar({ title, actions, prefixActions }: TopbarProps) {
         </>
     );
 }
+
+// Force rebuild trigger
