@@ -211,7 +211,7 @@ export default function AdminUsersPage() {
                             <button
                                 onClick={handleBulkDelete}
                                 disabled={isBulkDeleting}
-                                className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors animate-in fade-in"
+                                className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
                             >
                                 {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
                                 Eliminar ({selectedUsers.size})
