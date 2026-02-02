@@ -70,16 +70,7 @@ export function WeekView({ mesocycle, programGlobalFocus }: WeekViewProps) {
 
     return (
         <div className="h-full flex flex-col">
-            {/* Week Focus Header */}
-            {mesocycle.focus && (
-                <div className="flex items-center gap-2 mb-2 flex-shrink-0">
-                    <div className="flex-1 h-px bg-cv-border" />
-                    <div className="px-3 py-1 rounded-full bg-cv-accent-muted text-cv-accent text-xs font-medium">
-                        Enfoque: {mesocycle.focus}
-                    </div>
-                    <div className="flex-1 h-px bg-cv-border" />
-                </div>
-            )}
+
 
             {/* BENTO GRID LAYOUT */}
             {/* Desktop: 4 cols x 2 rows | Tablet: 2 cols x 4 rows | Mobile: 1 col stack */}
