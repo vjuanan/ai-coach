@@ -36,6 +36,7 @@ interface Athlete {
 export default function AthletesPage() {
     const [athletes, setAthletes] = useState<Athlete[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const router = useRouter();
 
     const searchParams = useSearchParams();
     const searchQuery = searchParams.get('q') || '';
@@ -200,57 +201,100 @@ export default function AthletesPage() {
             <div className="max-w-6xl mx-auto">
                 {/* Search removed - using global Topbar search */}
 
-                {/* Athletes Grid */}
-                {isLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <Loader2 className="animate-spin text-cv-accent" size={32} />
-                    </div>
-                ) : filteredAthletes.length === 0 ? (
-                    <div className="text-center py-12">
-                        <User size={48} className="mx-auto text-cv-text-tertiary mb-4" />
-                        <p className="text-cv-text-secondary">No hay atletas aún</p>
-                        <button
-                            onClick={() => setShowAddModal(true)}
-                            className="cv-btn-primary mt-4"
-                        >
-                            <Plus size={18} />
-                            Añade tu primer atleta
-                        </button>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-3 gap-4">
-                        {filteredAthletes.map((athlete) => (
-                            <Link
-                                key={athlete.id}
-                                href={`/athletes/${athlete.id}`}
-                                className="cv-card group relative block hover:border-cv-accent/50 transition-colors cursor-pointer"
+                {/* Content */}
+                <div className="bg-cv-bg-secondary rounded-xl overflow-hidden shadow-sm border border-cv-border-subtle">
+                    {isLoading ? (
+                        <div className="flex items-center justify-center py-12">
+                            <Loader2 className="animate-spin text-cv-accent" size={32} />
+                        </div>
+                    ) : filteredAthletes.length === 0 ? (
+                        <div className="text-center py-12">
+                            <User size={48} className="mx-auto text-cv-text-tertiary mb-4" />
+                            <p className="text-cv-text-secondary">No hay atletas aún</p>
+                            <button
+                                onClick={() => setShowAddModal(true)}
+                                className="cv-btn-primary mt-4"
                             >
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="w-12 h-12 rounded-full bg-cv-accent-muted flex items-center justify-center text-cv-accent font-bold text-lg">
-                                        {athlete.name.charAt(0).toUpperCase()}
-                                    </div>
-                                    <button
-                                        onClick={(e) => promptDelete(e, athlete.id)}
-                                        className="cv-btn-ghost p-1.5 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:bg-red-500/10 z-10 relative"
-                                        title="Eliminar Atleta"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                                <h3 className="font-semibold text-cv-text-primary">{athlete.name}</h3>
-                                {athlete.email && (
-                                    <p className="text-sm text-cv-text-tertiary flex items-center gap-1 mt-1">
-                                        <Mail size={12} />
-                                        {athlete.email}
-                                    </p>
-                                )}
-                                <div className="mt-4 pt-3 border-t border-cv-border">
-                                    <span className="cv-badge-accent">Atleta</span>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                )}
+                                <Plus size={18} />
+                                Añade tu primer atleta
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-cv-bg-tertiary border-b border-cv-border-subtle">
+                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Atleta</th>
+                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Correo</th>
+                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Registrado</th>
+                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-cv-border-subtle">
+                                    {filteredAthletes
+                                        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                                        .map((athlete) => (
+                                            <tr
+                                                key={athlete.id}
+                                                className="hover:bg-cv-bg-tertiary/50 transition-colors group cursor-pointer"
+                                                onClick={() => router.push(`/athletes/${athlete.id}`)}
+                                            >
+                                                <td className="p-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-cv-accent-muted flex items-center justify-center text-cv-accent font-bold text-lg">
+                                                            {athlete.name.charAt(0).toUpperCase()}
+                                                        </div>
+                                                        <div>
+                                                            <span className="font-medium text-cv-text-primary block">{athlete.name}</span>
+                                                            <span className="text-xs text-cv-text-tertiary bg-cv-bg-tertiary px-1.5 py-0.5 rounded border border-cv-border-subtle mt-0.5 inline-block">
+                                                                Atleta
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-cv-text-secondary text-sm">
+                                                    {athlete.email ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <Mail size={14} className="text-cv-text-tertiary" />
+                                                            {athlete.email}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-cv-text-tertiary italic">Sin correo</span>
+                                                    )}
+                                                </td>
+                                                <td className="p-4 text-cv-text-secondary text-sm font-mono">
+                                                    {new Date(athlete.created_at).toLocaleDateString('es-ES', {
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        year: 'numeric'
+                                                    })}
+                                                </td>
+                                                <td className="p-4 text-right">
+                                                    <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                                                        {/* View Button - stops propagation effectively by being a Link/Button? Using router push on row, need stopPropagation on buttons */}
+                                                        <Link
+                                                            href={`/athletes/${athlete.id}`}
+                                                            className="p-2 hover:bg-cv-bg-elevated rounded-lg text-cv-text-tertiary hover:text-cv-text-primary transition-colors"
+                                                            title="Ver Perfil"
+                                                        >
+                                                            <User size={18} />
+                                                        </Link>
+                                                        <button
+                                                            onClick={(e) => promptDelete(e, athlete.id)}
+                                                            className="p-2 hover:bg-red-500/10 rounded-lg text-cv-text-tertiary hover:text-red-500 transition-colors"
+                                                            title="Eliminar Atleta"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
 
                 {/* Add Modal */}
                 {showAddModal && (
