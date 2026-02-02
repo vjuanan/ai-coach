@@ -42,6 +42,9 @@ export async function login(formData: FormData) {
     });
 
     if (error) {
+        if (error.message.includes('Email not confirmed')) {
+            return { error: 'Para proteger tu cuenta, necesitamos que confirmes tu email. Por favor, revisá tu bandeja de entrada y hacé clic en el enlace que te enviamos.' };
+        }
         return { error: error.message };
     }
 
