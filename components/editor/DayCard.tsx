@@ -3,7 +3,7 @@
 import { useEditorStore } from '@/lib/store';
 import { WorkoutBlockCard } from './WorkoutBlockCard';
 import { Plus, Moon, MoreHorizontal, Sun, Target } from 'lucide-react';
-import type { BlockType } from '@/lib/supabase/types';
+import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 import * as Popover from '@radix-ui/react-popover';
 
 interface DraftWorkoutBlock {
@@ -56,7 +56,8 @@ export function DayCard({ day, dayName }: DayCardProps) {
 
     const handleAddBlock = (type: BlockType) => {
         const option = blockTypeOptions.find(o => o.type === type);
-        addBlock(day.id, type, undefined, option?.label);
+        const format = type === 'strength_linear' ? 'STANDARD' as WorkoutFormat : undefined;
+        addBlock(day.id, type, format, option?.label);
     };
 
     // REST DAY CARD - Elegant empty state
