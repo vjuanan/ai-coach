@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Loader2, Dumbbell, ArrowLeft, Mail, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import { checkEmailRegistered } from '../actions';
 
 export default function SignUpPage() {
     const [email, setEmail] = useState('');
@@ -45,9 +44,19 @@ export default function SignUpPage() {
         }
 
         try {
-            // Check if email is already registered
-            const { exists } = await checkEmailRegistered(email);
-            if (exists) {
+            // Check if email is already registered - call RPC directly from client
+            const { data: emailExists, error: rpcError } = await supabase.rpc('check_email_exists', {
+                email_input: email.toLowerCase().trim()
+            });
+
+            if (rpcError) {
+                console.error('Email check RPC error:', rpcError);
+                setError('Error al verificar el email. Por favor, intenta más tarde.');
+                setIsLoading(false);
+                return;
+            }
+
+            if (emailExists) {
                 setError('Este correo electrónico ya está registrado. Por favor, inicia sesión.');
                 setIsLoading(false);
                 return;
