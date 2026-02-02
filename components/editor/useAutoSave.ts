@@ -82,6 +82,20 @@ export function useAutoSave({ programId, debounceMs = 500 }: UseAutoSaveOptions)
         };
     }, [mesocyclesString, hasUnsavedChanges, save, debounceMs]);
 
+    // Periodic (backstop) save every 30 seconds if dirty
+    useEffect(() => {
+        if (!hasUnsavedChanges) return;
+
+        const interval = setInterval(() => {
+            if (status !== 'saving') {
+                // Only save if not already saving
+                save();
+            }
+        }, 30000); // Check every 30s
+
+        return () => clearInterval(interval);
+    }, [hasUnsavedChanges, status, save]);
+
     // Force save function (for manual trigger or before navigation)
     const forceSave = useCallback(async () => {
         if (timeoutRef.current) {

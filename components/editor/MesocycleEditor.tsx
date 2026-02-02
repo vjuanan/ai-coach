@@ -17,7 +17,8 @@ import {
     Cloud,
     CloudOff,
     Edit3,
-    ArrowLeft
+    ArrowLeft,
+    Save
 } from 'lucide-react';
 import Link from 'next/link';
 import { ExportPreview } from '@/components/export';
@@ -60,7 +61,8 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         selectWeek,
         selectBlock,
         updateMesocycle,
-        programAttributes
+        programAttributes,
+        hasUnsavedChanges
     } = useEditorStore();
 
     // Auto-save hook
@@ -246,6 +248,35 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
                 {/* Right Section - Actions */}
                 <div className="flex items-center gap-1">
+                    {/* Manual Save Button - HIGHLIGHTED */}
+                    <button
+                        onClick={() => forceSave()}
+                        disabled={saveStatus === 'saving'}
+                        className={`
+                            px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-all mr-1
+                            ${hasUnsavedChanges
+                                ? 'bg-cv-accent text-white hover:bg-cv-accent/90 shadow-sm'
+                                : 'bg-transparent text-cv-text-secondary hover:bg-slate-100 dark:hover:bg-slate-800'}
+                        `}
+                        title={hasUnsavedChanges ? 'Guardar cambios' : 'Todo guardado'}
+                    >
+                        {saveStatus === 'saving' ? (
+                            <Loader2 size={14} className="animate-spin" />
+                        ) : hasUnsavedChanges ? (
+                            <Save size={14} />
+                        ) : (
+                            <CheckCircle2 size={14} className="text-emerald-500" />
+                        )}
+
+                        {saveStatus === 'saving'
+                            ? 'Guardando...'
+                            : hasUnsavedChanges
+                                ? 'Guardar'
+                                : 'Guardado'}
+                    </button>
+
+                    <div className="w-px h-4 bg-cv-border mx-1" />
+
                     {/* Strategy Button */}
                     <button
                         onClick={() => setShowStrategy(true)}
