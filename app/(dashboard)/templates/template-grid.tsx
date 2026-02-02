@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Dumbbell, Flame, Loader2, ArrowRight, Sparkles, Copy, Eye } from 'lucide-react';
+import { Dumbbell, Flame, Loader2, Sparkles, Eye, FileInput } from 'lucide-react';
 import { copyTemplateToProgram } from '@/lib/actions';
 import type { Program } from '@/lib/supabase/types';
 import { DuplicateTemplateDialog } from '@/components/programs/DuplicateTemplateDialog';
@@ -9,9 +9,10 @@ import { DuplicateTemplateDialog } from '@/components/programs/DuplicateTemplate
 interface TemplateGridProps {
     templates: Program[];
     athletes: { id: string; name: string; email?: string | null }[];
+    gyms: { id: string; name: string; email?: string | null }[];
 }
 
-export function TemplateGrid({ templates, athletes }: TemplateGridProps) {
+export function TemplateGrid({ templates, athletes, gyms }: TemplateGridProps) {
     const [copyingId, setCopyingId] = useState<string | null>(null);
     const [duplicateDialogState, setDuplicateDialogState] = useState<{ isOpen: boolean; template: Program | null }>({
         isOpen: false,
@@ -242,8 +243,8 @@ export function TemplateGrid({ templates, athletes }: TemplateGridProps) {
                                             </>
                                         ) : (
                                             <>
-                                                <Copy className="w-4 h-4" />
-                                                <span>Duplicar</span>
+                                                <FileInput className="w-4 h-4" />
+                                                <span>Usar como Base</span>
                                             </>
                                         )}
                                     </button>
@@ -271,6 +272,7 @@ export function TemplateGrid({ templates, athletes }: TemplateGridProps) {
                 onConfirm={handleConfirmDuplicate}
                 templateName={duplicateDialogState.template?.name || ''}
                 athletes={athletes}
+                gyms={gyms}
                 isProcessing={copyingId !== null}
             />
         </>

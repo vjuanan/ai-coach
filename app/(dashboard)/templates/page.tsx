@@ -7,7 +7,10 @@ export const dynamic = 'force-dynamic';
 
 export default async function TemplatesPage() {
     const templates = await getTemplates();
-    const athletes = await getClients('athlete');
+    const [athletes, gyms] = await Promise.all([
+        getClients('athlete'),
+        getClients('gym')
+    ]);
 
 
     return (
@@ -22,7 +25,7 @@ export default async function TemplatesPage() {
                 </div>
 
                 {/* Templates Grid */}
-                <TemplateGrid templates={templates} athletes={athletes as any} />
+                <TemplateGrid templates={templates} athletes={athletes as any} gyms={gyms as any} />
 
                 <div className="mt-8 text-center text-cv-text-tertiary">
                     <p>Más plantillas próximamente...</p>
