@@ -172,7 +172,7 @@ export async function getTemplates() {
     return data;
 }
 
-export async function copyTemplateToProgram(templateId: string) {
+export async function copyTemplateToProgram(templateId: string, assignedClientId?: string) {
     const supabase = createServerClient();
 
     // Use Admin Client for reading template to bypass RLS complexity (Public Read Policies can be tricky with nested joins)
@@ -215,7 +215,7 @@ export async function copyTemplateToProgram(templateId: string) {
                 status: 'draft',
                 // Explicitly not a template
                 is_template: false,
-                client_id: null // Unassigned initially
+                client_id: assignedClientId || null // Assign if provided
             })
             .select()
             .single();
@@ -834,6 +834,7 @@ export async function deleteClient(id: string) {
     await supabase.from('clients').delete().eq('id', id);
     revalidatePath('/athletes');
     revalidatePath('/gyms');
+    revalidatePath('/admin/clients');
     revalidatePath('/');
 }
 

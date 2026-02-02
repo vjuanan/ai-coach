@@ -13,8 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { assignClientToCoach } from '@/lib/actions';
-import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { assignClientToCoach, deleteClient } from '@/lib/actions';
+import { Loader2, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
 
 interface Coach {
     id: string;
@@ -47,6 +47,10 @@ interface ClientsTableProps {
 export function ClientsTable({ clients, coaches }: ClientsTableProps) {
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+    // Multi-select State
+    const [selectedClients, setSelectedClients] = useState<Set<string>>(new Set());
+    const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
     const getStatusColor = (status?: string) => {
         switch (status) {
@@ -97,13 +101,93 @@ export function ClientsTable({ clients, coaches }: ClientsTableProps) {
         }
     };
 
+    // Multi-select Handlers
+    const toggleSelectAll = () => {
+        if (selectedClients.size === clients.length) {
+            setSelectedClients(new Set());
+        } else {
+            setSelectedClients(new Set(clients.map(c => c.id)));
+        }
+    };
+
+    const toggleSelectClient = (clientId: string) => {
+        const newSelected = new Set(selectedClients);
+        if (newSelected.has(clientId)) {
+            newSelected.delete(clientId);
+        } else {
+            newSelected.add(clientId);
+        }
+        setSelectedClients(newSelected);
+    };
+
+    async function handleBulkDelete() {
+        if (selectedClients.size === 0) return;
+        if (!confirm(`¿ESTÁS SEGURO? Se eliminarán ${selectedClients.size} clientes permanentemente. Esta acción no se puede deshacer.`)) return;
+
+        setIsBulkDeleting(true);
+        setMessage(null);
+
+        try {
+            const deletePromises = Array.from(selectedClients).map(clientId => deleteClient(clientId));
+            const results = await Promise.allSettled(deletePromises);
+
+            const failures = results.filter(r => r.status === 'rejected');
+            const successes = results.filter(r => r.status === 'fulfilled');
+
+            if (failures.length > 0) {
+                setMessage({
+                    text: `Se eliminarán ${successes.length} clientes. Error al eliminar ${failures.length} clientes.`,
+                    type: 'error'
+                });
+            } else {
+                setMessage({ text: `${successes.length} clientes eliminados correctamente`, type: 'success' });
+            }
+
+            setSelectedClients(new Set());
+        } catch (err: any) {
+            setMessage({ text: 'Error crítico en eliminación masiva', type: 'error' });
+            console.error(err);
+        } finally {
+            setIsBulkDeleting(false);
+            // Clear message after 5 seconds for bulk actions
+            setTimeout(() => setMessage(null), 5000);
+        }
+    }
+
+    async function handleDeleteClient(clientId: string) {
+        if (!confirm('¿ESTÁS SEGURO? Esta acción eliminará permanentemente al cliente y sus datos. No se puede deshacer.')) return;
+
+        setUpdatingId(clientId);
+        try {
+            await deleteClient(clientId);
+            setMessage({ text: 'Cliente eliminado correctamente', type: 'success' });
+        } catch (err: any) {
+            setMessage({ text: err.message || 'Error al eliminar cliente', type: 'error' });
+        } finally {
+            setUpdatingId(null);
+            setTimeout(() => setMessage(null), 3000);
+        }
+    }
+
     return (
         <Card className="w-full">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle className="text-xl font-bold">Listado de Clientes</CardTitle>
-                <span className="text-sm text-cv-text-secondary">
-                    {clients.length} clientes totales
-                </span>
+                <div className="flex items-center gap-4">
+                    <CardTitle className="text-xl font-bold">Listado de Clientes</CardTitle>
+                    <span className="text-sm text-cv-text-secondary">
+                        {clients.length} clientes totales
+                    </span>
+                </div>
+                {selectedClients.size > 0 && (
+                    <button
+                        onClick={handleBulkDelete}
+                        disabled={isBulkDeleting}
+                        className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors animate-in fade-in"
+                    >
+                        {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                        Eliminar ({selectedClients.size})
+                    </button>
+                )}
             </CardHeader>
 
             {message && (
@@ -119,24 +203,41 @@ export function ClientsTable({ clients, coaches }: ClientsTableProps) {
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead className="w-12 text-center">
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
+                                        checked={clients.length > 0 && selectedClients.size === clients.length}
+                                        onChange={toggleSelectAll}
+                                    />
+                                </TableHead>
                                 <TableHead>Nombre</TableHead>
                                 <TableHead>Tipo</TableHead>
                                 <TableHead>Coach Asignado</TableHead>
                                 <TableHead>Inicio Servicio</TableHead>
                                 <TableHead>Vencimiento</TableHead>
                                 <TableHead>Estado Pago</TableHead>
+                                <TableHead className="text-right">Acciones</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {clients.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
+                                    <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
                                         No se encontraron clientes.
                                     </TableCell>
                                 </TableRow>
                             ) : (
                                 clients.map((client) => (
-                                    <TableRow key={client.id}>
+                                    <TableRow key={client.id} className={selectedClients.has(client.id) ? 'bg-cv-accent/5' : ''}>
+                                        <TableCell className="p-4 text-center">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
+                                                checked={selectedClients.has(client.id)}
+                                                onChange={() => toggleSelectClient(client.id)}
+                                            />
+                                        </TableCell>
                                         <TableCell className="font-medium">{client.name}</TableCell>
                                         <TableCell>
                                             <Badge variant="outline" className={client.type === 'athlete' ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-purple-200 bg-purple-50 text-purple-700'}>
@@ -168,6 +269,20 @@ export function ClientsTable({ clients, coaches }: ClientsTableProps) {
                                             <Badge className={getStatusColor(client.payment_status)}>
                                                 {getStatusLabel(client.payment_status)}
                                             </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <button
+                                                onClick={() => handleDeleteClient(client.id)}
+                                                disabled={updatingId === client.id}
+                                                className="p-2 hover:bg-red-500/10 rounded-lg text-cv-text-tertiary hover:text-red-500 transition-colors"
+                                                title="Eliminar Cliente"
+                                            >
+                                                {updatingId === client.id ? (
+                                                    <Loader2 size={16} className="animate-spin" />
+                                                ) : (
+                                                    <Trash2 size={16} />
+                                                )}
+                                            </button>
                                         </TableCell>
                                     </TableRow>
                                 ))

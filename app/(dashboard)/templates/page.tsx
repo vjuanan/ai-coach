@@ -1,12 +1,13 @@
 
 import { Topbar } from '@/components/app-shell/Topbar';
-import { getTemplates } from '@/lib/actions';
+import { getTemplates, getClients } from '@/lib/actions';
 import { TemplateGrid } from './template-grid';
 
 export const dynamic = 'force-dynamic';
 
 export default async function TemplatesPage() {
     const templates = await getTemplates();
+    const athletes = await getClients('athlete');
 
 
     return (
@@ -21,7 +22,7 @@ export default async function TemplatesPage() {
                 </div>
 
                 {/* Templates Grid */}
-                <TemplateGrid templates={templates} />
+                <TemplateGrid templates={templates} athletes={athletes as any} />
 
                 <div className="mt-8 text-center text-cv-text-tertiary">
                     <p>Más plantillas próximamente...</p>
