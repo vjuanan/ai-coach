@@ -19,6 +19,33 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
 
     useEscapeKey(onClose, isOpen);
 
+    // Helper to generate default labels
+    const generateDefaultLabels = (count: number, existing: string[] = []) => {
+        const labels = [...existing];
+        // Fill up to count
+        while (labels.length < count) {
+            labels.push('Acumulación');
+        }
+        // Trim if too many
+        if (labels.length > count) {
+            labels.splice(count);
+        }
+        // Set last one to Descarga if it's a new slot or was already Descarga equivalent
+        if (count > 0) {
+            // If the last one is empty or was auto-filled (we can't easily track auto-filled, 
+            // so we just enforce Descarga on the last week if it's the default 4 week setup or similar)
+            // Simpler logic: Just ensure the new slots default to Acumulación, 
+            // and if we are extending, maybe hint the last one. 
+            // But user requirement says: "ya aparezca escrita por defecto la sugerencia"
+
+            // Let's just ensure the very last one is 'Descarga' if it was empty or previously 'Descarga'
+            // actually, let's just pre-fill "Descarga" for the last week ONLY on initialization.
+            // During resizing, it might be annoying to overwrite.
+            // Let's stick to the initialization logic mostly, but for resizing:
+        }
+        return labels;
+    };
+
     // Form State
     const [programName, setProgramName] = useState('');
     const [globalObjective, setGlobalObjective] = useState('');
@@ -27,7 +54,13 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
         const today = new Date();
         return today.toISOString().split('T')[0];
     });
-    const [weeklyLabels, setWeeklyLabels] = useState<string[]>([]);
+
+    // Initialize with defaults: All Acumulación, last Descarga
+    const [weeklyLabels, setWeeklyLabels] = useState<string[]>(() => {
+        const defaults = Array(4).fill('Acumulación');
+        defaults[3] = 'Descarga';
+        return defaults;
+    });
 
     // Auto-calculate End Date
     const endDate = useMemo(() => {
@@ -53,11 +86,26 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
     const handleDurationChange = (newDuration: number) => {
         const clamped = Math.max(1, Math.min(12, newDuration));
         setDuration(clamped);
-        // Preserve existing labels, add/remove as needed
+
         setWeeklyLabels(prev => {
             const updated = [...prev];
-            while (updated.length < clamped) updated.push('');
-            return updated.slice(0, clamped);
+            // If increasing
+            if (clamped > updated.length) {
+                while (updated.length < clamped) {
+                    // Start with Accumulation for new weeks
+                    updated.push('Acumulación');
+                }
+                // Optionally set the NEW last week to Descarga? 
+                // Maybe better to just leave as Acumulación so user decides, 
+                // or replicate the "Last week is usually deload" pattern.
+                // Let's set the very last one to Descarga to be helpful.
+                updated[clamped - 1] = 'Descarga';
+            }
+            // If decreasing, just slice
+            else {
+                return updated.slice(0, clamped);
+            }
+            return updated;
         });
     };
 
@@ -118,7 +166,7 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
             />
 
             {/* Modal */}
-            <div className="relative w-full max-w-lg mx-4 bg-cv-bg-primary border border-cv-border rounded-2xl shadow-cv-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="relative w-full max-w-2xl mx-4 bg-cv-bg-primary border border-cv-border rounded-2xl shadow-cv-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="relative px-6 py-5 border-b border-cv-border bg-gradient-to-r from-cv-accent/10 via-purple-500/5 to-transparent">
                     <div className="flex items-center gap-3">
@@ -251,7 +299,17 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
                         <label className="block text-sm font-medium text-cv-text-secondary mb-2">
                             Enfoque Semanal (Opcional)
                         </label>
-                        <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
+
+                        {/* Datalist for suggestions */}
+                        <datalist id="focus-suggestions">
+                            <option value="Acumulación" />
+                            <option value="Intensificación" />
+                            <option value="Realización" />
+                            <option value="Descarga" />
+                            <option value="Intro" />
+                        </datalist>
+
+                        <div className="grid grid-cols-2 gap-4 max-h-48 overflow-y-auto pr-1">
                             {Array.from({ length: duration }).map((_, i) => (
                                 <div key={i} className="flex items-center gap-2">
                                     <span className="text-xs text-cv-text-tertiary w-12 shrink-0">
@@ -259,14 +317,15 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
                                     </span>
                                     <input
                                         type="text"
+                                        list="focus-suggestions"
                                         value={weeklyLabels[i] || ''}
                                         onChange={(e) => {
                                             const updated = [...weeklyLabels];
                                             updated[i] = e.target.value;
                                             setWeeklyLabels(updated);
                                         }}
-                                        placeholder={i === duration - 1 ? 'Deload' : 'Acumulación'}
-                                        className="flex-1 px-2.5 py-1.5 text-sm rounded-lg bg-cv-bg-secondary border border-cv-border text-cv-text-primary placeholder:text-cv-text-tertiary/50 focus:outline-none focus:ring-1 focus:ring-cv-accent/50 transition-all"
+                                        placeholder="Ej: Acumulación"
+                                        className="flex-1 px-3 py-2 text-sm rounded-lg bg-cv-bg-secondary border border-cv-border text-cv-text-primary placeholder:text-cv-text-tertiary/50 focus:outline-none focus:ring-1 focus:ring-cv-accent/50 transition-all"
                                     />
                                 </div>
                             ))}
@@ -298,7 +357,7 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
                         {isCreating ? (
                             <>
                                 <Loader2 size={16} className="animate-spin" />
-                                Creando...
+                                Créando...
                             </>
                         ) : (
                             <>
