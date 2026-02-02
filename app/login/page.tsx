@@ -24,9 +24,14 @@ export default function LoginPage() {
                 throw new Error(result.error);
             }
 
-            // Success - Redirect happens in client to avoid hydration issues, 
-            // but cookie is already set by server action!
-            router.push('/');
+            // Check if user needs to complete onboarding
+            if (result.needsOnboarding) {
+                router.push('/onboarding');
+            } else {
+                // Success - Redirect happens in client to avoid hydration issues, 
+                // but cookie is already set by server action!
+                router.push('/');
+            }
             router.refresh(); // Ensure strict refresh to pick up new cookies/headers
         } catch (err: any) {
             setError(err.message || 'Error al iniciar sesión');

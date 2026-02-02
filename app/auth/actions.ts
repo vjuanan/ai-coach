@@ -46,6 +46,13 @@ export async function login(formData: FormData) {
     }
 
     if (user) {
+        // Check if email is verified
+        if (!user.email_confirmed_at) {
+            // Sign out the user since they haven't verified their email
+            await supabase.auth.signOut();
+            return { error: 'Por favor, verificá tu email antes de iniciar sesión. Revisá tu bandeja de entrada.' };
+        }
+
         const { data: profile } = await supabase
             .from('profiles')
             .select('role')
@@ -63,6 +70,9 @@ export async function login(formData: FormData) {
                 path: '/',
                 maxAge: 60 * 60 * 24 * 7 // 1 week
             });
+        } else {
+            // User has no role - they need to complete onboarding
+            return { success: true, needsOnboarding: true };
         }
     }
 
