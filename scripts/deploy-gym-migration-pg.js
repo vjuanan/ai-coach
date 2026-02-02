@@ -26,7 +26,7 @@ async function run() {
     try {
         await client.connect();
 
-        const sqlPath = path.join(__dirname, '../supabase/migrations/014_gym_profile.sql');
+        const sqlPath = path.join(__dirname, '../supabase/migrations/004_athlete_profile.sql');
         const sql = fs.readFileSync(sqlPath, 'utf8');
 
         console.log(`Running migration from ${sqlPath}...`);

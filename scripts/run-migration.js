@@ -23,7 +23,7 @@ if (!supabaseUrl || !supabaseServiceKey) {
 }
 
 // Read migration file
-const migrationPath = path.join(__dirname, '../supabase/migrations/011_training_methodologies.sql');
+const migrationPath = path.join(__dirname, '../supabase/migrations/004_athlete_profile.sql');
 const migrationSql = fs.readFileSync(migrationPath, 'utf8');
 
 console.log('🚀 Running migration: 011_training_methodologies.sql');

@@ -77,6 +77,23 @@ export default function AthleteDashboard() {
                 <p className="text-gray-500 mt-2">Bienvenido a tu panel de entrenamiento.</p>
             </header>
 
+            {/* Quick Actions */}
+            <div className="flex gap-4 mb-8">
+                <Link
+                    href="/settings"
+                    className="flex items-center gap-3 bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all hover:border-blue-100 w-full md:w-auto"
+                >
+                    <div className="p-2 bg-purple-50 rounded-lg text-purple-600">
+                        <Dumbbell className="w-5 h-5" />
+                    </div>
+                    <div className="text-left">
+                        <h3 className="font-semibold text-gray-900 text-sm">Mi Perfil</h3>
+                        <p className="text-xs text-gray-500">Editar datos corporales</p>
+                    </div>
+                    <ChevronRight size={16} className="text-gray-400 ml-auto" />
+                </Link>
+            </div>
+
             <section>
                 <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                     <Dumbbell className="text-blue-500" />
@@ -106,8 +123,8 @@ export default function AthleteDashboard() {
                                     </span>
                                 </div>
                                 <h3 className="text-lg font-bold text-gray-900 mb-1">{program.name}</h3>
-                                {program.coach && (
-                                    <p className="text-sm text-gray-500 mb-3">Coach: {program.coach.full_name}</p>
+                                {(program as any).coach && (
+                                    <p className="text-sm text-gray-500 mb-3">Coach: {(program as any).coach.full_name}</p>
                                 )}
                                 <p className="text-sm text-gray-600 line-clamp-2 mb-4">
                                     {program.description || 'Sin descripción'}
