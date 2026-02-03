@@ -115,6 +115,12 @@ interface EditorState {
     enterBlockBuilder: (dayId: string) => void;
     exitBlockBuilder: () => void;
 
+    // Block/Day Navigation (for Speed Editor)
+    selectNextBlock: () => void;
+    selectPrevBlock: () => void;
+    selectNextDayFirstBlock: () => void;
+    selectPrevDayFirstBlock: () => void;
+
     // Persistence
     markAsClean: () => void;
 }
@@ -439,6 +445,104 @@ export const useEditorStore = create<EditorState>()(
                 blockBuilderMode: false,
                 blockBuilderDayId: null
             }),
+
+            // Block Navigation - Next block in current day
+            selectNextBlock: () => {
+                const { mesocycles, selectedBlockId, selectedDayId, blockBuilderDayId } = get();
+                const dayId = blockBuilderDayId || selectedDayId;
+                if (!dayId || !selectedBlockId) return;
+
+                // Find current day
+                let currentDay = null;
+                for (const meso of mesocycles) {
+                    const found = meso.days.find(d => d.id === dayId);
+                    if (found) {
+                        currentDay = found;
+                        break;
+                    }
+                }
+                if (!currentDay) return;
+
+                const sortedBlocks = [...currentDay.blocks].sort((a, b) => a.order_index - b.order_index);
+                const currentIndex = sortedBlocks.findIndex(b => b.id === selectedBlockId);
+                if (currentIndex < sortedBlocks.length - 1) {
+                    set({ selectedBlockId: sortedBlocks[currentIndex + 1].id });
+                }
+            },
+
+            // Block Navigation - Previous block in current day
+            selectPrevBlock: () => {
+                const { mesocycles, selectedBlockId, selectedDayId, blockBuilderDayId } = get();
+                const dayId = blockBuilderDayId || selectedDayId;
+                if (!dayId || !selectedBlockId) return;
+
+                // Find current day
+                let currentDay = null;
+                for (const meso of mesocycles) {
+                    const found = meso.days.find(d => d.id === dayId);
+                    if (found) {
+                        currentDay = found;
+                        break;
+                    }
+                }
+                if (!currentDay) return;
+
+                const sortedBlocks = [...currentDay.blocks].sort((a, b) => a.order_index - b.order_index);
+                const currentIndex = sortedBlocks.findIndex(b => b.id === selectedBlockId);
+                if (currentIndex > 0) {
+                    set({ selectedBlockId: sortedBlocks[currentIndex - 1].id });
+                }
+            },
+
+            // Day Navigation - Next day, select first block
+            selectNextDayFirstBlock: () => {
+                const { mesocycles, selectedWeek, blockBuilderDayId, selectedDayId } = get();
+                const currentMeso = mesocycles.find(m => m.week_number === selectedWeek);
+                if (!currentMeso) return;
+
+                const dayId = blockBuilderDayId || selectedDayId;
+                const sortedDays = [...currentMeso.days].sort((a, b) => a.day_number - b.day_number);
+                const currentDayIndex = sortedDays.findIndex(d => d.id === dayId);
+
+                // Find next non-rest day
+                for (let i = currentDayIndex + 1; i < sortedDays.length; i++) {
+                    const nextDay = sortedDays[i];
+                    if (!nextDay.is_rest_day) {
+                        const firstBlock = nextDay.blocks.sort((a, b) => a.order_index - b.order_index)[0];
+                        set({
+                            selectedDayId: nextDay.id,
+                            blockBuilderDayId: nextDay.id,
+                            selectedBlockId: firstBlock?.id || null
+                        });
+                        return;
+                    }
+                }
+            },
+
+            // Day Navigation - Previous day, select first block
+            selectPrevDayFirstBlock: () => {
+                const { mesocycles, selectedWeek, blockBuilderDayId, selectedDayId } = get();
+                const currentMeso = mesocycles.find(m => m.week_number === selectedWeek);
+                if (!currentMeso) return;
+
+                const dayId = blockBuilderDayId || selectedDayId;
+                const sortedDays = [...currentMeso.days].sort((a, b) => a.day_number - b.day_number);
+                const currentDayIndex = sortedDays.findIndex(d => d.id === dayId);
+
+                // Find previous non-rest day
+                for (let i = currentDayIndex - 1; i >= 0; i--) {
+                    const prevDay = sortedDays[i];
+                    if (!prevDay.is_rest_day) {
+                        const firstBlock = prevDay.blocks.sort((a, b) => a.order_index - b.order_index)[0];
+                        set({
+                            selectedDayId: prevDay.id,
+                            blockBuilderDayId: prevDay.id,
+                            selectedBlockId: firstBlock?.id || null
+                        });
+                        return;
+                    }
+                }
+            },
 
             moveBlockToDay: (blockId, targetDayId) => {
                 const { mesocycles } = get();

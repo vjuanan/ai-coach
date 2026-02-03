@@ -23,7 +23,12 @@ import {
     Skull,
     ListOrdered,
     Puzzle,
-    HelpCircle
+    HelpCircle,
+    Check,
+    ChevronDown,
+    ChevronRight,
+    ChevronLeft,
+    Calendar
 } from 'lucide-react';
 import type { BlockType, WorkoutFormat, WorkoutConfig, TrainingMethodology, TrainingMethodologyFormField } from '@/lib/supabase/types';
 import type { LucideIcon } from 'lucide-react';
@@ -41,9 +46,21 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps) {
-    const { mesocycles, updateBlock, selectBlock, deleteBlock } = useEditorStore();
+    const {
+        mesocycles,
+        updateBlock,
+        selectBlock,
+        deleteBlock,
+        selectNextBlock,
+        selectPrevBlock,
+        selectNextDayFirstBlock,
+        selectPrevDayFirstBlock,
+        blockBuilderDayId,
+        selectedDayId
+    } = useEditorStore();
     const [methodologies, setMethodologies] = useState<TrainingMethodology[]>([]);
     const [loading, setLoading] = useState(true);
+    const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
     const firstInputRef = useRef<HTMLInputElement>(null);
 
     // Load methodologies from database
@@ -70,7 +87,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         }
     }, [autoFocusFirst, blockId]);
 
-    // Find the block
+    // Find the block first (needed for methodology auto-expand)
     let block: {
         id: string;
         type: string;
@@ -89,6 +106,17 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         }
     }
 
+    // Get current methodology (needed before hooks)
+    const currentMethodology = methodologies.find(m => m.code === block?.format);
+
+    // Auto-expand category of current methodology (must be before any return)
+    useEffect(() => {
+        if (currentMethodology && !expandedCategory) {
+            setExpandedCategory(currentMethodology.category);
+        }
+    }, [currentMethodology, expandedCategory]);
+
+    // Early return if block not found (after all hooks)
     if (!block) {
         return (
             <div className="p-4 text-center text-cv-text-tertiary">
@@ -116,9 +144,6 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         }
     };
 
-    // Get current methodology
-    const currentMethodology = methodologies.find(m => m.code === block?.format);
-
     // Category grouping for better display
     const categoryOrder = ['metcon', 'hiit', 'strength', 'conditioning'];
     const groupedMethodologies = categoryOrder.reduce((acc, cat) => {
@@ -133,9 +158,75 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         conditioning: 'Acondicionamiento'
     };
 
+    const categoryIcons: Record<string, LucideIcon> = {
+        metcon: Zap,
+        hiit: Timer,
+        strength: Dumbbell,
+        conditioning: Heart
+    };
+
+    // Navigation info - find current block position
+    const dayId = blockBuilderDayId || selectedDayId;
+    let currentDay = null;
+    let currentDayIndex = -1;
+    let totalDays = 0;
+
+    for (const meso of mesocycles) {
+        const dayIndex = meso.days.findIndex(d => d.id === dayId);
+        if (dayIndex !== -1) {
+            currentDay = meso.days[dayIndex];
+            currentDayIndex = dayIndex;
+            totalDays = meso.days.filter(d => !d.is_rest_day).length;
+            break;
+        }
+    }
+
+    const sortedBlocks = currentDay ? [...currentDay.blocks].sort((a, b) => a.order_index - b.order_index) : [];
+    const currentBlockIndex = sortedBlocks.findIndex(b => b.id === blockId);
+    const totalBlocks = sortedBlocks.length;
+    const hasPrevBlock = currentBlockIndex > 0;
+    const hasNextBlock = currentBlockIndex < totalBlocks - 1;
+    const hasPrevDay = currentDayIndex > 0;
+    const hasNextDay = currentDayIndex < totalDays - 1;
+
+    // Block type labels
+    const blockTypeLabels: Record<string, string> = {
+        warmup: 'Calentamiento',
+        strength_linear: 'Fuerza',
+        metcon_structured: 'MetCon',
+        accessory: 'Accesorio',
+        skill: 'Habilidad',
+        free_text: 'Texto Libre'
+    };
+
     return (
-        <div className="flex flex-col">
-            {/* Content - No header since SmartInspector provides it */}
+        <div className="flex flex-col h-full">
+            {/* Header with Save Button */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-white dark:from-cv-bg-tertiary dark:to-cv-bg-secondary">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-cv-accent/10 flex items-center justify-center">
+                        <Dumbbell size={16} className="text-cv-accent" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-semibold text-cv-text-primary">
+                            {block.name || blockTypeLabels[block.type] || 'Bloque'}
+                        </p>
+                        <p className="text-xs text-cv-text-tertiary">
+                            {currentBlockIndex + 1} de {totalBlocks} bloques
+                        </p>
+                    </div>
+                </div>
+                <button
+                    onClick={() => selectBlock(null)}
+                    title="Confirmar y cerrar"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-cv-accent text-white rounded-lg font-medium text-sm hover:bg-cv-accent/90 transition-colors shadow-sm"
+                >
+                    <Check size={16} />
+                    <span className="hidden sm:inline">OK</span>
+                </button>
+            </div>
+
+            {/* Content */}
             <div className="flex-1 overflow-y-auto p-4 space-y-5">
                 {/* Block Name */}
                 <div>
@@ -162,7 +253,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     )}
                 </div>
 
-                {/* Methodology Selector - Dynamic from Database */}
+                {/* Methodology Selector - Collapsible Categories */}
                 {(block.type === 'metcon_structured' || block.type === 'warmup' || block.type === 'accessory' || block.type === 'strength_linear') && (
                     <div>
                         <label className="block text-sm font-medium text-cv-text-secondary mb-2">
@@ -174,40 +265,70 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-cv-accent"></div>
                             </div>
                         ) : (
-                            <div className="space-y-3">
+                            <div className="space-y-1">
                                 {categoryOrder.map(category => {
                                     const items = groupedMethodologies[category] || [];
                                     if (items.length === 0) return null;
 
-                                    return (
-                                        <div key={category}>
-                                            <p className="text-xs text-cv-text-tertiary mb-1.5 font-medium">
-                                                {categoryLabels[category]}
-                                            </p>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {items.map(m => {
-                                                    const IconComponent = iconMap[m.icon] || Dumbbell;
-                                                    const isSelected = block?.format === m.code;
+                                    const isExpanded = expandedCategory === category;
+                                    const hasSelectedItem = items.some(m => m.code === block?.format);
+                                    const CategoryIcon = categoryIcons[category] || Dumbbell;
 
-                                                    return (
-                                                        <button
-                                                            key={m.code}
-                                                            onClick={() => handleFormatChange(m.code)}
-                                                            title={m.description}
-                                                            className={`
-                                                                px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all
-                                                                flex items-center gap-1.5
-                                                                ${isSelected
-                                                                    ? 'bg-cv-accent text-white shadow-sm'
-                                                                    : 'bg-cv-bg-tertiary text-cv-text-secondary hover:text-cv-text-primary hover:bg-cv-bg-secondary'}
-                                                            `}
-                                                        >
-                                                            <IconComponent size={12} />
-                                                            {m.name}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
+                                    return (
+                                        <div key={category} className="rounded-lg overflow-hidden">
+                                            {/* Category Header - Clickable */}
+                                            <button
+                                                onClick={() => setExpandedCategory(isExpanded ? null : category)}
+                                                className={`w-full flex items-center justify-between p-2.5 rounded-lg transition-all ${hasSelectedItem
+                                                    ? 'bg-cv-accent/10 border border-cv-accent/30'
+                                                    : 'bg-cv-bg-tertiary hover:bg-cv-bg-secondary'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <CategoryIcon size={14} className={hasSelectedItem ? 'text-cv-accent' : 'text-cv-text-tertiary'} />
+                                                    <span className={`text-sm font-medium ${hasSelectedItem ? 'text-cv-accent' : 'text-cv-text-primary'}`}>
+                                                        {categoryLabels[category]}
+                                                    </span>
+                                                    {hasSelectedItem && (
+                                                        <span className="text-xs bg-cv-accent text-white px-1.5 py-0.5 rounded">
+                                                            {items.find(m => m.code === block?.format)?.name}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {isExpanded ? (
+                                                    <ChevronDown size={14} className="text-cv-text-tertiary" />
+                                                ) : (
+                                                    <ChevronRight size={14} className="text-cv-text-tertiary" />
+                                                )}
+                                            </button>
+
+                                            {/* Expanded Options */}
+                                            {isExpanded && (
+                                                <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 dark:bg-cv-bg-tertiary/50 animate-in slide-in-from-top-2 duration-200">
+                                                    {items.map(m => {
+                                                        const IconComponent = iconMap[m.icon] || Dumbbell;
+                                                        const isSelected = block?.format === m.code;
+
+                                                        return (
+                                                            <button
+                                                                key={m.code}
+                                                                onClick={() => handleFormatChange(m.code)}
+                                                                title={m.description}
+                                                                className={`
+                                                                    px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all
+                                                                    flex items-center gap-1.5
+                                                                    ${isSelected
+                                                                        ? 'bg-cv-accent text-white shadow-sm'
+                                                                        : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-cv-bg-primary border border-slate-200 dark:border-slate-700'}
+                                                                `}
+                                                            >
+                                                                <IconComponent size={12} />
+                                                                {m.name}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}
@@ -258,20 +379,82 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                         value={(config.notes as string) || ''}
                         onChange={(e) => handleConfigChange('notes', e.target.value)}
                         placeholder="Focus on quality, tempo, etc."
-                        className="cv-input min-h-[80px] resize-none"
+                        className="cv-input min-h-[60px] resize-none"
                     />
                 </div>
-            </div>
 
-            {/* Footer Actions */}
-            <div className="p-4 border-t border-cv-border">
+                {/* Delete Button */}
                 <button
                     onClick={() => { deleteBlock(blockId); selectBlock(null); }}
-                    className="w-full cv-btn text-red-400 hover:bg-red-500/10 justify-center"
+                    className="w-full py-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
                 >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                     Eliminar Bloque
                 </button>
+            </div>
+
+            {/* Navigation Footer */}
+            <div className="flex items-center justify-between px-3 py-2 border-t border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-cv-bg-tertiary/80">
+                {/* Block Navigation */}
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={selectPrevBlock}
+                        disabled={!hasPrevBlock}
+                        title="Bloque anterior"
+                        className={`p-2 rounded-lg transition-colors ${hasPrevBlock
+                            ? 'hover:bg-slate-200 dark:hover:bg-slate-700 text-cv-text-secondary'
+                            : 'text-cv-text-tertiary/40 cursor-not-allowed'
+                            }`}
+                    >
+                        <ChevronLeft size={18} />
+                    </button>
+                    <span className="text-xs text-cv-text-tertiary px-1">
+                        {currentBlockIndex + 1}/{totalBlocks}
+                    </span>
+                    <button
+                        onClick={selectNextBlock}
+                        disabled={!hasNextBlock}
+                        title="Bloque siguiente"
+                        className={`p-2 rounded-lg transition-colors ${hasNextBlock
+                            ? 'hover:bg-slate-200 dark:hover:bg-slate-700 text-cv-text-secondary'
+                            : 'text-cv-text-tertiary/40 cursor-not-allowed'
+                            }`}
+                    >
+                        <ChevronRight size={18} />
+                    </button>
+                </div>
+
+                {/* Separator */}
+                <div className="w-px h-6 bg-slate-300 dark:bg-slate-600" />
+
+                {/* Day Navigation */}
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={selectPrevDayFirstBlock}
+                        disabled={!hasPrevDay}
+                        title="Día anterior"
+                        className={`p-2 rounded-lg transition-colors flex items-center gap-1 ${hasPrevDay
+                            ? 'hover:bg-slate-200 dark:hover:bg-slate-700 text-cv-text-secondary'
+                            : 'text-cv-text-tertiary/40 cursor-not-allowed'
+                            }`}
+                    >
+                        <ChevronLeft size={14} />
+                        <Calendar size={14} />
+                    </button>
+                    <span className="text-xs text-cv-text-tertiary px-1">Día</span>
+                    <button
+                        onClick={selectNextDayFirstBlock}
+                        disabled={!hasNextDay}
+                        title="Día siguiente"
+                        className={`p-2 rounded-lg transition-colors flex items-center gap-1 ${hasNextDay
+                            ? 'hover:bg-slate-200 dark:hover:bg-slate-700 text-cv-text-secondary'
+                            : 'text-cv-text-tertiary/40 cursor-not-allowed'
+                            }`}
+                    >
+                        <Calendar size={14} />
+                        <ChevronRight size={14} />
+                    </button>
+                </div>
             </div>
         </div>
     );

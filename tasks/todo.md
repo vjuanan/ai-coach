@@ -20,9 +20,16 @@
 - [x] Replace popover-based "Add Block" with `enterBlockBuilder` call in DayCard
 - [x] Update `MesocycleEditor.tsx` for split-screen layout when in Block Builder Mode
 - [x] Export `BlockBuilderPanel` from editor index
-- [ ] Push to GitHub and verify on production
-- [ ] Capture screenshots of Block Builder Mode
+- [x] Fix lint error (unescaped quotes in BlockBuilderPanel)
+- [x] Push to GitHub and verify on production
+- [x] Capture screenshots of Block Builder Mode
 
 ## Results
 - The issue where clicking "Add Block" did nothing (because it was hover-only) is resolved.
 - The issue where the large empty state area was not clickable is resolved.
+- **NEW**: Block Builder Mode with split-screen layout is now fully functional:
+  - Clicking "Añadir Bloque" opens a 40/60 split view
+  - Left side shows compressed week view with 2-column day grid
+  - Right side shows Block Builder panel with block type selector
+  - Speed Editor appears when a block type is selected
+  - "Listo" button or ESC key closes the Block Builder Mode
