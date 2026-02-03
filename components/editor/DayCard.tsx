@@ -5,6 +5,7 @@ import { WorkoutBlockCard } from './WorkoutBlockCard';
 import { Plus, Moon, MoreHorizontal, Sun, Target, Trash2 } from 'lucide-react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 import * as Popover from '@radix-ui/react-popover';
+import { useState } from 'react';
 
 interface DraftWorkoutBlock {
     id: string;
@@ -47,6 +48,7 @@ const blockTypeOptions: { type: BlockType; label: string; color: string }[] = [
 
 export function DayCard({ day, dayName }: DayCardProps) {
     const { addBlock, toggleRestDay, selectDay, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures, clearDay } = useEditorStore();
+    const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
 
     const isSelected = selectedDayId === day.id;
     const isDropTarget = dropTargetDayId === day.id;
@@ -270,7 +272,13 @@ export function DayCard({ day, dayName }: DayCardProps) {
 
                 {/* Empty State - Elegant */}
                 {day.blocks.length === 0 && (
-                    <div className="h-32 bg-slate-50 dark:bg-slate-800/30 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center text-cv-text-tertiary">
+                    <div
+                        className="h-32 bg-slate-50 dark:bg-slate-800/30 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center text-cv-text-tertiary cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsAddMenuOpen(true);
+                        }}
+                    >
                         <Plus size={20} className="mb-2 opacity-40" />
                         <p className="text-sm">Aún no hay bloques</p>
                         <p className="text-xs opacity-60 mt-1">Añade uno abajo</p>
@@ -278,31 +286,47 @@ export function DayCard({ day, dayName }: DayCardProps) {
                 )}
             </div>
 
-            {/* Add Block Button - Improved dropdown */}
-            <div className="relative group/add flex-shrink-0">
-                <button
-                    className="w-full py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-cv-text-secondary hover:text-cv-accent hover:border-cv-accent hover:bg-cv-accent/5 transition-all flex items-center justify-center gap-2 font-medium"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <Plus size={16} />
-                    <span className="text-sm">Añadir Bloque</span>
-                </button>
+            {/* Add Block Button - Improved dropdown - Using Radix Popover now */}
+            <div className="flex-shrink-0">
+                <Popover.Root open={isAddMenuOpen} onOpenChange={setIsAddMenuOpen}>
+                    <Popover.Trigger asChild>
+                        <button
+                            className="w-full py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-cv-text-secondary hover:text-cv-accent hover:border-cv-accent hover:bg-cv-accent/5 transition-all flex items-center justify-center gap-2 font-medium"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <Plus size={16} />
+                            <span className="text-sm">Añadir Bloque</span>
+                        </button>
+                    </Popover.Trigger>
 
-                {/* Dropdown Menu */}
-                <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-cv-bg-tertiary border border-slate-200 dark:border-cv-border rounded-xl shadow-xl opacity-0 invisible group-hover/add:opacity-100 group-hover/add:visible transition-all z-20 overflow-hidden">
-                    <div className="p-1">
-                        {blockTypeOptions.map(option => (
-                            <button
-                                key={option.type}
-                                onClick={(e) => { e.stopPropagation(); handleAddBlock(option.type); }}
-                                className="w-full px-3 py-2.5 text-left text-sm text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-50 dark:hover:bg-cv-bg-elevated flex items-center gap-3 rounded-lg transition-colors"
-                            >
-                                <span className={`w-3 h-3 rounded-full ${option.color}`} />
-                                <span className="font-medium">{option.label}</span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                    <Popover.Portal>
+                        <Popover.Content
+                            className="min-w-[200px] bg-white dark:bg-cv-bg-tertiary border border-slate-200 dark:border-cv-border rounded-xl shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-200"
+                            side="top"
+                            align="center"
+                            sideOffset={5}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="grid grid-cols-1 gap-0.5">
+                                {blockTypeOptions.map(option => (
+                                    <button
+                                        key={option.type}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddBlock(option.type);
+                                            setIsAddMenuOpen(false);
+                                        }}
+                                        className="w-full px-3 py-2 text-left text-sm text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-50 dark:hover:bg-cv-bg-elevated flex items-center gap-3 rounded-lg transition-colors"
+                                    >
+                                        <span className={`w-2.5 h-2.5 rounded-full ${option.color}`} />
+                                        <span className="font-medium">{option.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                            <Popover.Arrow className="fill-white dark:fill-cv-bg-tertiary border-t border-l border-slate-200 dark:border-cv-border" />
+                        </Popover.Content>
+                    </Popover.Portal>
+                </Popover.Root>
             </div>
         </div>
     );
