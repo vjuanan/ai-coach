@@ -8,7 +8,7 @@ import {
     Dumbbell, UserCog, Building2, ChevronRight, ChevronLeft,
     Calendar, Ruler, Weight, Target, MapPin, Clock, Activity,
     AlertCircle, MessageSquare, Camera, Upload, Check,
-    Users, Globe, Phone, Settings
+    Users, Globe, Phone, Settings, LogOut
 } from 'lucide-react';
 import { refreshUserRoleReference } from '../auth/actions';
 
@@ -217,6 +217,11 @@ export default function OnboardingPage() {
     };
 
     const prevStep = () => setStep(s => s - 1);
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        router.push('/login');
+    };
 
     // Render Athlete Steps
     const renderAthleteStep = () => {
@@ -586,10 +591,20 @@ export default function OnboardingPage() {
 
     const totalSteps = role === 'athlete' ? 11 : 6;
     const isGym = role === 'gym';
-    const accentColor = isGym ? 'purple' : 'blue';
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+            {/* Logout Button for Stuck Users */}
+            <div className="absolute top-4 right-4 sm:top-8 sm:right-8 z-10">
+                <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 text-gray-500 hover:text-red-600 font-medium px-4 py-2 rounded-lg hover:bg-red-50 transition-colors"
+                >
+                    <LogOut size={20} />
+                    <span className="hidden sm:inline">Cerrar Sesión</span>
+                </button>
+            </div>
+
             <div className="max-w-xl mx-auto w-full">
                 {step === 0 ? (
                     <Step0RoleSelection onSelect={handleRoleSelect} isLoading={isLoading} />
