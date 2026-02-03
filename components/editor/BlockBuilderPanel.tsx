@@ -199,7 +199,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
             {/* Footer Hint */}
             <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-cv-bg-tertiary/30">
                 <p className="text-xs text-center text-cv-text-tertiary">
-                    Presiona <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-700 rounded border border-slate-200 dark:border-slate-600 text-[10px] font-mono">ESC</kbd> o "Listo" para cerrar
+                    Presiona <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-700 rounded border border-slate-200 dark:border-slate-600 text-[10px] font-mono">ESC</kbd> o &quot;Listo&quot; para cerrar
                 </p>
             </div>
         </div>
