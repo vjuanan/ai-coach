@@ -20,3 +20,23 @@ but the onboarding system requires `role = NULL` to force the user through the r
 - [x] Update Middleware, Actions, and Onboarding page to use new flag.
 - [x] Reset test user `admin@epnstore.com.ar`.
 - [ ] Verify fix in production with browser test (Screenshots).
+
+## Improved Login Error Message (2026-02-03)
+
+- [x] Modify `app/login/page.tsx` to intercept "Invalid login credentials".
+- [x] Translate error to friendly Spanish.
+- [x] Enhance error UI with icon and better styling.
+- [ ] Verify changes.
+
+## Knowledge Page Optimization (2026-02-03)
+
+- [x] Research current component structure.
+- [x] Compact header layout (Apple Style).
+- [x] Reduce whitespace and optimize controls alignment.
+- [ ] Verify with screenshots.
+
+## Fix Block Menu Options (2026-02-03)
+- [ ] Locate the Block component and "..." menu code.
+- [ ] Diagnose why the menu is not opening.
+- [ ] Fix the issue.
+- [ ] Verify the fix.

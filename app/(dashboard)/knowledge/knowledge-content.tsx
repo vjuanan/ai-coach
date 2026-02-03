@@ -442,56 +442,44 @@ export function KnowledgeContent({ principles, methodologies }: KnowledgeContent
 
     return (
         <div className="space-y-6">
-            {/* Main Tabs */}
-            <div className="flex items-center justify-between">
-                <div className="flex p-1 bg-cv-bg-tertiary rounded-lg">
+            {/* Compact Toolbar */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-2 rounded-xl border border-cv-border/60 shadow-sm">
+
+                {/* Left: Tabs */}
+                <div className="flex p-1 bg-cv-bg-tertiary rounded-lg shrink-0">
                     <button
                         onClick={() => setActiveTab('principles')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'principles'
-                                ? 'bg-white text-cv-text-primary shadow-sm'
-                                : 'text-cv-text-secondary hover:text-cv-text-primary'
+                        className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${activeTab === 'principles'
+                            ? 'bg-white text-cv-text-primary shadow-sm'
+                            : 'text-cv-text-secondary hover:text-cv-text-primary'
                             }`}
                     >
                         Principios ({totalPrinciples})
                     </button>
                     <button
                         onClick={() => setActiveTab('methodologies')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'methodologies'
-                                ? 'bg-white text-cv-text-primary shadow-sm'
-                                : 'text-cv-text-secondary hover:text-cv-text-primary'
+                        className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${activeTab === 'methodologies'
+                            ? 'bg-white text-cv-text-primary shadow-sm'
+                            : 'text-cv-text-secondary hover:text-cv-text-primary'
                             }`}
                     >
                         Metodologías ({totalMethodologies})
                     </button>
                 </div>
-            </div>
 
-            {activeTab === 'principles' ? (
-                <div className="space-y-5 animate-in fade-in zoom-in-95 duration-200">
-                    {/* Stats & Filters Row */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        {/* Stats - Compact inline */}
-                        <div className="flex flex-wrap gap-3">
-                            <div className="flex items-center gap-2 bg-white rounded-lg border border-cv-border/60 px-3 py-2">
-                                <div className="w-7 h-7 rounded-md bg-purple-50 flex items-center justify-center">
-                                    <User className="text-purple-500" size={14} />
-                                </div>
-                                <div className="flex items-baseline gap-1.5">
-                                    <span className="text-lg font-semibold text-cv-text-primary">{authors.length}</span>
-                                    <span className="text-xs text-cv-text-secondary">Expertos</span>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2 bg-white rounded-lg border border-cv-border/60 px-3 py-2">
-                                <div className="w-7 h-7 rounded-md bg-amber-50 flex items-center justify-center">
-                                    <Layers className="text-amber-500" size={14} />
-                                </div>
-                                <div className="flex items-baseline gap-1.5">
-                                    <span className="text-lg font-semibold text-cv-text-primary">
-                                        {Array.from(new Set(principles.map(p => p.category))).length}
-                                    </span>
-                                    <span className="text-xs text-cv-text-secondary">Categorías</span>
-                                </div>
-                            </div>
+                {/* Right: Filters & Stats */}
+                {activeTab === 'principles' && (
+                    <div className="flex items-center gap-3 overflow-x-auto pb-1 md:pb-0">
+                        {/* Compact Stats */}
+                        <div className="hidden lg:flex items-center gap-3 text-xs text-cv-text-secondary px-3 border-r border-cv-border/60">
+                            <span className="flex items-center gap-1.5">
+                                <User size={12} className="text-purple-500" />
+                                <b>{authors.length}</b> Expertos
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                                <Layers size={12} className="text-amber-500" />
+                                <b>{Array.from(new Set(principles.map(p => p.category))).length}</b> Categorías
+                            </span>
                         </div>
 
                         {/* Filters */}
@@ -499,7 +487,7 @@ export function KnowledgeContent({ principles, methodologies }: KnowledgeContent
                             <select
                                 value={selectedObjective}
                                 onChange={(e) => setSelectedObjective(e.target.value as ObjectiveType | 'all')}
-                                className="px-3 py-1.5 rounded-md border border-cv-border/60 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-cv-accent/30"
+                                className="px-2.5 py-1.5 rounded-lg border border-cv-border/60 bg-gray-50 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-cv-accent/30 hover:border-cv-accent/30 transition-colors"
                             >
                                 <option value="all">Todos los objetivos</option>
                                 {Object.entries(objectiveConfig).map(([key, config]) => (
@@ -509,7 +497,7 @@ export function KnowledgeContent({ principles, methodologies }: KnowledgeContent
                             <select
                                 value={selectedAuthor}
                                 onChange={(e) => setSelectedAuthor(e.target.value)}
-                                className="px-3 py-1.5 rounded-md border border-cv-border/60 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-cv-accent/30"
+                                className="px-2.5 py-1.5 rounded-lg border border-cv-border/60 bg-gray-50 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-cv-accent/30 hover:border-cv-accent/30 transition-colors"
                             >
                                 <option value="all">Todos los expertos</option>
                                 {Array.from(authors).map(author => (
@@ -518,6 +506,11 @@ export function KnowledgeContent({ principles, methodologies }: KnowledgeContent
                             </select>
                         </div>
                     </div>
+                )}
+            </div>
+
+            {activeTab === 'principles' ? (
+                <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
 
                     {/* Content by Objective */}
                     {selectedObjective === 'all' ? (

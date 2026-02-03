@@ -13,7 +13,7 @@ export default async function KnowledgePage() {
             <Topbar title="Conocimiento" />
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="mb-8">
+                <div className="mb-4">
                     <p className="text-cv-text-secondary mt-1">
                         Base de conocimiento para la creación de programas de entrenamiento basados en evidencia científica.
                     </p>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Dumbbell } from 'lucide-react';
+import { Loader2, Dumbbell, AlertCircle } from 'lucide-react';
 import { login } from '@/app/auth/actions';
 
 export default function LoginPage() {
@@ -21,6 +21,10 @@ export default function LoginPage() {
             const result = await login(formData);
 
             if (result.error) {
+                // Map technical errors to friendly Spanish messages
+                if (result.error.includes('Invalid login credentials')) {
+                    throw new Error('Credenciales incorrectas. Por favor, verifica tu correo y contraseña.');
+                }
                 throw new Error(result.error);
             }
 
@@ -57,8 +61,9 @@ export default function LoginPage() {
                 <div className="cv-card shadow-xl border border-cv-bg-border/50">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {error && (
-                            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm md:text-base">
-                                {error}
+                            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-500 animate-in fade-in slide-in-from-top-2">
+                                <AlertCircle size={20} className="shrink-0" />
+                                <span className="text-sm font-medium">{error}</span>
                             </div>
                         )}
 
