@@ -1347,6 +1347,43 @@ export async function searchExercises(query: string) {
     return data;
 }
 
+export async function getExercises(options?: {
+    query?: string;
+    category?: string;
+    page?: number;
+    limit?: number;
+}) {
+    const supabase = createServerClient();
+    const { query, category, page = 1, limit = 50 } = options || {};
+
+    let dbQuery = supabase
+        .from('exercises')
+        .select('*', { count: 'exact' });
+
+    if (query) {
+        dbQuery = dbQuery.ilike('name', `%${query}%`);
+    }
+
+    if (category && category !== 'all') {
+        dbQuery = dbQuery.eq('category', category);
+    }
+
+    // Pagination
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    const { data, error, count } = await dbQuery
+        .order('name', { ascending: true })
+        .range(from, to);
+
+    if (error) {
+        console.error('Error fetching exercises:', error);
+        return { data: [], count: 0 };
+    }
+
+    return { data, count: count || 0 };
+}
+
 export async function getEquipmentCatalog() {
     const supabase = createServerClient();
 

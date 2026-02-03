@@ -2,7 +2,7 @@
 
 import { useEditorStore } from '@/lib/store';
 import { WorkoutBlockCard } from './WorkoutBlockCard';
-import { Plus, Moon, MoreHorizontal, Sun, Target } from 'lucide-react';
+import { Plus, Moon, MoreHorizontal, Sun, Target, Trash2 } from 'lucide-react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 import * as Popover from '@radix-ui/react-popover';
 
@@ -46,7 +46,7 @@ const blockTypeOptions: { type: BlockType; label: string; color: string }[] = [
 ];
 
 export function DayCard({ day, dayName }: DayCardProps) {
-    const { addBlock, toggleRestDay, selectDay, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures } = useEditorStore();
+    const { addBlock, toggleRestDay, selectDay, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures, clearDay } = useEditorStore();
 
     const isSelected = selectedDayId === day.id;
     const isDropTarget = dropTargetDayId === day.id;
@@ -205,12 +205,52 @@ export function DayCard({ day, dayName }: DayCardProps) {
                     >
                         <Moon size={14} />
                     </button>
-                    <button
-                        className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                        title="Más opciones"
-                    >
-                        <MoreHorizontal size={16} />
-                    </button>
+                    {/* More Options Menu */}
+                    <Popover.Root>
+                        <Popover.Trigger asChild>
+                            <button
+                                className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                title="Más opciones"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <MoreHorizontal size={16} />
+                            </button>
+                        </Popover.Trigger>
+                        <Popover.Portal>
+                            <Popover.Content
+                                className="min-w-[180px] bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-1 z-50 animate-in fade-in zoom-in-95 duration-200"
+                                sideOffset={5}
+                                align="end"
+                            >
+                                <div className="space-y-0.5">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            // Close popover logic is handled by Radix automatically when clicking outside, 
+                                            // but for internal buttons we might need a way to close it. 
+                                            // However, for now standard behavior is fine.
+                                            clearDay(day.id);
+                                        }}
+                                        className="w-full text-left px-2 py-2 text-sm rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center gap-2 transition-colors"
+                                    >
+                                        <Trash2 size={14} />
+                                        <span>Limpiar contenido</span>
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleRestDay(day.id);
+                                        }}
+                                        className="w-full text-left px-2 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-cv-text-secondary flex items-center gap-2 transition-colors"
+                                    >
+                                        <Moon size={14} />
+                                        <span>Marcar como descanso</span>
+                                    </button>
+                                </div>
+                                <Popover.Arrow className="fill-white dark:fill-slate-900 border-t border-l border-slate-200 dark:border-slate-700" />
+                            </Popover.Content>
+                        </Popover.Portal>
+                    </Popover.Root>
                 </div>
             </div>
 

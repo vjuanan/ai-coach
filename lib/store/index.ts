@@ -97,6 +97,7 @@ interface EditorState {
     // Day operations
     updateDay: (dayId: string, updates: Partial<DraftDay>) => void;
     toggleRestDay: (dayId: string) => void;
+    clearDay: (dayId: string) => void;
 
     // Mesocycle operations
     updateMesocycle: (weekNumber: number, updates: Partial<DraftMesocycle>) => void;
@@ -377,6 +378,22 @@ export const useEditorStore = create<EditorState>()(
                     days: meso.days.map(day =>
                         day.id === dayId
                             ? { ...day, is_rest_day: !day.is_rest_day, isDirty: true }
+                            : day
+                    ),
+                }));
+
+                set({ mesocycles: updatedMesocycles, hasUnsavedChanges: true });
+            },
+
+            // Clear day blocks
+            clearDay: (dayId) => {
+                const { mesocycles } = get();
+
+                const updatedMesocycles = mesocycles.map(meso => ({
+                    ...meso,
+                    days: meso.days.map(day =>
+                        day.id === dayId
+                            ? { ...day, blocks: [], isDirty: true } // Remove all blocks
                             : day
                     ),
                 }));
