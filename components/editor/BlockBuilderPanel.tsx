@@ -80,9 +80,9 @@ const blockTypeOptions: {
     ];
 
 export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanelProps) {
-    const { addBlock, selectedBlockId, mesocycles } = useEditorStore();
+    const { addBlock, selectedBlockId, selectBlock, mesocycles } = useEditorStore();
 
-    // Find the current day to show added blocks count
+    // Find the current day to show added blocks
     let currentDay = null;
     for (const meso of mesocycles) {
         const found = meso.days.find(d => d.id === dayId);
@@ -91,8 +91,6 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
             break;
         }
     }
-
-    const blocksCount = currentDay?.blocks.length || 0;
 
     const handleAddBlock = (type: BlockType) => {
         const option = blockTypeOptions.find(o => o.type === type);
@@ -154,16 +152,48 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                         </div>
                     </div>
 
-                    {/* Added Blocks Count */}
-                    {blocksCount > 0 && (
-                        <div className="mx-3 mt-2 p-3 bg-cv-accent/5 border border-cv-accent/20 rounded-xl">
-                            <p className="text-xs text-cv-text-secondary text-center">
-                                <span className="font-bold text-cv-accent text-lg">{blocksCount}</span>
-                                <br />
-                                <span className="text-cv-text-tertiary">
-                                    {blocksCount === 1 ? 'bloque añadido' : 'bloques añadidos'}
-                                </span>
+                    {/* Added Blocks - Clickable List */}
+                    {currentDay && currentDay.blocks.length > 0 && (
+                        <div className="mx-3 mt-2">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-cv-text-tertiary mb-2 px-1">
+                                Bloques Añadidos ({currentDay.blocks.length})
                             </p>
+                            <div className="space-y-1">
+                                {[...currentDay.blocks]
+                                    .sort((a, b) => a.order_index - b.order_index)
+                                    .map((block, index) => {
+                                        const isActive = selectedBlockId === block.id;
+                                        const blockOption = blockTypeOptions.find(o => o.type === block.type);
+                                        const Icon = blockOption?.icon || Dumbbell;
+
+                                        return (
+                                            <button
+                                                key={block.id}
+                                                onClick={() => selectBlock(block.id)}
+                                                className={`w-full flex items-center gap-2 p-2 rounded-lg transition-all text-left ${isActive
+                                                    ? 'bg-cv-accent/10 border border-cv-accent/30 shadow-sm'
+                                                    : 'bg-white dark:bg-cv-bg-secondary hover:bg-slate-50 dark:hover:bg-cv-bg-tertiary border border-slate-200 dark:border-slate-700'
+                                                    }`}
+                                            >
+                                                <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-100 dark:bg-slate-700 text-cv-text-secondary'
+                                                    }`}>
+                                                    <Icon size={12} />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className={`text-xs font-medium truncate ${isActive ? 'text-cv-accent' : 'text-cv-text-primary'
+                                                        }`}>
+                                                        {block.name || blockOption?.label || `Bloque ${index + 1}`}
+                                                    </p>
+                                                    {block.format && (
+                                                        <p className="text-[9px] text-cv-text-tertiary truncate">
+                                                            {block.format}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                            </div>
                         </div>
                     )}
                 </div>

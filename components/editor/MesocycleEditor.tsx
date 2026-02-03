@@ -223,14 +223,24 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             <div className="flex items-center justify-between px-4 py-2 border-b border-cv-border bg-white/80 dark:bg-cv-bg-secondary/80 backdrop-blur-sm flex-shrink-0">
                 {/* Left Section - Breadcrumbs & Save Status */}
                 <div className="flex items-center gap-2">
-                    {/* Back Button */}
-                    <Link
-                        href="/programs"
-                        className="cv-btn-ghost p-1.5 rounded-lg flex items-center gap-1 text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                        title="Volver a Programas"
-                    >
-                        <ArrowLeft size={16} />
-                    </Link>
+                    {/* Back Button - Conditional behavior based on mode */}
+                    {blockBuilderMode ? (
+                        <button
+                            onClick={exitBlockBuilder}
+                            className="cv-btn-ghost p-1.5 rounded-lg flex items-center gap-1 text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            title="Volver a Vista Semanal"
+                        >
+                            <ArrowLeft size={16} />
+                        </button>
+                    ) : (
+                        <Link
+                            href="/programs"
+                            className="cv-btn-ghost p-1.5 rounded-lg flex items-center gap-1 text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            title="Volver a Programas"
+                        >
+                            <ArrowLeft size={16} />
+                        </Link>
+                    )}
 
                     <div className="w-px h-5 bg-cv-border" />
 

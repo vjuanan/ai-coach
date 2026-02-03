@@ -1,16 +1,8 @@
-# Debugging Add Block Interaction
+# Speed Editor UX Enhancements - Complete
 
 ## 2026-02-03
-- [x] Analyze `components/editor/DayCard.tsx` to identify the issue with "Add Block" interaction.
-- [x] Refactor "Add Block" button to use `@radix-ui/react-popover` instead of CSS hover.
-- [x] Implement `onClick` handler for the Empty State area to trigger the same menu.
-- [x] Verify valid import of `useState`.
-- [x] Push changes to GitHub.
-- [x] Verify fix on Production URL using Browser Subagent.
-    - Confirmed button click opens menu.
-    - Confirmed empty state click opens menu.
 
-## Block Builder Mode UX Redesign
+### Block Builder Mode Implementation (Earlier)
 - [x] Create implementation plan for split-screen Block Builder Mode
 - [x] Add `blockBuilderMode` and `blockBuilderDayId` state to store
 - [x] Add `enterBlockBuilder` and `exitBlockBuilder` actions to store
@@ -24,12 +16,18 @@
 - [x] Push to GitHub and verify on production
 - [x] Capture screenshots of Block Builder Mode
 
+### Speed Editor UX Enhancements (Current)
+- [x] Add navigation helpers to store (`selectNextBlock`, `selectPrevBlock`, `selectNextDayFirstBlock`, `selectPrevDayFirstBlock`)
+- [x] Add save/confirm button (✓) at top of Speed Editor
+- [x] Make methodology categories collapsible (MetCon, HIIT, Fuerza, Acondicionamiento)
+- [x] Auto-expand category of currently selected methodology
+- [x] Add navigation footer with block and day navigation
+- [x] Fix React hooks rule violation (useEffect before early return)
+- [x] Push to GitHub and verify on production
+- [x] Capture screenshots of all new features
+
 ## Results
-- The issue where clicking "Add Block" did nothing (because it was hover-only) is resolved.
-- The issue where the large empty state area was not clickable is resolved.
-- **NEW**: Block Builder Mode with split-screen layout is now fully functional:
-  - Clicking "Añadir Bloque" opens a 40/60 split view
-  - Left side shows compressed week view with 2-column day grid
-  - Right side shows Block Builder panel with block type selector
-  - Speed Editor appears when a block type is selected
-  - "Listo" button or ESC key closes the Block Builder Mode
+All features implemented and verified on production:
+- **Save Button**: Green "OK" button at top right, shows block info on left
+- **Collapsible Categories**: Each category header is clickable, shows selected methodology badge, expands to show options with icons
+- **Navigation Footer**: Block position (e.g., "4/4") with prev/next arrows, Day navigation with calendar icons
