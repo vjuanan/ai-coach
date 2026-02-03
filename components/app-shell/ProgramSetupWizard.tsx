@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { X, CalendarDays, Target, Timer, Loader2, ChevronRight, Sparkles } from 'lucide-react';
 import { createProgram } from '@/lib/actions';
 import { useEscapeKey } from '@/hooks/use-escape-key';
+import { StrategyInput } from './StrategyInput';
 
 interface ProgramSetupWizardProps {
     isOpen: boolean;
@@ -300,30 +301,26 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
                             Enfoque Semanal (Opcional)
                         </label>
 
-                        {/* Datalist for suggestions */}
-                        <datalist id="focus-suggestions">
-                            <option value="Acumulación" />
-                            <option value="Intensificación" />
-                            <option value="Realización" />
-                            <option value="Descarga" />
-                            <option value="Intro" />
-                        </datalist>
-
                         <div className="grid grid-cols-2 gap-4 max-h-48 overflow-y-auto pr-1">
                             {Array.from({ length: duration }).map((_, i) => (
                                 <div key={i} className="flex items-center gap-2">
                                     <span className="text-xs text-cv-text-tertiary w-12 shrink-0">
                                         Sem {i + 1}
                                     </span>
-                                    <input
-                                        type="text"
-                                        list="focus-suggestions"
+                                    <StrategyInput
                                         value={weeklyLabels[i] || ''}
-                                        onChange={(e) => {
+                                        onChange={(val) => {
                                             const updated = [...weeklyLabels];
-                                            updated[i] = e.target.value;
+                                            updated[i] = val;
                                             setWeeklyLabels(updated);
                                         }}
+                                        suggestions={[
+                                            'Acumulación',
+                                            'Intensificación',
+                                            'Realización',
+                                            'Descarga',
+                                            'Intro'
+                                        ]}
                                         placeholder="Ej: Acumulación"
                                         className="flex-1 px-3 py-2 text-sm rounded-lg bg-cv-bg-secondary border border-cv-border text-cv-text-primary placeholder:text-cv-text-tertiary/50 focus:outline-none focus:ring-1 focus:ring-cv-accent/50 transition-all"
                                     />
