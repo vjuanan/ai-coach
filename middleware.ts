@@ -83,30 +83,45 @@ export async function middleware(request: NextRequest) {
     // 4. RBAC & Onboarding Check (Only for authenticated users accessing app routes)
     if (user && !isAuthPage) {
         let role = null;
+        let onboardingCompleted = false;
 
         // OPTIMIZATION: Check for cached role in cookies
         const roleCookie = request.cookies.get('user_role');
         if (roleCookie && roleCookie.value) {
-            const [cookieUserId, cookieRole] = roleCookie.value.split(':');
-            // Verify the cookie belongs to the current user
-            if (cookieUserId === user.id) {
-                role = cookieRole;
+            // Format: userId:role:onboardingCompleted
+            const parts = roleCookie.value.split(':');
+            if (parts.length >= 2) {
+                const [cookieUserId, cookieRole, cookieStatus] = parts;
+                // Verify the cookie belongs to the current user
+                if (cookieUserId === user.id) {
+                    role = cookieRole;
+                    // Backward compatibility: If no status in cookie, fetch from DB
+                    if (cookieStatus === 'true') {
+                        onboardingCompleted = true;
+                    } else if (cookieStatus === 'false') {
+                        onboardingCompleted = false;
+                    } else {
+                        // Old cookie format, force fetch
+                        role = null;
+                    }
+                }
             }
         }
 
-        // If no valid cached role, fetch from DB
+        // If no valid cached role or status, fetch from DB
         if (!role) {
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('role')
+                .select('role, onboarding_completed')
                 .eq('id', user.id)
                 .single();
 
             role = profile?.role;
+            onboardingCompleted = profile?.onboarding_completed ?? false;
 
             // Cache the role for future requests
             if (role) {
-                const cookieValue = `${user.id}:${role}`;
+                const cookieValue = `${user.id}:${role}:${onboardingCompleted}`;
                 // Set in response to client
                 response.cookies.set({
                     name: 'user_role',
@@ -123,22 +138,20 @@ export async function middleware(request: NextRequest) {
                     name: 'user_role',
                     value: cookieValue,
                 });
-
-                // Also update the request cookies for immediate downstream use if needed
-                // (Though we mainly stick to the `role` variable here)
             }
         }
 
-        // SCENARIO A: No Role -> Force Onboarding
-        if (!role) {
+        // SCENARIO A: Not Completed Onboarding -> Force Onboarding
+        // Even if they have a role (e.g. default athlete), they must finish onboarding.
+        if (!onboardingCompleted) {
             if (!isOnboardingPage) {
                 return NextResponse.redirect(new URL('/onboarding', request.url));
             }
             return response; // Allow onboarding access
         }
 
-        // SCENARIO B: Has Role -> Prevent accessing Onboarding
-        if (role && isOnboardingPage) {
+        // SCENARIO B: Has Completed Onboarding -> Prevent accessing Onboarding
+        if (onboardingCompleted && isOnboardingPage) {
             return NextResponse.redirect(new URL(role === 'athlete' ? '/athlete/dashboard' : '/', request.url));
         }
 

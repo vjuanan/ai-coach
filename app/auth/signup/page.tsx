@@ -69,7 +69,7 @@ export default function SignUpPage() {
                     emailRedirectTo: `https://aicoach.epnstore.com.ar/auth/callback`,
                     data: {
                         full_name: fullName,
-                        role: 'athlete' // Default role, will be updated in Onboarding if they choose Gym
+                        // role: 'athlete' // REMOVED: Default to NULL to force onboarding trigger
                     }
                 },
             });

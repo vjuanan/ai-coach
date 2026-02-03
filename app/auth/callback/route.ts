@@ -30,18 +30,21 @@ export async function GET(request: Request) {
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (!error && data.user) {
-            // Check if user has a role - if not, redirect to onboarding
+            // Check if user has completed onboarding
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('role')
+                .select('role, onboarding_completed')
                 .eq('id', data.user.id)
                 .single();
 
-            if (!profile?.role) {
+            const role = profile?.role;
+            const onboardingCompleted = profile?.onboarding_completed ?? false;
+
+            if (!onboardingCompleted) {
                 next = '/onboarding';
-            } else if (profile.role === 'athlete') {
+            } else if (role === 'athlete') {
                 next = '/athlete/dashboard';
-            } else if (profile.role === 'gym') {
+            } else if (role === 'gym') {
                 next = '/'; // Gyms go to main dashboard
             }
             // Coaches and Admins go to default '/'

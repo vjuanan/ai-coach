@@ -187,6 +187,13 @@ export default function OnboardingPage() {
     const nextAthleteStep = async () => {
         await saveAthleteProgress(athleteData);
         if (step === 11) {
+            // Mark onboarding as completed
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                await supabase.from('profiles').update({ onboarding_completed: true }).eq('id', user.id);
+                // Refresh cookie
+                await refreshUserRoleReference();
+            }
             router.push('/athlete/dashboard');
         } else {
             setStep(s => s + 1);
@@ -196,6 +203,13 @@ export default function OnboardingPage() {
     const nextGymStep = async () => {
         await saveGymProgress();
         if (step === 6) {
+            // Mark onboarding as completed
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                await supabase.from('profiles').update({ onboarding_completed: true }).eq('id', user.id);
+                // Refresh cookie
+                await refreshUserRoleReference();
+            }
             router.push('/');
         } else {
             setStep(s => s + 1);

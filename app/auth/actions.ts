@@ -12,16 +12,17 @@ export async function refreshUserRoleReference() {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, onboarding_completed')
         .eq('id', user.id)
         .single();
 
     const role = profile?.role;
+    const onboardingCompleted = profile?.onboarding_completed ?? false;
 
     if (role) {
         // Set a lightweight cookie for the middleware to read
-        // Format: "userId:role" to verify ownership
-        cookies().set('user_role', `${user.id}:${role}`, {
+        // Format: "userId:role:onboardingCompleted" to verify ownership
+        cookies().set('user_role', `${user.id}:${role}:${onboardingCompleted}`, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
@@ -59,23 +60,26 @@ export async function login(formData: FormData) {
 
         const { data: profile } = await supabase
             .from('profiles')
-            .select('role')
+            .select('role, onboarding_completed')
             .eq('id', user.id)
             .single();
 
         const role = profile?.role;
+        const onboardingCompleted = profile?.onboarding_completed ?? false;
 
         if (role) {
             // Set cookie for instant SSR access
-            cookies().set('user_role', `${user.id}:${role}`, {
+            cookies().set('user_role', `${user.id}:${role}:${onboardingCompleted}`, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',
                 path: '/',
                 maxAge: 60 * 60 * 24 * 7 // 1 week
             });
-        } else {
-            // User has no role - they need to complete onboarding
+        }
+
+        if (!onboardingCompleted) {
+            // User needs to complete onboarding
             return { success: true, needsOnboarding: true };
         }
     }
