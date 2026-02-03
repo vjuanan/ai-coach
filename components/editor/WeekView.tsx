@@ -2,6 +2,7 @@
 
 import { DayCard } from './DayCard';
 import { WeeklySummaryCard } from './WeeklySummaryCard';
+import { useEditorStore } from '@/lib/store';
 import type { DraftMesocycle } from '@/lib/store';
 
 // Define the type here since it's not exported
@@ -13,6 +14,7 @@ interface DraftDay {
     name: string | null;
     is_rest_day: boolean;
     notes: string | null;
+    stimulus_id?: string | null;
     blocks: DraftWorkoutBlock[];
     isDirty?: boolean;
 }
@@ -38,11 +40,14 @@ interface WeekViewProps {
         days: DraftDay[];
     };
     programGlobalFocus?: string | null;
+    compressed?: boolean;
 }
 
 const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
-export function WeekView({ mesocycle, programGlobalFocus }: WeekViewProps) {
+export function WeekView({ mesocycle, programGlobalFocus, compressed = false }: WeekViewProps) {
+    const { blockBuilderDayId } = useEditorStore();
+
     // Ensure we have 7 days
     const days = Array.from({ length: 7 }, (_, i) => {
         const dayNumber = i + 1;
@@ -61,6 +66,25 @@ export function WeekView({ mesocycle, programGlobalFocus }: WeekViewProps) {
             blocks: [],
         };
     });
+
+    // Compressed mode: simple 2-column grid with smaller cards
+    if (compressed) {
+        return (
+            <div className="h-full flex flex-col p-2">
+                <div className="grid grid-cols-2 gap-2 auto-rows-fr">
+                    {days.map((day, index) => (
+                        <DayCard
+                            key={day.id}
+                            day={day}
+                            dayName={DAY_NAMES[index]}
+                            compact={true}
+                            isActiveInBuilder={day.id === blockBuilderDayId}
+                        />
+                    ))}
+                </div>
+            </div>
+        );
+    }
 
     // Split days for Bento Grid layout
     // Row 1: Monday, Tuesday, Wednesday, Thursday (indices 0-3)

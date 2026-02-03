@@ -5,7 +5,6 @@ import { WorkoutBlockCard } from './WorkoutBlockCard';
 import { Plus, Moon, MoreHorizontal, Sun, Target, Trash2 } from 'lucide-react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 import * as Popover from '@radix-ui/react-popover';
-import { useState } from 'react';
 
 interface DraftWorkoutBlock {
     id: string;
@@ -35,6 +34,8 @@ interface DraftDay {
 interface DayCardProps {
     day: DraftDay;
     dayName: string;
+    compact?: boolean;
+    isActiveInBuilder?: boolean;
 }
 
 const blockTypeOptions: { type: BlockType; label: string; color: string }[] = [
@@ -46,9 +47,8 @@ const blockTypeOptions: { type: BlockType; label: string; color: string }[] = [
     { type: 'free_text', label: 'Texto Libre', color: 'bg-gray-500' },
 ];
 
-export function DayCard({ day, dayName }: DayCardProps) {
-    const { addBlock, toggleRestDay, selectDay, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures, clearDay } = useEditorStore();
-    const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+export function DayCard({ day, dayName, compact = false, isActiveInBuilder = false }: DayCardProps) {
+    const { addBlock, toggleRestDay, selectDay, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures, clearDay, enterBlockBuilder, blockBuilderMode } = useEditorStore();
 
     const isSelected = selectedDayId === day.id;
     const isDropTarget = dropTargetDayId === day.id;
@@ -56,11 +56,66 @@ export function DayCard({ day, dayName }: DayCardProps) {
     // Resolve Stimulus Color
     const activeStimulus = day.stimulus_id ? stimulusFeatures.find(s => s.id === day.stimulus_id) : null;
 
-    const handleAddBlock = (type: BlockType) => {
-        const option = blockTypeOptions.find(o => o.type === type);
-        const format = type === 'strength_linear' ? 'STANDARD' as WorkoutFormat : undefined;
-        addBlock(day.id, type, format, option?.label);
+    const handleOpenBlockBuilder = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        enterBlockBuilder(day.id);
     };
+
+    // COMPACT MODE - Simplified card for compressed Week View
+    if (compact) {
+        return (
+            <div
+                className={`
+                    cv-card h-full min-h-[100px] flex flex-col p-2.5
+                    ${isActiveInBuilder
+                        ? 'ring-2 ring-cv-accent shadow-lg bg-cv-accent/5'
+                        : 'bg-white dark:bg-cv-bg-secondary'}
+                    ${day.is_rest_day ? 'opacity-60' : ''}
+                    transition-all duration-200
+                `}
+            >
+                {/* Compact Header */}
+                <div className="flex items-center justify-between mb-1.5">
+                    <h4 className="text-xs font-bold text-cv-text-primary truncate">
+                        {dayName}
+                    </h4>
+                    {isActiveInBuilder && (
+                        <span className="w-2 h-2 rounded-full bg-cv-accent animate-pulse" />
+                    )}
+                </div>
+
+                {/* Compact Content */}
+                {day.is_rest_day ? (
+                    <div className="flex-1 flex items-center justify-center">
+                        <Moon size={14} className="text-slate-400" />
+                    </div>
+                ) : (
+                    <div className="flex-1 flex flex-col gap-0.5 overflow-hidden">
+                        {day.blocks.length > 0 ? (
+                            day.blocks.slice(0, 3).map(block => (
+                                <div
+                                    key={block.id}
+                                    className="flex items-center gap-1 px-1.5 py-0.5 bg-slate-50 dark:bg-slate-800/50 rounded text-[10px] text-cv-text-secondary truncate"
+                                >
+                                    <span className={`w-1.5 h-1.5 rounded-full ${blockTypeOptions.find(o => o.type === block.type)?.color || 'bg-slate-400'}`} />
+                                    <span className="truncate">{block.name || block.type}</span>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="flex-1 flex items-center justify-center text-cv-text-tertiary">
+                                <Plus size={12} className="opacity-40" />
+                            </div>
+                        )}
+                        {day.blocks.length > 3 && (
+                            <p className="text-[9px] text-cv-text-tertiary text-center">
+                                +{day.blocks.length - 3} más
+                            </p>
+                        )}
+                    </div>
+                )}
+            </div>
+        );
+    }
 
     // REST DAY CARD - Elegant empty state
     if (day.is_rest_day) {
@@ -270,63 +325,28 @@ export function DayCard({ day, dayName }: DayCardProps) {
                     ))
                 }
 
-                {/* Empty State - Elegant */}
+                {/* Empty State - Clickable to open Block Builder */}
                 {day.blocks.length === 0 && (
                     <div
-                        className="h-32 bg-slate-50 dark:bg-slate-800/30 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center text-cv-text-tertiary cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setIsAddMenuOpen(true);
-                        }}
+                        className="h-32 bg-slate-50 dark:bg-slate-800/30 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center text-cv-text-tertiary cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-cv-accent/50 transition-colors"
+                        onClick={handleOpenBlockBuilder}
                     >
                         <Plus size={20} className="mb-2 opacity-40" />
                         <p className="text-sm">Aún no hay bloques</p>
-                        <p className="text-xs opacity-60 mt-1">Añade uno abajo</p>
+                        <p className="text-xs opacity-60 mt-1">Click para añadir</p>
                     </div>
                 )}
             </div>
 
-            {/* Add Block Button - Improved dropdown - Using Radix Popover now */}
+            {/* Add Block Button - Opens Block Builder Mode */}
             <div className="flex-shrink-0">
-                <Popover.Root open={isAddMenuOpen} onOpenChange={setIsAddMenuOpen}>
-                    <Popover.Trigger asChild>
-                        <button
-                            className="w-full py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-cv-text-secondary hover:text-cv-accent hover:border-cv-accent hover:bg-cv-accent/5 transition-all flex items-center justify-center gap-2 font-medium"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <Plus size={16} />
-                            <span className="text-sm">Añadir Bloque</span>
-                        </button>
-                    </Popover.Trigger>
-
-                    <Popover.Portal>
-                        <Popover.Content
-                            className="min-w-[200px] bg-white dark:bg-cv-bg-tertiary border border-slate-200 dark:border-cv-border rounded-xl shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-200"
-                            side="top"
-                            align="center"
-                            sideOffset={5}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="grid grid-cols-1 gap-0.5">
-                                {blockTypeOptions.map(option => (
-                                    <button
-                                        key={option.type}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleAddBlock(option.type);
-                                            setIsAddMenuOpen(false);
-                                        }}
-                                        className="w-full px-3 py-2 text-left text-sm text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-50 dark:hover:bg-cv-bg-elevated flex items-center gap-3 rounded-lg transition-colors"
-                                    >
-                                        <span className={`w-2.5 h-2.5 rounded-full ${option.color}`} />
-                                        <span className="font-medium">{option.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                            <Popover.Arrow className="fill-white dark:fill-cv-bg-tertiary border-t border-l border-slate-200 dark:border-cv-border" />
-                        </Popover.Content>
-                    </Popover.Portal>
-                </Popover.Root>
+                <button
+                    className="w-full py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-cv-text-secondary hover:text-cv-accent hover:border-cv-accent hover:bg-cv-accent/5 transition-all flex items-center justify-center gap-2 font-medium"
+                    onClick={handleOpenBlockBuilder}
+                >
+                    <Plus size={16} />
+                    <span className="text-sm">Añadir Bloque</span>
+                </button>
             </div>
         </div>
     );

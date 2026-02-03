@@ -77,6 +77,10 @@ interface EditorState {
     draggedBlockId: string | null;
     dropTargetDayId: string | null;
 
+    // Block Builder Mode (for split-screen editing)
+    blockBuilderMode: boolean;
+    blockBuilderDayId: string | null;
+
     // Actions
     initializeEditor: (programId: string, name: string, client: Client | null, attributes?: Record<string, unknown> | null, stimulusFeatures?: any[]) => void;
     loadMesocycles: (mesocycles: DraftMesocycle[]) => void;
@@ -107,6 +111,10 @@ interface EditorState {
     setDropTarget: (dayId: string | null) => void;
     moveBlockToDay: (blockId: string, targetDayId: string) => void;
 
+    // Block Builder Mode
+    enterBlockBuilder: (dayId: string) => void;
+    exitBlockBuilder: () => void;
+
     // Persistence
     markAsClean: () => void;
 }
@@ -131,6 +139,8 @@ export const useEditorStore = create<EditorState>()(
             isSaving: false,
             hasUnsavedChanges: false,
             draggedBlockId: null,
+            blockBuilderMode: false,
+            blockBuilderDayId: null,
             dropTargetDayId: null,
 
             // Initialize editor with a program
@@ -417,6 +427,18 @@ export const useEditorStore = create<EditorState>()(
             // Drag & Drop
             setDraggedBlock: (blockId) => set({ draggedBlockId: blockId }),
             setDropTarget: (dayId) => set({ dropTargetDayId: dayId }),
+
+            // Block Builder Mode
+            enterBlockBuilder: (dayId) => set({
+                blockBuilderMode: true,
+                blockBuilderDayId: dayId,
+                selectedDayId: dayId,
+                selectedBlockId: null
+            }),
+            exitBlockBuilder: () => set({
+                blockBuilderMode: false,
+                blockBuilderDayId: null
+            }),
 
             moveBlockToDay: (blockId, targetDayId) => {
                 const { mesocycles } = get();
