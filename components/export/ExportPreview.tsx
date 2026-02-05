@@ -386,7 +386,10 @@ export function ExportPreview({
 
                                                                             <div className="space-y-0.5">
                                                                                 {block.content.map((line, lineIdx) => (
-                                                                                    <p key={lineIdx} className="text-gray-400 font-mono text-xs leading-relaxed">
+                                                                                    <p key={lineIdx} className={`font-mono text-xs leading-relaxed ${lineIdx === 0
+                                                                                            ? 'text-gray-200 font-semibold'
+                                                                                            : 'text-gray-500'
+                                                                                        }`}>
                                                                                         {line}
                                                                                     </p>
                                                                                 ))}

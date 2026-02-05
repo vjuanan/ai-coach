@@ -878,6 +878,68 @@ export async function updateAthleteProfile(clientId: string, data: any) {
     revalidatePath(`/athlete/dashboard`);
 }
 
+export async function updateGymProfile(gymId: string, data: any) {
+    const supabase = createServerClient();
+
+    // 1. Try updating PROFILES table first
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', gymId)
+        .single();
+
+    if (profile) {
+        const updates: any = {};
+        if (data.gym_type !== undefined) updates.gym_type = data.gym_type;
+        if (data.location !== undefined) updates.gym_location = data.location;
+        if (data.member_count !== undefined) updates.member_count = data.member_count;
+        if (data.equipment !== undefined) updates.equipment_available = data.equipment;
+        if (data.operating_hours !== undefined) updates.operating_hours = data.operating_hours;
+        if (data.website !== undefined) updates.website_url = data.website;
+        // phone maps to contact_phone (or create a specific gym_phone column if exists, but strictly mapping to user defaults)
+        if (data.phone !== undefined) updates.contact_phone = data.phone;
+
+        const { error } = await supabase
+            .from('profiles')
+            .update(updates)
+            .eq('id', gymId);
+
+        if (error) {
+            console.error('Error updating gym profile:', error);
+            throw new Error('Error al actualizar perfil de gimnasio');
+        }
+    } else {
+        // 2. Fallback to CLIENTS table
+        const { data: client, error: fetchError } = await supabase
+            .from('clients')
+            .select('details')
+            .eq('id', gymId)
+            .single();
+
+        if (fetchError || !client) {
+            throw new Error('Gimnasio no encontrado');
+        }
+
+        const newDetails = {
+            ...client.details,
+            ...data
+        };
+
+        const { error } = await supabase
+            .from('clients')
+            .update({ details: newDetails })
+            .eq('id', gymId);
+
+        if (error) {
+            console.error('Error updating gym details:', error);
+            throw new Error('Error al actualizar gimnasio');
+        }
+    }
+
+    revalidatePath(`/gyms/${gymId}`);
+    // revalidatePath(`/gym/dashboard`); // If gym dashboard exists
+}
+
 export async function createClient(clientData: {
     type: 'athlete' | 'gym',
     name: string,

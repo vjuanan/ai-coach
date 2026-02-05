@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { BackButton } from './back-button';
+import { GymDetailsEditor } from '@/components/gyms/GymDetailsEditor';
 
 export default async function GymDetailsPage({ params }: { params: { clientId: string } }) {
     const clientId = params.clientId;
@@ -33,77 +34,33 @@ export default async function GymDetailsPage({ params }: { params: { clientId: s
     }
 
     const { details } = client;
-    const equipmentList = details?.equipment ? Object.entries(details.equipment).filter(([_, v]) => v).map(([k]) => k) : [];
-
-    const eqLabels: Record<string, string> = {
-        rig: 'Rack / Estructura',
-        sleds: 'Trineos',
-        skiErgs: 'SkiErgs',
-        assaultBikes: 'Assault Bikes',
-        rowers: 'Remos',
-        pool: 'Piscina'
-    };
-
     return (
         <AppShell
             title={client.name}
             actions={<BackButton />}
         >
             <div className="max-w-5xl mx-auto space-y-6">
-                {/* Gym Header Card */}
-                <div className="cv-card flex items-start gap-6">
-                    <div className="w-20 h-20 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 shrink-0">
-                        <Building2 size={40} />
-                    </div>
-                    <div className="flex-1">
-                        <h1 className="text-2xl font-bold text-cv-text-primary">{client.name}</h1>
-                        <div className="flex flex-wrap gap-4 mt-3 text-sm text-cv-text-secondary">
-                            {details?.location && (
-                                <div className="flex items-center gap-1.5">
-                                    <MapPin size={16} className="text-cv-text-tertiary" />
-                                    {details.location}
-                                </div>
-                            )}
-                            {details?.ownerName && (
-                                <div className="flex items-center gap-1.5">
-                                    <User size={16} className="text-cv-text-tertiary" />
-                                    {details.ownerName} (Owner)
-                                </div>
-                            )}
-                            {details?.memberCount && (
-                                <div className="flex items-center gap-1.5">
-                                    <Users size={16} className="text-cv-text-tertiary" />
-                                    ~{details.memberCount} Miembros
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
+
+                {/* Gym Details & Editor */}
+                <GymDetailsEditor
+                    gymId={client.id}
+                    initialData={{
+                        gym_type: details?.gym_type || (details as any).gym_type,
+                        location: details?.location || (details as any).gym_location,
+                        member_count: details?.member_count || (details as any).memberCount,
+                        equipment: details?.equipment || (details as any).equipment_available,
+                        operating_hours: details?.operating_hours,
+                        website: details?.website || (details as any).website_url,
+                        phone: (client as any).phone || (details as any).contact_phone,
+                        email: client.email
+                    }}
+                />
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Left Column: Equipment */}
-                    <div className="space-y-6">
-                        <div className="cv-card">
-                            <h3 className="font-semibold text-cv-text-primary mb-4 flex items-center gap-2">
-                                <Dumbbell size={18} className="text-cv-text-tertiary" />
-                                Equipamiento
-                            </h3>
-                            {equipmentList.length > 0 ? (
-                                <div className="flex flex-wrap gap-2">
-                                    {equipmentList.map(eq => (
-                                        <span key={eq} className="cv-badge cv-badge-neutral text-xs">
-                                            {eqLabels[eq] || eq}
-                                        </span>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-sm text-cv-text-tertiary italic">No especificado</p>
-                            )}
-                        </div>
-                    </div>
+                    {/* Left Column: Equipment - REMOVED (Included in Editor) */}
 
                     {/* Right Column: Programs */}
-                    <div className="md:col-span-2 space-y-4">
+                    <div className="md:col-span-3 space-y-4">
                         <div className="flex items-center justify-between">
                             <h2 className="text-lg font-bold text-cv-text-primary">Programas Asignados</h2>
                         </div>

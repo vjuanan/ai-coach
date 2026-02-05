@@ -15,6 +15,7 @@ import {
     Dumbbell
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { ProfileDetailsEditor } from '@/components/athletes/ProfileDetailsEditor';
 
 interface SettingsFormProps {
     user: any;
@@ -218,121 +219,29 @@ export function SettingsForm({ user, initialProfile }: SettingsFormProps) {
 
                     {/* Athlete Specific Fields */}
                     {profile.role === 'athlete' && (
-                        <div className="cv-card h-fit">
-                            <div className="flex items-center justify-between mb-3">
-                                <h2 className="font-semibold text-cv-text-primary flex items-center gap-2">
-                                    <Dumbbell size={18} />
-                                    Datos Deportivos
-                                </h2>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-xs font-medium text-cv-text-secondary mb-1">Fecha Nacimiento</label>
-                                        <input
-                                            type="date"
-                                            value={profile.birth_date || ''}
-                                            onChange={(e) => setProfile({ ...profile, birth_date: e.target.value })}
-                                            className="cv-input py-2"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label className="block text-xs font-medium text-cv-text-secondary mb-1">Altura (cm)</label>
-                                            <input
-                                                type="number"
-                                                value={profile.height || ''}
-                                                onChange={(e) => setProfile({ ...profile, height: e.target.value ? parseInt(e.target.value) : null })}
-                                                className="cv-input py-2"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-medium text-cv-text-secondary mb-1">Peso (kg)</label>
-                                            <input
-                                                type="number"
-                                                step="0.1"
-                                                value={profile.weight || ''}
-                                                onChange={(e) => setProfile({ ...profile, weight: e.target.value ? parseFloat(e.target.value) : null })}
-                                                className="cv-input py-2"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-xs font-medium text-cv-text-secondary mb-1">Lugar Entrenamiento</label>
-                                        <select
-                                            value={profile.training_place || 'gym'}
-                                            onChange={(e) => setProfile({ ...profile, training_place: e.target.value })}
-                                            className="cv-input py-2"
-                                        >
-                                            <option value="gym">Gimnasio</option>
-                                            <option value="crossfit">Box CrossFit</option>
-                                            <option value="home">Casa</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-cv-text-secondary mb-1">Objetivo</label>
-                                        <select
-                                            value={profile.main_goal || 'hypertrophy'}
-                                            onChange={(e) => setProfile({ ...profile, main_goal: e.target.value })}
-                                            className="cv-input py-2"
-                                        >
-                                            <option value="hypertrophy">Hipertrofia</option>
-                                            <option value="fat_loss">Pérdida de Grasa</option>
-                                            <option value="performance">Rendimiento</option>
-                                            <option value="maintenance">Mantenimiento</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-xs font-medium text-cv-text-secondary mb-1">Días por semana</label>
-                                        <input
-                                            type="number"
-                                            value={profile.days_per_week || ''}
-                                            onChange={(e) => setProfile({ ...profile, days_per_week: parseInt(e.target.value) })}
-                                            className="cv-input py-2"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-cv-text-secondary mb-1">Mins por sesión</label>
-                                        <input
-                                            type="number"
-                                            value={profile.minutes_per_session || ''}
-                                            onChange={(e) => setProfile({ ...profile, minutes_per_session: parseInt(e.target.value) })}
-                                            className="cv-input py-2"
-                                        />
-                                    </div>
-                                </div>
-
-                                {profile.training_place === 'home' && (
-                                    <div>
-                                        <label className="block text-xs font-medium text-cv-text-secondary mb-1">Equipo Disponible (Items separados por coma)</label>
-                                        <textarea
-                                            value={Array.isArray(profile.equipment_list) ? profile.equipment_list.join(', ') : (profile.equipment_list || '')}
-                                            onChange={(e) => setProfile({ ...profile, equipment_list: e.target.value.split(',').map((s: string) => s.trim()) })}
-                                            className="cv-input py-2 min-h-[60px]"
-                                            placeholder="Mancuernas, Barra, Banco..."
-                                        />
-                                    </div>
-                                )}
-
-                                <div>
-                                    <label className="block text-xs font-medium text-cv-text-secondary mb-1">Lesiones</label>
-                                    <textarea
-                                        value={profile.injuries || ''}
-                                        onChange={(e) => setProfile({ ...profile, injuries: e.target.value })}
-                                        className="cv-input py-2 min-h-[60px]"
-                                        placeholder="Describe tus lesiones si tienes..."
-                                    />
-                                </div>
-                            </div>
+                        <div className="h-fit">
+                            <ProfileDetailsEditor
+                                athleteId={user.id}
+                                initialData={{
+                                    dob: profile.birth_date,
+                                    height: profile.height,
+                                    weight: profile.weight,
+                                    goal: profile.main_goal,
+                                    training_place: profile.training_place,
+                                    equipment: profile.equipment_list,
+                                    days_per_week: profile.days_per_week,
+                                    minutes_per_session: profile.minutes_per_session,
+                                    level: profile.experience_level,
+                                    injuries: profile.injuries,
+                                    preferences: profile.training_preferences,
+                                    whatsapp: profile.whatsapp_number,
+                                    email: profile.email
+                                }}
+                            />
                         </div>
                     )}
 
+                    {/* General Save Button (For top section only) */}
                     <div className="flex justify-end pt-1">
                         <button
                             onClick={handleSaveProfile}
@@ -340,7 +249,7 @@ export function SettingsForm({ user, initialProfile }: SettingsFormProps) {
                             className="cv-btn-primary flex items-center gap-2 px-4 py-2 text-sm w-full justify-center md:w-auto"
                         >
                             {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                            Guardar Cambios
+                            Guardar General
                         </button>
                     </div>
                 </div>

@@ -199,6 +199,51 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         free_text: 'Texto Libre'
     };
 
+    // Validation Logic
+    const validateBlock = (): boolean => {
+        if (!block) return false;
+
+        // Basic check: Name must be present (except for free_text where content is enough, but name is still good practice)
+        // For now, allow null name for free_text if content exists, but UI forces name input anyway.
+        // Let's enforce name for everything for consistency, or at least a fallback.
+        if (!block.name && block.type !== 'free_text') return false;
+
+        const config = block.config || {};
+
+        if (block.type === 'strength_linear') {
+            // Must have sets AND reps
+            // sets is number, reps is string (can be "5", "5-5-5", "max", etc)
+            if (!config.sets || config.sets < 1) return false;
+            if (!config.reps) return false;
+            return true;
+        }
+
+        if (block.type === 'metcon_structured') {
+            // Must have content OR movements
+            const hasMovements = Array.isArray(config.movements) && config.movements.length > 0 && config.movements.some(m => m.trim().length > 0);
+            return Boolean(config.content || hasMovements);
+        }
+
+        if (block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill') {
+            // If generic form (movements list):
+            if (Array.isArray(config.movements) && config.movements.length > 0) {
+                return config.movements.some(m => m.trim().length > 0);
+            }
+            // If it has content (fallback)
+            if (config.content) return true;
+
+            return false;
+        }
+
+        if (block.type === 'free_text') {
+            return Boolean(config.content);
+        }
+
+        return true;
+    };
+
+    const isValid = validateBlock();
+
     return (
         <div className="flex flex-col h-full">
             {/* Header with Save Button */}
@@ -217,9 +262,15 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     </div>
                 </div>
                 <button
-                    onClick={() => selectBlock(null)}
-                    title="Confirmar y cerrar"
-                    className="flex items-center gap-1.5 px-3 py-2 bg-cv-accent text-white rounded-lg font-medium text-sm hover:bg-cv-accent/90 transition-colors shadow-sm"
+                    onClick={() => {
+                        if (isValid) selectBlock(null);
+                    }}
+                    disabled={!isValid}
+                    title={isValid ? "Confirmar y cerrar" : "Completa los campos requeridos (Sets/Reps, Movimientos, etc.)"}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm
+                        ${isValid
+                            ? 'bg-cv-accent text-white hover:bg-cv-accent/90'
+                            : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'}`}
                 >
                     <Check size={16} />
                     <span className="hidden sm:inline">OK</span>

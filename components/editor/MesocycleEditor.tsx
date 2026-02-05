@@ -412,17 +412,48 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 // Helper to format block config for preview
 function convertConfigToText(type: string, config: any): string[] {
     if (type === 'strength_linear') {
+        const parts = [
+            `${config.sets}x${config.reps}`,
+            config.percentage ? `@ ${config.percentage}` : '',
+            config.rpe ? `@ RPE ${config.rpe}` : ''
+        ].filter(Boolean).join(' ');
+
         return [
-            `${config.sets}x${config.reps} @ ${config.percentage || 'RPE'}`,
-            config.notes
+            parts,
+            config.notes // Notes on new line (will be gray)
         ].filter(Boolean);
     }
     if (type === 'metcon_structured') {
         const lines = [];
-        if (config.minutes) lines.push(`Time Cap: ${config.minutes} min`);
-        if (config.rounds) lines.push(`${config.rounds} Rounds`);
-        if (Array.isArray(config.movements)) lines.push(...config.movements);
+        const header = [
+            config.time_cap || config.minutes ? `Time Cap: ${config.time_cap || config.minutes} min` : '',
+            config.rounds ? `${config.rounds} Rounds` : '',
+            config.score_type ? `Score: ${config.score_type}` : ''
+        ].filter(Boolean).join(' | ');
+
+        if (header) lines.push(header);
+
+        if (Array.isArray(config.movements)) {
+            lines.push(...config.movements);
+        } else if (typeof config.content === 'string') {
+            lines.push(...config.content.split('\n'));
+        }
+
+        if (config.notes) lines.push(config.notes);
+
         return lines;
     }
+
+    // Generic handlers for other types
+    if (config.movements && Array.isArray(config.movements)) {
+        const lines = [...config.movements];
+        if (config.notes) lines.push(config.notes);
+        return lines;
+    }
+
+    if (config.content) {
+        return config.content.split('\n');
+    }
+
     return [config.notes || ''];
 }
