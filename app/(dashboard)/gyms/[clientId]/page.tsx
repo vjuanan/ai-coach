@@ -48,9 +48,18 @@ export default async function GymDetailsPage({ params }: { params: { clientId: s
                         gym_type: details?.gym_type || (details as any).gym_type,
                         location: details?.location || (details as any).gym_location,
                         member_count: details?.member_count || (details as any).memberCount,
-                        equipment: typeof details?.equipment === 'object'
-                            ? Object.entries(details.equipment).filter(([_, v]) => v).map(([k]) => k).join(', ')
-                            : (details?.equipment || (details as any).equipment_available),
+                        equipment: (() => {
+                            const val = details?.equipment || (details as any).equipment_available;
+                            if (!val) return '';
+                            if (typeof val === 'string') return val;
+                            if (typeof val === 'object') {
+                                return Object.entries(val)
+                                    .filter(([_, v]) => v)
+                                    .map(([k]) => k)
+                                    .join(', ');
+                            }
+                            return String(val);
+                        })(),
                         operating_hours: details?.operating_hours,
                         website: details?.website || (details as any).website_url,
                         phone: (client as any).phone || (details as any).contact_phone,
