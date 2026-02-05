@@ -116,12 +116,8 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
     // Sync toggle with selected block's progression_id
     const hasProgression = Boolean(selectedBlock?.progression_id);
 
-    // DEBUG: Log to investigate sync issue
-    console.log('[BlockBuilderPanel] selectedBlockId:', selectedBlockId, 'selectedBlock:', selectedBlock, 'progression_id:', selectedBlock?.progression_id, 'hasProgression:', hasProgression);
-
     // Update local state when selected block changes
     useEffect(() => {
-        console.log('[BlockBuilderPanel useEffect] Setting isProgression to:', hasProgression);
         setIsProgression(hasProgression);
     }, [hasProgression, selectedBlockId]);
 
