@@ -153,7 +153,7 @@ export async function getPrograms() {
 
     const { data, error } = await supabase
         .from('programs')
-        .select(`*, client:clients(*)`)
+        .select(`*, client:clients(*), coach:coaches(full_name)`)
         .or('is_template.eq.false,is_template.is.null')
         .order('updated_at', { ascending: false });
 

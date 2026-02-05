@@ -218,7 +218,7 @@ export function ExportPreview({
                                                         Foco del Mesociclo
                                                     </h2>
                                                 </div>
-                                                <p className="text-gray-200 text-lg">{monthlyStrategy.focus}</p>
+                                                <p className="text-gray-200 text-lg pl-7">{monthlyStrategy.focus}</p>
                                             </div>
                                         )}
 
@@ -231,7 +231,7 @@ export function ExportPreview({
                                                         Progresiones
                                                     </h2>
                                                 </div>
-                                                <div className="bg-gray-800/40 rounded-xl p-4 space-y-4 border border-gray-800">
+                                                <div className="bg-gray-800/40 rounded-xl p-4 space-y-4 border border-gray-800 ml-7">
                                                     {/* Header Row */}
                                                     <div className="grid grid-cols-5 gap-2 text-center">
                                                         <div className="text-left text-gray-500 text-xs uppercase tracking-wide">Ejercicio</div>
@@ -269,7 +269,7 @@ export function ExportPreview({
 
                                         {/* Objectives */}
                                         {monthlyStrategy.objectives && monthlyStrategy.objectives.length > 0 && (
-                                            <div>
+                                            <div className="pl-7">
                                                 <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Objetivos del Ciclo</p>
                                                 <ul className="space-y-1">
                                                     {monthlyStrategy.objectives.map((obj, idx) => (
