@@ -154,6 +154,7 @@ export async function getPrograms() {
     const { data, error } = await supabase
         .from('programs')
         .select(`*, client:clients(*)`)
+        .neq('is_template', true)
         .order('updated_at', { ascending: false });
 
     if (error) {

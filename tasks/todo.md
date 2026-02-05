@@ -1,14 +1,8 @@
-# Exercise Page Enhancements
+# Task: Separate Templates from Programs
 
-- [x] Exploration & Planning
-    - [x] Explore existing `exercises/page.tsx` and components <!-- id: 1 -->
-    - [x] Explore database schema for exercises <!-- id: 2 -->
-    - [x] Create Implementation Plan <!-- id: 3 -->
-- [x] Implementation
-    - [x] Add "Create Exercise" functionality <!-- id: 4 -->
-    - [x] Implement Individual Edit functionality <!-- id: 5 -->
-    - [x] Implement Multi-select and Bulk Edit functionality <!-- id: 6 -->
-- [x] Verification
-    - [x] Verify "Create Exercise" <!-- id: 7 -->
-    - [x] Verify Individual Edit <!-- id: 8 -->
-    - [x] Verify Bulk Edit <!-- id: 9 -->
+- [x] [PLANNING] Explore codebase to find Programs and Templates fetching and display logic <!-- id: 0 -->
+- [x] [PLANNING] Create Implementation Plan <!-- id: 1 -->
+- [x] [EXECUTION] Modify Programs page fetch query to exclude templates <!-- id: 2 -->
+- [x] [EXECUTION] Ensure Templates page exists and fetches ONLY templates <!-- id: 3 -->
+- [x] [EXECUTION] Verify navigation links <!-- id: 4 -->
+- [ ] [VERIFICATION] Verify changes in browser <!-- id: 5 -->
