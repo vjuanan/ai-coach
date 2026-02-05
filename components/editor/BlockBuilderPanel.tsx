@@ -138,7 +138,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                 <div className="flex flex-col">
                                     <span className="text-sm font-semibold text-cv-text-primary flex items-center gap-1.5">
                                         <TrendingUp size={14} className={isProgression ? 'text-cv-accent' : 'text-slate-400'} />
-                                        Progresión
+                                        Progresión (Beta)
                                     </span>
                                     <span className="text-[10px] text-cv-text-tertiary leading-tight mt-0.5">
                                         Copiar en todas las semanas
