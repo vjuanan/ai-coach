@@ -155,7 +155,7 @@ export function SmartInspector({ isOpen, onClose }: SmartInspectorProps) {
                                         {referenceBlock.config.content || referenceBlock.name || 'Sin nombre'}
                                     </p>
                                     {referenceBlock.config.reps && (
-                                        <div className="flex gap-2 text-xs text-cv-text-tertiary font-mono">
+                                        <div className="flex gap-2 text-xs text-cv-text-tertiary">
                                             <span>{referenceBlock.config.sets} sets</span>
                                             <span>x</span>
                                             <span>{referenceBlock.config.reps} reps</span>

@@ -54,7 +54,7 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                 const reps = config.reps as string;
                 const percentage = config.percentage as string;
                 return (
-                    <div className="font-mono text-sm">
+                    <div className="text-sm">
                         {sets && reps ? `${sets} x ${reps}` : 'Configurar...'}
                         {percentage && <span className="text-cv-accent ml-1">@ {percentage}</span>}
                     </div>

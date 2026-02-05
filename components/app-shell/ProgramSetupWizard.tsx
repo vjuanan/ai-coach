@@ -215,12 +215,12 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
                                 Objetivo Global (North Star)
                             </span>
                         </label>
-                        <input
-                            type="text"
+                        <textarea
                             value={globalObjective}
                             onChange={(e) => setGlobalObjective(e.target.value)}
                             placeholder="Ej: Acumulación de volumen para hipertrofia"
-                            className="w-full px-4 py-3 rounded-xl bg-cv-bg-secondary border border-cv-border text-cv-text-primary placeholder:text-cv-text-tertiary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 focus:border-cv-accent transition-all"
+                            rows={3}
+                            className="w-full px-4 py-3 rounded-xl bg-cv-bg-secondary border border-cv-border text-cv-text-primary placeholder:text-cv-text-tertiary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 focus:border-cv-accent transition-all resize-none"
                         />
                         <p className="text-xs text-cv-text-tertiary mt-1.5">
                             Este objetivo se mostrará en el editor como referencia constante

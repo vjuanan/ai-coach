@@ -1,25 +1,12 @@
-'use client';
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Exercise } from '@/lib/supabase/types';
-import { Search, Filter, Dumbbell, Tag, PlayCircle, Info } from 'lucide-react';
-import { useDebouncedCallback } from 'use-debounce';
+// ... existing imports
+import { Modal } from '@/components/ui/Modal';
+import { ExerciseForm } from './ExerciseForm';
+import { deleteExercises } from '@/lib/actions';
+import { toast } from 'sonner';
+import { Plus, Trash2, Edit2, X, CheckSquare, Square } from 'lucide-react';
 
-interface ExerciseListProps {
-    initialExercises: Exercise[];
-    totalCount: number;
-    initialCategory?: string;
-    initialQuery?: string;
-}
-
-const CATEGORIES = [
-    { value: 'all', label: 'Todos' },
-    { value: 'Weightlifting', label: 'Halterofilia' },
-    { value: 'Gymnastics', label: 'Gimnasia' },
-    { value: 'Monostructural', label: 'Monostructural' },
-    { value: 'Functional Bodybuilding', label: 'Bodybuilding' },
-];
+// ... existing interfaces & constants
 
 export function ExerciseList({
     initialExercises,
@@ -32,35 +19,100 @@ export function ExerciseList({
     const [query, setQuery] = useState(initialQuery);
     const [category, setCategory] = useState(initialCategory);
 
-    // Debounce URL updates
-    const handleSearch = useDebouncedCallback((term: string) => {
-        const params = new URLSearchParams(searchParams.toString());
-        if (term) {
-            params.set('q', term);
-        } else {
-            params.delete('q');
-        }
-        // Reset page on search
-        params.delete('page');
-        router.replace(`?${params.toString()}`);
-    }, 300);
+    // Feature States
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
 
-    const handleCategoryChange = (cat: string) => {
-        setCategory(cat);
-        const params = new URLSearchParams(searchParams.toString());
-        if (cat && cat !== 'all') {
-            params.set('category', cat);
+    // Multi-select States
+    const [isSelectMode, setIsSelectMode] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+    // ... existing debounce and category logic
+
+    // Toggle Selection Mode
+    const toggleSelectMode = () => {
+        setIsSelectMode(!isSelectMode);
+        setSelectedIds(new Set()); // Clear on toggle
+    };
+
+    const toggleSelection = (id: string) => {
+        const newSelection = new Set(selectedIds);
+        if (newSelection.has(id)) {
+            newSelection.delete(id);
         } else {
-            params.delete('category');
+            newSelection.add(id);
         }
-        params.delete('page');
-        router.replace(`?${params.toString()}`);
+        setSelectedIds(newSelection);
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedIds.size === 0) return;
+
+        if (!confirm(`¿Estás seguro de que deseas eliminar ${selectedIds.size} ejercicios seleccionados?`)) {
+            return;
+        }
+
+        const idsToDelete = Array.from(selectedIds);
+        const result = await deleteExercises(idsToDelete);
+
+        if (result.error) {
+            toast.error(`Error: ${result.error}`);
+        } else {
+            toast.success(`${selectedIds.size} ejercicios eliminados`);
+            setIsSelectMode(false);
+            setSelectedIds(new Set());
+        }
     };
 
     return (
         <div className="space-y-6">
-            {/* Filters Header */}
+
+            {/* Header with Actions */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <h2 className="text-2xl font-bold">Biblioteca</h2>
+                <div className="flex gap-2 w-full md:w-auto">
+                    {isSelectMode ? (
+                        <>
+                            <button
+                                onClick={handleBulkDelete}
+                                disabled={selectedIds.size === 0}
+                                className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-lg transition-colors disabled:opacity-50"
+                            >
+                                <Trash2 size={18} />
+                                <span className="hidden md:inline">Eliminar ({selectedIds.size})</span>
+                            </button>
+                            <button
+                                onClick={toggleSelectMode}
+                                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-lg transition-colors"
+                            >
+                                <X size={18} />
+                                Cancelar
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                onClick={toggleSelectMode}
+                                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-lg transition-colors"
+                            >
+                                <CheckSquare size={18} />
+                                <span className="hidden md:inline">Seleccionar</span>
+                            </button>
+                            <button
+                                onClick={() => setIsCreateModalOpen(true)}
+                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-cv-accent hover:bg-cv-accent/90 text-white rounded-lg transition-colors shadow-lg shadow-cv-accent/20"
+                            >
+                                <Plus size={18} />
+                                Crear Ejercicio
+                            </button>
+                        </>
+                    )}
+                </div>
+            </div>
+
+            {/* Filters Header (Existing) */}
             <div className="flex flex-col md:flex-row gap-4 justify-between bg-white p-4 rounded-xl border border-cv-border shadow-sm">
+                {/* ... keep existing search and filter logic ... */}
                 <div className="relative flex-1 max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" size={18} />
                     <input
@@ -81,12 +133,12 @@ export function ExerciseList({
                             key={cat.value}
                             onClick={() => handleCategoryChange(cat.value)}
                             className={`
-                                whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all
-                                ${category === cat.value
+                                    whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all
+                                    ${category === cat.value
                                     ? 'bg-cv-accent text-white shadow-md shadow-cv-accent/20'
                                     : 'bg-cv-bg-tertiary text-cv-text-secondary hover:bg-cv-bg-secondary hover:text-cv-text-primary'
                                 }
-                            `}
+                                `}
                         >
                             {cat.label}
                         </button>
@@ -106,23 +158,54 @@ export function ExerciseList({
                     {initialExercises.map((exercise) => (
                         <div
                             key={exercise.id}
-                            className="group bg-white rounded-xl border border-cv-border hover:border-cv-accent/50 hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col"
+                            onClick={() => isSelectMode ? toggleSelection(exercise.id) : setEditingExercise(exercise)}
+                            className={`
+                                    group bg-white rounded-xl border transition-all duration-200 overflow-hidden flex flex-col relative
+                                    ${isSelectMode
+                                    ? selectedIds.has(exercise.id)
+                                        ? 'border-cv-accent ring-1 ring-cv-accent shadow-md'
+                                        : 'border-cv-border hover:border-gray-400 cursor-pointer'
+                                    : 'border-cv-border hover:border-cv-accent/50 hover:shadow-md cursor-pointer'
+                                }
+                                `}
                         >
-                            <div className="p-5 flex-1 cursor-pointer">
+                            {/* Selection Indicator */}
+                            {isSelectMode && (
+                                <div className="absolute top-3 right-3 z-10">
+                                    {selectedIds.has(exercise.id) ? (
+                                        <div className="bg-cv-accent text-white rounded-md p-1 shadow-sm">
+                                            <CheckSquare size={20} />
+                                        </div>
+                                    ) : (
+                                        <div className="bg-white/80 text-gray-400 rounded-md p-1 shadow-sm border border-gray-200">
+                                            <Square size={20} />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="p-5 flex-1">
                                 <div className="flex items-start justify-between mb-3">
                                     <span className={`
-                                        px-2.5 py-1 rounded-md text-xs font-semibold
-                                        ${exercise.category === 'Weightlifting' ? 'bg-blue-50 text-blue-700' :
+                                            px-2.5 py-1 rounded-md text-xs font-semibold
+                                            ${exercise.category === 'Weightlifting' ? 'bg-blue-50 text-blue-700' :
                                             exercise.category === 'Gymnastics' ? 'bg-purple-50 text-purple-700' :
                                                 exercise.category === 'Monostructural' ? 'bg-green-50 text-green-700' :
                                                     'bg-orange-50 text-orange-700'}
-                                    `}>
+                                        `}>
                                         {exercise.category}
                                     </span>
-                                    {exercise.video_url && (
-                                        <div className="text-cv-accent opacity-0 group-hover:opacity-100 transition-opacity" title="Ver Video">
-                                            <PlayCircle size={20} />
-                                        </div>
+                                    {/* Edit Trigger (Only show if not select mode) */}
+                                    {!isSelectMode && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setEditingExercise(exercise);
+                                            }}
+                                            className="text-gray-300 hover:text-cv-accent transition-colors p-1"
+                                        >
+                                            <Edit2 size={16} />
+                                        </button>
                                     )}
                                 </div>
 
@@ -163,6 +246,36 @@ export function ExerciseList({
                     Mostrando {initialExercises.length} de {totalCount} ejercicios
                 </div>
             )}
+
+            {/* Create Modal */}
+            <Modal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                title="Crear Nuevo Ejercicio"
+                maxWidth="max-w-2xl"
+            >
+                <ExerciseForm
+                    onClose={() => setIsCreateModalOpen(false)}
+                    onSuccess={() => setIsCreateModalOpen(false)}
+                />
+            </Modal>
+
+            {/* Edit Modal */}
+            <Modal
+                isOpen={!!editingExercise}
+                onClose={() => setEditingExercise(null)}
+                title="Editar Ejercicio"
+                maxWidth="max-w-2xl"
+            >
+                {editingExercise && (
+                    <ExerciseForm
+                        exercise={editingExercise}
+                        onClose={() => setEditingExercise(null)}
+                        onSuccess={() => setEditingExercise(null)}
+                    />
+                )}
+            </Modal>
         </div>
     );
 }
+

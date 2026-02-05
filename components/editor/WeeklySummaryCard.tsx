@@ -50,7 +50,7 @@ export function WeeklySummaryCard({ mesocycle, programGlobalFocus }: WeeklySumma
                             🎯 Objetivo del Mesociclo
                         </span>
                     </div>
-                    <p className="text-sm font-medium text-cv-text-primary leading-snug">
+                    <p className="text-sm font-medium text-cv-text-primary leading-snug whitespace-pre-wrap">
                         {programGlobalFocus}
                     </p>
                 </div>

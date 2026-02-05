@@ -44,6 +44,13 @@ export default function EditorPage() {
 
                 // Transform the DB structure to match Zustand store expected types
                 // The getFullProgramData action already does some sorting but we need to ensure types match
+
+                // @ts-ignore
+                if (programData.debugInfo) {
+                    // @ts-ignore
+                    console.log('SERVER DIAGNOSTIC:', JSON.stringify(programData.debugInfo, null, 2));
+                }
+
                 loadMesocycles(programData.mesocycles as any); // Cast to any to bypass strict checks just for initial load
 
             } catch (err) {

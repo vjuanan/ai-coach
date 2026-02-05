@@ -154,7 +154,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     const categoryLabels: Record<string, string> = {
         metcon: 'MetCon',
         hiit: 'HIIT',
-        strength: 'Fuerza',
+        strength: 'Classic',
         conditioning: 'Acondicionamiento'
     };
 
@@ -192,7 +192,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     // Block type labels
     const blockTypeLabels: Record<string, string> = {
         warmup: 'Calentamiento',
-        strength_linear: 'Fuerza',
+        strength_linear: 'Classic',
         metcon_structured: 'MetCon',
         accessory: 'Accesorio',
         skill: 'Habilidad',
@@ -528,42 +528,35 @@ function DynamicField({ field, value, onChange }: DynamicFieldProps) {
 
     if (field.type === 'number') {
         return (
-            <div>
-                <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                    {field.label}
-                    {field.required && <span className="text-red-400 ml-1">*</span>}
-                </label>
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                <span className="text-xs font-semibold text-cv-text-tertiary uppercase tracking-wide min-w-[30px]">{field.label}</span>
                 <input
                     type="number"
                     min={1}
                     value={(value as number) || ''}
                     onChange={(e) => onChange(parseInt(e.target.value) || null)}
-                    placeholder={field.placeholder}
-                    className="cv-input-mono"
+                    placeholder={field.placeholder || '0'}
+                    className="flex-1 bg-transparent border-none p-0 text-sm focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300"
                 />
-                {field.help && (
-                    <p className="text-xs text-cv-text-tertiary mt-1">{field.help}</p>
-                )}
             </div>
         );
     }
 
     // Default: text input
     return (
-        <div>
-            <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                {field.label}
-                {field.required && <span className="text-red-400 ml-1">*</span>}
-            </label>
-            <input
-                type="text"
-                value={(value as string) || ''}
-                onChange={(e) => onChange(e.target.value)}
-                placeholder={field.placeholder}
-                className="cv-input"
-            />
+        <div className="space-y-1">
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col justify-center">
+                <span className="text-[10px] uppercase font-bold text-cv-text-tertiary mb-0.5 ml-0.5">{field.label}</span>
+                <input
+                    type="text"
+                    value={(value as string) || ''}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={field.placeholder}
+                    className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 text-cv-text-primary placeholder:text-slate-300"
+                />
+            </div>
             {field.help && (
-                <p className="text-xs text-cv-text-tertiary mt-1">{field.help}</p>
+                <p className="text-[10px] text-cv-text-tertiary px-1">{field.help}</p>
             )}
         </div>
     );
@@ -645,81 +638,78 @@ interface FormProps {
 
 function StrengthForm({ config, onChange }: FormProps) {
     return (
-        <div className="space-y-4">
+        <div className="space-y-3 animate-in fade-in duration-300">
+            {/* Primary Volume Controls */}
             <div className="grid grid-cols-2 gap-3">
-                <div>
-                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                        Series
-                    </label>
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                    <span className="text-xs font-semibold text-cv-text-tertiary uppercase w-12 tracking-wide">Sets</span>
                     <input
                         type="number"
                         min={1}
                         value={(config.sets as number) || ''}
                         onChange={(e) => onChange('sets', parseInt(e.target.value) || null)}
-                        placeholder="5"
-                        className="cv-input-mono"
+                        placeholder="3"
+                        className="flex-1 bg-transparent border-none p-0 text-sm text-center focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300"
                     />
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                        Repeticiones
-                    </label>
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                    <span className="text-xs font-semibold text-cv-text-tertiary uppercase tracking-wide">Reps</span>
                     <input
                         type="text"
                         value={(config.reps as string) || ''}
                         onChange={(e) => onChange('reps', e.target.value)}
-                        placeholder="5 or 3-3-3"
-                        className="cv-input-mono"
+                        placeholder="10 or 3-3-3"
+                        className="flex-1 bg-transparent border-none p-0 text-sm text-center focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300"
                     />
                 </div>
             </div>
 
-            <div>
-                <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                    Carga / Porcentaje
-                </label>
-                <div className="grid grid-cols-2 gap-3">
+            {/* Intensity & Load */}
+            <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                    <span className="text-xs font-semibold text-cv-text-tertiary uppercase tracking-wide whitespace-nowrap">% / Kg</span>
                     <input
                         type="text"
                         value={(config.percentage as string) || ''}
                         onChange={(e) => onChange('percentage', e.target.value)}
-                        placeholder="75%"
-                        className="cv-input-mono"
+                        placeholder="75% or 100kg"
+                        className="flex-1 bg-transparent border-none p-0 text-sm focus:ring-0 text-cv-text-primary font-medium"
                     />
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                    <span className="text-xs font-semibold text-cv-text-tertiary uppercase tracking-wide">RPE</span>
                     <input
                         type="text"
                         value={(config.rpe as string) || ''}
                         onChange={(e) => onChange('rpe', e.target.value)}
-                        placeholder="RPE 8"
-                        className="cv-input-mono"
+                        placeholder="8"
+                        className="flex-1 bg-transparent border-none p-0 text-sm text-center focus:ring-0 text-cv-text-primary font-medium"
                     />
                 </div>
             </div>
 
-            <div>
-                <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                    Tempo (opcional)
-                </label>
-                <input
-                    type="text"
-                    value={(config.tempo as string) || ''}
-                    onChange={(e) => onChange('tempo', e.target.value)}
-                    placeholder="31X1"
-                    className="cv-input-mono"
-                />
-            </div>
-
-            <div>
-                <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                    Descanso
-                </label>
-                <input
-                    type="text"
-                    value={(config.rest as string) || ''}
-                    onChange={(e) => onChange('rest', e.target.value)}
-                    placeholder="2:00 or As needed"
-                    className="cv-input"
-                />
+            {/* Secondary Controls - Rest & Tempo */}
+            <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white dark:bg-cv-bg-secondary p-2 rounded-lg border border-slate-100 dark:border-slate-800 flex items-center gap-2 hover:border-slate-300 transition-colors">
+                    <Clock size={14} className="text-cv-text-tertiary" />
+                    <input
+                        type="text"
+                        value={(config.rest as string) || ''}
+                        onChange={(e) => onChange('rest', e.target.value)}
+                        placeholder="Rest (e.g. 2:00)"
+                        className="flex-1 bg-transparent border-none p-0 text-xs focus:ring-0 text-cv-text-secondary placeholder:text-cv-text-tertiary"
+                    />
+                </div>
+                <div className="bg-white dark:bg-cv-bg-secondary p-2 rounded-lg border border-slate-100 dark:border-slate-800 flex items-center gap-2 hover:border-slate-300 transition-colors">
+                    <Timer size={14} className="text-cv-text-tertiary" />
+                    <input
+                        type="text"
+                        value={(config.tempo as string) || ''}
+                        onChange={(e) => onChange('tempo', e.target.value)}
+                        placeholder="Tempo (e.g. 30X1)"
+                        className="flex-1 bg-transparent border-none p-0 text-xs focus:ring-0 text-cv-text-secondary placeholder:text-cv-text-tertiary"
+                    />
+                </div>
             </div>
         </div>
     );
@@ -738,7 +728,7 @@ function FreeTextForm({ config, onChange }: FormProps) {
                 value={(config.content as string) || ''}
                 onChange={(e) => onChange('content', e.target.value)}
                 placeholder="Enter any freeform workout or notes..."
-                className="cv-input min-h-[200px] resize-none font-mono text-sm"
+                className="cv-input min-h-[200px] resize-none text-sm"
             />
         </div>
     );

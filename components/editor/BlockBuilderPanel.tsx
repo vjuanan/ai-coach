@@ -39,7 +39,7 @@ const blockTypeOptions: {
         },
         {
             type: 'strength_linear',
-            label: 'Fuerza',
+            label: 'Classic',
             description: 'Series, reps y porcentajes',
             color: 'text-red-600 dark:text-red-400',
             bgColor: 'bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50',
@@ -94,6 +94,8 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
 
     const handleAddBlock = (type: BlockType) => {
         const option = blockTypeOptions.find(o => o.type === type);
+        // "STANDARD" is the code for "Series x Reps"
+        // For strength_linear (Classic), we default to STANDARD
         const format = type === 'strength_linear' ? 'STANDARD' as WorkoutFormat : undefined;
         addBlock(dayId, type, format, option?.label);
     };
@@ -152,13 +154,15 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                         </div>
                     </div>
 
-                    {/* Added Blocks - Clickable List */}
+
+                </div>
+
+                {/* Right Column - Speed Editor */}
+                <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/30 dark:bg-cv-bg-tertiary/10">
+                    {/* Added Blocks List - Horizontal Horizontal Scrolling */}
                     {currentDay && currentDay.blocks.length > 0 && (
-                        <div className="mx-3 mt-2">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-cv-text-tertiary mb-2 px-1">
-                                Bloques Añadidos ({currentDay.blocks.length})
-                            </p>
-                            <div className="space-y-1">
+                        <div className="flex-shrink-0 p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary z-10">
+                            <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
                                 {[...currentDay.blocks]
                                     .sort((a, b) => a.order_index - b.order_index)
                                     .map((block, index) => {
@@ -170,25 +174,25 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                             <button
                                                 key={block.id}
                                                 onClick={() => selectBlock(block.id)}
-                                                className={`w-full flex items-center gap-2 p-2 rounded-lg transition-all text-left ${isActive
-                                                    ? 'bg-cv-accent/10 border border-cv-accent/30 shadow-sm'
-                                                    : 'bg-white dark:bg-cv-bg-secondary hover:bg-slate-50 dark:hover:bg-cv-bg-tertiary border border-slate-200 dark:border-slate-700'
-                                                    }`}
+                                                className={`
+                                                    flex items-center gap-2 px-3 py-2 rounded-lg border transition-all text-left min-w-[150px]
+                                                    ${isActive
+                                                        ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-sm ring-1 ring-cv-accent/10'
+                                                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                    }
+                                                `}
                                             >
-                                                <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-100 dark:bg-slate-700 text-cv-text-secondary'
+                                                <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'
                                                     }`}>
-                                                    <Icon size={12} />
+                                                    <Icon size={14} />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className={`text-xs font-medium truncate ${isActive ? 'text-cv-accent' : 'text-cv-text-primary'
-                                                        }`}>
-                                                        {block.name || blockOption?.label || `Bloque ${index + 1}`}
+                                                    <p className={`text-xs font-semibold truncate ${isActive ? 'text-cv-text-primary' : 'text-cv-text-secondary'}`}>
+                                                        {block.name || blockOption?.label || "Sin nombre"}
                                                     </p>
-                                                    {block.format && (
-                                                        <p className="text-[9px] text-cv-text-tertiary truncate">
-                                                            {block.format}
-                                                        </p>
-                                                    )}
+                                                    <p className="text-[10px] text-cv-text-tertiary truncate">
+                                                        {block.format || blockOption?.label}
+                                                    </p>
                                                 </div>
                                             </button>
                                         );
@@ -196,33 +200,27 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                             </div>
                         </div>
                     )}
-                </div>
 
-                {/* Right Column - Speed Editor */}
-                <div className="flex-1 overflow-y-auto">
-                    {selectedBlockId ? (
-                        <div className="p-4">
-                            <div className="mb-3 flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-cv-accent animate-pulse" />
-                                <p className="text-xs font-semibold text-cv-text-tertiary uppercase tracking-wider">
-                                    Editando Bloque
+                    {/* Editor Content */}
+                    <div className="flex-1 overflow-hidden relative">
+                        {selectedBlockId ? (
+                            <div className="h-full">
+                                <BlockEditor blockId={selectedBlockId} autoFocusFirst={true} />
+                            </div>
+                        ) : (
+                            <div className="h-full flex flex-col items-center justify-center text-center p-8">
+                                <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+                                    <Zap size={24} className="text-slate-300 dark:text-slate-600" />
+                                </div>
+                                <h3 className="text-sm font-semibold text-cv-text-primary mb-1">
+                                    Selecciona un bloque
+                                </h3>
+                                <p className="text-xs text-cv-text-tertiary">
+                                    Añade bloques desde la izquierda o selecciona uno arriba.
                                 </p>
                             </div>
-                            <BlockEditor blockId={selectedBlockId} autoFocusFirst={true} />
-                        </div>
-                    ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-center p-8">
-                            <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-                                <Zap size={32} className="text-slate-300 dark:text-slate-600" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-cv-text-primary mb-2">
-                                Selecciona un tipo de bloque
-                            </h3>
-                            <p className="text-sm text-cv-text-tertiary max-w-xs">
-                                Haz click en uno de los tipos de bloque a la izquierda para añadirlo y editarlo aquí.
-                            </p>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
 
