@@ -132,15 +132,15 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                 {/* Left Column - Block Type Selector */}
                 <div className="w-[240px] flex-shrink-0 border-r border-slate-200 dark:border-slate-700 overflow-y-auto bg-slate-50/50 dark:bg-cv-bg-tertiary/50">
                     <div className="p-3">
-                        {/* Progression Toggle - Fixed at top - DEBUG MODE */}
-                        <div className="mb-4 bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-xl border-4 border-red-500 shadow-lg animate-pulse">
+                        {/* Progression Toggle - Fixed at top */}
+                        <div className="mb-4 bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
                             <label className="flex items-center justify-between cursor-pointer group">
                                 <div className="flex flex-col">
-                                    <span className="text-lg font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
-                                        <TrendingUp size={24} className={isProgression ? 'text-cv-accent' : 'text-slate-400'} />
-                                        PROGRESIÓN (DEBUG)
+                                    <span className="text-sm font-semibold text-cv-text-primary flex items-center gap-1.5">
+                                        <TrendingUp size={14} className={isProgression ? 'text-cv-accent' : 'text-slate-400'} />
+                                        Progresión
                                     </span>
-                                    <span className="text-xs text-cv-text-tertiary leading-tight mt-1">
+                                    <span className="text-[10px] text-cv-text-tertiary leading-tight mt-0.5">
                                         Copiar en todas las semanas
                                     </span>
                                 </div>
@@ -151,8 +151,8 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                         checked={isProgression}
                                         onChange={(e) => setIsProgression(e.target.checked)}
                                     />
-                                    <div className={`w-14 h-8 rounded-full transition-colors ${isProgression ? 'bg-cv-accent' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
-                                    <div className={`absolute top-1 left-1 bg-white w-6 h-6 rounded-full transition-transform ${isProgression ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                                    <div className={`w-9 h-5 rounded-full transition-colors ${isProgression ? 'bg-cv-accent' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
+                                    <div className={`absolute top-1 left-1 bg-white w-3 h-3 rounded-full transition-transform ${isProgression ? 'translate-x-4' : 'translate-x-0'}`}></div>
                                 </div>
                             </label>
                         </div>
@@ -250,12 +250,6 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                 </div>
             </div>
 
-            {/* Footer Hint */}
-            <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-cv-bg-tertiary/30">
-                <p className="text-xs text-center text-cv-text-tertiary">
-                    Presiona <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-700 rounded border border-slate-200 dark:border-slate-600 text-[10px] font-mono">ESC</kbd> o &quot;Listo&quot; para cerrar
-                </p>
-            </div>
         </div>
     );
 }

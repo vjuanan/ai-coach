@@ -25,10 +25,6 @@ import {
     Puzzle,
     HelpCircle,
     Check,
-    ChevronDown,
-    ChevronRight,
-    ChevronLeft,
-    Calendar
 } from 'lucide-react';
 import type { BlockType, WorkoutFormat, WorkoutConfig, TrainingMethodology, TrainingMethodologyFormField } from '@/lib/supabase/types';
 import type { LucideIcon } from 'lucide-react';
@@ -51,10 +47,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         updateBlock,
         selectBlock,
         deleteBlock,
-        selectNextBlock,
-        selectPrevBlock,
-        selectNextDayFirstBlock,
-        selectPrevDayFirstBlock,
+
         blockBuilderDayId,
         selectedDayId
     } = useEditorStore();
@@ -439,70 +432,8 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 </button>
             </div>
 
-            {/* Navigation Footer */}
-            <div className="flex items-center justify-between px-3 py-2 border-t border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-cv-bg-tertiary/80">
-                {/* Block Navigation */}
-                <div className="flex items-center gap-1">
-                    <button
-                        onClick={selectPrevBlock}
-                        disabled={!hasPrevBlock}
-                        title="Bloque anterior"
-                        className={`p-2 rounded-lg transition-colors ${hasPrevBlock
-                            ? 'hover:bg-slate-200 dark:hover:bg-slate-700 text-cv-text-secondary'
-                            : 'text-cv-text-tertiary/40 cursor-not-allowed'
-                            }`}
-                    >
-                        <ChevronLeft size={18} />
-                    </button>
-                    <span className="text-xs text-cv-text-tertiary px-1">
-                        {currentBlockIndex + 1}/{totalBlocks}
-                    </span>
-                    <button
-                        onClick={selectNextBlock}
-                        disabled={!hasNextBlock}
-                        title="Bloque siguiente"
-                        className={`p-2 rounded-lg transition-colors ${hasNextBlock
-                            ? 'hover:bg-slate-200 dark:hover:bg-slate-700 text-cv-text-secondary'
-                            : 'text-cv-text-tertiary/40 cursor-not-allowed'
-                            }`}
-                    >
-                        <ChevronRight size={18} />
-                    </button>
-                </div>
-
-                {/* Separator */}
-                <div className="w-px h-6 bg-slate-300 dark:bg-slate-600" />
-
-                {/* Day Navigation */}
-                <div className="flex items-center gap-1">
-                    <button
-                        onClick={selectPrevDayFirstBlock}
-                        disabled={!hasPrevDay}
-                        title="Día anterior"
-                        className={`p-2 rounded-lg transition-colors flex items-center gap-1 ${hasPrevDay
-                            ? 'hover:bg-slate-200 dark:hover:bg-slate-700 text-cv-text-secondary'
-                            : 'text-cv-text-tertiary/40 cursor-not-allowed'
-                            }`}
-                    >
-                        <ChevronLeft size={14} />
-                        <Calendar size={14} />
-                    </button>
-                    <span className="text-xs text-cv-text-tertiary px-1">Día</span>
-                    <button
-                        onClick={selectNextDayFirstBlock}
-                        disabled={!hasNextDay}
-                        title="Día siguiente"
-                        className={`p-2 rounded-lg transition-colors flex items-center gap-1 ${hasNextDay
-                            ? 'hover:bg-slate-200 dark:hover:bg-slate-700 text-cv-text-secondary'
-                            : 'text-cv-text-tertiary/40 cursor-not-allowed'
-                            }`}
-                    >
-                        <Calendar size={14} />
-                        <ChevronRight size={14} />
-                    </button>
-                </div>
-            </div>
         </div>
+
     );
 }
 

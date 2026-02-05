@@ -36,6 +36,7 @@ export default function TemplateDetailPage() {
                 initializeEditor(
                     programData.program.id,
                     programData.program.name,
+                    programData.program.coach?.full_name || 'Coach', // Added missing coachName
                     programData.program.client,
                     programData.program.attributes,
                     stimulusFeatures || []
