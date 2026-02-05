@@ -316,73 +316,68 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-cv-accent"></div>
                             </div>
                         ) : (
-                            <div className="space-y-1">
-                                {categoryOrder.map(category => {
-                                    const items = groupedMethodologies[category] || [];
-                                    if (items.length === 0) return null;
+                            <div className="space-y-3">
+                                {/* Categories Tabs - Horizontal Row */}
+                                <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                                    {categoryOrder.map(category => {
+                                        const items = groupedMethodologies[category] || [];
+                                        if (items.length === 0) return null;
 
-                                    const isExpanded = expandedCategory === category;
-                                    const hasSelectedItem = items.some(m => m.code === block?.format);
-                                    const CategoryIcon = categoryIcons[category] || Dumbbell;
+                                        const isExpanded = expandedCategory === category;
+                                        const hasSelectedItem = items.some(m => m.code === block?.format);
+                                        const CategoryIcon = categoryIcons[category] || Dumbbell;
 
-                                    return (
-                                        <div key={category} className="rounded-lg overflow-hidden">
-                                            {/* Category Header - Clickable */}
+                                        return (
                                             <button
-                                                onClick={() => setExpandedCategory(isExpanded ? null : category)}
-                                                className={`w-full flex items-center justify-between p-2.5 rounded-lg transition-all ${hasSelectedItem
-                                                    ? 'bg-cv-accent/10 border border-cv-accent/30'
-                                                    : 'bg-cv-bg-tertiary hover:bg-cv-bg-secondary'
-                                                    }`}
+                                                key={category}
+                                                onClick={() => setExpandedCategory(category)}
+                                                className={`
+                                                    flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border
+                                                    ${isExpanded
+                                                        ? 'bg-cv-accent text-white border-cv-accent shadow-sm'
+                                                        : hasSelectedItem
+                                                            ? 'bg-cv-accent/10 text-cv-accent border-cv-accent/30 hover:bg-cv-accent/20'
+                                                            : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                    }
+                                                `}
                                             >
-                                                <div className="flex items-center gap-2">
-                                                    <CategoryIcon size={14} className={hasSelectedItem ? 'text-cv-accent' : 'text-cv-text-tertiary'} />
-                                                    <span className={`text-sm font-medium ${hasSelectedItem ? 'text-cv-accent' : 'text-cv-text-primary'}`}>
-                                                        {categoryLabels[category]}
-                                                    </span>
-                                                    {hasSelectedItem && (
-                                                        <span className="text-xs bg-cv-accent text-white px-1.5 py-0.5 rounded">
-                                                            {items.find(m => m.code === block?.format)?.name}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                {isExpanded ? (
-                                                    <ChevronDown size={14} className="text-cv-text-tertiary" />
-                                                ) : (
-                                                    <ChevronRight size={14} className="text-cv-text-tertiary" />
-                                                )}
+                                                <CategoryIcon size={14} />
+                                                <span>{categoryLabels[category]}</span>
                                             </button>
+                                        );
+                                    })}
+                                </div>
 
-                                            {/* Expanded Options */}
-                                            {isExpanded && (
-                                                <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 dark:bg-cv-bg-tertiary/50 animate-in slide-in-from-top-2 duration-200">
-                                                    {items.map(m => {
-                                                        const IconComponent = iconMap[m.icon] || Dumbbell;
-                                                        const isSelected = block?.format === m.code;
+                                {/* Active Category Options */}
+                                {expandedCategory && (
+                                    <div className="bg-slate-50 dark:bg-cv-bg-tertiary/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-1 duration-200">
+                                        <div className="flex flex-wrap gap-2">
+                                            {(groupedMethodologies[expandedCategory] || []).map(m => {
+                                                const IconComponent = iconMap[m.icon] || Dumbbell;
+                                                const isSelected = block?.format === m.code;
 
-                                                        return (
-                                                            <button
-                                                                key={m.code}
-                                                                onClick={() => handleFormatChange(m.code)}
-                                                                title={m.description}
-                                                                className={`
-                                                                    px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all
-                                                                    flex items-center gap-1.5
-                                                                    ${isSelected
-                                                                        ? 'bg-cv-accent text-white shadow-sm'
-                                                                        : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-cv-bg-primary border border-slate-200 dark:border-slate-700'}
-                                                                `}
-                                                            >
-                                                                <IconComponent size={12} />
-                                                                {m.name}
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
+                                                return (
+                                                    <button
+                                                        key={m.code}
+                                                        onClick={() => handleFormatChange(m.code)}
+                                                        title={m.description}
+                                                        className={`
+                                                            px-3 py-2 rounded-lg text-xs font-medium transition-all
+                                                            flex items-center gap-2 border flex-1 min-w-[120px] justify-center
+                                                            ${isSelected
+                                                                ? 'bg-white dark:bg-cv-bg-primary text-cv-accent border-cv-accent shadow-sm ring-1 ring-cv-accent/20'
+                                                                : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-50 dark:hover:bg-cv-bg-primary border-slate-200 dark:border-slate-700'
+                                                            }
+                                                        `}
+                                                    >
+                                                        <IconComponent size={14} />
+                                                        {m.name}
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
-                                    );
-                                })}
+                                    </div>
+                                )}
                             </div>
                         )}
 
