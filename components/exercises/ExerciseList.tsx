@@ -1,12 +1,50 @@
+'use client';
 
-// ... existing imports
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { Search, Tag, Dumbbell, Trash2, X, CheckSquare, Edit2, Plus, Square } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { ExerciseForm } from './ExerciseForm';
 import { deleteExercises } from '@/lib/actions';
 import { toast } from 'sonner';
-import { Plus, Trash2, Edit2, X, CheckSquare, Square } from 'lucide-react';
+
+// Mock constants if not found
+const CATEGORIES = [
+    { value: 'all', label: 'Todos' },
+    { value: 'Weightlifting', label: 'Weightlifting' },
+    { value: 'Gymnastics', label: 'Gymnastics' },
+    { value: 'Monostructural', label: 'Monostructural' },
+    { value: 'Metcon', label: 'Metcon' }
+];
+
+interface Exercise {
+    id: string;
+    name: string;
+    description?: string;
+    category: string;
+    equipment?: string[];
+    modality_suitability?: string[];
+}
 
 // ... existing interfaces & constants
+
+interface Exercise {
+    id: string;
+    name: string;
+    category: string;
+    subcategory?: string;
+    description?: string;
+    equipment?: string[];
+    modality_suitability?: string[];
+    video_url?: string;
+}
+
+interface ExerciseListProps {
+    initialExercises: Exercise[];
+    totalCount: number;
+    initialCategory?: string;
+    initialQuery?: string;
+}
 
 export function ExerciseList({
     initialExercises,
@@ -27,7 +65,37 @@ export function ExerciseList({
     const [isSelectMode, setIsSelectMode] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-    // ... existing debounce and category logic
+    // Debounce search update
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (query !== initialQuery) {
+                handleSearch(query);
+            }
+        }, 300);
+        return () => clearTimeout(timeoutId);
+    }, [query]);
+
+    // Update URL when filtering
+    function updateUrl(newQuery: string, newCategory: string) {
+        const params = new URLSearchParams(searchParams.toString());
+
+        if (newQuery) params.set('q', newQuery);
+        else params.delete('q');
+
+        if (newCategory && newCategory !== 'all') params.set('category', newCategory);
+        else params.delete('category');
+
+        router.replace(`?${params.toString()}`, { scroll: false });
+    }
+
+    const handleSearch = (term: string) => {
+        updateUrl(term, category);
+    };
+
+    const handleCategoryChange = (cat: string) => {
+        setCategory(cat);
+        updateUrl(query, cat);
+    };
 
     // Toggle Selection Mode
     const toggleSelectMode = () => {
@@ -278,4 +346,3 @@ export function ExerciseList({
         </div>
     );
 }
-
