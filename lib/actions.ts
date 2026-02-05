@@ -1581,7 +1581,8 @@ export async function saveMesocycleChanges(
                         type: b.type,
                         format: b.format,
                         name: b.name,
-                        config: b.config
+                        config: b.config,
+                        progression_id: b.progression_id || null
                     }));
 
                     const { error: insertError } = await adminSupabase

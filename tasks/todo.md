@@ -1,17 +1,14 @@
-# Delete Block on Hover
+# Bug: Progresión no se guarda
 
-## Objetivo
-Agregar funcionalidad de eliminación de bloques con icono X al hacer hover.
-- Bloque vacío → eliminar inmediatamente
-- Bloque con contenido → pedir confirmación
+## Estado: En Progreso
 
-## Tareas
-
-- [/] Analizar estructura actual de `WorkoutBlockCard`
-- [/] Crear plan de implementación
-- [ ] Modificar `WorkoutBlockCard.tsx`:
-  - [ ] Agregar icono X en lugar de/junto a Trash2
-  - [ ] Crear función `isBlockEmpty()` para determinar si un bloque tiene contenido
-  - [ ] Agregar diálogo de confirmación para bloques con contenido
-- [ ] Actualizar estilos del botón X
+### [/] Fix persistencia de `progression_id`
+- [x] Identificar causa raíz: `saveMesocycleChanges` no incluye `progression_id`
+- [ ] Agregar `progression_id` al insert de bloques en `lib/actions.ts`
 - [ ] Push y verificar en producción
+
+### [ ] Verificación
+- [ ] Login con vjuanan@gmail.com
+- [ ] Activar progresión en Back Squat
+- [ ] Verificar que aparece en todas las semanas
+- [ ] Verificar que al recargar, el toggle sigue activo

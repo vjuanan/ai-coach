@@ -190,10 +190,10 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                             </button>
                             <button
                                 onClick={handleDelete}
-                                className="p-1 rounded hover:bg-cv-bg-secondary text-cv-text-tertiary hover:text-red-400"
+                                className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-cv-text-tertiary hover:text-red-500"
                                 title="Eliminar"
                             >
-                                <Trash2 size={12} />
+                                <X size={14} className="stroke-[2.5]" />
                             </button>
                         </div>
                     </div>
@@ -252,6 +252,47 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                             >
                                 Cancelar
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Confirmation Dialog for Non-Empty Blocks */}
+            {showConfirmDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl max-w-sm w-full overflow-hidden border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-5">
+                            <h3 className="text-lg font-semibold text-cv-text-primary mb-2 flex items-center gap-2">
+                                <Trash2 size={20} className="text-red-500" />
+                                ¿Eliminar bloque?
+                            </h3>
+                            <p className="text-sm text-cv-text-secondary mb-4">
+                                Este bloque tiene contenido. ¿Estás seguro de que deseas eliminarlo?
+                            </p>
+
+                            <div className="flex gap-2 justify-end">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowConfirmDelete(false);
+                                    }}
+                                    className="px-4 py-2 text-sm text-cv-text-secondary hover:text-cv-text-primary font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        deleteBlock(block.id);
+                                        setShowConfirmDelete(false);
+                                    }}
+                                    className="px-4 py-2 text-sm bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
+                                >
+                                    Eliminar
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
