@@ -43,17 +43,55 @@ const formatLabels: Record<string, string> = {
 export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
     const { selectBlock, selectedBlockId, deleteBlock, deleteProgression, duplicateBlock } = useEditorStore();
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+    const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
     const isSelected = selectedBlockId === block.id;
     const style = blockTypeStyles[block.type] || blockTypeStyles.free_text;
     const config = block.config as Record<string, unknown>;
 
+    // Determine if block has meaningful content
+    const isBlockEmpty = (): boolean => {
+        switch (block.type) {
+            case 'strength_linear':
+                const sets = config.sets as number;
+                const reps = config.reps as string;
+                const exercise = config.exercise as string;
+                return !sets && !reps && !exercise;
+            case 'metcon_structured':
+                const format = block.format;
+                const movements = config.movements as string[] || [];
+                const timeCap = config.time_cap as number;
+                return !format && movements.length === 0 && !timeCap;
+            case 'free_text':
+                const content = config.content as string;
+                return !content || content.trim() === '';
+            case 'warmup':
+            case 'accessory':
+            case 'skill':
+                const exercises = config.exercises as unknown[] || [];
+                const notes = config.notes as string;
+                return exercises.length === 0 && (!notes || notes.trim() === '');
+            default:
+                // Check if config has any meaningful data
+                const keys = Object.keys(config).filter(k => k !== 'is_completed');
+                return keys.length === 0 || keys.every(k => {
+                    const val = config[k];
+                    return val === null || val === undefined || val === '' ||
+                        (Array.isArray(val) && val.length === 0);
+                });
+        }
+    };
+
     const handleDelete = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (block.progression_id) {
             setShowDeleteAlert(true);
-        } else {
+        } else if (isBlockEmpty()) {
+            // Block is empty, delete immediately
             deleteBlock(block.id);
+        } else {
+            // Block has content, ask for confirmation
+            setShowConfirmDelete(true);
         }
     };
 
