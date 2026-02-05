@@ -1,4 +1,4 @@
-import { Calendar, Check, Trash2, Edit2, MoreHorizontal } from 'lucide-react';
+import { Calendar, Check, Trash2, Edit2, MoreHorizontal, Square, CheckSquare } from 'lucide-react';
 import Link from 'next/link';
 
 // Helper for formatted dates
@@ -23,6 +23,8 @@ interface ProgramsTableProps {
     selectedPrograms: Set<string>;
     isSelectionMode: boolean;
     toggleSelection: (id: string, multi?: boolean) => void;
+    selectAll: () => void;
+    totalFiltered: number;
     promptDelete: (id: string) => void;
     CARD_GRADIENTS: string[];
     CARD_ICONS: any[];
@@ -33,6 +35,8 @@ export function ProgramsTable({
     selectedPrograms,
     isSelectionMode,
     toggleSelection,
+    selectAll,
+    totalFiltered,
     promptDelete,
     CARD_GRADIENTS,
     CARD_ICONS
@@ -45,28 +49,36 @@ export function ProgramsTable({
         return { gradient, Icon };
     };
 
+    const isAllSelected = totalFiltered > 0 && selectedPrograms.size === totalFiltered;
+
     return (
         <div className="bg-white rounded-2xl border border-cv-border shadow-sm overflow-hidden animate-in fade-in duration-300">
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="border-b border-gray-100 bg-gray-50/50">
-                            <th className="py-4 px-6 w-12">
-                                {/* Optional Select All Header could go here */}
+                            <th className="py-2 px-6 w-12 text-center">
+                                <button
+                                    onClick={selectAll}
+                                    className="text-gray-400 hover:text-cv-primary transition-colors flex items-center justify-center translate-y-0.5"
+                                    title="Seleccionar todo"
+                                >
+                                    {isAllSelected ? <CheckSquare size={20} className="text-cv-primary" /> : <Square size={20} />}
+                                </button>
                             </th>
-                            <th className="py-4 px-6 text-xs font-semibold text-cv-text-tertiary uppercase tracking-wider">
+                            <th className="py-3 px-6 text-xs font-semibold text-cv-text-tertiary uppercase tracking-wider">
                                 Programa
                             </th>
-                            <th className="py-4 px-6 text-xs font-semibold text-cv-text-tertiary uppercase tracking-wider">
+                            <th className="py-3 px-6 text-xs font-semibold text-cv-text-tertiary uppercase tracking-wider">
                                 Estado
                             </th>
-                            <th className="py-4 px-6 text-xs font-semibold text-cv-text-tertiary uppercase tracking-wider hidden md:table-cell">
+                            <th className="py-3 px-6 text-xs font-semibold text-cv-text-tertiary uppercase tracking-wider hidden md:table-cell">
                                 Creado
                             </th>
-                            <th className="py-4 px-6 text-xs font-semibold text-cv-text-tertiary uppercase tracking-wider hidden md:table-cell">
+                            <th className="py-3 px-6 text-xs font-semibold text-cv-text-tertiary uppercase tracking-wider hidden md:table-cell">
                                 Actualizado
                             </th>
-                            <th className="py-4 px-6 w-24"></th>
+                            <th className="py-3 px-6 w-24"></th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
@@ -77,31 +89,26 @@ export function ProgramsTable({
                             return (
                                 <tr
                                     key={program.id}
-                                    onClick={() => isSelectionMode && toggleSelection(program.id)} // Allow row click to select in selection mode
+                                    onClick={() => toggleSelection(program.id)}
                                     className={`
                                         group hover:bg-gray-50/80 transition-colors cursor-pointer
                                         ${isSelected ? 'bg-cv-accent/5 hover:bg-cv-accent/10' : ''}
                                     `}
                                 >
                                     {/* Selection Column */}
-                                    <td className="py-4 px-6">
+                                    <td className="py-3 px-6">
                                         <div className="flex items-center justify-center">
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    toggleSelection(program.id, false);
+                                                    toggleSelection(program.id);
                                                 }}
                                                 className={`
-                                                    w-5 h-5 rounded-md border transition-all duration-200 flex items-center justify-center
-                                                    ${isSelected || isSelectionMode
-                                                        ? isSelected
-                                                            ? 'bg-cv-primary border-cv-primary text-white'
-                                                            : 'bg-white border-cv-border text-transparent hover:border-gray-400'
-                                                        : 'bg-white border-cv-border text-transparent opacity-0 group-hover:opacity-100'
-                                                    }
+                                                    text-gray-300 transition-all duration-200 flex items-center justify-center
+                                                    ${isSelected ? 'text-cv-primary' : 'hover:text-gray-400'}
                                                 `}
                                             >
-                                                <Check size={12} strokeWidth={3} />
+                                                {isSelected ? <CheckSquare size={20} /> : <Square size={20} />}
                                             </button>
                                         </div>
                                     </td>

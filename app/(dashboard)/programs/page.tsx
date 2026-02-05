@@ -252,6 +252,8 @@ export default function ProgramsPage() {
                                 selectedPrograms={selectedPrograms}
                                 isSelectionMode={isSelectionMode}
                                 toggleSelection={toggleSelection}
+                                selectAll={selectAll}
+                                totalFiltered={filteredPrograms.length}
                                 promptDelete={promptDelete}
                                 CARD_GRADIENTS={CARD_GRADIENTS}
                                 CARD_ICONS={CARD_ICONS}

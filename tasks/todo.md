@@ -8,7 +8,7 @@
     - [x] Add "Create Exercise" functionality <!-- id: 4 -->
     - [x] Implement Individual Edit functionality <!-- id: 5 -->
     - [x] Implement Multi-select and Bulk Edit functionality <!-- id: 6 -->
-- [/] Verification
-    - [ ] Verify "Create Exercise" <!-- id: 7 -->
-    - [ ] Verify Individual Edit <!-- id: 8 -->
-    - [ ] Verify Bulk Edit <!-- id: 9 -->
+- [x] Verification
+    - [x] Verify "Create Exercise" <!-- id: 7 -->
+    - [x] Verify Individual Edit <!-- id: 8 -->
+    - [x] Verify Bulk Edit <!-- id: 9 -->
