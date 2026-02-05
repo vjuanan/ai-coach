@@ -489,15 +489,15 @@ function DynamicField({ field, value, onChange }: DynamicFieldProps) {
 
     if (field.type === 'number') {
         return (
-            <div className="bg-slate-50 dark:bg-slate-800/50 px-2 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 flex flex-col h-full justify-center">
-                <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none mb-0.5">{field.label}</span>
+            <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
+                <span className="text-sm font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
                 <input
                     type="number"
                     min={1}
                     value={(value as number) || ''}
                     onChange={(e) => onChange(parseInt(e.target.value) || null)}
                     placeholder={field.placeholder || '0'}
-                    className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 h-5 leading-5"
+                    className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-14 text-center"
                 />
             </div>
         );
@@ -505,14 +505,14 @@ function DynamicField({ field, value, onChange }: DynamicFieldProps) {
 
     // Default: text input
     return (
-        <div className="bg-slate-50 dark:bg-slate-800/50 px-2 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 flex flex-col h-full justify-center">
-            <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none mb-0.5">{field.label}</span>
+        <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
+            <span className="text-sm font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
             <input
                 type="text"
                 value={(value as string) || ''}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={field.placeholder}
-                className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 h-5 leading-5"
+                className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-16 text-center"
             />
         </div>
     );
