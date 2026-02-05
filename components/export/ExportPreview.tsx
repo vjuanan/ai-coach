@@ -418,7 +418,7 @@ export function ExportPreview({
                                         Programado por {coachName}
                                     </p>
                                     <p className="text-gray-600 text-xs font-mono flex items-center gap-1.5">
-                                        <span className="w-1.5 h-1.5 bg-cv-accent rounded-full mb-px"></span>
+                                        <span className="w-1.5 h-1.5 bg-cv-accent rounded-full"></span>
                                         AI COACH
                                     </p>
                                 </div>

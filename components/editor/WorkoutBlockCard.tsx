@@ -1,7 +1,6 @@
-'use client';
-
 import { useEditorStore } from '@/lib/store';
-import { GripVertical, Copy, Trash2, ChevronDown } from 'lucide-react';
+import { GripVertical, Copy, Trash2, ChevronDown, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 
 interface DraftWorkoutBlock {
@@ -14,6 +13,7 @@ interface DraftWorkoutBlock {
     name: string | null;
     config: Record<string, unknown>;
     isDirty?: boolean;
+    progression_id?: string | null;
 }
 
 interface WorkoutBlockCardProps {
@@ -41,101 +41,127 @@ const formatLabels: Record<string, string> = {
 };
 
 export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
-    const { selectBlock, selectedBlockId, deleteBlock, duplicateBlock } = useEditorStore();
+    const { selectBlock, selectedBlockId, deleteBlock, deleteProgression, duplicateBlock } = useEditorStore();
+    const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
     const isSelected = selectedBlockId === block.id;
     const style = blockTypeStyles[block.type] || blockTypeStyles.free_text;
     const config = block.config as Record<string, unknown>;
 
-    const getBlockPreview = () => {
-        switch (block.type) {
-            case 'strength_linear':
-                const sets = config.sets as number;
-                const reps = config.reps as string;
-                const percentage = config.percentage as string;
-                return (
-                    <div className="text-sm">
-                        {sets && reps ? `${sets} x ${reps}` : 'Configurar...'}
-                        {percentage && <span className="text-cv-accent ml-1">@ {percentage}</span>}
-                    </div>
-                );
-
-            case 'metcon_structured':
-                const format = block.format;
-                const movements = config.movements as string[] || [];
-                return (
-                    <div>
-                        {format && (
-                            <span className="cv-badge-accent mb-1">{formatLabels[format] || format}</span>
-                        )}
-                        {movements.length > 0 && (
-                            <div className="text-xs text-cv-text-tertiary mt-1 truncate">
-                                {movements.slice(0, 2).join(', ')}
-                                {movements.length > 2 && ` +${movements.length - 2} más`}
-                            </div>
-                        )}
-                        {!format && movements.length === 0 && (
-                            <span className="text-cv-text-tertiary text-xs">Configurar entreno...</span>
-                        )}
-                    </div>
-                );
-
-            case 'free_text':
-                const content = config.content as string;
-                return (
-                    <div className="text-xs text-cv-text-tertiary truncate">
-                        {content || 'Añadir notas...'}
-                    </div>
-                );
-
-            default:
-                return <span className="text-cv-text-tertiary text-xs">Configurar...</span>;
+    const handleDelete = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (block.progression_id) {
+            setShowDeleteAlert(true);
+        } else {
+            deleteBlock(block.id);
         }
     };
 
     return (
-        <div
-            className={`
+        <>
+            <div
+                className={`
         group relative bg-cv-bg-tertiary rounded-lg p-2 cursor-pointer
         transition-all hover:bg-cv-bg-elevated
         ${style.color}
         ${isSelected ? 'ring-2 ring-cv-accent' : ''}
       `}
-            onClick={(e) => { e.stopPropagation(); selectBlock(block.id); }}
-        >
-            {/* Drag Handle */}
-            <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">
-                <GripVertical size={12} className="text-cv-text-tertiary" />
-            </div>
-
-            {/* Content */}
-            <div className="pl-4">
-                <div className="flex items-center justify-between mb-1">
-                    <span className="text-2xs uppercase tracking-wider text-cv-text-tertiary font-medium">
-                        {block.name || style.label}
-                    </span>
-
-                    {/* Quick Actions */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                            onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id); }}
-                            className="p-1 rounded hover:bg-cv-bg-secondary text-cv-text-tertiary hover:text-cv-text-primary"
-                            title="Duplicar"
-                        >
-                            <Copy size={12} />
-                        </button>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); deleteBlock(block.id); }}
-                            className="p-1 rounded hover:bg-cv-bg-secondary text-cv-text-tertiary hover:text-red-400"
-                            title="Eliminar"
-                        >
-                            <Trash2 size={12} />
-                        </button>
-                    </div>
+                onClick={(e) => { e.stopPropagation(); selectBlock(block.id); }}
+            >
+                {/* Drag Handle */}
+                <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">
+                    <GripVertical size={12} className="text-cv-text-tertiary" />
                 </div>
 
-                {getBlockPreview()}
+                {/* Content */}
+                <div className="pl-4">
+                    <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                            <span className="text-2xs uppercase tracking-wider text-cv-text-tertiary font-medium">
+                                {block.name || style.label}
+                            </span>
+                            {block.progression_id && (
+                                <TrendingUp size={10} className="text-cv-accent" title="Progresión vinculada" />
+                            )}
+                        </div>
+
+                        {/* Quick Actions */}
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id); }}
+                                className="p-1 rounded hover:bg-cv-bg-secondary text-cv-text-tertiary hover:text-cv-text-primary"
+                                title="Duplicar"
+                            >
+                                <Copy size={12} />
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="p-1 rounded hover:bg-cv-bg-secondary text-cv-text-tertiary hover:text-red-400"
+                                title="Eliminar"
+                            >
+                                <Trash2 size={12} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {getBlockPreview()}
+                </div>
             </div>
-        </div>
+
+            {/* Custom Alert for Progression Deletion */}
+            {showDeleteAlert && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl max-w-sm w-full overflow-hidden border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-5">
+                            <h3 className="text-lg font-semibold text-cv-text-primary mb-2 flex items-center gap-2">
+                                <TrendingUp size={20} className="text-cv-accent" />
+                                Eliminar Progresión
+                            </h3>
+                            <p className="text-sm text-cv-text-secondary mb-4">
+                                Este bloque es parte de una progresión. ¿Qué deseas hacer?
+                            </p>
+
+                            <div className="space-y-2">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        deleteProgression(block.progression_id!);
+                                        setShowDeleteAlert(false);
+                                    }}
+                                    className="w-full flex items-center justify-between p-3 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-800 dark:hover:bg-red-900/30 transition-colors text-red-700 dark:text-red-400 text-sm font-medium"
+                                >
+                                    <span>Eliminar TODA la progresión</span>
+                                    <Trash2 size={16} />
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        deleteBlock(block.id);
+                                        setShowDeleteAlert(false);
+                                    }}
+                                    className="w-full flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800 transition-colors text-cv-text-primary text-sm font-medium"
+                                >
+                                    <span>Eliminar solo este bloque</span>
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="bg-slate-50 dark:bg-cv-bg-tertiary/50 p-3 flex justify-end">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowDeleteAlert(false);
+                                }}
+                                className="px-4 py-2 text-sm text-cv-text-secondary hover:text-cv-text-primary font-medium"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 }

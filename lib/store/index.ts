@@ -10,6 +10,7 @@ import type {
     WorkoutFormat,
     WorkoutConfig
 } from '@/lib/supabase/types';
+// Removed uuid import to use local helper
 
 // ============================================
 // Editor Store - Canvas State Management
@@ -25,6 +26,7 @@ export interface DraftWorkoutBlock {
     name: string | null;
     config: WorkoutConfig;
     isDirty?: boolean;
+    progression_id?: string | null; // Added for progression system
 }
 
 export interface DraftDay {
@@ -35,7 +37,7 @@ export interface DraftDay {
     name: string | null;
     is_rest_day: boolean;
     notes: string | null;
-    stimulus_id?: string | null; // Added stimulus_id
+    stimulus_id?: string | null;
     blocks: DraftWorkoutBlock[];
     isDirty?: boolean;
 }
@@ -55,6 +57,7 @@ interface EditorState {
     // Current program being edited
     programId: string | null;
     programName: string;
+    programCoachName: string;
     programClient: Client | null;
     programAttributes: Record<string, unknown> | null;
 
@@ -82,7 +85,7 @@ interface EditorState {
     blockBuilderDayId: string | null;
 
     // Actions
-    initializeEditor: (programId: string, name: string, client: Client | null, attributes?: Record<string, unknown> | null, stimulusFeatures?: any[]) => void;
+    initializeEditor: (programId: string, name: string, coachName: string, client: Client | null, attributes?: Record<string, unknown> | null, stimulusFeatures?: any[]) => void;
     loadMesocycles: (mesocycles: DraftMesocycle[]) => void;
     resetEditor: () => void;
 
@@ -92,9 +95,10 @@ interface EditorState {
     selectBlock: (blockId: string | null) => void;
 
     // Block operations
-    addBlock: (dayId: string, type: BlockType, format?: WorkoutFormat, name?: string) => void;
+    addBlock: (dayId: string, type: BlockType, format?: WorkoutFormat, name?: string, isProgression?: boolean) => void;
     updateBlock: (blockId: string, updates: Partial<DraftWorkoutBlock>) => void;
     deleteBlock: (blockId: string) => void;
+    deleteProgression: (progressionId: string) => void; // New action
     reorderBlocks: (dayId: string, blockIds: string[]) => void;
     duplicateBlock: (blockId: string, targetDayId?: string) => void;
 
@@ -126,6 +130,7 @@ interface EditorState {
 }
 
 const generateTempId = () => `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+const generateProgressionId = () => `prog_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
 export const useEditorStore = create<EditorState>()(
     persist(
@@ -133,6 +138,7 @@ export const useEditorStore = create<EditorState>()(
             // Initial state
             programId: null,
             programName: '',
+            programCoachName: '',
             programClient: null,
             programAttributes: null,
             stimulusFeatures: [],
@@ -150,10 +156,11 @@ export const useEditorStore = create<EditorState>()(
             dropTargetDayId: null,
 
             // Initialize editor with a program
-            initializeEditor: (programId, name, client, attributes, stimulusFeatures) => {
+            initializeEditor: (programId, name, coachName, client, attributes, stimulusFeatures) => {
                 set({
                     programId,
                     programName: name,
+                    programCoachName: coachName,
                     programClient: client,
                     programAttributes: attributes || null,
                     stimulusFeatures: stimulusFeatures || [],
@@ -173,6 +180,7 @@ export const useEditorStore = create<EditorState>()(
                 set({
                     programId: null,
                     programName: '',
+                    programCoachName: '',
                     programClient: null,
                     programAttributes: null,
                     stimulusFeatures: [],
@@ -230,11 +238,28 @@ export const useEditorStore = create<EditorState>()(
             },
 
             // Add a new block to a day
-            addBlock: (dayId, type, format, name) => {
+            addBlock: (dayId, type, format, name, isProgression = false) => {
                 const { mesocycles } = get();
                 const tempId = generateTempId();
 
-                const newBlock: DraftWorkoutBlock = {
+                // Find the target day to get mesocycle and day number
+                let targetMesoIndex = -1;
+                let targetDayNumber = -1;
+
+                for (let i = 0; i < mesocycles.length; i++) {
+                    const day = mesocycles[i].days.find(d => d.id === dayId);
+                    if (day) {
+                        targetMesoIndex = i;
+                        targetDayNumber = day.day_number;
+                        break;
+                    }
+                }
+
+                if (targetMesoIndex === -1) return;
+
+                const progressionId = isProgression ? generateProgressionId() : null;
+
+                const newBlockBase: DraftWorkoutBlock = {
                     id: tempId,
                     tempId,
                     day_id: dayId,
@@ -244,27 +269,57 @@ export const useEditorStore = create<EditorState>()(
                     name: name || null,
                     config: type === 'free_text' ? { content: '' } : {} as WorkoutConfig,
                     isDirty: true,
+                    progression_id: progressionId
                 };
 
-                const updatedMesocycles = mesocycles.map(meso => ({
-                    ...meso,
-                    days: meso.days.map(day => {
-                        if (day.id === dayId) {
-                            const newOrderIndex = day.blocks.length;
-                            return {
-                                ...day,
-                                blocks: [...day.blocks, { ...newBlock, order_index: newOrderIndex }],
-                                isDirty: true,
-                            };
-                        }
-                        return day;
-                    }),
-                }));
+                let updatedMesocycles = [...mesocycles];
+
+                if (isProgression) {
+                    // Add to ALL weeks on same day_number
+                    updatedMesocycles = mesocycles.map(meso => ({
+                        ...meso,
+                        days: meso.days.map(day => {
+                            if (day.day_number === targetDayNumber) {
+                                const weekSpecificTempId = generateTempId();
+                                const newOrderIndex = day.blocks.length;
+                                return {
+                                    ...day,
+                                    blocks: [...day.blocks, {
+                                        ...newBlockBase,
+                                        id: weekSpecificTempId,
+                                        tempId: weekSpecificTempId,
+                                        day_id: day.id,
+                                        order_index: newOrderIndex
+                                    }],
+                                    isDirty: true,
+                                };
+                            }
+                            return day;
+                        }),
+                        isDirty: true
+                    }));
+                } else {
+                    // Single add
+                    updatedMesocycles = mesocycles.map(meso => ({
+                        ...meso,
+                        days: meso.days.map(day => {
+                            if (day.id === dayId) {
+                                const newOrderIndex = day.blocks.length;
+                                return {
+                                    ...day,
+                                    blocks: [...day.blocks, { ...newBlockBase, order_index: newOrderIndex }],
+                                    isDirty: true,
+                                };
+                            }
+                            return day;
+                        }),
+                    }));
+                }
 
                 set({
                     mesocycles: updatedMesocycles,
                     hasUnsavedChanges: true,
-                    selectedBlockId: tempId,
+                    selectedBlockId: isProgression ? null : tempId, // Don't verify selection if multiple added? Or select first?
                 });
             },
 
@@ -287,7 +342,7 @@ export const useEditorStore = create<EditorState>()(
                 set({ mesocycles: updatedMesocycles, hasUnsavedChanges: true });
             },
 
-            // Delete a block
+            // Delete a block (Single)
             deleteBlock: (blockId) => {
                 const { mesocycles, selectedBlockId } = get();
 
@@ -305,6 +360,31 @@ export const useEditorStore = create<EditorState>()(
                     mesocycles: updatedMesocycles,
                     hasUnsavedChanges: true,
                     selectedBlockId: selectedBlockId === blockId ? null : selectedBlockId,
+                });
+            },
+
+            // Delete entire progression
+            deleteProgression: (progressionId) => {
+                const { mesocycles, selectedBlockId } = get();
+
+                const updatedMesocycles = mesocycles.map(meso => ({
+                    ...meso,
+                    days: meso.days.map(day => ({
+                        ...day,
+                        blocks: day.blocks
+                            .filter(block => block.progression_id !== progressionId)
+                            .map((block, idx) => ({ ...block, order_index: idx })),
+                    })),
+                }));
+
+                // If selected block was part of deleted progression, deselect it
+                // We don't easily know if selectedBlockId was part of it without searching, 
+                // but checking store state after update is fine or just deselecting if gone.
+
+                set({
+                    mesocycles: updatedMesocycles,
+                    hasUnsavedChanges: true,
+                    selectedBlockId: null, // Safest to just deselect
                 });
             },
 
@@ -354,6 +434,9 @@ export const useEditorStore = create<EditorState>()(
                     ...meso,
                     days: meso.days.map(day => {
                         if (day.id === finalTargetDayId) {
+                            // If duplicating a progression block, should we keep progression_id? 
+                            // Usually Duplicate = New Instance, so NO progression_id or NEW progression_id?
+                            // Default behavior: Independent copy.
                             const newBlock: DraftWorkoutBlock = {
                                 ...sourceBlock!,
                                 id: tempId,
@@ -361,6 +444,7 @@ export const useEditorStore = create<EditorState>()(
                                 day_id: finalTargetDayId,
                                 order_index: day.blocks.length,
                                 isDirty: true,
+                                progression_id: null // Reset progression on copy
                             };
                             return { ...day, blocks: [...day.blocks, newBlock], isDirty: true };
                         }
@@ -620,6 +704,7 @@ export const useEditorStore = create<EditorState>()(
             partialize: (state) => ({
                 programId: state.programId,
                 programName: state.programName,
+                programCoachName: state.programCoachName,
                 mesocycles: state.mesocycles,
                 selectedWeek: state.selectedWeek,
                 hasUnsavedChanges: state.hasUnsavedChanges,

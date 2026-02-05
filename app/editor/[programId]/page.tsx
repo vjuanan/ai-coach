@@ -34,9 +34,12 @@ export default function EditorPage() {
                     return;
                 }
 
+                const coachName = (programData.program.coach as any)?.full_name || 'Coach';
+
                 initializeEditor(
                     programData.program.id,
                     programData.program.name,
+                    coachName,
                     programData.program.client,
                     programData.program.attributes,
                     stimulusFeatures || []

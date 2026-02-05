@@ -65,6 +65,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         updateMesocycle,
         programAttributes,
         hasUnsavedChanges,
+        programCoachName,
         blockBuilderMode,
         blockBuilderDayId,
         exitBlockBuilder,
@@ -148,17 +149,31 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             .forEach(meso => {
                 meso.days.forEach(day => {
                     day.blocks.forEach(block => {
-                        if (block.type === 'strength_linear' && block.name) {
+                        // Check if block is part of a progression OR is explicitly strength_linear
+                        // We prioritize progression_id but keep strength_linear for backward compatibility
+                        const isProgression = block.progression_id || block.type === 'strength_linear';
+
+                        if (isProgression && block.name) {
                             const config = block.config as Record<string, unknown>;
-                            const percentage = config.percentage as string || '';
-                            const sets = config.sets as number || 0;
-                            const reps = config.reps as number || 0;
-                            const value = percentage || `${sets}x${reps}`;
+                            let value = '';
+
+                            if (block.type === 'strength_linear') {
+                                const percentage = config.percentage as string || '';
+                                const sets = config.sets as number || 0;
+                                const reps = config.reps as number || 0;
+                                value = percentage || `${sets}x${reps}`;
+                            } else if (block.type === 'metcon_structured') {
+                                // For metcons, maybe show time cap, rounds, or just "Check"
+                                value = (config.time_cap as string) || (config.rounds as string) || 'Active';
+                            } else {
+                                value = 'Active';
+                            }
 
                             if (!progressionMap.has(block.name)) {
                                 progressionMap.set(block.name, []);
                             }
                             const arr = progressionMap.get(block.name)!;
+                            // Fill gaps with dashes if missed weeks
                             while (arr.length < meso.week_number - 1) {
                                 arr.push('-');
                             }
@@ -400,7 +415,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                 onClose={() => setShowExport(false)}
                 programName={programName}
                 clientInfo={{ name: 'Cliente' }}
-                coachName="Coach"
+                coachName={programCoachName || 'Coach'}
                 monthlyStrategy={monthlyStrategy}
                 weeks={exportWeeks}
                 strategy={exportStrategy}

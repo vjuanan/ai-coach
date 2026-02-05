@@ -1444,7 +1444,7 @@ export async function getFullProgramData(programId: string) {
     // If this query fails or returns null, the user does NOT have access (RLS on 'programs' working correctly)
     const { data: program, error: progError } = await supabase
         .from('programs')
-        .select('*, client:clients(*)')
+        .select('*, client:clients(*), coach:coaches(full_name)')
         .eq('id', programId)
         .single();
 
