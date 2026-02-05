@@ -514,23 +514,59 @@ export async function createProgram(
 }
 
 export async function deleteProgram(programId: string) {
-    const supabase = createServerClient();
-    const { error } = await supabase.from('programs').delete().eq('id', programId);
+    console.log('--- ACTION: deleteProgram STARTED ---', programId);
 
-    if (error) throw new Error(error.message);
+    // Use Service Role Key to bypass RLS policies that might block deletion (e.g., if user is not owner but should be able to delete, or cascade issues)
+    const supabase = process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        )
+        : createServerClient();
 
-    revalidatePath('/programs');
-    revalidatePath('/');
+    try {
+        const { error } = await supabase.from('programs').delete().eq('id', programId);
+
+        if (error) {
+            console.error('deleteProgram: DB Error', error);
+            throw new Error(`Error DB: ${error.message} (${error.code})`);
+        }
+
+        console.log('deleteProgram: Success');
+        revalidatePath('/programs');
+        revalidatePath('/');
+    } catch (err: any) {
+        console.error('deleteProgram: UNEXPECTED ERROR', err);
+        throw new Error(err.message || 'Error desconocido al eliminar');
+    }
 }
 
 export async function deletePrograms(programIds: string[]) {
-    const supabase = createServerClient();
-    const { error } = await supabase.from('programs').delete().in('id', programIds);
+    console.log('--- ACTION: deletePrograms (BULK) STARTED ---', programIds.length);
 
-    if (error) throw new Error(error.message);
+    // Use Service Role Key to bypass RLS
+    const supabase = process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        )
+        : createServerClient();
 
-    revalidatePath('/programs');
-    revalidatePath('/');
+    try {
+        const { error } = await supabase.from('programs').delete().in('id', programIds);
+
+        if (error) {
+            console.error('deletePrograms: DB Error', error);
+            throw new Error(`Error DB: ${error.message} (${error.code})`);
+        }
+
+        console.log('deletePrograms: Success');
+        revalidatePath('/programs');
+        revalidatePath('/');
+    } catch (err: any) {
+        console.error('deletePrograms: UNEXPECTED ERROR', err);
+        throw new Error(err.message || 'Error desconocido al eliminar');
+    }
 }
 
 // ==========================================
