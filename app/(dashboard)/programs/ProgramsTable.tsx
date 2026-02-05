@@ -77,8 +77,9 @@ export function ProgramsTable({
                             return (
                                 <tr
                                     key={program.id}
+                                    onClick={() => isSelectionMode && toggleSelection(program.id)} // Allow row click to select in selection mode
                                     className={`
-                                        group hover:bg-gray-50/80 transition-colors
+                                        group hover:bg-gray-50/80 transition-colors cursor-pointer
                                         ${isSelected ? 'bg-cv-accent/5 hover:bg-cv-accent/10' : ''}
                                     `}
                                 >
@@ -86,7 +87,10 @@ export function ProgramsTable({
                                     <td className="py-4 px-6">
                                         <div className="flex items-center justify-center">
                                             <button
-                                                onClick={() => toggleSelection(program.id, false)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleSelection(program.id, false);
+                                                }}
                                                 className={`
                                                     w-5 h-5 rounded-md border transition-all duration-200 flex items-center justify-center
                                                     ${isSelected || isSelectionMode
