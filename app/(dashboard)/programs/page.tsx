@@ -189,7 +189,7 @@ export default function ProgramsPage() {
 
                         {isSelectionMode ? (
                             <button
-                                onClick={() => setIsDeleting(true)} // Open modal directly
+                                onClick={() => setProgramToDelete('BULK')} // Open confirmation modal correctly
                                 className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors flex items-center justify-center relative group"
                                 title="Eliminar selección"
                             >
