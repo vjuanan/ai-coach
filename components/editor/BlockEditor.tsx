@@ -229,7 +229,9 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     onClick={() => {
                         if (isValid) {
                             // Mark as completed when clicking OK
-                            handleConfigChange('is_completed', true);
+                            // Use explicit update to ensure it captures current state correctly
+                            const newConfig = { ...block.config, is_completed: true };
+                            updateBlock(blockId, { config: newConfig as WorkoutConfig });
                             selectBlock(null);
                         }
                     }}
@@ -419,15 +421,17 @@ function DynamicMethodologyForm({ methodology, config, onChange }: DynamicFormPr
 
     return (
         <div className="space-y-3">
-            {/* Compact row for simple inputs */}
+            {/* Compact row for simple inputs - Single horizontal line wrapping if needed */}
             {simpleFields.length > 0 && (
-                <div className="flex flex-wrap gap-2 items-stretch">
+                <div className="flex flex-wrap gap-3 items-end">
                     {simpleFields.map((field: TrainingMethodologyFormField) => (
-                        <div key={field.key} className="flex-1 min-w-[80px] max-w-[150px]">
+                        <div key={field.key}>
                             <DynamicField
                                 field={field}
                                 value={config[field.key]}
                                 onChange={(value) => onChange(field.key, value)}
+                                allConfig={config}
+                                onConfigChange={onChange}
                             />
                         </div>
                     ))}
@@ -451,9 +455,12 @@ interface DynamicFieldProps {
     field: TrainingMethodologyFormField;
     value: unknown;
     onChange: (value: unknown) => void;
+    // Optional props for advanced fields like Tempo that need context
+    allConfig?: Record<string, unknown>;
+    onConfigChange?: (key: string, value: unknown) => void;
 }
 
-function DynamicField({ field, value, onChange }: DynamicFieldProps) {
+function DynamicField({ field, value, onChange, allConfig, onConfigChange }: DynamicFieldProps) {
     if (field.type === 'movements_list') {
         return (
             <MovementsListField
@@ -482,6 +489,43 @@ function DynamicField({ field, value, onChange }: DynamicFieldProps) {
                 </select>
                 {field.help && (
                     <p className="text-xs text-cv-text-tertiary mt-1">{field.help}</p>
+                )}
+            </div>
+        );
+    }
+
+    // Special handling for 'tempo' with toggle
+    if (field.key === 'tempo') {
+        const showTempo = allConfig?.show_tempo === true || (!!value && value !== '');
+
+        const toggleTempo = () => {
+            if (onConfigChange) {
+                const newValue = !showTempo;
+                onConfigChange('show_tempo', newValue);
+                if (!newValue) {
+                    onChange(''); // Clear value
+                }
+            }
+        };
+
+        return (
+            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${showTempo ? 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700' : 'border-dashed border-slate-300 dark:border-slate-600'}`}>
+                <button
+                    onClick={toggleTempo}
+                    type="button"
+                    className={`w-8 h-4 rounded-full transition-colors relative focus:outline-none ${showTempo ? 'bg-cv-accent' : 'bg-slate-300 dark:bg-slate-600'}`}
+                >
+                    <span className={`block w-3 h-3 bg-white rounded-full transition-transform absolute top-0.5 left-0.5 ${showTempo ? 'translate-x-4' : 'translate-x-0'}`} />
+                </button>
+                <span className={`text-sm font-semibold whitespace-nowrap ${showTempo ? 'text-cv-text-primary' : 'text-cv-text-tertiary'}`}>{field.label}</span>
+                {showTempo && (
+                    <input
+                        type="text"
+                        value={(value as string) || ''}
+                        onChange={(e) => onChange(e.target.value)}
+                        placeholder="30X1"
+                        className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-16 text-center animate-in fade-in duration-150"
+                    />
                 )}
             </div>
         );
@@ -517,6 +561,10 @@ function DynamicField({ field, value, onChange }: DynamicFieldProps) {
         </div>
     );
 }
+
+// -------------------------------------------------------------
+// Force sync for this change
+// -------------------------------------------------------------
 
 // ============================================
 // MOVEMENTS LIST FIELD
