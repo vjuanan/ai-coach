@@ -14,6 +14,7 @@ interface SmartExerciseInputProps {
     inputRef?: React.RefObject<HTMLInputElement>;
 }
 
+// Force redeploy
 export function SmartExerciseInput({
     value,
     onChange,
