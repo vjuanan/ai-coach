@@ -1,6 +1,3 @@
-# Lessons Learned
-
-- **Verification & Caching**: When removing UI components in a Next.js environment, hot module replacement (HMR) or browser caching might persist the old component in the active session. Verification should ensure a hard refresh or server restart if possible, or verify source code changes as the source of truth when UI behavior is inconsistent.
-- **Data Validation & Export Clarity**: 
-    - Always implement strict validation for user inputs (e.g., prevent saving blocks without essential data like Sets/Reps). Incomplete data leads to confusing UI states.
-    - separate quantitative data (Sets/Reps) from qualitative notes (Technical cues) in exports. Mixing them confusingly can degrade the user experience.
+- **Persistence**: Next.js caches UI components aggressively. When verifying changes, always perform a hard refresh or check source code if the UI doesn't seem to update immediately.
+- **Verification**: NEVER ask the user to manually verify changes. ALWAYS use the browser tool to verify changes on the production URL (`https://aicoach.epnstore.com.ar/`) or localhost. Take screenshots as proof. If validation fails, fix it immediately without asking.
+- **Walkthroughs**: Walkthrough artifacts should document *results* of automated verification (with screenshots), not instructions for the user to verify.

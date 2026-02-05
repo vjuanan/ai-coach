@@ -57,6 +57,52 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
         }
     };
 
+    const getBlockPreview = () => {
+        switch (block.type) {
+            case 'strength_linear':
+                const sets = config.sets as number;
+                const reps = config.reps as string;
+                const percentage = config.percentage as string;
+                return (
+                    <div className="text-sm">
+                        {sets && reps ? `${sets} x ${reps}` : 'Configurar...'}
+                        {percentage && <span className="text-cv-accent ml-1">@ {percentage}</span>}
+                    </div>
+                );
+
+            case 'metcon_structured':
+                const format = block.format;
+                const movements = config.movements as string[] || [];
+                return (
+                    <div>
+                        {format && (
+                            <span className="cv-badge-accent mb-1">{formatLabels[format] || format}</span>
+                        )}
+                        {movements.length > 0 && (
+                            <div className="text-xs text-cv-text-tertiary mt-1 truncate">
+                                {movements.slice(0, 2).join(', ')}
+                                {movements.length > 2 && ` +${movements.length - 2} más`}
+                            </div>
+                        )}
+                        {!format && movements.length === 0 && (
+                            <span className="text-cv-text-tertiary text-xs">Configurar entreno...</span>
+                        )}
+                    </div>
+                );
+
+            case 'free_text':
+                const content = config.content as string;
+                return (
+                    <div className="text-xs text-cv-text-tertiary truncate">
+                        {content || 'Añadir notas...'}
+                    </div>
+                );
+
+            default:
+                return <span className="text-cv-text-tertiary text-xs">Configurar...</span>;
+        }
+    };
+
     return (
         <>
             <div
@@ -81,7 +127,9 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                                 {block.name || style.label}
                             </span>
                             {block.progression_id && (
-                                <TrendingUp size={10} className="text-cv-accent" title="Progresión vinculada" />
+                                <div title="Progresión vinculada">
+                                    <TrendingUp size={10} className="text-cv-accent" />
+                                </div>
                             )}
                         </div>
 
