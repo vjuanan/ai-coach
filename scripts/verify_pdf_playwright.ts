@@ -7,8 +7,8 @@ import { chromium } from 'playwright';
     const page = await browser.newPage();
 
     try {
-        const email = 'auto_verifier_1770313367333@example.com';
-        const password = 'Password123!';
+        const email = 'vjuanan@gmail.com';
+        const password = 'password123';
 
         console.log(`Navigating to Login: https://aicoach.epnstore.com.ar/login`);
         await page.goto('https://aicoach.epnstore.com.ar/login');
@@ -16,67 +16,67 @@ import { chromium } from 'playwright';
         // Login
         await page.fill('input[type="email"]', email);
         await page.fill('input[type="password"]', password);
-        await page.click('button[type="submit"]'); // Assuming button is submit type or generic button
+        await page.click('button[type="submit"]');
 
         await page.waitForURL('**/dashboard**', { timeout: 15000 }).catch(() => console.log('Login redirect timed out or already there'));
         console.log('Logged in. Navigating to Programs...');
 
         // Go to Programs
         await page.goto('https://aicoach.epnstore.com.ar/programs');
+        await page.waitForTimeout(2000); // Wait for load
 
-        // Create Program
-        // Look for "+" button or "Nuevo Programa"
-        // Heuristic based on e2e analysis: Global button or specific page button
-        const newProgBtn = page.getByRole('button', { name: 'Nuevo Programa' });
-        if (await newProgBtn.isVisible()) {
-            await newProgBtn.click();
+        // Check for existing program cards first
+        // Based on screenshot, cards have "Editar" button.
+        const editBtn = page.getByText('Editar →').first();
+
+        if (await editBtn.isVisible()) {
+            console.log('Found existing program. Clicking Edit...');
+            await editBtn.click();
         } else {
-            // Try the global + fab
-            await page.locator('button.cv-btn-primary').filter({ hasText: '+' }).click();
-            await page.getByText('Nuevo Programa').click();
+            console.log('No programs found. Looking for Create + button...');
+            const headerBtn = page.locator('header button, button.bg-cv-accent').filter({ hasText: '+' }).first();
+            if (await headerBtn.isVisible()) {
+                await headerBtn.click();
+                // Check for dropdown
+                const menuOption = page.getByText('Nuevo Programa');
+                if (await menuOption.isVisible()) {
+                    await menuOption.click();
+                }
+            } else {
+                // Fallback to empty state button
+                await page.locator('main button').filter({ hasText: '+' }).first().click();
+            }
         }
 
-        // Wait for editor
-        await page.waitForURL('**/editor/**', { timeout: 10000 });
-        console.log('In Editor. Adding Block...');
+        // Wait for editor redirect
+        console.log('Waiting for editor redirect...');
+        await page.waitForURL('**/editor/**', { timeout: 15000 });
+        console.log('In Editor.');
 
-        // Add Block
-        // Need to find "Añadir Bloque" button
-        await page.getByText('Añadir Bloque').first().click();
-
-        // Select Type "Fuerza" (Strength) - assuming it's an option in a dropdown or modal
-        await page.getByText('Fuerza').click(); // Might need adjustment based on real UI
-        // If it opens a modal/form:
-        await page.fill('input[name="exercise"]', 'Back Squat Verify'); // Guessing selector
-        // Actually, BlockEditor.tsx structure is complex. 
-        // Let's just screenshot the editor first to see where we are, then try to act?
-        // No, I need data for PDF.
-
-        // Simpler: Just Export immediately if allowed?
-        // Often empty programs export empty PDFs.
-
-        // Let's try to find inputs.
-        // Based on BlockEditor.tsx:
-        // It has `input[placeholder="Nombre del bloque"]`?
-        // Or just generic inputs.
-        // Let's try typing blindly into the first visible input if specific one not found.
-
-        // Better: Just click Export and see if it renders the headers/coach name at least.
-        console.log('Attempting Export...');
-        await page.getByText('Exportar').click();
+        // Click Export
+        console.log('Looking for Export button...');
+        // Try to be very specific about the export button
+        const exportBtn = page.getByText('Exportar').first();
+        if (await exportBtn.isVisible()) {
+            await exportBtn.click();
+        } else {
+            // Fallback: wait and try again
+            await page.waitForTimeout(2000);
+            await page.getByText('Exportar').click();
+        }
 
         // Wait for Modal
-        await page.waitForSelector('div[role="dialog"]', { timeout: 5000 }); // Assuming Radix UI or similar
+        await page.waitForSelector('div[role="dialog"]', { timeout: 5000 });
 
         // Wait for PDF preview rendering
         await page.waitForTimeout(3000);
 
-        await page.screenshot({ path: 'production_playwright_verified.png', fullPage: true });
-        console.log('Screenshot saved: production_playwright_verified.png');
+        await page.screenshot({ path: 'production_user_verified.png', fullPage: true });
+        console.log('Screenshot saved: production_user_verified.png');
 
     } catch (error) {
         console.error('Verification Failed:', error);
-        await page.screenshot({ path: 'verification_failed.png' });
+        await page.screenshot({ path: 'verification_failed_retry.png' });
     } finally {
         await browser.close();
     }
