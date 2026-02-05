@@ -1,7 +1,8 @@
 import { Topbar } from '@/components/app-shell/Topbar';
-import { getClient, getClientPrograms } from '@/lib/actions';
+import { getClient, getClientPrograms, getClients } from '@/lib/actions';
 import { getCoaches } from '@/lib/actions-coach';
 import { CoachAssigner } from '@/components/athletes/CoachAssigner';
+import { GymAssigner } from '@/components/athletes/GymAssigner';
 import {
     Mail,
     Calendar,
@@ -96,6 +97,14 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
                             athleteId={athlete.id}
                             currentCoachId={athlete.coach_id}
                             coaches={coaches}
+                        />
+
+                        {/* Gym Assignment */}
+                        <GymAssigner
+                            athleteId={athlete.id}
+                            currentGymId={(athlete as any).gym?.id || (athlete as any).gym_id}
+                            gymName={(athlete as any).gym?.name}
+                            gyms={await getClients('gym').then(data => data.filter((c: any) => c.id !== athlete.id))}
                         />
 
                         {/* Benchmarks */}
