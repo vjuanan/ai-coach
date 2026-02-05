@@ -211,74 +211,80 @@ export function ExportPreview({
                                     <div className="p-6 border-b border-gray-800 bg-gradient-to-b from-gray-900/50 to-transparent">
                                         {/* Main Focus */}
                                         {monthlyStrategy.focus && (
-                                            <div className="mb-6">
-                                                <div className="flex items-center gap-2 mb-3">
-                                                    <Target size={18} className="text-cv-accent" />
-                                                    <h2 className="text-lg font-semibold text-cv-accent uppercase tracking-wide">
+                                            <div className="mb-6 flex gap-3">
+                                                <Target size={18} className="text-cv-accent shrink-0 mt-1" />
+                                                <div>
+                                                    <h2 className="text-lg font-semibold text-cv-accent uppercase tracking-wide mb-1">
                                                         Foco del Mesociclo
                                                     </h2>
+                                                    <p className="text-gray-200 text-lg leading-relaxed">{monthlyStrategy.focus}</p>
                                                 </div>
-                                                <p className="text-gray-200 text-lg pl-7">{monthlyStrategy.focus}</p>
                                             </div>
                                         )}
 
                                         {/* Progressions - THE MAIN FOCUS */}
                                         {monthlyStrategy.progressions && monthlyStrategy.progressions.length > 0 && (
-                                            <div className="mb-6">
-                                                <div className="flex items-center gap-2 mb-4">
-                                                    <TrendingUp size={18} className="text-green-500" />
-                                                    <h2 className="text-lg font-semibold text-green-500 uppercase tracking-wide">
+                                            <div className="mb-6 flex gap-3">
+                                                <TrendingUp size={18} className="text-green-500 shrink-0 mt-1" />
+                                                <div className="flex-1 min-w-0">
+                                                    <h2 className="text-lg font-semibold text-green-500 uppercase tracking-wide mb-3">
                                                         Progresiones
                                                     </h2>
-                                                </div>
-                                                <div className="bg-gray-800/40 rounded-xl p-4 space-y-4 border border-gray-800 ml-7">
-                                                    {/* Header Row */}
-                                                    <div className="grid grid-cols-5 gap-2 text-center">
-                                                        <div className="text-left text-gray-500 text-xs uppercase tracking-wide">Ejercicio</div>
-                                                        <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 1</div>
-                                                        <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 2</div>
-                                                        <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 3</div>
-                                                        <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 4</div>
-                                                    </div>
-                                                    {/* Progression Rows */}
-                                                    {monthlyStrategy.progressions.map((prog, idx) => (
-                                                        <div key={idx} className="grid grid-cols-5 gap-2 items-center py-2 border-t border-gray-800/50">
-                                                            <div className="text-left">
-                                                                <span className="text-white font-medium">{prog.name}</span>
-                                                                {prog.notes && (
-                                                                    <p className="text-gray-500 text-xs mt-0.5">{prog.notes}</p>
-                                                                )}
-                                                            </div>
-                                                            {prog.progression.map((value, weekIdx) => (
-                                                                <div key={weekIdx} className="text-center">
-                                                                    <span className={`font-mono text-sm ${weekIdx === prog.progression.length - 1 ? 'text-green-400 font-bold' : 'text-gray-300'
-                                                                        }`}>
-                                                                        {value}
-                                                                    </span>
-                                                                </div>
-                                                            ))}
-                                                            {/* Fill empty cells if less than 4 weeks */}
-                                                            {Array.from({ length: 4 - prog.progression.length }).map((_, i) => (
-                                                                <div key={`empty-${i}`} className="text-center text-gray-600">-</div>
-                                                            ))}
+                                                    <div className="bg-gray-800/40 rounded-xl p-4 space-y-4 border border-gray-800">
+                                                        {/* Header Row */}
+                                                        <div className="grid grid-cols-5 gap-2 text-center">
+                                                            <div className="text-left text-gray-500 text-xs uppercase tracking-wide">Ejercicio</div>
+                                                            <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 1</div>
+                                                            <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 2</div>
+                                                            <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 3</div>
+                                                            <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 4</div>
                                                         </div>
-                                                    ))}
+                                                        {/* Progression Rows */}
+                                                        {monthlyStrategy.progressions.map((prog, idx) => (
+                                                            <div key={idx} className="grid grid-cols-5 gap-2 items-center py-2 border-t border-gray-800/50">
+                                                                <div className="text-left">
+                                                                    <span className="text-white font-medium">{prog.name}</span>
+                                                                    {prog.notes && (
+                                                                        <p className="text-gray-500 text-xs mt-0.5">{prog.notes}</p>
+                                                                    )}
+                                                                </div>
+                                                                {prog.progression.map((value, weekIdx) => (
+                                                                    <div key={weekIdx} className="text-center">
+                                                                        <span className={`font-mono text-sm ${weekIdx === prog.progression.length - 1 ? 'text-green-400 font-bold' : 'text-gray-300'
+                                                                            }`}>
+                                                                            {value}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                                {/* Fill empty cells if less than 4 weeks */}
+                                                                {Array.from({ length: 4 - prog.progression.length }).map((_, i) => (
+                                                                    <div key={`empty-${i}`} className="text-center text-gray-600">-</div>
+                                                                ))}
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}
 
                                         {/* Objectives */}
                                         {monthlyStrategy.objectives && monthlyStrategy.objectives.length > 0 && (
-                                            <div className="pl-7">
-                                                <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Objetivos del Ciclo</p>
-                                                <ul className="space-y-1">
-                                                    {monthlyStrategy.objectives.map((obj, idx) => (
-                                                        <li key={idx} className="flex items-start gap-2 text-sm text-gray-300">
-                                                            <span className="text-cv-accent mt-1">•</span>
-                                                            {obj}
-                                                        </li>
-                                                    ))}
-                                                </ul>
+                                            // Align with the text content of the sections above (approx 18px icon + 12px gap = 30px indent)
+                                            // or just use specific padding if no icon.
+                                            // Let's use a placeholder matching the gap to key alignment perfect
+                                            <div className="flex gap-3">
+                                                <div className="w-[18px] shrink-0" /> {/* Spacer for alignment */}
+                                                <div>
+                                                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Objetivos del Ciclo</p>
+                                                    <ul className="space-y-1">
+                                                        {monthlyStrategy.objectives.map((obj, idx) => (
+                                                            <li key={idx} className="flex items-start gap-2 text-sm text-gray-300">
+                                                                <span className="text-cv-accent mt-1">•</span>
+                                                                {obj}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
                                             </div>
                                         )}
                                     </div>
