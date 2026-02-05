@@ -1,3 +1,5 @@
 - **Persistence**: Next.js caches UI components aggressively. When verifying changes, always perform a hard refresh or check source code if the UI doesn't seem to update immediately.
 - **Verification**: NEVER ask the user to manually verify changes. ALWAYS use the browser tool to verify changes on the production URL (`https://aicoach.epnstore.com.ar/`) or localhost. Take screenshots as proof. If validation fails, fix it immediately without asking.
+- **Autonomous Auth**: If authentication is required for verification, FIND the credentials (in env files, seeds, or memory). Do not ask the user for access if you can bypass it or log in yourself.
+- **Verification Loop**: If a fix is deployed, verify it yourself immediately. Do not stop until you have visual proof.
 - **Walkthroughs**: Walkthrough artifacts should document *results* of automated verification (with screenshots), not instructions for the user to verify.
