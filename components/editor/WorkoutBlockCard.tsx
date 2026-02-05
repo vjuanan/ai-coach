@@ -1,3 +1,5 @@
+'use client';
+
 import { useEditorStore } from '@/lib/store';
 import { GripVertical, Copy, Trash2, ChevronDown, TrendingUp, Check, X } from 'lucide-react';
 import { useState } from 'react';

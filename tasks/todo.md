@@ -1,14 +1,29 @@
-# Bug: Progresión no se guarda
+# Delete Block on Hover
 
-## Estado: En Progreso
+## Objetivo
+Agregar funcionalidad de eliminación de bloques con icono X al hacer hover.
+- Bloque vacío → eliminar inmediatamente
+- Bloque con contenido → pedir confirmación
 
-### [/] Fix persistencia de `progression_id`
-- [x] Identificar causa raíz: `saveMesocycleChanges` no incluye `progression_id`
-- [ ] Agregar `progression_id` al insert de bloques en `lib/actions.ts`
-- [ ] Push y verificar en producción
+## Tareas
 
-### [ ] Verificación
-- [ ] Login con vjuanan@gmail.com
-- [ ] Activar progresión en Back Squat
-- [ ] Verificar que aparece en todas las semanas
-- [ ] Verificar que al recargar, el toggle sigue activo
+- [x] Analizar estructura actual de `WorkoutBlockCard`
+- [x] Crear plan de implementación
+- [x] Modificar `WorkoutBlockCard.tsx`:
+  - [x] Agregar icono X en lugar de Trash2
+  - [x] Crear función `isBlockEmpty()` para determinar si un bloque tiene contenido
+  - [x] Agregar diálogo de confirmación para bloques con contenido
+- [x] Actualizar estilos del botón X (hover rojo)
+- [x] Push a GitHub
+- [ ] Verificar en producción (pendiente - error de cuota del browser)
+
+## Cambios Realizados
+
+### `components/editor/WorkoutBlockCard.tsx`
+- Agregado ícono `X` de lucide-react
+- Nueva función `isBlockEmpty()` que detecta si el bloque tiene contenido según su tipo
+- Lógica condicional en `handleDelete`:
+  - Progresión → muestra diálogo de progresión
+  - Bloque vacío → elimina inmediatamente
+  - Bloque con contenido → muestra nuevo diálogo de confirmación
+- Nuevo diálogo de confirmación con botones "Cancelar" y "Eliminar"
