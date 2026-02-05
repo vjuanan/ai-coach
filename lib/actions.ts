@@ -764,7 +764,11 @@ export async function getClient(id: string) {
                 training_place: profile.training_place,
                 level: profile.experience_level,
                 injuries: profile.injuries,
-                preferences: profile.training_preferences
+                preferences: profile.training_preferences,
+                equipment: profile.equipment_list,
+                days_per_week: profile.days_per_week,
+                minutes_per_session: profile.minutes_per_session,
+                whatsapp: profile.whatsapp_number
             },
             created_at: profile.created_at,
             updated_at: profile.updated_at,
@@ -798,6 +802,80 @@ export async function getClientPrograms(clientId: string) {
         return [];
     }
     return data;
+}
+
+export async function updateAthleteProfile(clientId: string, data: any) {
+    const supabase = createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Check permissions (Coach of athlete, or the athlete themselves)
+    // For now, we rely on RLS and logic checks.
+
+    // 1. Try updating PROFILES table first (for self-registered users)
+    // We try to find a profile with this ID.
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', clientId)
+        .single();
+
+    if (profile) {
+        // Map the flat data back to profile columns
+        const updates: any = {};
+        if (data.dob !== undefined) updates.birth_date = data.dob;
+        if (data.height !== undefined) updates.height = data.height;
+        if (data.weight !== undefined) updates.weight = data.weight;
+        if (data.goal !== undefined) updates.main_goal = data.goal;
+        if (data.training_place !== undefined) updates.training_place = data.training_place;
+        if (data.equipment !== undefined) updates.equipment_list = Array.isArray(data.equipment) ? data.equipment : (data.equipment ? [data.equipment] : []);
+        if (data.days_per_week !== undefined) updates.days_per_week = data.days_per_week;
+        if (data.minutes_per_session !== undefined) updates.minutes_per_session = data.minutes_per_session;
+        if (data.level !== undefined) updates.experience_level = data.level;
+        if (data.injuries !== undefined) updates.injuries = data.injuries;
+        if (data.preferences !== undefined) updates.training_preferences = data.preferences;
+        if (data.whatsapp !== undefined) updates.whatsapp_number = data.whatsapp;
+
+        const { error } = await supabase
+            .from('profiles')
+            .update(updates)
+            .eq('id', clientId);
+
+        if (error) {
+            console.error('Error updating profile:', error);
+            throw new Error('Error al actualizar perfil');
+        }
+    } else {
+        // 2. Fallback to CLIENTS table (for coach-created athletes)
+        // We update the 'details' JSONB column
+        // First fetch existing details to merge
+        const { data: client, error: fetchError } = await supabase
+            .from('clients')
+            .select('details')
+            .eq('id', clientId)
+            .single();
+
+        if (fetchError || !client) {
+            throw new Error('Cliente no encontrado');
+        }
+
+        const newDetails = {
+            ...client.details,
+            ...data // Merge new flat fields directly into details JSON
+        };
+
+        const { error } = await supabase
+            .from('clients')
+            .update({ details: newDetails })
+            .eq('id', clientId);
+
+        if (error) {
+            console.error('Error updating client details:', error);
+            throw new Error('Error al actualizar cliente');
+        }
+    }
+
+    revalidatePath(`/athletes/${clientId}`);
+    revalidatePath(`/athlete/dashboard`);
 }
 
 export async function createClient(clientData: {

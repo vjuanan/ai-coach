@@ -19,10 +19,15 @@ interface WorkoutBlock {
     content: string[];
 }
 
+interface DayData {
+    name: string;
+    blocks: WorkoutBlock[];
+}
+
 interface WeekData {
     weekNumber: number;
     focus: string;
-    blocks: WorkoutBlock[];
+    days: DayData[];
 }
 
 interface MonthlyProgression {
@@ -74,7 +79,7 @@ export function ExportPreview({
 
         try {
             const canvas = await html2canvas(exportRef.current, {
-                backgroundColor: '#0A0A0B',
+                backgroundColor: '#111827', // Softer black (gray-900)
                 scale: 2,
                 useCORS: true,
             });
@@ -167,7 +172,7 @@ export function ExportPreview({
                         <div className="flex-1 overflow-auto p-4 md:p-6">
                             <div
                                 ref={exportRef}
-                                className="bg-[#0A0A0B] rounded-xl overflow-hidden max-w-3xl mx-auto"
+                                className="bg-[#111827] rounded-xl overflow-hidden max-w-3xl mx-auto shadow-2xl"
                                 style={{ minWidth: '500px' }}
                             >
                                 {/* ============================================ */}
@@ -191,7 +196,7 @@ export function ExportPreview({
                                             <p className="text-gray-400">{programName}</p>
                                         </div>
                                         {monthlyStrategy?.duration && (
-                                            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-900 rounded-lg">
+                                            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-800/50 rounded-lg border border-gray-700/50">
                                                 <Calendar size={16} className="text-cv-accent" />
                                                 <span className="text-sm text-gray-300">{monthlyStrategy.duration}</span>
                                             </div>
@@ -226,7 +231,7 @@ export function ExportPreview({
                                                         Progresiones
                                                     </h2>
                                                 </div>
-                                                <div className="bg-gray-900/70 rounded-xl p-4 space-y-4">
+                                                <div className="bg-gray-800/40 rounded-xl p-4 space-y-4 border border-gray-800">
                                                     {/* Header Row */}
                                                     <div className="grid grid-cols-5 gap-2 text-center">
                                                         <div className="text-left text-gray-500 text-xs uppercase tracking-wide">Ejercicio</div>
@@ -237,7 +242,7 @@ export function ExportPreview({
                                                     </div>
                                                     {/* Progression Rows */}
                                                     {monthlyStrategy.progressions.map((prog, idx) => (
-                                                        <div key={idx} className="grid grid-cols-5 gap-2 items-center py-2 border-t border-gray-800">
+                                                        <div key={idx} className="grid grid-cols-5 gap-2 items-center py-2 border-t border-gray-800/50">
                                                             <div className="text-left">
                                                                 <span className="text-white font-medium">{prog.name}</span>
                                                                 {prog.notes && (
@@ -294,7 +299,7 @@ export function ExportPreview({
                                             </>
                                         )}
                                         {strategy.considerations && (
-                                            <div className="bg-gray-900/50 rounded-lg p-3 mt-2">
+                                            <div className="bg-gray-800/50 rounded-lg p-3 mt-2">
                                                 <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Consideraciones del Coach</p>
                                                 <p className="text-gray-300 text-sm whitespace-pre-line">{strategy.considerations}</p>
                                             </div>
@@ -304,7 +309,7 @@ export function ExportPreview({
 
                                 {/* Technical Clarifications & Scaling (backwards compatibility) */}
                                 {!monthlyStrategy && strategy && (strategy.technicalClarifications || strategy.scalingAlternatives) && (
-                                    <div className="px-6 py-4 border-b border-gray-800 bg-gray-900/30">
+                                    <div className="px-6 py-4 border-b border-gray-800 bg-gray-800/30">
                                         <div className="grid grid-cols-2 gap-4">
                                             {strategy.technicalClarifications && (
                                                 <div>
@@ -326,7 +331,7 @@ export function ExportPreview({
                                 {/* WEEKLY BREAKDOWN */}
                                 {/* ============================================ */}
                                 {weeks && weeks.length > 0 && (
-                                    <div className="p-6 space-y-6">
+                                    <div className="p-6 space-y-8">
                                         <div className="flex items-center gap-2 mb-4">
                                             <Dumbbell size={18} className="text-orange-500" />
                                             <h2 className="text-lg font-semibold text-orange-500 uppercase tracking-wide">
@@ -335,38 +340,62 @@ export function ExportPreview({
                                         </div>
 
                                         {weeks.map((week, weekIdx) => (
-                                            <div key={weekIdx} className="bg-gray-900/40 rounded-xl p-4">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <h3 className="text-white font-semibold">
+                                            <div key={weekIdx} className="space-y-4">
+                                                {/* Week Header */}
+                                                <div className="flex items-center justify-between border-b border-gray-800 pb-2">
+                                                    <h3 className="text-white text-lg font-bold">
                                                         Semana {week.weekNumber}
                                                     </h3>
                                                     {week.focus && (
-                                                        <span className="text-xs text-gray-400 bg-gray-800 px-2 py-1 rounded">
+                                                        <span className="text-xs text-gray-400 bg-gray-800/80 px-2 py-1 rounded border border-gray-700/50">
                                                             {week.focus}
                                                         </span>
                                                     )}
                                                 </div>
 
-                                                <div className="space-y-3">
-                                                    {week.blocks.map((block, blockIdx) => (
-                                                        <div key={blockIdx} className="border-l-2 border-gray-700 pl-3">
-                                                            <div className="flex items-center gap-2 mb-1">
-                                                                <div className={`w-2 h-2 rounded-full ${block.type === 'strength_linear' ? 'bg-red-500' :
-                                                                    block.type === 'metcon_structured' ? 'bg-orange-500' :
-                                                                        block.type === 'warmup' ? 'bg-green-500' :
-                                                                            block.type === 'skill' ? 'bg-blue-500' :
-                                                                                'bg-gray-500'
-                                                                    }`} />
-                                                                <span className="text-sm font-medium text-white uppercase">
-                                                                    {block.name}
-                                                                </span>
+                                                {/* Days Grid */}
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {week.days && week.days.map((day, dayIdx) => (
+                                                        <div key={dayIdx} className="bg-gray-800/30 rounded-xl border border-gray-800/50 overflow-hidden flex flex-col h-full">
+
+                                                            {/* Day Header - Clearly distinct */}
+                                                            <div className="px-4 py-2 bg-gray-800/60 border-b border-gray-800/50 flex items-center justify-between">
+                                                                <h4 className="text-gray-200 font-semibold text-sm uppercase tracking-wide">
+                                                                    {day.name}
+                                                                </h4>
+                                                                <div className="h-1.5 w-1.5 rounded-full bg-gray-600"></div>
                                                             </div>
-                                                            <div className="space-y-0.5">
-                                                                {block.content.map((line, lineIdx) => (
-                                                                    <p key={lineIdx} className="text-gray-400 font-mono text-xs">
-                                                                        {line}
-                                                                    </p>
-                                                                ))}
+
+                                                            <div className="p-4 space-y-4 flex-1">
+                                                                {day.blocks.length > 0 ? (
+                                                                    day.blocks.map((block, blockIdx) => (
+                                                                        <div key={blockIdx} className="relative pl-3">
+                                                                            {/* Vertical line connector */}
+                                                                            <div className={`absolute left-0 top-1 bottom-1 w-0.5 rounded-full ${block.type === 'strength_linear' ? 'bg-red-500/80' :
+                                                                                block.type === 'metcon_structured' ? 'bg-orange-500/80' :
+                                                                                    block.type === 'warmup' ? 'bg-green-500/80' :
+                                                                                        block.type === 'skill' ? 'bg-blue-500/80' :
+                                                                                            'bg-gray-500/80'
+                                                                                }`} />
+
+                                                                            <div className="mb-1">
+                                                                                <span className="text-sm font-medium text-gray-100 block">
+                                                                                    {block.name}
+                                                                                </span>
+                                                                            </div>
+
+                                                                            <div className="space-y-0.5">
+                                                                                {block.content.map((line, lineIdx) => (
+                                                                                    <p key={lineIdx} className="text-gray-400 font-mono text-xs leading-relaxed">
+                                                                                        {line}
+                                                                                    </p>
+                                                                                ))}
+                                                                            </div>
+                                                                        </div>
+                                                                    ))
+                                                                ) : (
+                                                                    <p className="text-gray-600 text-xs italic py-2 text-center">Descanso</p>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     ))}
@@ -379,12 +408,13 @@ export function ExportPreview({
                                 {/* ============================================ */}
                                 {/* FOOTER - Coach Signature */}
                                 {/* ============================================ */}
-                                <div className="px-6 py-4 border-t border-gray-800 flex items-center justify-between">
+                                <div className="px-6 py-4 border-t border-gray-800 flex items-center justify-between bg-gray-900/50">
                                     <p className="text-gray-500 text-xs uppercase tracking-wider">
                                         Programado por {coachName}
                                     </p>
-                                    <p className="text-gray-600 text-xs font-mono">
-                                        CV-OS
+                                    <p className="text-gray-600 text-xs font-mono flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 bg-cv-accent rounded-full mb-px"></span>
+                                        AI COACH
                                     </p>
                                 </div>
                             </div>

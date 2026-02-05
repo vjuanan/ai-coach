@@ -3,7 +3,8 @@
 import { useCallback, useState, useMemo, useEffect } from 'react';
 import { useEditorStore } from '@/lib/store';
 import { WeekView } from './WeekView';
-import { SmartInspector } from './SmartInspector';
+// import { SmartInspector } from './SmartInspector';
+import { SingleDayView } from './SingleDayView';
 import { BlockBuilderPanel } from './BlockBuilderPanel';
 import { MesocycleStrategyForm, type MesocycleStrategy } from './MesocycleStrategyForm';
 import { useAutoSave, type SaveStatus } from './useAutoSave';
@@ -66,7 +67,8 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         hasUnsavedChanges,
         blockBuilderMode,
         blockBuilderDayId,
-        exitBlockBuilder
+        exitBlockBuilder,
+        enterBlockBuilder
     } = useEditorStore();
 
     // Auto-save hook
@@ -74,18 +76,12 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
     const [showExport, setShowExport] = useState(false);
     const [showStrategy, setShowStrategy] = useState(false);
-    const [inspectorOpen, setInspectorOpen] = useState(false);
 
     // Get current state for export
     const currentMesocycle = mesocycles.find(m => m.week_number === selectedWeek);
     const globalFocus = (programAttributes?.global_focus as string) || null;
 
-    // Open inspector when a block is selected (but NOT in Block Builder Mode)
-    useEffect(() => {
-        if (selectedBlockId && !blockBuilderMode) {
-            setInspectorOpen(true);
-        }
-    }, [selectedBlockId, blockBuilderMode]);
+
 
     // Handle ESC to exit Block Builder Mode
     useEffect(() => {
@@ -106,12 +102,6 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         return day ? dayNames[(day.day_number - 1) % 7] : '';
     }, [blockBuilderDayId, currentMesocycle]);
 
-    // Close inspector and deselect block
-    const handleCloseInspector = useCallback(() => {
-        setInspectorOpen(false);
-        selectBlock(null);
-    }, [selectBlock]);
-
     // Extract current strategy from mesocycle attributes
     const currentStrategy = useMemo((): MesocycleStrategy | undefined => {
         if (!currentMesocycle?.attributes) return undefined;
@@ -126,18 +116,24 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
     // Build monthly export data with all weeks
     const exportWeeks = useMemo(() => {
+        const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
         return mesocycles
             .sort((a, b) => a.week_number - b.week_number)
             .map(meso => ({
                 weekNumber: meso.week_number,
                 focus: meso.focus || '',
-                blocks: meso.days
-                    .filter(d => !d.is_rest_day)
-                    .flatMap(d => d.blocks.map(b => ({
-                        type: b.type,
-                        name: b.name || b.type,
-                        content: convertConfigToText(b.type, b.config)
-                    })))
+                days: meso.days
+                    .filter(d => !d.is_rest_day && d.blocks.length > 0) // Only include non-rest days with blocks
+                    .sort((a, b) => a.day_number - b.day_number)
+                    .map(d => ({
+                        name: dayNames[(d.day_number - 1) % 7] || `Día ${d.day_number}`,
+                        blocks: d.blocks.map(b => ({
+                            type: b.type,
+                            name: b.name || b.type,
+                            content: convertConfigToText(b.type, b.config)
+                        }))
+                    }))
             }));
     }, [mesocycles]);
 
@@ -353,18 +349,18 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             {blockBuilderMode && blockBuilderDayId ? (
                 /* SPLIT LAYOUT: Block Builder Mode Active */
                 <div className="flex-1 flex overflow-hidden">
-                    {/* Compressed Week View */}
-                    <div className="w-[40%] overflow-auto p-3 border-r border-slate-200 dark:border-slate-700 bg-gradient-to-br from-slate-50 to-white dark:from-cv-bg-primary dark:to-cv-bg-secondary">
+                    {/* Single Day View with Selector */}
+                    <div className="w-[350px] flex-shrink-0 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-primary z-10 shadow-xl">
                         {currentMesocycle && (
-                            <WeekView
+                            <SingleDayView
                                 mesocycle={currentMesocycle}
-                                programGlobalFocus={globalFocus}
-                                compressed={true}
+                                dayId={blockBuilderDayId}
+                                onSelectDay={(dayId: string) => enterBlockBuilder(dayId)}
                             />
                         )}
                     </div>
                     {/* Block Builder Panel */}
-                    <div className="w-[60%] overflow-hidden animate-in slide-in-from-right-4 duration-300">
+                    <div className="flex-1 overflow-hidden animate-in slide-in-from-right-4 duration-300">
                         <BlockBuilderPanel
                             dayId={blockBuilderDayId}
                             dayName={blockBuilderDayName}
@@ -387,13 +383,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                 </div>
             )}
 
-            {/* Floating Smart Inspector - Only show when NOT in Block Builder Mode */}
-            {!blockBuilderMode && (
-                <SmartInspector
-                    isOpen={inspectorOpen}
-                    onClose={handleCloseInspector}
-                />
-            )}
+
 
             {/* Strategy Modal */}
             <MesocycleStrategyForm

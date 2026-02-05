@@ -472,9 +472,29 @@ interface DynamicFormProps {
 function DynamicMethodologyForm({ methodology, config, onChange }: DynamicFormProps) {
     const fields = methodology.form_config?.fields || [];
 
+    // Group fields: Keep movements_list separate, group others
+    const simpleFields = fields.filter(f => f.type !== 'movements_list');
+    const complexFields = fields.filter(f => f.type === 'movements_list');
+
     return (
-        <div className="space-y-4">
-            {fields.map((field: TrainingMethodologyFormField) => (
+        <div className="space-y-3">
+            {/* Compact row for simple inputs */}
+            {simpleFields.length > 0 && (
+                <div className="flex flex-wrap gap-2 items-stretch">
+                    {simpleFields.map((field: TrainingMethodologyFormField) => (
+                        <div key={field.key} className="flex-1 min-w-[80px] max-w-[150px]">
+                            <DynamicField
+                                field={field}
+                                value={config[field.key]}
+                                onChange={(value) => onChange(field.key, value)}
+                            />
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Full width for complex fields */}
+            {complexFields.map((field: TrainingMethodologyFormField) => (
                 <DynamicField
                     key={field.key}
                     field={field}
@@ -528,15 +548,15 @@ function DynamicField({ field, value, onChange }: DynamicFieldProps) {
 
     if (field.type === 'number') {
         return (
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2">
-                <span className="text-xs font-semibold text-cv-text-tertiary uppercase tracking-wide min-w-[30px]">{field.label}</span>
+            <div className="bg-slate-50 dark:bg-slate-800/50 px-2 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 flex flex-col h-full justify-center">
+                <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none mb-0.5">{field.label}</span>
                 <input
                     type="number"
                     min={1}
                     value={(value as number) || ''}
                     onChange={(e) => onChange(parseInt(e.target.value) || null)}
                     placeholder={field.placeholder || '0'}
-                    className="flex-1 bg-transparent border-none p-0 text-sm focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300"
+                    className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 h-5 leading-5"
                 />
             </div>
         );
@@ -544,20 +564,15 @@ function DynamicField({ field, value, onChange }: DynamicFieldProps) {
 
     // Default: text input
     return (
-        <div className="space-y-1">
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col justify-center">
-                <span className="text-[10px] uppercase font-bold text-cv-text-tertiary mb-0.5 ml-0.5">{field.label}</span>
-                <input
-                    type="text"
-                    value={(value as string) || ''}
-                    onChange={(e) => onChange(e.target.value)}
-                    placeholder={field.placeholder}
-                    className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 text-cv-text-primary placeholder:text-slate-300"
-                />
-            </div>
-            {field.help && (
-                <p className="text-[10px] text-cv-text-tertiary px-1">{field.help}</p>
-            )}
+        <div className="bg-slate-50 dark:bg-slate-800/50 px-2 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 flex flex-col h-full justify-center">
+            <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none mb-0.5">{field.label}</span>
+            <input
+                type="text"
+                value={(value as string) || ''}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={field.placeholder}
+                className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 h-5 leading-5"
+            />
         </div>
     );
 }
@@ -638,78 +653,84 @@ interface FormProps {
 
 function StrengthForm({ config, onChange }: FormProps) {
     return (
-        <div className="space-y-3 animate-in fade-in duration-300">
-            {/* Primary Volume Controls */}
-            <div className="grid grid-cols-2 gap-3">
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2">
-                    <span className="text-xs font-semibold text-cv-text-tertiary uppercase w-12 tracking-wide">Sets</span>
-                    <input
-                        type="number"
-                        min={1}
-                        value={(config.sets as number) || ''}
-                        onChange={(e) => onChange('sets', parseInt(e.target.value) || null)}
-                        placeholder="3"
-                        className="flex-1 bg-transparent border-none p-0 text-sm text-center focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300"
-                    />
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2">
-                    <span className="text-xs font-semibold text-cv-text-tertiary uppercase tracking-wide">Reps</span>
-                    <input
-                        type="text"
-                        value={(config.reps as string) || ''}
-                        onChange={(e) => onChange('reps', e.target.value)}
-                        placeholder="10 or 3-3-3"
-                        className="flex-1 bg-transparent border-none p-0 text-sm text-center focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300"
-                    />
-                </div>
+        <div className="flex flex-wrap gap-2 items-stretch animate-in fade-in duration-300">
+            {/* Sets */}
+            <div className="flex-1 min-w-[70px] bg-slate-50 dark:bg-slate-800/50 px-2 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 flex flex-col justify-center">
+                <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none mb-0.5">Sets</span>
+                <input
+                    type="number"
+                    min={1}
+                    value={(config.sets as number) || ''}
+                    onChange={(e) => onChange('sets', parseInt(e.target.value) || null)}
+                    placeholder="3"
+                    className="w-full bg-transparent border-none p-0 text-sm text-left focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 h-5 leading-5"
+                />
             </div>
 
-            {/* Intensity & Load */}
-            <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-2 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2">
-                    <span className="text-xs font-semibold text-cv-text-tertiary uppercase tracking-wide whitespace-nowrap">% / Kg</span>
-                    <input
-                        type="text"
-                        value={(config.percentage as string) || ''}
-                        onChange={(e) => onChange('percentage', e.target.value)}
-                        placeholder="75% or 100kg"
-                        className="flex-1 bg-transparent border-none p-0 text-sm focus:ring-0 text-cv-text-primary font-medium"
-                    />
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2">
-                    <span className="text-xs font-semibold text-cv-text-tertiary uppercase tracking-wide">RPE</span>
-                    <input
-                        type="text"
-                        value={(config.rpe as string) || ''}
-                        onChange={(e) => onChange('rpe', e.target.value)}
-                        placeholder="8"
-                        className="flex-1 bg-transparent border-none p-0 text-sm text-center focus:ring-0 text-cv-text-primary font-medium"
-                    />
-                </div>
+            {/* Reps */}
+            <div className="flex-1 min-w-[70px] bg-slate-50 dark:bg-slate-800/50 px-2 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 flex flex-col justify-center">
+                <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none mb-0.5">Reps</span>
+                <input
+                    type="text"
+                    value={(config.reps as string) || ''}
+                    onChange={(e) => onChange('reps', e.target.value)}
+                    placeholder="10"
+                    className="w-full bg-transparent border-none p-0 text-sm text-left focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 h-5 leading-5"
+                />
             </div>
 
-            {/* Secondary Controls - Rest & Tempo */}
-            <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white dark:bg-cv-bg-secondary p-2 rounded-lg border border-slate-100 dark:border-slate-800 flex items-center gap-2 hover:border-slate-300 transition-colors">
-                    <Clock size={14} className="text-cv-text-tertiary" />
-                    <input
-                        type="text"
-                        value={(config.rest as string) || ''}
-                        onChange={(e) => onChange('rest', e.target.value)}
-                        placeholder="Rest (e.g. 2:00)"
-                        className="flex-1 bg-transparent border-none p-0 text-xs focus:ring-0 text-cv-text-secondary placeholder:text-cv-text-tertiary"
-                    />
+            {/* % / Load */}
+            <div className="flex-[1.5] min-w-[100px] bg-slate-50 dark:bg-slate-800/50 px-2 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 flex flex-col justify-center">
+                <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none mb-0.5">% / Kg</span>
+                <input
+                    type="text"
+                    value={(config.percentage as string) || ''}
+                    onChange={(e) => onChange('percentage', e.target.value)}
+                    placeholder="75%"
+                    className="w-full bg-transparent border-none p-0 text-sm text-left focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 h-5 leading-5"
+                />
+            </div>
+
+            {/* RPE */}
+            <div className="flex-1 min-w-[60px] bg-slate-50 dark:bg-slate-800/50 px-2 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 flex flex-col justify-center">
+                <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none mb-0.5">RPE</span>
+                <input
+                    type="text"
+                    value={(config.rpe as string) || ''}
+                    onChange={(e) => onChange('rpe', e.target.value)}
+                    placeholder="8"
+                    className="w-full bg-transparent border-none p-0 text-sm text-left focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 h-5 leading-5"
+                />
+            </div>
+
+            {/* Rest */}
+            <div className="flex-1 min-w-[80px] bg-white dark:bg-cv-bg-secondary px-2 py-1.5 rounded-md border border-slate-100 dark:border-slate-800 flex flex-col justify-center hover:border-slate-300 transition-colors">
+                <div className="flex items-center gap-1 mb-0.5">
+                    <Clock size={10} className="text-cv-text-tertiary" />
+                    <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none">Rest</span>
                 </div>
-                <div className="bg-white dark:bg-cv-bg-secondary p-2 rounded-lg border border-slate-100 dark:border-slate-800 flex items-center gap-2 hover:border-slate-300 transition-colors">
-                    <Timer size={14} className="text-cv-text-tertiary" />
-                    <input
-                        type="text"
-                        value={(config.tempo as string) || ''}
-                        onChange={(e) => onChange('tempo', e.target.value)}
-                        placeholder="Tempo (e.g. 30X1)"
-                        className="flex-1 bg-transparent border-none p-0 text-xs focus:ring-0 text-cv-text-secondary placeholder:text-cv-text-tertiary"
-                    />
+                <input
+                    type="text"
+                    value={(config.rest as string) || ''}
+                    onChange={(e) => onChange('rest', e.target.value)}
+                    placeholder="2:00"
+                    className="w-full bg-transparent border-none p-0 text-sm text-left focus:ring-0 text-cv-text-secondary placeholder:text-cv-text-tertiary h-5 leading-5"
+                />
+            </div>
+
+            {/* Tempo */}
+            <div className="flex-1 min-w-[80px] bg-white dark:bg-cv-bg-secondary px-2 py-1.5 rounded-md border border-slate-100 dark:border-slate-800 flex flex-col justify-center hover:border-slate-300 transition-colors">
+                <div className="flex items-center gap-1 mb-0.5">
+                    <Timer size={10} className="text-cv-text-tertiary" />
+                    <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none">Tempo</span>
                 </div>
+                <input
+                    type="text"
+                    value={(config.tempo as string) || ''}
+                    onChange={(e) => onChange('tempo', e.target.value)}
+                    placeholder="30X1"
+                    className="w-full bg-transparent border-none p-0 text-sm text-left focus:ring-0 text-cv-text-secondary placeholder:text-cv-text-tertiary h-5 leading-5"
+                />
             </div>
         </div>
     );

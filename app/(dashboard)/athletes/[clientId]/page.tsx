@@ -3,6 +3,7 @@ import { getClient, getClientPrograms, getClients } from '@/lib/actions';
 import { getCoaches } from '@/lib/actions-coach';
 import { CoachAssigner } from '@/components/athletes/CoachAssigner';
 import { GymAssigner } from '@/components/athletes/GymAssigner';
+import { ProfileDetailsEditor } from '@/components/athletes/ProfileDetailsEditor';
 import {
     Mail,
     Calendar,
@@ -107,7 +108,27 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
                             gyms={await getClients('gym').then(data => data.filter((c: any) => c.id !== athlete.id))}
                         />
 
-                        {/* Benchmarks */}
+                        {/* Profile Editor */}
+                        <ProfileDetailsEditor
+                            athleteId={athlete.id}
+                            initialData={{
+                                dob: details?.dob || (details as any).birth_date,
+                                height: details?.height,
+                                weight: details?.weight,
+                                goal: details?.goal || (details as any).main_goal,
+                                training_place: details?.training_place || (details as any).training_place,
+                                equipment: details?.equipment || (details as any).equipment_list,
+                                days_per_week: details?.days_per_week || (details as any).days_per_week,
+                                minutes_per_session: details?.minutes_per_session || (details as any).minutes_per_session,
+                                level: details?.level || (details as any).experience_level,
+                                injuries: details?.injuries,
+                                preferences: details?.preferences || (details as any).training_preferences,
+                                whatsapp: (athlete as any).phone || (details as any).whatsapp || (details as any).whatsapp_number,
+                                email: athlete.email
+                            }}
+                        />
+
+                        {/* Benchmarks (Kept separately as they are distinct from bio profile) */}
                         <div className="cv-card">
                             <h3 className="font-semibold text-cv-text-primary mb-4 flex items-center gap-2">
                                 <Trophy size={18} className="text-cv-text-tertiary" />
@@ -140,34 +161,6 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
                                     <p className="font-bold text-cv-accent">{Math.floor(details.franTime / 60)}:{(details.franTime % 60).toString().padStart(2, '0')}</p>
                                 </div>
                             )}
-                        </div>
-
-                        {/* Goal & Notes */}
-                        <div className="cv-card">
-                            <h3 className="font-semibold text-cv-text-primary mb-3 flex items-center gap-2">
-                                <Target size={18} className="text-cv-text-tertiary" />
-                                Objetivos y Notas
-                            </h3>
-                            <div className="space-y-4">
-                                {details?.goal && (
-                                    <div>
-                                        <p className="text-xs font-bold text-cv-text-tertiary uppercase mb-1">Meta Principal</p>
-                                        <p className="text-sm text-cv-text-secondary">{details.goal}</p>
-                                    </div>
-                                )}
-                                {details?.injuries && (
-                                    <div>
-                                        <p className="text-xs font-bold text-red-400 uppercase mb-1 flex items-center gap-1">
-                                            <Activity size={12} />
-                                            Lesiones / Notas
-                                        </p>
-                                        <p className="text-sm text-cv-text-secondary">{details.injuries}</p>
-                                    </div>
-                                )}
-                                {!details?.goal && !details?.injuries && (
-                                    <p className="text-sm text-cv-text-tertiary italic">Sin información</p>
-                                )}
-                            </div>
                         </div>
                     </div>
 
