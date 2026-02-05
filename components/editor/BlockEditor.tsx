@@ -192,51 +192,18 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         free_text: 'Texto Libre'
     };
 
-    // Validation Logic
+    // Validation Logic - Simplified: just need a name (or content for free_text)
     const validateBlock = (): boolean => {
         if (!block) return false;
 
-        // Basic check: Name must be present (except for free_text where content is enough, but name is still good practice)
-        // For now, allow null name for free_text if content exists, but UI forces name input anyway.
-        // Let's enforce name for everything for consistency, or at least a fallback.
-        if (!block.name && block.type !== 'free_text') return false;
-
-        const config = block.config || {};
-
-        if (block.type === 'strength_linear') {
-            // Must have ALL fields except Tempo
-            if (!config.sets || config.sets < 1) return false;
-            // Ensure strings are not empty/whitespace
-            if (!config.reps || String(config.reps).trim() === '') return false;
-            if (!config.percentage || String(config.percentage).trim() === '') return false;
-            if (!config.rpe || String(config.rpe).trim() === '') return false;
-            if (!config.rest || String(config.rest).trim() === '') return false;
-
-            return true;
-        }
-
-        if (block.type === 'metcon_structured') {
-            // Must have content OR movements
-            const hasMovements = Array.isArray(config.movements) && config.movements.length > 0 && config.movements.some(m => m.trim().length > 0);
-            return Boolean(config.content || hasMovements);
-        }
-
-        if (block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill') {
-            // If generic form (movements list):
-            if (Array.isArray(config.movements) && config.movements.length > 0) {
-                return config.movements.some(m => m.trim().length > 0);
-            }
-            // If it has content (fallback)
-            if (config.content) return true;
-
-            return false;
-        }
-
+        // For free_text, require content
         if (block.type === 'free_text') {
+            const config = block.config || {};
             return Boolean(config.content);
         }
 
-        return true;
+        // For all other types, just require a name
+        return Boolean(block.name && block.name.trim().length > 0);
     };
 
     const isValid = validateBlock();
@@ -637,8 +604,8 @@ function StrengthForm({ config, onChange }: FormProps) {
     };
 
     return (
-        <div className="space-y-4 animate-in fade-in duration-300">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+        <div className="animate-in fade-in duration-300">
+            <div className="flex flex-wrap items-center gap-3">
                 {/* Sets */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
                     <span className="text-sm font-semibold text-cv-text-primary">Series</span>

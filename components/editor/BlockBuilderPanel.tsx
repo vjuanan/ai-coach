@@ -11,7 +11,8 @@ import {
     Sparkles,
     FileText,
     Check,
-    TrendingUp
+    TrendingUp,
+    Trash2
 } from 'lucide-react';
 import { useState } from 'react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
@@ -82,8 +83,10 @@ const blockTypeOptions: {
     ];
 
 export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanelProps) {
-    const { addBlock, selectedBlockId, selectBlock, mesocycles } = useEditorStore();
+    const { addBlock, selectedBlockId, selectBlock, mesocycles, deleteBlock } = useEditorStore();
     const [isProgression, setIsProgression] = useState(false);
+    const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+    const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
 
     // Find the current day to show added blocks
     let currentDay = null;
@@ -94,6 +97,44 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
             break;
         }
     }
+
+    // Check if a block is empty (no meaningful content)
+    const isBlockEmpty = (block: { type: string; format: string | null; config: Record<string, unknown> }): boolean => {
+        const config = block.config;
+        switch (block.type) {
+            case 'strength_linear':
+                return !config.sets && !config.reps && !config.exercise;
+            case 'metcon_structured':
+                const movements = config.movements as string[] || [];
+                return !block.format && movements.length === 0 && !config.time_cap;
+            case 'free_text':
+                const content = config.content as string;
+                return !content || (typeof content === 'string' && content.trim() === '');
+            case 'warmup':
+            case 'accessory':
+            case 'skill':
+                const exercises = config.exercises as unknown[] || [];
+                const notes = config.notes as string;
+                return exercises.length === 0 && (!notes || (typeof notes === 'string' && notes.trim() === ''));
+            default:
+                const keys = Object.keys(config).filter(k => k !== 'is_completed');
+                return keys.length === 0 || keys.every(k => {
+                    const val = config[k];
+                    return val === null || val === undefined || val === '' ||
+                        (Array.isArray(val) && val.length === 0);
+                });
+        }
+    };
+
+    const handleDeleteBlock = (e: React.MouseEvent, block: { id: string; type: string; format: string | null; config: Record<string, unknown> }) => {
+        e.stopPropagation();
+        if (isBlockEmpty(block)) {
+            deleteBlock(block.id);
+        } else {
+            setBlockToDelete(block.id);
+            setShowConfirmDelete(true);
+        }
+    };
 
     const handleAddBlock = (type: BlockType) => {
         const option = blockTypeOptions.find(o => o.type === type);
@@ -197,17 +238,26 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                         const Icon = blockOption?.icon || Dumbbell;
 
                                         return (
-                                            <button
+                                            <div
                                                 key={block.id}
                                                 onClick={() => selectBlock(block.id)}
                                                 className={`
-                                                    flex items-center gap-2 px-3 py-2 rounded-lg border transition-all text-left min-w-[150px]
+                                                    group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all text-left min-w-[150px] cursor-pointer
                                                     ${isActive
                                                         ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-sm ring-1 ring-cv-accent/10'
                                                         : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                                                     }
                                                 `}
                                             >
+                                                {/* Delete X Button - Visible on Hover */}
+                                                <button
+                                                    onClick={(e) => handleDeleteBlock(e, block)}
+                                                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600 z-10"
+                                                    title="Eliminar bloque"
+                                                >
+                                                    <X size={12} className="stroke-[2.5]" />
+                                                </button>
+
                                                 <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'
                                                     }`}>
                                                     <Icon size={14} />
@@ -220,7 +270,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                         {block.format}
                                                     </p>
                                                 </div>
-                                            </button>
+                                            </div>
                                         );
                                     })}
                             </div>
@@ -250,6 +300,44 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                 </div>
             </div>
 
+            {/* Confirmation Dialog for Non-Empty Blocks */}
+            {showConfirmDelete && blockToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl max-w-sm w-full overflow-hidden border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-5">
+                            <h3 className="text-lg font-semibold text-cv-text-primary mb-2 flex items-center gap-2">
+                                <Trash2 size={20} className="text-red-500" />
+                                ¿Eliminar bloque?
+                            </h3>
+                            <p className="text-sm text-cv-text-secondary mb-4">
+                                Este bloque tiene contenido. ¿Estás seguro de que deseas eliminarlo?
+                            </p>
+
+                            <div className="flex gap-2 justify-end">
+                                <button
+                                    onClick={() => {
+                                        setShowConfirmDelete(false);
+                                        setBlockToDelete(null);
+                                    }}
+                                    className="px-4 py-2 text-sm text-cv-text-secondary hover:text-cv-text-primary font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        deleteBlock(blockToDelete);
+                                        setShowConfirmDelete(false);
+                                        setBlockToDelete(null);
+                                    }}
+                                    className="px-4 py-2 text-sm bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
+                                >
+                                    Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
