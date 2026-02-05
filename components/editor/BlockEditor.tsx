@@ -607,7 +607,7 @@ function StrengthForm({ config, onChange }: FormProps) {
         <div className="animate-in fade-in duration-300">
             <div className="flex flex-wrap items-center gap-3">
                 {/* Sets */}
-                <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
+                <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
                     <span className="text-sm font-semibold text-cv-text-primary">Series</span>
                     <input
                         type="number"
@@ -615,82 +615,75 @@ function StrengthForm({ config, onChange }: FormProps) {
                         value={(config.sets as number) || ''}
                         onChange={(e) => onChange('sets', parseInt(e.target.value) || null)}
                         placeholder="3"
-                        className="bg-transparent border-none p-0 text-base text-right focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-20"
+                        className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-12 text-center"
                     />
                 </div>
 
                 {/* Reps */}
-                <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
-                    <span className="text-sm font-semibold text-cv-text-primary">Repeticiones</span>
+                <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <span className="text-sm font-semibold text-cv-text-primary">Reps</span>
                     <input
                         type="text"
                         value={(config.reps as string) || ''}
                         onChange={(e) => onChange('reps', e.target.value)}
                         placeholder="10"
-                        className="bg-transparent border-none p-0 text-base text-right focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-24"
+                        className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-14 text-center"
                     />
                 </div>
 
-                {/* % Amount */}
-                <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
-                    <span className="text-sm font-semibold text-cv-text-primary">% del 1RM / Kg</span>
+                {/* % */}
+                <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <span className="text-sm font-semibold text-cv-text-primary">% 1RM</span>
                     <input
                         type="text"
                         value={(config.percentage as string) || ''}
                         onChange={(e) => onChange('percentage', e.target.value)}
                         placeholder="75%"
-                        className="bg-transparent border-none p-0 text-base text-right focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-24"
+                        className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-16 text-center"
                     />
                 </div>
 
                 {/* RPE */}
-                <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
+                <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
                     <span className="text-sm font-semibold text-cv-text-primary">RPE</span>
                     <input
                         type="text"
                         value={(config.rpe as string) || ''}
                         onChange={(e) => onChange('rpe', e.target.value)}
                         placeholder="8"
-                        className="bg-transparent border-none p-0 text-base text-right focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-20"
+                        className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-10 text-center"
                     />
                 </div>
 
-                {/* Rest */}
-                <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
-                    <div className="flex items-center gap-2">
-                        <Clock size={16} className="text-cv-text-secondary" />
-                        <span className="text-sm font-semibold text-cv-text-primary">Descanso</span>
-                    </div>
+                {/* Descanso */}
+                <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <span className="text-sm font-semibold text-cv-text-primary">Descanso</span>
                     <input
                         type="text"
                         value={(config.rest as string) || ''}
                         onChange={(e) => onChange('rest', e.target.value)}
                         placeholder="2:00"
-                        className="bg-transparent border-none p-0 text-base text-right focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-24"
+                        className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-14 text-center"
                     />
                 </div>
 
-                {/* Tempo Toggle & Input */}
-                <div className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${showTempo ? 'border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary' : 'border-dashed border-slate-200 dark:border-slate-800'}`}>
-                    <div className="flex items-center gap-3">
-                        {/* Custom Switch */}
-                        <button
-                            onClick={toggleTempo}
-                            type="button"
-                            className={`w-9 h-5 rounded-full transition-colors relative focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cv-accent ${showTempo ? 'bg-cv-accent' : 'bg-slate-300 dark:bg-slate-600'}`}
-                        >
-                            <span className={`block w-3.5 h-3.5 bg-white rounded-full transition-transform absolute top-0.5 left-0.5 ${showTempo ? 'translate-x-4' : 'translate-x-0'}`} />
-                        </button>
-                        <span className={`text-sm font-semibold ${showTempo ? 'text-cv-text-primary' : 'text-cv-text-tertiary'}`}>Tempo</span>
-                    </div>
-
+                {/* Tempo with toggle */}
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${showTempo ? 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700' : 'border-dashed border-slate-300 dark:border-slate-600'}`}>
+                    <button
+                        onClick={toggleTempo}
+                        type="button"
+                        className={`w-8 h-4 rounded-full transition-colors relative focus:outline-none ${showTempo ? 'bg-cv-accent' : 'bg-slate-300 dark:bg-slate-600'}`}
+                    >
+                        <span className={`block w-3 h-3 bg-white rounded-full transition-transform absolute top-0.5 left-0.5 ${showTempo ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </button>
+                    <span className={`text-sm font-semibold ${showTempo ? 'text-cv-text-primary' : 'text-cv-text-tertiary'}`}>Tempo</span>
                     {showTempo && (
                         <input
                             type="text"
                             value={(config.tempo as string) || ''}
                             onChange={(e) => onChange('tempo', e.target.value)}
                             placeholder="30X1"
-                            className="bg-transparent border-none p-0 text-base text-right focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-24 animate-in fade-in slide-in-from-right-4 duration-200"
+                            className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-16 text-center animate-in fade-in duration-150"
                         />
                     )}
                 </div>
