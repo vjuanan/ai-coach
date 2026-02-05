@@ -79,7 +79,7 @@ export function ExportPreview({
 
         try {
             const canvas = await html2canvas(exportRef.current, {
-                backgroundColor: '#111827', // Softer black (gray-900)
+                backgroundColor: '#1f2937', // Gray-800 (Softer than 900)
                 scale: 2,
                 useCORS: true,
             });
@@ -172,7 +172,7 @@ export function ExportPreview({
                         <div className="flex-1 overflow-auto p-4 md:p-6">
                             <div
                                 ref={exportRef}
-                                className="bg-[#111827] rounded-xl overflow-hidden max-w-3xl mx-auto shadow-2xl"
+                                className="bg-[#1f2937] rounded-xl overflow-hidden max-w-3xl mx-auto shadow-2xl"
                                 style={{ minWidth: '500px' }}
                             >
                                 {/* ============================================ */}
@@ -342,12 +342,12 @@ export function ExportPreview({
                                         {weeks.map((week, weekIdx) => (
                                             <div key={weekIdx} className="space-y-4">
                                                 {/* Week Header */}
-                                                <div className="flex items-center justify-between border-b border-gray-800 pb-2">
+                                                <div className="flex items-center justify-between border-b border-gray-700 pb-2">
                                                     <h3 className="text-white text-lg font-bold">
                                                         Semana {week.weekNumber}
                                                     </h3>
                                                     {week.focus && (
-                                                        <span className="text-xs text-gray-400 bg-gray-800/80 px-2 py-1 rounded border border-gray-700/50">
+                                                        <span className="text-xs text-gray-300 bg-black/20 px-2 py-1 rounded border border-gray-700/50">
                                                             {week.focus}
                                                         </span>
                                                     )}
@@ -356,10 +356,10 @@ export function ExportPreview({
                                                 {/* Days Grid */}
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {week.days && week.days.map((day, dayIdx) => (
-                                                        <div key={dayIdx} className="bg-gray-800/30 rounded-xl border border-gray-800/50 overflow-hidden flex flex-col h-full">
+                                                        <div key={dayIdx} className="bg-gray-900/20 rounded-xl border border-gray-700/50 overflow-hidden flex flex-col h-full">
 
                                                             {/* Day Header - Clearly distinct */}
-                                                            <div className="px-4 py-2 bg-gray-800/60 border-b border-gray-800/50 flex items-center justify-between">
+                                                            <div className="px-4 py-2 bg-black/20 border-b border-gray-700/50 flex items-center justify-between">
                                                                 <h4 className="text-gray-200 font-semibold text-sm uppercase tracking-wide">
                                                                     {day.name}
                                                                 </h4>
@@ -369,30 +369,32 @@ export function ExportPreview({
                                                             <div className="p-4 space-y-4 flex-1">
                                                                 {day.blocks.length > 0 ? (
                                                                     day.blocks.map((block, blockIdx) => (
-                                                                        <div key={blockIdx} className="relative pl-3">
-                                                                            {/* Vertical line connector */}
-                                                                            <div className={`absolute left-0 top-1 bottom-1 w-0.5 rounded-full ${block.type === 'strength_linear' ? 'bg-red-500/80' :
+                                                                        <div key={blockIdx} className="flex gap-3">
+                                                                            {/* Vertical line connector - Now Flex item */}
+                                                                            <div className={`w-1 rounded-full shrink-0 self-stretch ${block.type === 'strength_linear' ? 'bg-red-500/80' :
                                                                                 block.type === 'metcon_structured' ? 'bg-orange-500/80' :
                                                                                     block.type === 'warmup' ? 'bg-green-500/80' :
                                                                                         block.type === 'skill' ? 'bg-blue-500/80' :
                                                                                             'bg-gray-500/80'
                                                                                 }`} />
 
-                                                                            <div className="mb-1">
-                                                                                <span className="text-sm font-medium text-gray-100 block">
-                                                                                    {block.name}
-                                                                                </span>
-                                                                            </div>
+                                                                            <div className="flex-1 min-w-0 pb-1">
+                                                                                <div className="mb-1">
+                                                                                    <span className="text-sm font-medium text-gray-100 block truncate">
+                                                                                        {block.name}
+                                                                                    </span>
+                                                                                </div>
 
-                                                                            <div className="space-y-0.5">
-                                                                                {block.content.map((line, lineIdx) => (
-                                                                                    <p key={lineIdx} className={`font-mono text-xs leading-relaxed ${lineIdx === 0
+                                                                                <div className="space-y-0.5">
+                                                                                    {block.content.map((line, lineIdx) => (
+                                                                                        <p key={lineIdx} className={`font-mono text-xs leading-relaxed ${lineIdx === 0
                                                                                             ? 'text-gray-200 font-semibold'
                                                                                             : 'text-gray-500'
-                                                                                        }`}>
-                                                                                        {line}
-                                                                                    </p>
-                                                                                ))}
+                                                                                            }`}>
+                                                                                            {line}
+                                                                                        </p>
+                                                                                    ))}
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                     ))
