@@ -33,28 +33,40 @@ export default function AthleteDashboard() {
             const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
             if (profile) setUserName(profile.full_name || 'Atleta');
 
-            // 2. Get Assigned Programs (Where client_id is linked to my user_id)
-            // Note: We need to join with 'clients' table first to find my client ID.
+            // 2. Get Assigned Programs (Where client_id is linked to my user_id OR my gym_id)
 
-            // Step 2a: Find my Client ID
+            // Step 2a: Find my Client ID AND my Gym ID
             const { data: myHealthProfile } = await supabase
                 .from('clients')
-                .select('id')
+                .select('id, gym_id')
                 .eq('user_id', user.id)
                 .single();
 
             if (myHealthProfile) {
-                // Step 2b: Find programs assigned to this client ID
-                const { data: myPrograms, error } = await supabase
+                const myId = myHealthProfile.id;
+                const myGymId = myHealthProfile.gym_id;
+
+                // Build query condition: client_id = myId OR client_id = myGymId
+                // Supabase 'or' syntax: `client_id.eq.${myId},client_id.eq.${myGymId}` (if gymId exists)
+
+                let query = supabase
                     .from('programs')
                     .select(`
                         id, 
                         name, 
                         description,
                         coach:coach_id ( full_name ) 
-                    `) // Foreign key to coaches might need update in schema to be direct or via relation
-                    .eq('client_id', myHealthProfile.id)
-                    .eq('status', 'active'); // Only active programs?
+                    `)
+                    .eq('status', 'active');
+
+                if (myGymId) {
+                    query = query.or(`client_id.eq.${myId},client_id.eq.${myGymId}`);
+                } else {
+                    query = query.eq('client_id', myId);
+                }
+
+                // Step 2b: Find programs
+                const { data: myPrograms, error } = await query;
 
                 if (myPrograms) {
                     // Transform data
@@ -62,7 +74,7 @@ export default function AthleteDashboard() {
                         id: p.id,
                         name: p.name,
                         description: p.description,
-                        coach: Array.isArray(p.coach) ? p.coach[0] : p.coach // Handle array response if join returns array
+                        coach: Array.isArray(p.coach) ? p.coach[0] : p.coach
                     })) as any);
                 }
             }

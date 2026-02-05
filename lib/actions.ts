@@ -715,11 +715,12 @@ export async function getClient(id: string) {
 
     const { data: clientData, error } = await supabase
         .from('clients')
-        .select('*')
+        .select('*, gym:gym_id(name)')
         .eq('id', id)
         .single();
 
     if (!error && clientData) {
+        // Flatten gym name if needed or keep as object
         return clientData;
     }
 
@@ -803,6 +804,7 @@ export async function createClient(clientData: {
     type: 'athlete' | 'gym',
     name: string,
     email?: string,
+    gym_id?: string, // Added gym_id
     details?: Record<string, any>
 }) {
     console.log('--- ACTION: createClient STARTED ---');
@@ -828,13 +830,20 @@ export async function createClient(clientData: {
         console.log('Coach ID resolved:', coachId);
 
         console.log('Inserting into clients table...');
-        const row = {
+
+        // Prepare row
+        const row: any = {
             coach_id: coachId,
             type: clientData.type,
             name: clientData.name,
             email: clientData.email || null,
             details: clientData.details || {},
         };
+
+        if (clientData.gym_id) {
+            row.gym_id = clientData.gym_id;
+        }
+
         console.log('Row to insert:', JSON.stringify(row));
 
         // Check Env Var
@@ -849,17 +858,9 @@ export async function createClient(clientData: {
             process.env.SUPABASE_SERVICE_ROLE_KEY
         );
 
-        // Minimal Insert to avoid Schema issues
-        // We will update details later if needed, or assume details column exists as JSONB
         const { data, error } = await adminSupabase
             .from('clients')
-            .insert({
-                coach_id: coachId,
-                type: clientData.type,
-                name: clientData.name,
-                email: clientData.email || null,
-                details: clientData.details || {},
-            })
+            .insert(row)
             .select()
             .single();
 
@@ -880,6 +881,42 @@ export async function createClient(clientData: {
         // THROWING to ensure client UI handles it correctly (stops loading)
         throw new Error(error.message || 'Unknown Server Error');
     }
+}
+
+export async function updateClient(clientId: string, updates: {
+    name?: string;
+    email?: string;
+    gym_id?: string | null;
+    details?: Record<string, any>;
+}) {
+    console.log('--- ACTION: updateClient STARTED ---', clientId);
+
+    const supabase = createServerClient();
+
+    // Auth check
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthorized');
+
+    // Use Admin Client to bypass RLS issues if any
+    const adminSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
+        : supabase;
+
+    const { data, error } = await adminSupabase
+        .from('clients')
+        .update(updates)
+        .eq('id', clientId)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error updating client:', error);
+        throw new Error(error.message);
+    }
+
+    revalidatePath(`/athletes/${clientId}`);
+    revalidatePath('/athletes');
+    return data;
 }
 
 export async function deleteClient(id: string) {

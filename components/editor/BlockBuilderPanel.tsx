@@ -191,7 +191,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                         {block.name || blockOption?.label || "Sin nombre"}
                                                     </p>
                                                     <p className="text-[10px] text-cv-text-tertiary truncate">
-                                                        {block.format || blockOption?.label}
+                                                        {block.format}
                                                     </p>
                                                 </div>
                                             </button>

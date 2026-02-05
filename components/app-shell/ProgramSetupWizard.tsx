@@ -53,7 +53,16 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
     const [duration, setDuration] = useState(4);
     const [startDate, setStartDate] = useState(() => {
         const today = new Date();
-        return today.toISOString().split('T')[0];
+        const day = today.getDay();
+        // Calculate days until next Monday (0-6)
+        // If today is Monday (1), result is 0 (today)
+        // If today is Sunday (0), result is 1 (tomorrow)
+        const daysUntilMonday = (1 + 7 - day) % 7;
+
+        const nextMonday = new Date(today);
+        nextMonday.setDate(today.getDate() + daysUntilMonday);
+
+        return nextMonday.toISOString().split('T')[0];
     });
 
     // Initialize with defaults: All Acumulación, last Descarga
