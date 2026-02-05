@@ -123,7 +123,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                     className="flex items-center gap-2 px-4 py-2 bg-cv-accent text-white rounded-xl font-medium text-sm hover:bg-cv-accent/90 transition-colors shadow-sm"
                 >
                     <Check size={16} />
-                    Listo
+                    Guardar y Salir
                 </button>
             </div>
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useEditorStore } from '@/lib/store';
-import { ExerciseAutocomplete } from './ExerciseAutocomplete';
+import { SmartExerciseInput } from './SmartExerciseInput';
 import { getTrainingMethodologies } from '@/lib/actions';
 import {
     X,
@@ -204,10 +204,14 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         const config = block.config || {};
 
         if (block.type === 'strength_linear') {
-            // Must have sets AND reps
-            // sets is number, reps is string (can be "5", "5-5-5", "max", etc)
+            // Must have ALL fields except Tempo
             if (!config.sets || config.sets < 1) return false;
-            if (!config.reps) return false;
+            // Ensure strings are not empty/whitespace
+            if (!config.reps || String(config.reps).trim() === '') return false;
+            if (!config.percentage || String(config.percentage).trim() === '') return false;
+            if (!config.rpe || String(config.rpe).trim() === '') return false;
+            if (!config.rest || String(config.rest).trim() === '') return false;
+
             return true;
         }
 
@@ -256,7 +260,11 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 </div>
                 <button
                     onClick={() => {
-                        if (isValid) selectBlock(null);
+                        if (isValid) {
+                            // Mark as completed when clicking OK
+                            handleConfigChange('is_completed', true);
+                            selectBlock(null);
+                        }
                     }}
                     disabled={!isValid}
                     title={isValid ? "Confirmar y cerrar" : "Completa los campos requeridos (Sets/Reps, Movimientos, etc.)"}
@@ -277,24 +285,13 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     <label className="block text-sm font-medium text-cv-text-secondary mb-2">
                         Nombre del Bloque / Ejercicio Principal
                     </label>
-                    {block.type === 'strength_linear' ? (
-                        <ExerciseAutocomplete
-                            value={block.name || ''}
-                            onChange={(val) => updateBlock(blockId, { name: val || null })}
-                            placeholder="Buscar ejercicio..."
-                            className="cv-input"
-                            inputRef={firstInputRef}
-                        />
-                    ) : (
-                        <input
-                            ref={firstInputRef}
-                            type="text"
-                            value={block.name || ''}
-                            onChange={(e) => updateBlock(blockId, { name: e.target.value || null })}
-                            placeholder="e.g., Metcon A, Warm-up"
-                            className="cv-input"
-                        />
-                    )}
+                    <SmartExerciseInput
+                        value={block.name || ''}
+                        onChange={(val) => updateBlock(blockId, { name: val || null })}
+                        placeholder="Buscar ejercicio..."
+                        className="cv-input"
+                        inputRef={firstInputRef}
+                    />
                 </div>
 
                 {/* Methodology Selector - Collapsible Categories */}
@@ -593,7 +590,7 @@ function MovementsListField({ label, value, onChange, help }: MovementsListProps
                 {movements.map((movement, index) => (
                     <div key={index} className="flex gap-2">
                         <div className="flex-1">
-                            <ExerciseAutocomplete
+                            <SmartExerciseInput
                                 value={movement}
                                 onChange={(val) => updateMovement(index, val)}
                                 placeholder={`Movimiento ${index + 1} (ej: 10 Burpees)`}
@@ -629,85 +626,107 @@ interface FormProps {
 }
 
 function StrengthForm({ config, onChange }: FormProps) {
+    const showTempo = config.show_tempo === true || (!!config.tempo && config.tempo !== '');
+
+    const toggleTempo = () => {
+        const newValue = !showTempo;
+        onChange('show_tempo', newValue);
+        if (!newValue) {
+            onChange('tempo', ''); // Clear tempo if hidden
+        }
+    };
+
     return (
-        <div className="flex flex-wrap gap-2 items-stretch animate-in fade-in duration-300">
-            {/* Sets */}
-            <div className="flex-1 min-w-[70px] bg-slate-50 dark:bg-slate-800/50 px-2 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 flex flex-col justify-center">
-                <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none mb-0.5">Sets</span>
-                <input
-                    type="number"
-                    min={1}
-                    value={(config.sets as number) || ''}
-                    onChange={(e) => onChange('sets', parseInt(e.target.value) || null)}
-                    placeholder="3"
-                    className="w-full bg-transparent border-none p-0 text-sm text-left focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 h-5 leading-5"
-                />
-            </div>
-
-            {/* Reps */}
-            <div className="flex-1 min-w-[70px] bg-slate-50 dark:bg-slate-800/50 px-2 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 flex flex-col justify-center">
-                <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none mb-0.5">Reps</span>
-                <input
-                    type="text"
-                    value={(config.reps as string) || ''}
-                    onChange={(e) => onChange('reps', e.target.value)}
-                    placeholder="10"
-                    className="w-full bg-transparent border-none p-0 text-sm text-left focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 h-5 leading-5"
-                />
-            </div>
-
-            {/* % / Load */}
-            <div className="flex-[1.5] min-w-[100px] bg-slate-50 dark:bg-slate-800/50 px-2 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 flex flex-col justify-center">
-                <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none mb-0.5">% / Kg</span>
-                <input
-                    type="text"
-                    value={(config.percentage as string) || ''}
-                    onChange={(e) => onChange('percentage', e.target.value)}
-                    placeholder="75%"
-                    className="w-full bg-transparent border-none p-0 text-sm text-left focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 h-5 leading-5"
-                />
-            </div>
-
-            {/* RPE */}
-            <div className="flex-1 min-w-[60px] bg-slate-50 dark:bg-slate-800/50 px-2 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 flex flex-col justify-center">
-                <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none mb-0.5">RPE</span>
-                <input
-                    type="text"
-                    value={(config.rpe as string) || ''}
-                    onChange={(e) => onChange('rpe', e.target.value)}
-                    placeholder="8"
-                    className="w-full bg-transparent border-none p-0 text-sm text-left focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 h-5 leading-5"
-                />
-            </div>
-
-            {/* Rest */}
-            <div className="flex-1 min-w-[80px] bg-white dark:bg-cv-bg-secondary px-2 py-1.5 rounded-md border border-slate-100 dark:border-slate-800 flex flex-col justify-center hover:border-slate-300 transition-colors">
-                <div className="flex items-center gap-1 mb-0.5">
-                    <Clock size={10} className="text-cv-text-tertiary" />
-                    <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none">Rest</span>
+        <div className="space-y-4 animate-in fade-in duration-300">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                {/* Sets */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
+                    <span className="text-sm font-semibold text-cv-text-primary">Series</span>
+                    <input
+                        type="number"
+                        min={1}
+                        value={(config.sets as number) || ''}
+                        onChange={(e) => onChange('sets', parseInt(e.target.value) || null)}
+                        placeholder="3"
+                        className="bg-transparent border-none p-0 text-base text-right focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-20"
+                    />
                 </div>
-                <input
-                    type="text"
-                    value={(config.rest as string) || ''}
-                    onChange={(e) => onChange('rest', e.target.value)}
-                    placeholder="2:00"
-                    className="w-full bg-transparent border-none p-0 text-sm text-left focus:ring-0 text-cv-text-secondary placeholder:text-cv-text-tertiary h-5 leading-5"
-                />
-            </div>
 
-            {/* Tempo */}
-            <div className="flex-1 min-w-[80px] bg-white dark:bg-cv-bg-secondary px-2 py-1.5 rounded-md border border-slate-100 dark:border-slate-800 flex flex-col justify-center hover:border-slate-300 transition-colors">
-                <div className="flex items-center gap-1 mb-0.5">
-                    <Timer size={10} className="text-cv-text-tertiary" />
-                    <span className="text-[10px] uppercase font-bold text-cv-text-tertiary leading-none">Tempo</span>
+                {/* Reps */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
+                    <span className="text-sm font-semibold text-cv-text-primary">Repeticiones</span>
+                    <input
+                        type="text"
+                        value={(config.reps as string) || ''}
+                        onChange={(e) => onChange('reps', e.target.value)}
+                        placeholder="10"
+                        className="bg-transparent border-none p-0 text-base text-right focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-24"
+                    />
                 </div>
-                <input
-                    type="text"
-                    value={(config.tempo as string) || ''}
-                    onChange={(e) => onChange('tempo', e.target.value)}
-                    placeholder="30X1"
-                    className="w-full bg-transparent border-none p-0 text-sm text-left focus:ring-0 text-cv-text-secondary placeholder:text-cv-text-tertiary h-5 leading-5"
-                />
+
+                {/* % Amount */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
+                    <span className="text-sm font-semibold text-cv-text-primary">% del 1RM / Kg</span>
+                    <input
+                        type="text"
+                        value={(config.percentage as string) || ''}
+                        onChange={(e) => onChange('percentage', e.target.value)}
+                        placeholder="75%"
+                        className="bg-transparent border-none p-0 text-base text-right focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-24"
+                    />
+                </div>
+
+                {/* RPE */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
+                    <span className="text-sm font-semibold text-cv-text-primary">RPE</span>
+                    <input
+                        type="text"
+                        value={(config.rpe as string) || ''}
+                        onChange={(e) => onChange('rpe', e.target.value)}
+                        placeholder="8"
+                        className="bg-transparent border-none p-0 text-base text-right focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-20"
+                    />
+                </div>
+
+                {/* Rest */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
+                    <div className="flex items-center gap-2">
+                        <Clock size={16} className="text-cv-text-secondary" />
+                        <span className="text-sm font-semibold text-cv-text-primary">Descanso</span>
+                    </div>
+                    <input
+                        type="text"
+                        value={(config.rest as string) || ''}
+                        onChange={(e) => onChange('rest', e.target.value)}
+                        placeholder="2:00"
+                        className="bg-transparent border-none p-0 text-base text-right focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-24"
+                    />
+                </div>
+
+                {/* Tempo Toggle & Input */}
+                <div className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${showTempo ? 'border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary' : 'border-dashed border-slate-200 dark:border-slate-800'}`}>
+                    <div className="flex items-center gap-3">
+                        {/* Custom Switch */}
+                        <button
+                            onClick={toggleTempo}
+                            type="button"
+                            className={`w-9 h-5 rounded-full transition-colors relative focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cv-accent ${showTempo ? 'bg-cv-accent' : 'bg-slate-300 dark:bg-slate-600'}`}
+                        >
+                            <span className={`block w-3.5 h-3.5 bg-white rounded-full transition-transform absolute top-0.5 left-0.5 ${showTempo ? 'translate-x-4' : 'translate-x-0'}`} />
+                        </button>
+                        <span className={`text-sm font-semibold ${showTempo ? 'text-cv-text-primary' : 'text-cv-text-tertiary'}`}>Tempo</span>
+                    </div>
+
+                    {showTempo && (
+                        <input
+                            type="text"
+                            value={(config.tempo as string) || ''}
+                            onChange={(e) => onChange('tempo', e.target.value)}
+                            placeholder="30X1"
+                            className="bg-transparent border-none p-0 text-base text-right focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-24 animate-in fade-in slide-in-from-right-4 duration-200"
+                        />
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -762,7 +781,7 @@ function GenericMovementForm({ config, onChange }: FormProps) {
                     {movements.map((movement, index) => (
                         <div key={index} className="flex gap-2">
                             <div className="flex-1">
-                                <ExerciseAutocomplete
+                                <SmartExerciseInput
                                     value={movement}
                                     onChange={(val) => updateMovement(index, val)}
                                     placeholder="e.g. 3x10 Banded Good Mornings"

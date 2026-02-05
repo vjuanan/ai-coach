@@ -1,5 +1,5 @@
 import { useEditorStore } from '@/lib/store';
-import { GripVertical, Copy, Trash2, ChevronDown, TrendingUp } from 'lucide-react';
+import { GripVertical, Copy, Trash2, ChevronDown, TrendingUp, Check } from 'lucide-react';
 import { useState } from 'react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 
@@ -126,6 +126,14 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                             <span className="text-2xs uppercase tracking-wider text-cv-text-tertiary font-medium">
                                 {block.name || style.label}
                             </span>
+                            {/* Green Tick for Completed Blocks */}
+                            {config.is_completed && (
+                                <div title="Bloque completado">
+                                    <div className="w-3 h-3 rounded-full bg-emerald-500 flex items-center justify-center">
+                                        <Check size={8} className="text-white stroke-[3]" />
+                                    </div>
+                                </div>
+                            )}
                             {block.progression_id && (
                                 <div title="Progresión vinculada">
                                     <TrendingUp size={10} className="text-cv-accent" />
