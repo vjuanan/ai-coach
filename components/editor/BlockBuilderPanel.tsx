@@ -252,10 +252,10 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                 {/* Delete X Button - Visible on Hover */}
                                                 <button
                                                     onClick={(e) => handleDeleteBlock(e, block)}
-                                                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600 z-10"
+                                                    className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-sm hover:bg-red-600 hover:scale-110 z-50 backdrop-blur-sm"
                                                     title="Eliminar bloque"
                                                 >
-                                                    <X size={12} className="stroke-[2.5]" />
+                                                    <X size={10} className="stroke-[3]" />
                                                 </button>
 
                                                 <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'
