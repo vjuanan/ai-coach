@@ -14,7 +14,7 @@ import {
     TrendingUp,
     Trash2
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 
 interface BlockBuilderPanelProps {
@@ -83,7 +83,7 @@ const blockTypeOptions: {
     ];
 
 export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanelProps) {
-    const { addBlock, selectedBlockId, selectBlock, mesocycles, deleteBlock } = useEditorStore();
+    const { addBlock, selectedBlockId, selectBlock, mesocycles, deleteBlock, toggleBlockProgression } = useEditorStore();
     const [isProgression, setIsProgression] = useState(false);
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
@@ -97,6 +97,38 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
             break;
         }
     }
+
+    // Find the selected block to sync progression toggle
+    let selectedBlock = null;
+    if (selectedBlockId) {
+        for (const meso of mesocycles) {
+            for (const day of meso.days) {
+                const found = day.blocks.find(b => b.id === selectedBlockId);
+                if (found) {
+                    selectedBlock = found;
+                    break;
+                }
+            }
+            if (selectedBlock) break;
+        }
+    }
+
+    // Sync toggle with selected block's progression_id
+    const hasProgression = Boolean(selectedBlock?.progression_id);
+
+    // Update local state when selected block changes
+    useEffect(() => {
+        setIsProgression(hasProgression);
+    }, [hasProgression, selectedBlockId]);
+
+    // Handle toggle change - toggle progression for existing block
+    const handleProgressionToggle = (checked: boolean) => {
+        setIsProgression(checked);
+        if (selectedBlockId) {
+            // Toggle progression for existing selected block
+            toggleBlockProgression(selectedBlockId, checked);
+        }
+    };
 
     // Check if a block is empty (no meaningful content)
     const isBlockEmpty = (block: { type: string; format: string | null; config: Record<string, unknown> }): boolean => {
@@ -190,7 +222,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                         type="checkbox"
                                         className="sr-only"
                                         checked={isProgression}
-                                        onChange={(e) => setIsProgression(e.target.checked)}
+                                        onChange={(e) => handleProgressionToggle(e.target.checked)}
                                     />
                                     <div className={`w-9 h-5 rounded-full transition-colors ${isProgression ? 'bg-cv-accent' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
                                     <div className={`absolute top-1 left-1 bg-white w-3 h-3 rounded-full transition-transform ${isProgression ? 'translate-x-4' : 'translate-x-0'}`}></div>

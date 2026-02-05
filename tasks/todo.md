@@ -8,6 +8,8 @@ Agregar funcionalidad de eliminación de bloques con icono X al hacer hover.
 ## Tareas
 
 - [x] Analizar estructura actual de `WorkoutBlockCard`
+- [x] Change "Listo" to "Guardar y Salir" in BlockBuilderPanel <!-- id: 6 -->
+- [x] Fix build error to allow deployment <!-- id: 7 -->
 - [x] Crear plan de implementación
 - [x] Modificar `WorkoutBlockCard.tsx`:
   - [x] Agregar icono X en lugar de Trash2

@@ -101,6 +101,7 @@ interface EditorState {
     deleteProgression: (progressionId: string) => void; // New action
     reorderBlocks: (dayId: string, blockIds: string[]) => void;
     duplicateBlock: (blockId: string, targetDayId?: string) => void;
+    toggleBlockProgression: (blockId: string, isProgression: boolean) => void;
 
     // Day operations
     updateDay: (dayId: string, updates: Partial<DraftDay>) => void;
@@ -458,6 +459,99 @@ export const useEditorStore = create<EditorState>()(
                         return day;
                     }),
                 }));
+
+                set({ mesocycles: updatedMesocycles, hasUnsavedChanges: true });
+            },
+
+            // Toggle progression for an existing block
+            toggleBlockProgression: (blockId, isProgression) => {
+                const { mesocycles } = get();
+
+                // 1. Find the source block
+                let sourceBlock: DraftWorkoutBlock | null = null;
+                let sourceDayNumber = -1;
+                let sourceMesoIndex = -1;
+
+                for (let i = 0; i < mesocycles.length; i++) {
+                    const day = mesocycles[i].days.find(d => d.blocks.some(b => b.id === blockId));
+                    if (day) {
+                        sourceBlock = day.blocks.find(b => b.id === blockId) || null;
+                        sourceDayNumber = day.day_number;
+                        sourceMesoIndex = i;
+                        break;
+                    }
+                }
+
+                if (!sourceBlock) return;
+
+                const progressionId = isProgression ? generateProgressionId() : null;
+                let updatedMesocycles = [...mesocycles];
+
+                if (isProgression) {
+                    // LINKING: Apply ID to current block AND create copies in other weeks
+                    updatedMesocycles = mesocycles.map((meso, idx) => {
+                        // Skip if it's the source week, just update the block
+                        if (idx === sourceMesoIndex) {
+                            return {
+                                ...meso,
+                                days: meso.days.map(day => ({
+                                    ...day,
+                                    blocks: day.blocks.map(b =>
+                                        b.id === blockId
+                                            ? { ...b, progression_id: progressionId, isDirty: true }
+                                            : b
+                                    )
+                                })),
+                                isDirty: true
+                            };
+                        }
+
+                        // For other weeks, find same day and ADD the block
+                        return {
+                            ...meso,
+                            days: meso.days.map(day => {
+                                if (day.day_number === sourceDayNumber) {
+                                    const tempId = generateTempId();
+                                    const newBlock = {
+                                        ...sourceBlock!,
+                                        id: tempId,
+                                        tempId,
+                                        day_id: day.id,
+                                        order_index: day.blocks.length, // Append to end
+                                        progression_id: progressionId,
+                                        isDirty: true
+                                    };
+                                    return {
+                                        ...day,
+                                        blocks: [...day.blocks, newBlock],
+                                        isDirty: true
+                                    };
+                                }
+                                return day;
+                            }),
+                            isDirty: true
+                        };
+                    });
+                } else {
+                    // UNLINKING: Remove progression_id from ALL linked blocks (or just this one?)
+                    // User usually wants to remove the attribute. 
+                    // Let's remove it from ALL blocks with this progression_id to be consistent.
+                    const currentProgressionId = sourceBlock.progression_id;
+                    if (currentProgressionId) {
+                        updatedMesocycles = mesocycles.map(meso => ({
+                            ...meso,
+                            days: meso.days.map(day => ({
+                                ...day,
+                                blocks: day.blocks.map(b =>
+                                    b.progression_id === currentProgressionId
+                                        ? { ...b, progression_id: null, isDirty: true }
+                                        : b
+                                )
+                            })),
+                            isDirty: true
+                        }));
+                    }
+                }
 
                 set({ mesocycles: updatedMesocycles, hasUnsavedChanges: true });
             },
