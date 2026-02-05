@@ -160,7 +160,7 @@ export function SmartExerciseInput({
                                     <Plus size={16} />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-sm font-semibold">Crear "{query}"</span>
+                                    <span className="text-sm font-semibold">Crear &quot;{query}&quot;</span>
                                     <span className="text-xs opacity-80">Añadir a la biblioteca global</span>
                                 </div>
                             </button>

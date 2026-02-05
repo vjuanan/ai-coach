@@ -266,9 +266,16 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                     <p className={`text-xs font-semibold truncate ${isActive ? 'text-cv-text-primary' : 'text-cv-text-secondary'}`}>
                                                         {block.name || blockOption?.label || "Sin nombre"}
                                                     </p>
-                                                    <p className="text-[10px] text-cv-text-tertiary truncate">
-                                                        {block.format}
-                                                    </p>
+                                                    <div className="flex items-center gap-1">
+                                                        <p className="text-[10px] text-cv-text-tertiary truncate">
+                                                            {block.format}
+                                                        </p>
+                                                        {Boolean(block.config?.is_completed) && (
+                                                            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                                                                <Check size={6} className="text-white stroke-[3]" />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         );
