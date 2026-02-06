@@ -43,7 +43,7 @@ const formatLabels: Record<string, string> = {
 };
 
 export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
-    const { selectBlock, selectedBlockId, deleteBlock, deleteProgression, duplicateBlock } = useEditorStore();
+    const { selectBlock, selectedBlockId, deleteBlock, deleteProgression, duplicateBlock, enterBlockBuilder } = useEditorStore();
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
@@ -152,7 +152,7 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
         ${style.color}
         ${isSelected ? 'ring-2 ring-cv-accent' : ''}
       `}
-                onClick={(e) => { e.stopPropagation(); selectBlock(block.id); }}
+                onClick={(e) => { e.stopPropagation(); selectBlock(block.id); enterBlockBuilder(block.day_id); }}
             >
                 {/* Drag Handle */}
                 <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">
