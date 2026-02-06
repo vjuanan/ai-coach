@@ -256,12 +256,13 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 {/* Block Name */}
                 <div>
                     <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                        Nombre del Bloque / Ejercicio Principal
+                        Ejercicio
                     </label>
+                    {/* Main Exercise Input */}
                     <SmartExerciseInput
                         value={block.name || ''}
                         onChange={(val) => updateBlock(blockId, { name: val || null })}
-                        placeholder="Buscar ejercicio..."
+                        placeholder="Buscar ejercicio en la biblioteca..."
                         className="cv-input"
                         inputRef={firstInputRef}
                     />

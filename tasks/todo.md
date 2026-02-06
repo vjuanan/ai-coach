@@ -9,7 +9,7 @@
 
 # Backlog
 - [ ] (Matches previous items if significant)
-- [ ] Fix "Nombre del Bloque" Label
-    - [ ] Search for occurrences
-    - [ ] Update labels and placeholders to "Ejercicio"
-    - [ ] Verify all modals
+- [x] Fix "Nombre del Bloque" Label
+    - [x] Search for occurrences (Re-done strictly)
+    - [x] Update labels and placeholders to "Ejercicio" (ALL occurrences & Rebuild forced)
+    - [x] Verify all modals (Checked ExerciseCreationModal & Editors)
