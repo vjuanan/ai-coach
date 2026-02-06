@@ -322,6 +322,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                             onClick={(e) => {
                                 e.stopPropagation();
                                 selectBlock(block.id);
+                                enterBlockBuilder(day.id);
                             }}
                         >
                             <WorkoutBlockCard block={block} />
