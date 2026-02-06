@@ -48,7 +48,7 @@ const blockTypeOptions: { type: BlockType; label: string; color: string }[] = [
 ];
 
 export function DayCard({ day, dayName, compact = false, isActiveInBuilder = false }: DayCardProps) {
-    const { addBlock, toggleRestDay, selectDay, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures, clearDay, enterBlockBuilder, blockBuilderMode } = useEditorStore();
+    const { addBlock, toggleRestDay, selectDay, selectBlock, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures, clearDay, enterBlockBuilder, blockBuilderMode } = useEditorStore();
 
     const isSelected = selectedDayId === day.id;
     const isDropTarget = dropTargetDayId === day.id;
@@ -318,7 +318,11 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                     .map(block => (
                         <div
                             key={block.id}
-                            className="bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow transition-shadow"
+                            className="bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow transition-shadow cursor-pointer"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                selectBlock(block.id);
+                            }}
                         >
                             <WorkoutBlockCard block={block} />
                         </div>
