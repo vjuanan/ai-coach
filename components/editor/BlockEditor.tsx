@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useEditorStore } from '@/lib/store';
 import { SmartExerciseInput } from './SmartExerciseInput';
+import { EmomEditor } from './methodologies/EmomEditor';
+import { CircuitEditor } from './methodologies/AmrapEditor';
 import { getTrainingMethodologies } from '@/lib/actions';
 import {
     X,
@@ -351,13 +353,53 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     </div>
                 )}
 
-                {/* Dynamic Form based on Methodology */}
+                {/* Specialized Editors or Dynamic Form */}
                 {currentMethodology && (
-                    <DynamicMethodologyForm
-                        methodology={currentMethodology}
-                        config={config}
-                        onChange={handleConfigChange}
-                    />
+                    <>
+                        {/* EMOM Editor */}
+                        {currentMethodology.code === 'EMOM' && (
+                            <EmomEditor
+                                config={config}
+                                onChange={handleConfigChange}
+                            />
+                        )}
+
+                        {/* AMRAP Editor */}
+                        {currentMethodology.code === 'AMRAP' && (
+                            <CircuitEditor
+                                mode="AMRAP"
+                                config={config}
+                                onChange={handleConfigChange}
+                            />
+                        )}
+
+                        {/* RFT / Rounds For Time */}
+                        {(currentMethodology.code === 'RFT' || currentMethodology.code === 'For Time') && (
+                            <CircuitEditor
+                                mode="RFT"
+                                config={config}
+                                onChange={handleConfigChange}
+                            />
+                        )}
+
+                        {/* Chipper */}
+                        {currentMethodology.code === 'Chipper' && (
+                            <CircuitEditor
+                                mode="CHIPPER"
+                                config={config}
+                                onChange={handleConfigChange}
+                            />
+                        )}
+
+                        {/* Fallback to Dynamic Form for others (or if specialized is not covered) */}
+                        {!['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper'].includes(currentMethodology.code) && (
+                            <DynamicMethodologyForm
+                                methodology={currentMethodology}
+                                config={config}
+                                onChange={handleConfigChange}
+                            />
+                        )}
+                    </>
                 )}
 
                 {/* Fallback to type-specific forms when no methodology */}
