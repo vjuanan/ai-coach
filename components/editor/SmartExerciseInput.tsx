@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { searchExercises } from '@/lib/actions';
+import { useExerciseCache } from '@/hooks/useExerciseCache';
 import { Search, Loader2, Plus, AlertCircle } from 'lucide-react';
 import { ExerciseCreationModal } from './ExerciseCreationModal';
 
@@ -34,21 +35,21 @@ export function SmartExerciseInput({
     const actualInputRef = inputRef || internalRef;
     const wrapperRef = useRef<HTMLDivElement>(null);
 
-    // Debounce Search
+    // Use global cache hook
+    const { searchLocal, isLoading: isCacheLoading } = useExerciseCache();
+
+    // Debounce Search (now local)
     useEffect(() => {
-        const timer = setTimeout(async () => {
+        const timer = setTimeout(() => {
             if (query.trim().length < 2) {
                 setResults([]);
                 return;
             }
 
-            // If query matches value, we might still want to search if user is editing
-            // But usually we don't want to re-open if just set from outside.
-            // We'll trust the focus state to handle the popup visibility.
-
             setIsLoading(true);
             try {
-                const data = await searchExercises(query);
+                // Local search is synchronous and instant
+                const data = searchLocal(query);
                 setResults(data || []);
             } catch (error) {
                 console.error(error);
@@ -56,10 +57,10 @@ export function SmartExerciseInput({
             } finally {
                 setIsLoading(false);
             }
-        }, 300);
+        }, 100); // reduced debounce from 300 to 100 since it is local
 
         return () => clearTimeout(timer);
-    }, [query]);
+    }, [query, searchLocal]);
 
     // Update query if value changes externally
     useEffect(() => {

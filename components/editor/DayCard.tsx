@@ -321,8 +321,8 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                             className="bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow transition-shadow cursor-pointer"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                selectBlock(block.id);
                                 enterBlockBuilder(day.id);
+                                selectBlock(block.id);
                             }}
                         >
                             <WorkoutBlockCard block={block} />

@@ -13,3 +13,5 @@
     - [x] Search for occurrences (Re-done strictly)
     - [x] Update labels and placeholders to "Ejercicio" (ALL occurrences & Rebuild forced)
     - [x] Verify all modals (Checked ExerciseCreationModal & Editors)
+    - [x] Deploy changes to production (Pushed to main)
+    - [ ] Verify fix on production (Screenshots)

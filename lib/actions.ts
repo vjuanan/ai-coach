@@ -1654,6 +1654,21 @@ export async function searchExercises(query: string) {
     return data;
 }
 
+export async function getAllExercisesLight() {
+    const supabase = createServerClient();
+
+    const { data, error } = await supabase
+        .from('exercises')
+        .select('id, name, category, subcategory')
+        .order('name', { ascending: true });
+
+    if (error) {
+        console.error('Error fetching all exercises:', error);
+        return [];
+    }
+    return data;
+}
+
 export async function getExercises(options?: {
     query?: string;
     category?: string;
