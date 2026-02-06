@@ -138,7 +138,8 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     };
 
     // Category grouping for better display
-    const categoryOrder = ['metcon', 'hiit', 'strength', 'conditioning'];
+    // NOTE: 'strength' (Classic) is excluded because it's its own block type, not a methodology
+    const categoryOrder = ['metcon', 'hiit', 'conditioning'];
     const groupedMethodologies = categoryOrder.reduce((acc, cat) => {
         acc[cat] = methodologies.filter(m => m.category === cat);
         return acc;
