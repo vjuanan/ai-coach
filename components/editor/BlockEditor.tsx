@@ -217,17 +217,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
             {/* Header with Save Button */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-white dark:from-cv-bg-tertiary dark:to-cv-bg-secondary">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-cv-accent/10 flex items-center justify-center">
-                        <Dumbbell size={16} className="text-cv-accent" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-semibold text-cv-text-primary">
-                            {block.name || blockTypeLabels[block.type] || 'Bloque'}
-                        </p>
-                        <p className="text-xs text-cv-text-tertiary">
-                            {currentBlockIndex + 1} de {totalBlocks} bloques
-                        </p>
-                    </div>
+                    {/* Header info removed to avoid duplication with the list item above */}
                 </div>
                 <button
                     onClick={() => {
@@ -253,25 +243,11 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-4 space-y-5">
-                {/* Block Name */}
-                <div>
-                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                        Ejercicio
-                    </label>
-                    {/* Main Exercise Input */}
-                    <SmartExerciseInput
-                        value={block.name || ''}
-                        onChange={(val) => updateBlock(blockId, { name: val || null })}
-                        placeholder="Buscar ejercicio en la biblioteca..."
-                        className="cv-input"
-                        inputRef={firstInputRef}
-                    />
-                </div>
 
-                {/* Methodology Selector - Collapsible Categories */}
+                {/* 1. METHODOLOGY SELECTOR (For Structured types) - NOW FIRST */}
                 {/* NOTE: strength_linear (Classic) is excluded - it has its own form */}
-                {(block.type === 'metcon_structured' || block.type === 'warmup' || block.type === 'accessory') && (
-                    <div>
+                {(block.type === 'metcon_structured' || block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill') && (
+                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                         <label className="block text-sm font-medium text-cv-text-secondary mb-2">
                             Metodología de Entrenamiento
                         </label>
@@ -355,9 +331,44 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     </div>
                 )}
 
-                {/* Specialized Editors or Dynamic Form */}
+                {/* 2. BLOCK NAME / EXERCISE INPUT */}
+                {/* Logic: 
+                    - For 'strength_linear' (Classic), keep the SmartExerciseInput (Search).
+                    - For 'free_text', keep it simple (or label it differently).
+                    - For MetCons/Structure, it should be a "Title" input, NOT a search, and arguably optional or auto-filled. 
+                      User requested: "El nombre del ejercicio no tiene sentido que este arriba".
+                      Let's make it a simple "Nombre del Bloque (Opcional)" input for MetCons.
+                */}
+                <div>
+                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">
+                        {block.type === 'strength_linear' ? 'Ejercicio Principal' : 'Nombre del Bloque (Opcional)'}
+                    </label>
+
+                    {block.type === 'strength_linear' ? (
+                        <SmartExerciseInput
+                            value={block.name || ''}
+                            onChange={(val) => updateBlock(blockId, { name: val || null })}
+                            placeholder="Buscar ejercicio en la biblioteca..."
+                            className="cv-input"
+                            inputRef={firstInputRef}
+                        />
+                    ) : (
+                        <input
+                            type="text"
+                            value={block.name || ''}
+                            onChange={(e) => updateBlock(blockId, { name: e.target.value || null })}
+                            placeholder={currentMethodology ? `${currentMethodology.name} - Definir nombre...` : "Nombre del bloque..."}
+                            className="cv-input"
+                            // Only auto-focus if it's NOT a MetCon, because for MetCon users want to click the methodology first?
+                            // Actually, maybe keep auto-focus but on this input.
+                            ref={firstInputRef}
+                        />
+                    )}
+                </div>
+
+                {/* 3. SPECIALIZED EDITORS */}
                 {currentMethodology && (
-                    <>
+                    <div className="animate-in fade-in duration-300">
                         {/* EMOM Editor */}
                         {currentMethodology.code === 'EMOM' && (
                             <EmomEditor
@@ -409,10 +420,10 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 onChange={handleConfigChange}
                             />
                         )}
-                    </>
+                    </div>
                 )}
 
-                {/* Fallback to type-specific forms when no methodology */}
+                {/* 4. FALLBACK FORMS (No Methodology) */}
                 {!currentMethodology && (
                     <>
                         {block.type === 'strength_linear' && (
@@ -429,7 +440,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     </>
                 )}
 
-                {/* Notes Field - Always visible */}
+                {/* 5. NOTES (Always visible) */}
                 <div>
                     <label className="block text-sm font-medium text-cv-text-secondary mb-2">
                         Notas
@@ -442,7 +453,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     />
                 </div>
 
-                {/* Delete Button */}
+                {/* 6. DELETE BUTTON */}
                 <button
                     onClick={() => { deleteBlock(blockId); selectBlock(null); }}
                     className="w-full py-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
@@ -450,10 +461,9 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     <Trash2 size={14} />
                     Eliminar Bloque
                 </button>
+
             </div>
-
         </div>
-
     );
 }
 
