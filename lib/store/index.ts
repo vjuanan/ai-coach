@@ -8,7 +8,8 @@ import type {
     Client,
     BlockType,
     WorkoutFormat,
-    WorkoutConfig
+    WorkoutConfig,
+    TrainingMethodology
 } from '@/lib/supabase/types';
 // Removed uuid import to use local helper
 
@@ -63,6 +64,7 @@ interface EditorState {
 
     // Global Configs
     stimulusFeatures: Array<{ id: string; name: string; color: string; }>;
+    trainingMethodologies: TrainingMethodology[];
 
     // Draft state (local changes)
     mesocycles: DraftMesocycle[];
@@ -86,6 +88,7 @@ interface EditorState {
 
     // Actions
     initializeEditor: (programId: string, name: string, coachName: string, client: Client | null, attributes?: Record<string, unknown> | null, stimulusFeatures?: any[]) => void;
+    setTrainingMethodologies: (methodologies: TrainingMethodology[]) => void;
     loadMesocycles: (mesocycles: DraftMesocycle[]) => void;
     resetEditor: () => void;
 
@@ -150,6 +153,7 @@ export const useEditorStore = create<EditorState>()(
             programClient: null,
             programAttributes: null,
             stimulusFeatures: [],
+            trainingMethodologies: [],
             mesocycles: [],
             selectedWeek: 1,
             selectedDayId: null,
@@ -178,6 +182,8 @@ export const useEditorStore = create<EditorState>()(
                     hasUnsavedChanges: false,
                 });
             },
+
+            setTrainingMethodologies: (methodologies) => set({ trainingMethodologies: methodologies }),
 
             // Load mesocycles from database
             loadMesocycles: (mesocycles) => {

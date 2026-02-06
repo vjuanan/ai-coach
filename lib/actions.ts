@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import type { Database } from './supabase/types';
 import type { DraftMesocycle } from './store';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import { unstable_noStore as noStore } from 'next/cache';
+import { unstable_noStore as noStore, unstable_cache } from 'next/cache';
 
 type Program = Database['public']['Tables']['programs']['Row'];
 type Client = Database['public']['Tables']['clients']['Row'];
@@ -1832,20 +1832,23 @@ export async function getEquipmentCatalog() {
 // TRAINING METHODOLOGIES
 // ==========================================
 
-export async function getTrainingMethodologies() {
-    const supabase = createServerClient();
+export const getTrainingMethodologies = unstable_cache(
+    async () => {
+        const supabase = createServerClient();
+        const { data, error } = await supabase
+            .from('training_methodologies')
+            .select('*')
+            .order('sort_order', { ascending: true });
 
-    const { data, error } = await supabase
-        .from('training_methodologies')
-        .select('*')
-        .order('sort_order', { ascending: true });
-
-    if (error) {
-        console.error('Error fetching training methodologies:', error);
-        return [];
-    }
-    return data;
-}
+        if (error) {
+            console.error('Error fetching training methodologies:', error);
+            return [];
+        }
+        return data;
+    },
+    ['training_methodologies'],
+    { revalidate: 3600, tags: ['training_methodologies'] }
+);
 
 export async function updateTrainingMethodology(id: string, updates: Record<string, any>) {
     const supabase = createServerClient();

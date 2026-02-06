@@ -52,19 +52,26 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         deleteBlock,
 
         blockBuilderDayId,
-        selectedDayId
+        selectedDayId,
+        trainingMethodologies,
+        setTrainingMethodologies
     } = useEditorStore();
-    const [methodologies, setMethodologies] = useState<TrainingMethodology[]>([]);
-    const [loading, setLoading] = useState(true);
+    // const [methodologies, setMethodologies] = useState<TrainingMethodology[]>([]); // Removed local state
+    const [loading, setLoading] = useState(trainingMethodologies.length === 0);
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
     const firstInputRef = useRef<HTMLInputElement>(null);
 
-    // Load methodologies from database
+    // Load methodologies from database (only if not already loaded)
     useEffect(() => {
         async function loadMethodologies() {
+            if (trainingMethodologies.length > 0) {
+                setLoading(false);
+                return;
+            }
+
             try {
                 const data = await getTrainingMethodologies();
-                setMethodologies(data);
+                setTrainingMethodologies(data);
             } catch (error) {
                 console.error('Error loading methodologies:', error);
             } finally {
@@ -72,7 +79,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
             }
         }
         loadMethodologies();
-    }, []);
+    }, [trainingMethodologies.length, setTrainingMethodologies]);
 
     // Auto-focus first input when editor opens
     useEffect(() => {
@@ -103,7 +110,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     }
 
     // Get current methodology (needed before hooks)
-    const currentMethodology = methodologies.find(m => m.code === block?.format);
+    const currentMethodology = trainingMethodologies.find(m => m.code === block?.format);
 
     // Auto-expand category of current methodology (must be before any return)
     useEffect(() => {
@@ -131,7 +138,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
 
     const handleFormatChange = (format: string) => {
         // Find methodology and apply its default values
-        const methodology = methodologies.find(m => m.code === format);
+        const methodology = trainingMethodologies.find(m => m.code === format);
         if (methodology) {
             const newConfig = { ...config, ...methodology.default_values } as WorkoutConfig;
             updateBlock(blockId, { format: format as WorkoutFormat, config: newConfig });
@@ -144,7 +151,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     // NOTE: 'strength' (Classic) is excluded because it's its own block type, not a methodology
     const categoryOrder = ['metcon', 'hiit', 'conditioning'];
     const groupedMethodologies = categoryOrder.reduce((acc, cat) => {
-        acc[cat] = methodologies.filter(m => m.category === cat);
+        acc[cat] = trainingMethodologies.filter(m => m.category === cat);
         return acc;
     }, {} as Record<string, TrainingMethodology[]>);
 
@@ -213,40 +220,37 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     const isValid = validateBlock();
 
     return (
-    return (
-        <div className="flex flex-col h-full relative">
-            {/* Absolute Positioned Save Button (Floating Top Right) */}
-            <div className="absolute top-2 right-2 z-10">
-                <button
-                    onClick={() => {
-                        if (isValid) {
-                            const newConfig = { ...block.config, is_completed: true };
-                            updateBlock(blockId, { config: newConfig as WorkoutConfig });
-                            selectBlock(null);
-                        }
-                    }}
-                    disabled={!isValid}
-                    title={isValid ? "Confirmar y cerrar" : "Completa los campos requeridos"}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium text-xs transition-colors shadow-sm backdrop-blur-sm border
-                        ${isValid
-                            ? 'bg-cv-accent text-white border-cv-accent hover:bg-cv-accent/90'
-                            : 'bg-white/50 text-slate-400 border-slate-200 cursor-not-allowed'}`}
-                >
-                    <Check size={14} />
-                    <span>OK</span>
-                </button>
-            </div>
-
+        <div className="flex flex-col h-full bg-white dark:bg-cv-bg-secondary">
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4 pt-4 space-y-5">
+            <div className="flex-1 overflow-y-auto p-4 space-y-5">
 
                 {/* 1. METHODOLOGY SELECTOR (For Structured types) - NOW FIRST */}
                 {(block.type === 'metcon_structured' || block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill') && (
                     <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                        <label className="block text-sm font-medium text-cv-text-secondary mb-2 pr-16 bg-red-500/0">
-                            {/* pr-16 reserved for the floating OK button */}
-                            Metodología de Entrenamiento
-                        </label>
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="block text-sm font-medium text-cv-text-secondary">
+                                Metodología de Entrenamiento
+                            </label>
+                            {/* OK BUTTON INLINE */}
+                            <button
+                                onClick={() => {
+                                    if (isValid) {
+                                        const newConfig = { ...block.config, is_completed: true };
+                                        updateBlock(blockId, { config: newConfig as WorkoutConfig });
+                                        selectBlock(null);
+                                    }
+                                }}
+                                disabled={!isValid}
+                                title={isValid ? "Confirmar" : "Incompleto"}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition-colors shadow-sm border
+                                    ${isValid
+                                        ? 'bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600'
+                                        : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'}`}
+                            >
+                                <Check size={14} className="stroke-[3]" />
+                                <span>LISTO</span>
+                            </button>
+                        </div>
 
                         {loading ? (
                             <div className="flex items-center justify-center py-4">
@@ -336,9 +340,31 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                       Let's make it a simple "Nombre del Bloque (Opcional)" input for MetCons.
                 */}
                 <div>
-                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                        {block.type === 'strength_linear' ? 'Ejercicio Principal' : 'Nombre del Bloque (Opcional)'}
-                    </label>
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-medium text-cv-text-secondary">
+                            {block.type === 'strength_linear' ? 'Ejercicio Principal' : 'Nombre del Bloque (Opcional)'}
+                        </label>
+                        {/* OK BUTTON INLINE FOR OTHER TYPES (If methodology section didn't exist) */}
+                        {!(block.type === 'metcon_structured' || block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill') && (
+                            <button
+                                onClick={() => {
+                                    if (isValid) {
+                                        const newConfig = { ...block.config, is_completed: true };
+                                        updateBlock(blockId, { config: newConfig as WorkoutConfig });
+                                        selectBlock(null);
+                                    }
+                                }}
+                                disabled={!isValid}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition-colors shadow-sm border
+                                    ${isValid
+                                        ? 'bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600'
+                                        : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'}`}
+                            >
+                                <Check size={14} className="stroke-[3]" />
+                                <span>LISTO</span>
+                            </button>
+                        )}
+                    </div>
 
                     {block.type === 'strength_linear' ? (
                         <SmartExerciseInput
