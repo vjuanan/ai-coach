@@ -173,7 +173,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
         // Default to "STANDARD" (Series x Reps) for all structured blocks
         // Only free_text remains without a format
         const format = type !== 'free_text' ? 'STANDARD' as WorkoutFormat : undefined;
-        addBlock(dayId, type, format, option?.label, isProgression);
+        addBlock(dayId, type, format, undefined, isProgression);
     };
 
     return (

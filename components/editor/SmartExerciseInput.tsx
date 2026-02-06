@@ -130,7 +130,7 @@ export function SmartExerciseInput({
                     {results.length > 0 && (
                         <div className="py-1">
                             <div className="px-3 py-1.5 text-xs font-semibold text-cv-text-tertiary uppercase tracking-wider">
-                                Biblioteca
+                                Ejercicios
                             </div>
                             {results.map((exercise) => (
                                 <button
