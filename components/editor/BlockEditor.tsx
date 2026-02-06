@@ -264,7 +264,8 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 </div>
 
                 {/* Methodology Selector - Collapsible Categories */}
-                {(block.type === 'metcon_structured' || block.type === 'warmup' || block.type === 'accessory' || block.type === 'strength_linear') && (
+                {/* NOTE: strength_linear (Classic) is excluded - it has its own form */}
+                {(block.type === 'metcon_structured' || block.type === 'warmup' || block.type === 'accessory') && (
                     <div>
                         <label className="block text-sm font-medium text-cv-text-secondary mb-2">
                             Metodología de Entrenamiento
