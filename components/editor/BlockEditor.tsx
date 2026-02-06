@@ -213,42 +213,38 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     const isValid = validateBlock();
 
     return (
-        <div className="flex flex-col h-full">
-            {/* Header with Save Button */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-white dark:from-cv-bg-tertiary dark:to-cv-bg-secondary">
-                <div className="flex items-center gap-2">
-                    {/* Header info removed to avoid duplication with the list item above */}
-                </div>
+    return (
+        <div className="flex flex-col h-full relative">
+            {/* Absolute Positioned Save Button (Floating Top Right) */}
+            <div className="absolute top-2 right-2 z-10">
                 <button
                     onClick={() => {
                         if (isValid) {
-                            // Mark as completed when clicking OK
-                            // Use explicit update to ensure it captures current state correctly
                             const newConfig = { ...block.config, is_completed: true };
                             updateBlock(blockId, { config: newConfig as WorkoutConfig });
                             selectBlock(null);
                         }
                     }}
                     disabled={!isValid}
-                    title={isValid ? "Confirmar y cerrar" : "Completa los campos requeridos (Sets/Reps, Movimientos, etc.)"}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm
+                    title={isValid ? "Confirmar y cerrar" : "Completa los campos requeridos"}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium text-xs transition-colors shadow-sm backdrop-blur-sm border
                         ${isValid
-                            ? 'bg-cv-accent text-white hover:bg-cv-accent/90'
-                            : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'}`}
+                            ? 'bg-cv-accent text-white border-cv-accent hover:bg-cv-accent/90'
+                            : 'bg-white/50 text-slate-400 border-slate-200 cursor-not-allowed'}`}
                 >
-                    <Check size={16} />
-                    <span className="hidden sm:inline">OK</span>
+                    <Check size={14} />
+                    <span>OK</span>
                 </button>
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-5">
+            <div className="flex-1 overflow-y-auto p-4 pt-4 space-y-5">
 
                 {/* 1. METHODOLOGY SELECTOR (For Structured types) - NOW FIRST */}
-                {/* NOTE: strength_linear (Classic) is excluded - it has its own form */}
                 {(block.type === 'metcon_structured' || block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill') && (
                     <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">
+                        <label className="block text-sm font-medium text-cv-text-secondary mb-2 pr-16 bg-red-500/0">
+                            {/* pr-16 reserved for the floating OK button */}
                             Metodología de Entrenamiento
                         </label>
 
