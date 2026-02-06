@@ -5,6 +5,7 @@ import { useEditorStore } from '@/lib/store';
 import { SmartExerciseInput } from './SmartExerciseInput';
 import { EmomEditor } from './methodologies/EmomEditor';
 import { CircuitEditor } from './methodologies/AmrapEditor';
+import { TabataEditor } from './methodologies/TabataEditor';
 import { getTrainingMethodologies } from '@/lib/actions';
 import {
     X,
@@ -391,8 +392,16 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             />
                         )}
 
+                        {/* Tabata */}
+                        {currentMethodology.code === 'Tabata' && (
+                            <TabataEditor
+                                config={config}
+                                onChange={handleConfigChange}
+                            />
+                        )}
+
                         {/* Fallback to Dynamic Form for others (or if specialized is not covered) */}
-                        {!['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper'].includes(currentMethodology.code) && (
+                        {!['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper', 'Tabata'].includes(currentMethodology.code) && (
                             <DynamicMethodologyForm
                                 methodology={currentMethodology}
                                 config={config}
