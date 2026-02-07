@@ -99,6 +99,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         format: string | null;
         name: string | null;
         config: WorkoutConfig;
+        progression_id?: string | null;
     } | null = null;
 
     for (const meso of mesocycles) {
@@ -330,6 +331,29 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             {block.type === 'strength_linear' ? 'Ejercicio Principal' : 'Nombre del Bloque (Opcional)'}
                         </label>
 
+                        {/* Progression Toggle */}
+                        <div className="flex items-center gap-3">
+                            <label className="flex items-center gap-2 cursor-pointer group select-none">
+                                <span className={`text-xs font-semibold transition-colors ${block.progression_id ? 'text-cv-accent' : 'text-cv-text-tertiary group-hover:text-cv-text-secondary'}`}>
+                                    Progresión
+                                </span>
+                                <div className="relative w-8 h-4">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only"
+                                        checked={Boolean(block.progression_id)}
+                                        onChange={(e) => toggleBlockProgression(blockId, e.target.checked)}
+                                    />
+                                    <div className={`w-8 h-4 rounded-full transition-colors ${block.progression_id ? 'bg-cv-accent' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
+                                    <div className={`absolute top-0.5 left-0.5 bg-white w-3 h-3 rounded-full transition-transform ${block.progression_id ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                </div>
+                            </label>
+                            {block.progression_id && (
+                                <div className="text-cv-accent animate-in fade-in zoom-in duration-200" title="Progresión activa">
+                                    <Link size={14} />
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {block.type === 'strength_linear' ? (
