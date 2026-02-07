@@ -232,24 +232,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 Metodología de Entrenamiento
                             </label>
                             {/* OK BUTTON INLINE */}
-                            <button
-                                onClick={() => {
-                                    if (isValid) {
-                                        const newConfig = { ...block.config, is_completed: true };
-                                        updateBlock(blockId, { config: newConfig as WorkoutConfig });
-                                        selectBlock(null);
-                                    }
-                                }}
-                                disabled={!isValid}
-                                title={isValid ? "Confirmar" : "Incompleto"}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition-colors shadow-sm border
-                                    ${isValid
-                                        ? 'bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600'
-                                        : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'}`}
-                            >
-                                <Check size={14} className="stroke-[3]" />
-                                <span>LISTO</span>
-                            </button>
+                            {/* OK BUTTON REMOVED FROM HERE */}
                         </div>
 
                         {loading ? (
@@ -344,26 +327,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                         <label className="block text-sm font-medium text-cv-text-secondary">
                             {block.type === 'strength_linear' ? 'Ejercicio Principal' : 'Nombre del Bloque (Opcional)'}
                         </label>
-                        {/* OK BUTTON INLINE FOR OTHER TYPES (If methodology section didn't exist) */}
-                        {!(block.type === 'metcon_structured' || block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill') && (
-                            <button
-                                onClick={() => {
-                                    if (isValid) {
-                                        const newConfig = { ...block.config, is_completed: true };
-                                        updateBlock(blockId, { config: newConfig as WorkoutConfig });
-                                        selectBlock(null);
-                                    }
-                                }}
-                                disabled={!isValid}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition-colors shadow-sm border
-                                    ${isValid
-                                        ? 'bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600'
-                                        : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'}`}
-                            >
-                                <Check size={14} className="stroke-[3]" />
-                                <span>LISTO</span>
-                            </button>
-                        )}
+
                     </div>
 
                     {block.type === 'strength_linear' ? (
@@ -476,13 +440,34 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 </div>
 
                 {/* 6. DELETE BUTTON */}
-                <button
-                    onClick={() => { deleteBlock(blockId); selectBlock(null); }}
-                    className="w-full py-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
-                >
-                    <Trash2 size={14} />
-                    Eliminar Bloque
-                </button>
+                {/* 6. BOTTOM ACTIONS (DELETE + LISTO) */}
+                <div className="flex items-center gap-3 pt-4 mt-auto border-t border-slate-100 dark:border-slate-800">
+                    <button
+                        onClick={() => { deleteBlock(blockId); selectBlock(null); }}
+                        className="flex-1 py-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                    >
+                        <Trash2 size={16} />
+                        Eliminar
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            if (isValid) {
+                                const newConfig = { ...block.config, is_completed: true };
+                                updateBlock(blockId, { config: newConfig as WorkoutConfig });
+                                selectBlock(null);
+                            }
+                        }}
+                        disabled={!isValid}
+                        className={`flex-1 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-bold shadow-sm border
+                            ${isValid
+                                ? 'bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600'
+                                : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'}`}
+                    >
+                        <Check size={16} className="stroke-[3]" />
+                        LISTO
+                    </button>
+                </div>
 
             </div>
         </div>
@@ -617,16 +602,20 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange }: Dyn
         );
     }
 
-    if (field.type === 'number') {
+    if (field.type === 'number' || (field.label && field.label.includes('%')) || field.key === 'percentage') {
+        const displayValue = typeof value === 'string'
+            ? parseInt(value.replace('%', ''))
+            : value;
+
         return (
             <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
                 <span className="text-sm font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
                 <input
                     type="number"
-                    min={1}
-                    value={(value as number) || ''}
-                    onChange={(e) => onChange(parseInt(e.target.value) || null)}
-                    placeholder={field.placeholder || '0'}
+                    min={0}
+                    value={(displayValue as number) || ''}
+                    onChange={(e) => onChange(e.target.value ? parseInt(e.target.value) : null)}
+                    placeholder={field.placeholder ? field.placeholder.replace('%', '') : '0'}
                     className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-14 text-center"
                 />
             </div>
@@ -769,10 +758,10 @@ function StrengthForm({ config, onChange }: FormProps) {
                 <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
                     <span className="text-sm font-semibold text-cv-text-primary">% 1RM</span>
                     <input
-                        type="text"
-                        value={(config.percentage as string) || ''}
+                        type="number"
+                        value={typeof config.percentage === 'string' ? config.percentage.replace('%', '') : (config.percentage as number) || ''}
                         onChange={(e) => onChange('percentage', e.target.value)}
-                        placeholder="75%"
+                        placeholder="75"
                         className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-16 text-center"
                     />
                 </div>

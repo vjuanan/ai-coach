@@ -175,36 +175,36 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
                 onClick={onClose}
             />
 
-            {/* Modal */}
-            <div className="relative w-full max-w-2xl mx-4 bg-cv-bg-primary border border-cv-border rounded-2xl shadow-cv-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                {/* Header */}
-                <div className="relative px-6 py-5 border-b border-cv-border bg-gradient-to-r from-cv-accent/10 via-purple-500/5 to-transparent">
+            {/* Modal - Compact Design */}
+            <div className="relative w-full max-w-3xl mx-4 bg-cv-bg-primary border border-cv-border rounded-2xl shadow-cv-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+                {/* Header - Compact */}
+                <div className="relative px-5 py-3 border-b border-cv-border bg-gradient-to-r from-cv-accent/10 via-purple-500/5 to-transparent shrink-0">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-cv-accent/20 flex items-center justify-center">
-                            <Sparkles size={20} className="text-cv-accent" />
+                        <div className="w-8 h-8 rounded-lg bg-cv-accent/20 flex items-center justify-center">
+                            <Sparkles size={16} className="text-cv-accent" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-semibold text-cv-text-primary">
+                            <h2 className="text-base font-semibold text-cv-text-primary leading-tight">
                                 Configurar Mesociclo
                             </h2>
-                            <p className="text-sm text-cv-text-tertiary">
+                            <p className="text-xs text-cv-text-tertiary">
                                 Define la estrategia macro antes de programar
                             </p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 p-2 rounded-lg text-cv-text-tertiary hover:text-cv-text-primary hover:bg-cv-bg-tertiary transition-colors"
+                        className="absolute top-3 right-3 p-1.5 rounded-lg text-cv-text-tertiary hover:text-cv-text-primary hover:bg-cv-bg-tertiary transition-colors"
                     >
-                        <X size={18} />
+                        <X size={16} />
                     </button>
                 </div>
 
-                {/* Content */}
-                <div className="px-6 py-5 space-y-5 max-h-[65vh] overflow-y-auto">
-                    {/* Program Name */}
+                {/* Content - Scrollable if needed but optimized to fit */}
+                <div className="px-6 py-4 space-y-4 overflow-y-auto">
+                    {/* Program Name - Compact */}
                     <div>
-                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">
+                        <label className="block text-xs font-medium text-cv-text-secondary mb-1.5">
                             Nombre del Programa *
                         </label>
                         <input
@@ -212,15 +212,16 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
                             value={programName}
                             onChange={(e) => setProgramName(e.target.value)}
                             placeholder="Ej: Hypertrophy Block Q1"
-                            className="w-full px-4 py-3 rounded-xl bg-cv-bg-secondary border border-cv-border text-cv-text-primary placeholder:text-cv-text-tertiary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 focus:border-cv-accent transition-all"
+                            className="w-full px-3 py-2 text-sm rounded-lg bg-cv-bg-secondary border border-cv-border text-cv-text-primary placeholder:text-cv-text-tertiary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 focus:border-cv-accent transition-all"
+                            autoFocus
                         />
                     </div>
 
-                    {/* Global Objective */}
+                    {/* Global Objective - Compact */}
                     <div>
-                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                            <span className="flex items-center gap-2">
-                                <Target size={14} className="text-cv-accent" />
+                        <label className="block text-xs font-medium text-cv-text-secondary mb-1.5">
+                            <span className="flex items-center gap-1.5">
+                                <Target size={12} className="text-cv-accent" />
                                 Objetivo Global (North Star)
                             </span>
                         </label>
@@ -228,21 +229,18 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
                             value={globalObjective}
                             onChange={(e) => setGlobalObjective(e.target.value)}
                             placeholder="Ej: Acumulación de volumen para hipertrofia"
-                            rows={3}
-                            className="w-full px-4 py-3 rounded-xl bg-cv-bg-secondary border border-cv-border text-cv-text-primary placeholder:text-cv-text-tertiary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 focus:border-cv-accent transition-all resize-none"
+                            rows={2}
+                            className="w-full px-3 py-2 text-sm rounded-lg bg-cv-bg-secondary border border-cv-border text-cv-text-primary placeholder:text-cv-text-tertiary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 focus:border-cv-accent transition-all resize-none"
                         />
-                        <p className="text-xs text-cv-text-tertiary mt-1.5">
-                            Este objetivo se mostrará en el editor como referencia constante
-                        </p>
                     </div>
 
-                    {/* Duration & Dates Row */}
-                    <div className="grid grid-cols-3 gap-4">
+                    {/* Duration & Dates Row - Compact */}
+                    <div className="grid grid-cols-12 gap-4">
                         {/* Duration */}
-                        <div>
-                            <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                                <span className="flex items-center gap-2">
-                                    <Timer size={14} className="text-purple-400" />
+                        <div className="col-span-3">
+                            <label className="block text-xs font-medium text-cv-text-secondary mb-1.5">
+                                <span className="flex items-center gap-1.5">
+                                    <Timer size={12} className="text-purple-400" />
                                     Duración
                                 </span>
                             </label>
@@ -253,17 +251,17 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
                                     onChange={(e) => handleDurationChange(parseInt(e.target.value) || 4)}
                                     min={1}
                                     max={12}
-                                    className="w-20 px-3 py-2.5 rounded-xl bg-cv-bg-secondary border border-cv-border text-cv-text-primary text-center focus:outline-none focus:ring-2 focus:ring-cv-accent/50 focus:border-cv-accent transition-all"
+                                    className="w-full px-3 py-2 text-sm rounded-lg bg-cv-bg-secondary border border-cv-border text-cv-text-primary text-center focus:outline-none focus:ring-2 focus:ring-cv-accent/50 focus:border-cv-accent transition-all"
                                 />
-                                <span className="text-sm text-cv-text-tertiary">semanas</span>
+                                <span className="text-xs text-cv-text-tertiary">sem</span>
                             </div>
                         </div>
 
                         {/* Start Date */}
-                        <div>
-                            <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                                <span className="flex items-center gap-2">
-                                    <CalendarDays size={14} className="text-green-400" />
+                        <div className="col-span-5">
+                            <label className="block text-xs font-medium text-cv-text-secondary mb-1.5">
+                                <span className="flex items-center gap-1.5">
+                                    <CalendarDays size={12} className="text-green-400" />
                                     Inicio
                                 </span>
                             </label>
@@ -271,32 +269,32 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full px-3 py-2.5 rounded-xl bg-cv-bg-secondary border border-cv-border text-cv-text-primary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 focus:border-cv-accent transition-all"
+                                className="w-full px-3 py-2 text-sm rounded-lg bg-cv-bg-secondary border border-cv-border text-cv-text-primary focus:outline-none focus:ring-2 focus:ring-cv-accent/50 focus:border-cv-accent transition-all"
                             />
                         </div>
 
                         {/* End Date (Read-only) */}
-                        <div>
-                            <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                                <span className="flex items-center gap-2">
-                                    <CalendarDays size={14} className="text-red-400" />
+                        <div className="col-span-4">
+                            <label className="block text-xs font-medium text-cv-text-secondary mb-1.5">
+                                <span className="flex items-center gap-1.5">
+                                    <CalendarDays size={12} className="text-red-400" />
                                     Fin
                                 </span>
                             </label>
-                            <div className="px-3 py-2.5 rounded-xl bg-cv-bg-tertiary border border-cv-border text-cv-text-secondary text-sm">
+                            <div className="w-full px-3 py-2 text-sm rounded-lg bg-cv-bg-tertiary border border-cv-border text-cv-text-secondary truncate">
                                 {formatDate(endDate)}
                             </div>
                         </div>
                     </div>
 
-                    {/* Timeline Visual */}
-                    <div className="p-4 rounded-xl bg-gradient-to-r from-cv-bg-secondary to-cv-bg-tertiary border border-cv-border">
-                        <div className="flex items-center justify-between text-xs text-cv-text-tertiary mb-2">
+                    {/* Timeline Visual - Compact */}
+                    <div className="px-3 py-2 rounded-lg bg-gradient-to-r from-cv-bg-secondary to-cv-bg-tertiary border border-cv-border">
+                        <div className="flex items-center justify-between text-[10px] text-cv-text-tertiary mb-1.5">
                             <span>{formatDate(startDate)}</span>
                             <span className="text-cv-accent font-medium">{duration} semanas</span>
                             <span>{formatDate(endDate)}</span>
                         </div>
-                        <div className="h-2 bg-cv-bg-primary rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-cv-bg-primary rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-gradient-to-r from-cv-accent to-purple-500 rounded-full transition-all duration-300"
                                 style={{ width: '100%' }}
@@ -304,16 +302,16 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
                         </div>
                     </div>
 
-                    {/* Weekly Focus Labels (Optional) */}
+                    {/* Weekly Focus Labels (Optional) - Compact Grid */}
                     <div>
-                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">
+                        <label className="block text-xs font-medium text-cv-text-secondary mb-2">
                             Enfoque Semanal (Opcional)
                         </label>
 
-                        <div className="grid grid-cols-2 gap-4 max-h-48 overflow-y-auto pr-1">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-32 overflow-y-auto pr-1">
                             {Array.from({ length: duration }).map((_, i) => (
-                                <div key={i} className="flex items-center gap-2">
-                                    <span className="text-xs text-cv-text-tertiary w-12 shrink-0">
+                                <div key={i} className="flex flex-col gap-1">
+                                    <span className="text-[10px] text-cv-text-tertiary">
                                         Sem {i + 1}
                                     </span>
                                     <StrategyInput
@@ -330,8 +328,8 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
                                             'Descarga',
                                             'Intro'
                                         ]}
-                                        placeholder="Ej: Acumulación"
-                                        className="flex-1 px-3 py-2 text-sm rounded-lg bg-cv-bg-secondary border border-cv-border text-cv-text-primary placeholder:text-cv-text-tertiary/50 focus:outline-none focus:ring-1 focus:ring-cv-accent/50 transition-all"
+                                        placeholder="Focus"
+                                        className="w-full px-2 py-1.5 text-xs rounded-md bg-cv-bg-secondary border border-cv-border text-cv-text-primary placeholder:text-cv-text-tertiary/50 focus:outline-none focus:ring-1 focus:ring-cv-accent/50 transition-all"
                                     />
                                 </div>
                             ))}
@@ -340,35 +338,35 @@ export function ProgramSetupWizard({ isOpen, onClose }: ProgramSetupWizardProps)
 
                     {/* Error Message */}
                     {error && (
-                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                        <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
                             {error}
                         </div>
                     )}
                 </div>
 
-                {/* Footer */}
-                <div className="px-6 py-4 border-t border-cv-border bg-cv-bg-secondary/50 flex items-center justify-end gap-3">
+                {/* Footer - Compact */}
+                <div className="px-5 py-3 border-t border-cv-border bg-cv-bg-secondary/50 flex items-center justify-end gap-3 shrink-0">
                     <button
                         onClick={onClose}
                         disabled={isCreating}
-                        className="px-4 py-2.5 rounded-xl text-cv-text-secondary hover:text-cv-text-primary transition-colors"
+                        className="px-3 py-2 rounded-lg text-sm text-cv-text-secondary hover:text-cv-text-primary transition-colors"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={isCreating || !programName.trim()}
-                        className="cv-btn-primary flex items-center gap-2 px-5 py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="cv-btn-primary flex items-center gap-2 px-4 py-2 text-sm rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isCreating ? (
                             <>
-                                <Loader2 size={16} className="animate-spin" />
-                                Créando...
+                                <Loader2 size={14} className="animate-spin" />
+                                Creando...
                             </>
                         ) : (
                             <>
                                 Crear Estrategia
-                                <ChevronRight size={16} />
+                                <ChevronRight size={14} />
                             </>
                         )}
                     </button>
