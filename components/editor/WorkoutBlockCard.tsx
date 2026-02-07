@@ -1,7 +1,7 @@
 'use client';
 
 import { useEditorStore } from '@/lib/store';
-import { GripVertical, Copy, Trash2, ChevronDown, TrendingUp, Check, X } from 'lucide-react';
+import { GripVertical, Copy, Trash2, ChevronDown, TrendingUp, Check, X, Link } from 'lucide-react';
 import { useState } from 'react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 
@@ -176,7 +176,7 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                             )}
                             {block.progression_id && (
                                 <div title="Progresión vinculada">
-                                    <TrendingUp size={10} className="text-cv-accent" />
+                                    <Link size={10} className="text-cv-accent" />
                                 </div>
                             )}
                         </div>

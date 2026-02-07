@@ -28,6 +28,7 @@ import {
     Puzzle,
     HelpCircle,
     Check,
+    Link
 } from 'lucide-react';
 import type { BlockType, WorkoutFormat, WorkoutConfig, TrainingMethodology, TrainingMethodologyFormField } from '@/lib/supabase/types';
 import type { LucideIcon } from 'lucide-react';
@@ -54,7 +55,8 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         blockBuilderDayId,
         selectedDayId,
         trainingMethodologies,
-        setTrainingMethodologies
+        setTrainingMethodologies,
+        toggleBlockProgression
     } = useEditorStore();
     // const [methodologies, setMethodologies] = useState<TrainingMethodology[]>([]); // Removed local state
     const [loading, setLoading] = useState(trainingMethodologies.length === 0);
