@@ -208,7 +208,37 @@ export const useEditorStore = create<EditorState>()(
             },
 
             // Selection actions
-            selectWeek: (week) => set({ selectedWeek: week, selectedDayId: null, selectedBlockId: null }),
+            selectWeek: (week) => {
+                const { blockBuilderMode, blockBuilderDayId, mesocycles, selectedWeek } = get();
+
+                // If in Block Builder Mode, try to switch to the same day in the new week
+                if (blockBuilderMode && blockBuilderDayId) {
+                    // 1. Find the current day number
+                    const currentMeso = mesocycles.find(m => m.week_number === selectedWeek);
+                    const currentDay = currentMeso?.days.find(d => d.id === blockBuilderDayId);
+
+                    if (currentDay) {
+                        const targetDayNumber = currentDay.day_number;
+
+                        // 2. Find the target week and day
+                        const targetMeso = mesocycles.find(m => m.week_number === week);
+                        const targetDay = targetMeso?.days.find(d => d.day_number === targetDayNumber);
+
+                        if (targetDay) {
+                            set({
+                                selectedWeek: week,
+                                selectedDayId: targetDay.id,
+                                blockBuilderDayId: targetDay.id,
+                                selectedBlockId: null // Reset block selection to avoid confusion
+                            });
+                            return;
+                        }
+                    }
+                }
+
+                // Default behavior: Switch week and reset selection
+                set({ selectedWeek: week, selectedDayId: null, selectedBlockId: null });
+            },
             selectDay: (dayId) => set({ selectedDayId: dayId, selectedBlockId: null, referenceBlock: null }),
             selectBlock: (blockId) => {
                 const { mesocycles } = get();

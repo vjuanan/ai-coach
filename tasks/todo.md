@@ -1,11 +1,16 @@
 # Active Tasks
 
-- [ ] Optimize "Configurar Mesociclo" Modal
-    - [ ] Locate `ProgramSetupWizard.tsx` (Done)
-    - [ ] Analyze current layout structure
-    - [ ] Plan layout adjustments (compact spacing, flex layout)
-    - [ ] Implement changes in `ProgramSetupWizard.tsx`
-    - [ ] Verify modal fits without scrolling
+- [x] Optimize "Configurar Mesociclo" Modal
+    - [x] Locate `ProgramSetupWizard.tsx` (Done)
+    - [x] Analyze current layout structure (Done)
+    - [x] Plan layout adjustments (compact spacing, flex layout) (Done)
+    - [x] Implement changes in `ProgramSetupWizard.tsx` (Done/Verified)
+    - [x] Verify modal fits without scrolling (Done/Verified via Browser Agent)
+
+- [x] Reorder Block Editor Buttons
+    - [x] Remove top "LISTO" buttons from BlockEditor
+    - [x] Add bottom action bar with "Eliminar" and "LISTO" (50/50 split)
+    - [x] Verify UI on production URL
 
 # Backlog
 - [ ] Redesign MetCon Methodology Editor
