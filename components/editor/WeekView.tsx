@@ -77,11 +77,16 @@ export function WeekView({ mesocycle, programGlobalFocus, compressed = false }: 
     );
 
     // Find the block being dragged for the overlay
-    const getDraggedBlock = (): DraftWorkoutBlock | null => {
-        if (!draggedBlockId) return null;
-        for (const day of mesocycle.days) {
-            const block = day.blocks.find(b => b.id === draggedBlockId);
-            if (block) return block;
+    const getDraggedBlock = (blockId?: string): DraftWorkoutBlock | null => {
+        const searchId = blockId || draggedBlockId;
+        if (!searchId) return null;
+
+        // Search in all mesocycle days
+        for (const meso of [mesocycle]) {
+            for (const day of meso.days) {
+                const block = day.blocks.find(b => b.id === searchId);
+                if (block) return block;
+            }
         }
         return null;
     };
@@ -118,19 +123,22 @@ export function WeekView({ mesocycle, programGlobalFocus, compressed = false }: 
         if (overId.startsWith('day-')) {
             const targetDayId = overId.replace('day-', '');
 
-            // Find the block to check if it has progression
-            const draggedBlock = getDraggedBlock();
+            // Find the block using the blockId from the event
+            const draggedBlock = getDraggedBlock(blockId);
 
             if (draggedBlock) {
-                // Find the target day to get its day_number
-                const targetDay = mesocycle.days.find(d => d.id === targetDayId);
+                // Check if dropping on a different day than current
+                if (draggedBlock.day_id !== targetDayId) {
+                    // Find the target day to get its day_number
+                    const targetDay = mesocycle.days.find(d => d.id === targetDayId);
 
-                if (draggedBlock.progression_id && targetDay) {
-                    // Move all progression blocks to the same day number across all weeks
-                    moveProgressionToDay(draggedBlock.progression_id, targetDay.day_number);
-                } else {
-                    // Simple move for non-progression blocks
-                    moveBlockToDay(blockId, targetDayId);
+                    if (draggedBlock.progression_id && targetDay) {
+                        // Move all progression blocks to the same day number across all weeks
+                        moveProgressionToDay(draggedBlock.progression_id, targetDay.day_number);
+                    } else {
+                        // Simple move for non-progression blocks
+                        moveBlockToDay(blockId, targetDayId);
+                    }
                 }
             }
         }
