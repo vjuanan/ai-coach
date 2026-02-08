@@ -6,6 +6,7 @@ import { SmartExerciseInput } from './SmartExerciseInput';
 import { EmomEditor } from './methodologies/EmomEditor';
 import { CircuitEditor } from './methodologies/AmrapEditor';
 import { TabataEditor } from './methodologies/TabataEditor';
+import { ProgressionPreview } from './ProgressionPreview';
 import { getTrainingMethodologies } from '@/lib/actions';
 import {
     X,
@@ -464,6 +465,14 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                         className="cv-input min-h-[60px] resize-none"
                     />
                 </div>
+
+                {/* 5.5. PROGRESSION PREVIEW - Show all weeks when progression is active */}
+                {block.progression_id && (
+                    <ProgressionPreview
+                        currentBlockId={blockId}
+                        progressionId={block.progression_id}
+                    />
+                )}
 
                 {/* 6. DELETE BUTTON */}
                 {/* 6. BOTTOM ACTIONS (DELETE + LISTO) */}

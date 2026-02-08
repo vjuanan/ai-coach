@@ -1,5 +1,14 @@
 # Active Tasks
 
+- [ ] Vista Global de Progresiones
+    - [ ] Crear `ProgressionPreview.tsx` - Componente principal
+    - [ ] Crear `ProgressionBlockCard.tsx` - Tarjeta por semana
+    - [ ] Modificar `BlockEditor.tsx` - Integrar componente
+    - [ ] Verificar con screenshots en producción
+    - [ ] Validar edición cruzada entre semanas
+
+# Completed Tasks
+
 - [x] Optimize "Configurar Mesociclo" Modal
     - [x] Locate `ProgramSetupWizard.tsx` (Done)
     - [x] Analyze current layout structure (Done)
