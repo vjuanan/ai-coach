@@ -4,6 +4,17 @@ import { DayCard } from './DayCard';
 import { WeeklySummaryCard } from './WeeklySummaryCard';
 import { useEditorStore } from '@/lib/store';
 import type { DraftMesocycle } from '@/lib/store';
+import {
+    DndContext,
+    DragEndEvent,
+    DragOverEvent,
+    DragStartEvent,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragOverlay,
+} from '@dnd-kit/core';
+import { GripVertical } from 'lucide-react';
 
 // Define the type here since it's not exported
 interface DraftDay {
@@ -29,6 +40,7 @@ interface DraftWorkoutBlock {
     name: string | null;
     config: Record<string, unknown>;
     isDirty?: boolean;
+    progression_id?: string | null;
 }
 
 interface WeekViewProps {
@@ -46,7 +58,91 @@ interface WeekViewProps {
 const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 export function WeekView({ mesocycle, programGlobalFocus, compressed = false }: WeekViewProps) {
-    const { blockBuilderDayId } = useEditorStore();
+    const {
+        blockBuilderDayId,
+        setDraggedBlock,
+        setDropTarget,
+        moveBlockToDay,
+        moveProgressionToDay,
+        draggedBlockId
+    } = useEditorStore();
+
+    // Pointer sensor with activation constraint (5px movement to start drag)
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5,
+            },
+        })
+    );
+
+    // Find the block being dragged for the overlay
+    const getDraggedBlock = (): DraftWorkoutBlock | null => {
+        if (!draggedBlockId) return null;
+        for (const day of mesocycle.days) {
+            const block = day.blocks.find(b => b.id === draggedBlockId);
+            if (block) return block;
+        }
+        return null;
+    };
+
+    const handleDragStart = (event: DragStartEvent) => {
+        const blockId = event.active.id as string;
+        setDraggedBlock(blockId);
+    };
+
+    const handleDragOver = (event: DragOverEvent) => {
+        const overId = event.over?.id as string | undefined;
+        // Only set drop target if it's a day (not a block)
+        if (overId?.startsWith('day-')) {
+            const dayId = overId.replace('day-', '');
+            setDropTarget(dayId);
+        } else {
+            setDropTarget(null);
+        }
+    };
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (!over) {
+            setDraggedBlock(null);
+            setDropTarget(null);
+            return;
+        }
+
+        const blockId = active.id as string;
+        const overId = over.id as string;
+
+        // Check if dropping on a day
+        if (overId.startsWith('day-')) {
+            const targetDayId = overId.replace('day-', '');
+
+            // Find the block to check if it has progression
+            const draggedBlock = getDraggedBlock();
+
+            if (draggedBlock) {
+                // Find the target day to get its day_number
+                const targetDay = mesocycle.days.find(d => d.id === targetDayId);
+
+                if (draggedBlock.progression_id && targetDay) {
+                    // Move all progression blocks to the same day number across all weeks
+                    moveProgressionToDay(draggedBlock.progression_id, targetDay.day_number);
+                } else {
+                    // Simple move for non-progression blocks
+                    moveBlockToDay(blockId, targetDayId);
+                }
+            }
+        }
+
+        setDraggedBlock(null);
+        setDropTarget(null);
+    };
+
+    const handleDragCancel = () => {
+        setDraggedBlock(null);
+        setDropTarget(null);
+    };
 
     // Ensure we have 7 days
     const days = Array.from({ length: 7 }, (_, i) => {
@@ -91,36 +187,61 @@ export function WeekView({ mesocycle, programGlobalFocus, compressed = false }: 
     // Row 2: Friday, Saturday, Sunday (indices 4-6) + Weekly Summary
     const row1Days = days.slice(0, 4);
     const row2Days = days.slice(4, 7);
+    const draggedBlock = getDraggedBlock();
 
     return (
-        <div className="h-full flex flex-col">
+        <DndContext
+            sensors={sensors}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+        >
+            <div className="h-full flex flex-col">
+                {/* BENTO GRID LAYOUT */}
+                {/* Desktop: 4 cols x 2 rows | Tablet: 2 cols x 4 rows | Mobile: 1 col stack */}
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 grid-rows-[repeat(auto-fit,minmax(0,1fr))] xl:grid-rows-2 gap-4 min-h-0">
+                    {/* Row 1: Monday - Thursday */}
+                    {row1Days.map((day, index) => (
+                        <DayCard
+                            key={day.id}
+                            day={day}
+                            dayName={DAY_NAMES[index]}
+                        />
+                    ))}
 
+                    {/* Row 2: Friday - Sunday + Weekly Summary */}
+                    {row2Days.map((day, index) => (
+                        <DayCard
+                            key={day.id}
+                            day={day}
+                            dayName={DAY_NAMES[index + 4]}
+                        />
+                    ))}
 
-            {/* BENTO GRID LAYOUT */}
-            {/* Desktop: 4 cols x 2 rows | Tablet: 2 cols x 4 rows | Mobile: 1 col stack */}
-            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 grid-rows-[repeat(auto-fit,minmax(0,1fr))] xl:grid-rows-2 gap-4 min-h-0">
-                {/* Row 1: Monday - Thursday */}
-                {row1Days.map((day, index) => (
-                    <DayCard
-                        key={day.id}
-                        day={day}
-                        dayName={DAY_NAMES[index]}
-                    />
-                ))}
-
-                {/* Row 2: Friday - Sunday + Weekly Summary */}
-                {row2Days.map((day, index) => (
-                    <DayCard
-                        key={day.id}
-                        day={day}
-                        dayName={DAY_NAMES[index + 4]}
-                    />
-                ))}
-
-                {/* Weekly Summary - 8th slot */}
-                <WeeklySummaryCard mesocycle={mesocycle} programGlobalFocus={programGlobalFocus} />
+                    {/* Weekly Summary - 8th slot */}
+                    <WeeklySummaryCard mesocycle={mesocycle} programGlobalFocus={programGlobalFocus} />
+                </div>
             </div>
-        </div>
+
+            {/* Drag Overlay - Shows a preview of the block being dragged */}
+            <DragOverlay dropAnimation={null}>
+                {draggedBlock ? (
+                    <div className="bg-white dark:bg-cv-bg-secondary rounded-lg shadow-xl border-2 border-cv-accent p-3 opacity-90 max-w-[200px]">
+                        <div className="flex items-center gap-2">
+                            <GripVertical size={14} className="text-cv-accent" />
+                            <span className="text-sm font-medium text-cv-text-primary truncate">
+                                {draggedBlock.name || 'Bloque'}
+                            </span>
+                        </div>
+                        {draggedBlock.progression_id && (
+                            <p className="text-xs text-cv-accent mt-1">
+                                ↔ Se moverá en todas las semanas
+                            </p>
+                        )}
+                    </div>
+                ) : null}
+            </DragOverlay>
+        </DndContext>
     );
 }
-

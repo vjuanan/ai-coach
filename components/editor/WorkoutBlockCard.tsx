@@ -4,6 +4,8 @@ import { useEditorStore } from '@/lib/store';
 import { GripVertical, Copy, Trash2, ChevronDown, TrendingUp, Check, X, Link } from 'lucide-react';
 import { useState } from 'react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 
 interface DraftWorkoutBlock {
     id: string;
@@ -43,13 +45,23 @@ const formatLabels: Record<string, string> = {
 };
 
 export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
-    const { selectBlock, selectedBlockId, deleteBlock, deleteProgression, duplicateBlock, enterBlockBuilder } = useEditorStore();
+    const { selectBlock, selectedBlockId, deleteBlock, deleteProgression, duplicateBlock, enterBlockBuilder, draggedBlockId } = useEditorStore();
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
+    // Setup draggable
+    const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+        id: block.id,
+    });
+
+    const style = transform ? {
+        transform: CSS.Translate.toString(transform),
+    } : undefined;
+
     const isSelected = selectedBlockId === block.id;
-    const style = blockTypeStyles[block.type] || blockTypeStyles.free_text;
+    const blockStyle = blockTypeStyles[block.type] || blockTypeStyles.free_text;
     const config = block.config as Record<string, unknown>;
+    const isBeingDragged = isDragging || draggedBlockId === block.id;
 
     // Determine if block has meaningful content
     const isBlockEmpty = (): boolean => {
@@ -146,61 +158,72 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
     return (
         <>
             <div
+                ref={setNodeRef}
+                style={style}
                 className={`
-        group relative bg-cv-bg-tertiary rounded-lg p-2 cursor-pointer
-        transition-all hover:bg-cv-bg-elevated
-        ${style.color}
-        ${isSelected ? 'ring-2 ring-cv-accent' : ''}
-      `}
+                    group relative bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer
+                    transition-all
+                    ${blockStyle.color}
+                    ${isSelected ? 'ring-2 ring-cv-accent' : ''}
+                    ${isBeingDragged ? 'opacity-50 scale-95 shadow-none' : 'hover:shadow'}
+                `}
                 onClick={(e) => { e.stopPropagation(); enterBlockBuilder(block.day_id); selectBlock(block.id); }}
             >
-                {/* Drag Handle */}
-                <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">
-                    <GripVertical size={12} className="text-cv-text-tertiary" />
-                </div>
-
-                {/* Content */}
-                <div className="pl-4">
-                    <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                            <span className="text-2xs uppercase tracking-wider text-cv-text-tertiary font-medium">
-                                {block.name || style.label}
-                            </span>
-                            {/* Green Tick for Completed Blocks */}
-                            {Boolean(config.is_completed) && (
-                                <div title="Bloque completado">
-                                    <div className="w-3 h-3 rounded-full bg-emerald-500 flex items-center justify-center">
-                                        <Check size={8} className="text-white stroke-[3]" />
-                                    </div>
-                                </div>
-                            )}
-                            {block.progression_id && (
-                                <div title="Progresión vinculada">
-                                    <Link size={10} className="text-cv-accent" />
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Quick Actions */}
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                                onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id); }}
-                                className="p-1 rounded hover:bg-cv-bg-secondary text-cv-text-tertiary hover:text-cv-text-primary"
-                                title="Duplicar"
-                            >
-                                <Copy size={12} />
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-cv-text-tertiary hover:text-red-500"
-                                title="Eliminar"
-                            >
-                                <X size={14} className="stroke-[2.5]" />
-                            </button>
-                        </div>
+                {/* Card Inner Content */}
+                <div className="p-2">
+                    {/* Drag Handle - Always visible on left */}
+                    <div
+                        {...listeners}
+                        {...attributes}
+                        className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing rounded-l-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <GripVertical size={12} className="text-cv-text-tertiary" />
                     </div>
 
-                    {getBlockPreview()}
+                    {/* Content */}
+                    <div className="pl-4">
+                        <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                                <span className="text-2xs uppercase tracking-wider text-cv-text-tertiary font-medium">
+                                    {block.name || blockStyle.label}
+                                </span>
+                                {/* Green Tick for Completed Blocks */}
+                                {Boolean(config.is_completed) && (
+                                    <div title="Bloque completado">
+                                        <div className="w-3 h-3 rounded-full bg-emerald-500 flex items-center justify-center">
+                                            <Check size={8} className="text-white stroke-[3]" />
+                                        </div>
+                                    </div>
+                                )}
+                                {block.progression_id && (
+                                    <div title="Progresión vinculada">
+                                        <Link size={10} className="text-cv-accent" />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Quick Actions */}
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id); }}
+                                    className="p-1 rounded hover:bg-cv-bg-secondary text-cv-text-tertiary hover:text-cv-text-primary"
+                                    title="Duplicar"
+                                >
+                                    <Copy size={12} />
+                                </button>
+                                <button
+                                    onClick={handleDelete}
+                                    className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-cv-text-tertiary hover:text-red-500"
+                                    title="Eliminar"
+                                >
+                                    <X size={14} className="stroke-[2.5]" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {getBlockPreview()}
+                    </div>
                 </div>
             </div>
 

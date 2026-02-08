@@ -5,6 +5,7 @@ import { WorkoutBlockCard } from './WorkoutBlockCard';
 import { Plus, Moon, MoreHorizontal, Sun, Target, Trash2 } from 'lucide-react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 import * as Popover from '@radix-ui/react-popover';
+import { useDroppable } from '@dnd-kit/core';
 
 interface DraftWorkoutBlock {
     id: string;
@@ -16,6 +17,7 @@ interface DraftWorkoutBlock {
     name: string | null;
     config: Record<string, unknown>;
     isDirty?: boolean;
+    progression_id?: string | null;
 }
 
 interface DraftDay {
@@ -48,10 +50,17 @@ const blockTypeOptions: { type: BlockType; label: string; color: string }[] = [
 ];
 
 export function DayCard({ day, dayName, compact = false, isActiveInBuilder = false }: DayCardProps) {
-    const { addBlock, toggleRestDay, selectDay, selectBlock, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures, clearDay, enterBlockBuilder, blockBuilderMode } = useEditorStore();
+    const { addBlock, toggleRestDay, selectDay, selectBlock, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures, clearDay, enterBlockBuilder, blockBuilderMode, draggedBlockId } = useEditorStore();
+
+    // Setup droppable
+    const { isOver, setNodeRef } = useDroppable({
+        id: `day-${day.id}`,
+        disabled: day.is_rest_day,
+    });
 
     const isSelected = selectedDayId === day.id;
-    const isDropTarget = dropTargetDayId === day.id;
+    const isDropTarget = isOver || dropTargetDayId === day.id;
+    const isDragging = draggedBlockId !== null;
 
     // Resolve Stimulus Color
     const activeStimulus = day.stimulus_id ? stimulusFeatures.find(s => s.id === day.stimulus_id) : null;
@@ -166,10 +175,12 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
     // TRAINING DAY CARD - Full redesign
     return (
         <div
+            ref={setNodeRef}
             className={`
                 cv-card h-full flex flex-col p-4 relative overflow-hidden
                 ${isSelected ? 'ring-2 ring-cv-accent shadow-lg' : ''}
-                ${isDropTarget ? 'cv-drop-target ring-2 ring-cv-accent/50' : ''}
+                ${isDropTarget && isDragging ? 'ring-2 ring-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/20 shadow-lg scale-[1.02]' : ''}
+                ${isDragging && !isDropTarget ? 'opacity-80' : ''}
                 transition-all duration-200 cursor-pointer hover:shadow-md
             `}
             onClick={() => !isActiveInBuilder && selectDay(day.id)}
@@ -181,6 +192,15 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                     className="absolute inset-x-0 top-0 h-24 opacity-15 pointer-events-none blur-xl z-0"
                     style={{ backgroundColor: activeStimulus.color }}
                 />
+            )}
+
+            {/* Drop Zone Indicator */}
+            {isDropTarget && isDragging && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
+                    <div className="px-4 py-2 bg-emerald-500 text-white rounded-full text-sm font-medium shadow-lg animate-pulse">
+                        Soltar aquí
+                    </div>
+                </div>
             )}
 
             {/* Header - Improved hierarchy */}
@@ -316,24 +336,20 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                 {day.blocks
                     .sort((a, b) => a.order_index - b.order_index)
                     .map(block => (
-                        <div
-                            key={block.id}
-                            className="bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow transition-shadow cursor-pointer"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                enterBlockBuilder(day.id);
-                                selectBlock(block.id);
-                            }}
-                        >
-                            <WorkoutBlockCard block={block} />
-                        </div>
+                        <WorkoutBlockCard key={block.id} block={block} />
                     ))
                 }
 
                 {/* Empty State - Clickable to open Block Builder */}
                 {day.blocks.length === 0 && (
                     <div
-                        className="h-32 bg-slate-50 dark:bg-slate-800/30 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center text-cv-text-tertiary cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-cv-accent/50 transition-colors"
+                        className={`
+                            h-32 border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-cv-text-tertiary cursor-pointer transition-colors
+                            ${isDropTarget && isDragging
+                                ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/20'
+                                : 'bg-slate-50 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-cv-accent/50'
+                            }
+                        `}
                         onClick={handleOpenBlockBuilder}
                     >
                         <Plus size={20} className="mb-2 opacity-40" />

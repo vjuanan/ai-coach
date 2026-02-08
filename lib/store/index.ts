@@ -118,6 +118,7 @@ interface EditorState {
     setDraggedBlock: (blockId: string | null) => void;
     setDropTarget: (dayId: string | null) => void;
     moveBlockToDay: (blockId: string, targetDayId: string) => void;
+    moveProgressionToDay: (progressionId: string, targetDayNumber: number) => void;
 
     // Block Builder Mode
     enterBlockBuilder: (dayId: string) => void;
@@ -810,6 +811,63 @@ export const useEditorStore = create<EditorState>()(
                         return day;
                     }),
                 }));
+
+                set({
+                    mesocycles: updatedMesocycles,
+                    hasUnsavedChanges: true,
+                    draggedBlockId: null,
+                    dropTargetDayId: null,
+                });
+            },
+
+            moveProgressionToDay: (progressionId, targetDayNumber) => {
+                const { mesocycles } = get();
+
+                const updatedMesocycles = mesocycles.map(meso => {
+                    // Find the target day for this mesocycle
+                    const targetDay = meso.days.find(d => d.day_number === targetDayNumber);
+                    if (!targetDay) return meso;
+
+                    // Find and collect blocks with this progression_id
+                    let blockToMove: DraftWorkoutBlock | null = null;
+
+                    const daysWithoutBlock = meso.days.map(day => {
+                        const block = day.blocks.find(b => b.progression_id === progressionId);
+                        if (block) {
+                            blockToMove = block;
+                            return {
+                                ...day,
+                                blocks: day.blocks.filter(b => b.progression_id !== progressionId),
+                                isDirty: true,
+                            };
+                        }
+                        return day;
+                    });
+
+                    if (!blockToMove) return meso;
+
+                    // Add the block to the target day
+                    const finalDays = daysWithoutBlock.map(day => {
+                        if (day.id === targetDay.id) {
+                            return {
+                                ...day,
+                                blocks: [
+                                    ...day.blocks,
+                                    {
+                                        ...blockToMove!,
+                                        day_id: day.id,
+                                        order_index: day.blocks.length,
+                                        isDirty: true,
+                                    },
+                                ],
+                                isDirty: true,
+                            };
+                        }
+                        return day;
+                    });
+
+                    return { ...meso, days: finalDays };
+                });
 
                 set({
                     mesocycles: updatedMesocycles,
