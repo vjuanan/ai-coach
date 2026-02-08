@@ -32,14 +32,13 @@ interface WeekData {
 
 interface MonthlyProgression {
     name: string;
-    progression: string[]; // e.g., ["70%", "75%", "80%", "85%"] for each week
+    progression: string[];
     notes?: string;
 }
 
 interface ExportPreviewProps {
     isOpen: boolean;
     onClose: () => void;
-    // Monthly view data
     programName: string;
     clientInfo: {
         name: string;
@@ -48,15 +47,39 @@ interface ExportPreviewProps {
     coachName: string;
     monthlyStrategy?: {
         focus: string;
-        duration: string; // e.g., "4 semanas"
+        duration: string;
         objectives: string[];
         progressions: MonthlyProgression[];
     };
-    // Weekly breakdown
     weeks: WeekData[];
-    // Current week strategy (for backwards compatibility)
     strategy?: MesocycleStrategy;
 }
+
+// Color palette for export - hardcoded to ensure html2canvas compatibility
+const EXPORT_COLORS = {
+    bgPrimary: '#1f2937',
+    bgSecondary: '#111827',
+    bgTertiary: '#374151',
+    textPrimary: '#ffffff',
+    textSecondary: '#d1d5db',
+    textTertiary: '#9ca3af',
+    textMuted: '#6b7280',
+    accent: '#f97316',
+    accentGreen: '#22c55e',
+    border: '#374151',
+    borderLight: '#4b5563',
+};
+
+// Block type to color mapping
+const getBlockColor = (type: string): string => {
+    switch (type) {
+        case 'strength_linear': return '#ef4444';
+        case 'metcon_structured': return '#f97316';
+        case 'warmup': return '#22c55e';
+        case 'skill': return '#3b82f6';
+        default: return '#6b7280';
+    }
+};
 
 export function ExportPreview({
     isOpen,
@@ -79,9 +102,10 @@ export function ExportPreview({
 
         try {
             const canvas = await html2canvas(exportRef.current, {
-                backgroundColor: '#1f2937', // Gray-800 (Softer than 900)
+                backgroundColor: EXPORT_COLORS.bgPrimary,
                 scale: 2,
                 useCORS: true,
+                logging: false,
             });
 
             if (exportFormat === 'png') {
@@ -170,95 +194,230 @@ export function ExportPreview({
 
                         {/* Scrollable Preview Area */}
                         <div className="flex-1 overflow-auto p-4 md:p-6">
+                            {/* EXPORT CONTENT - Using INLINE STYLES for html2canvas compatibility */}
                             <div
                                 ref={exportRef}
-                                className="bg-[#1f2937] rounded-xl overflow-hidden max-w-3xl mx-auto shadow-2xl"
-                                style={{ minWidth: '500px' }}
+                                style={{
+                                    backgroundColor: EXPORT_COLORS.bgPrimary,
+                                    borderRadius: '12px',
+                                    overflow: 'hidden',
+                                    maxWidth: '700px',
+                                    margin: '0 auto',
+                                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                                }}
                             >
-                                {/* ============================================ */}
                                 {/* HEADER - Client & Program Info */}
-                                {/* ============================================ */}
-                                <div className="p-6 border-b border-gray-800">
-                                    <div className="flex items-center gap-4">
-                                        {clientInfo.logo ? (
-                                            <img
-                                                src={clientInfo.logo}
-                                                alt={clientInfo.name}
-                                                className="w-14 h-14 rounded-xl object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-cv-accent to-orange-600 flex items-center justify-center text-white font-bold text-xl">
-                                                {clientInfo.name.charAt(0)}
-                                            </div>
-                                        )}
-                                        <div className="flex-1">
-                                            <h1 className="text-2xl font-bold text-white">{clientInfo.name}</h1>
-                                            <p className="text-gray-400">{programName}</p>
+                                <div style={{
+                                    padding: '24px',
+                                    borderBottom: `1px solid ${EXPORT_COLORS.border}`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '16px',
+                                }}>
+                                    {clientInfo.logo ? (
+                                        <img
+                                            src={clientInfo.logo}
+                                            alt={clientInfo.name}
+                                            style={{
+                                                width: '56px',
+                                                height: '56px',
+                                                borderRadius: '12px',
+                                                objectFit: 'cover',
+                                            }}
+                                        />
+                                    ) : (
+                                        <div style={{
+                                            width: '56px',
+                                            height: '56px',
+                                            borderRadius: '12px',
+                                            background: `linear-gradient(135deg, ${EXPORT_COLORS.accent}, #ea580c)`,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: EXPORT_COLORS.textPrimary,
+                                            fontWeight: 'bold',
+                                            fontSize: '20px',
+                                        }}>
+                                            {clientInfo.name.charAt(0)}
                                         </div>
-                                        {monthlyStrategy?.duration && (
-                                            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-800/50 rounded-lg border border-gray-700/50">
-                                                <Calendar size={16} className="text-cv-accent" />
-                                                <span className="text-sm text-gray-300">{monthlyStrategy.duration}</span>
-                                            </div>
-                                        )}
+                                    )}
+                                    <div style={{ flex: 1 }}>
+                                        <h1 style={{
+                                            fontSize: '24px',
+                                            fontWeight: 'bold',
+                                            color: EXPORT_COLORS.textPrimary,
+                                            margin: 0,
+                                        }}>
+                                            {clientInfo.name}
+                                        </h1>
+                                        <p style={{
+                                            color: EXPORT_COLORS.textTertiary,
+                                            margin: 0,
+                                            fontSize: '14px',
+                                        }}>
+                                            {programName}
+                                        </p>
                                     </div>
+                                    {monthlyStrategy?.duration && (
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            padding: '6px 12px',
+                                            backgroundColor: `${EXPORT_COLORS.bgSecondary}80`,
+                                            borderRadius: '8px',
+                                            border: `1px solid ${EXPORT_COLORS.border}50`,
+                                        }}>
+                                            <Calendar size={16} color={EXPORT_COLORS.accent} />
+                                            <span style={{
+                                                fontSize: '14px',
+                                                color: EXPORT_COLORS.textSecondary,
+                                            }}>
+                                                {monthlyStrategy.duration}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
 
-                                {/* ============================================ */}
-                                {/* MONTHLY OVERVIEW - Progressions as Main Focus */}
-                                {/* ============================================ */}
+                                {/* MONTHLY OVERVIEW */}
                                 {monthlyStrategy && (
-                                    <div className="p-6 border-b border-gray-800 bg-gradient-to-b from-gray-900/50 to-transparent">
+                                    <div style={{
+                                        padding: '24px',
+                                        borderBottom: `1px solid ${EXPORT_COLORS.border}`,
+                                        background: `linear-gradient(180deg, ${EXPORT_COLORS.bgSecondary}50, transparent)`,
+                                    }}>
                                         {/* Main Focus */}
                                         {monthlyStrategy.focus && (
-                                            <div className="mb-6 flex gap-3">
-                                                <Target size={18} className="text-cv-accent shrink-0 mt-1" />
+                                            <div style={{
+                                                display: 'flex',
+                                                gap: '12px',
+                                                marginBottom: '24px',
+                                            }}>
+                                                <Target size={18} color={EXPORT_COLORS.accent} style={{ flexShrink: 0, marginTop: '4px' }} />
                                                 <div>
-                                                    <h2 className="text-lg font-semibold text-cv-accent uppercase tracking-wide mb-1">
+                                                    <h2 style={{
+                                                        fontSize: '14px',
+                                                        fontWeight: '600',
+                                                        color: EXPORT_COLORS.accent,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.05em',
+                                                        margin: '0 0 4px 0',
+                                                    }}>
                                                         Foco del Mesociclo
                                                     </h2>
-                                                    <p className="text-gray-200 text-lg leading-relaxed">{monthlyStrategy.focus}</p>
+                                                    <p style={{
+                                                        color: EXPORT_COLORS.textSecondary,
+                                                        fontSize: '16px',
+                                                        lineHeight: 1.6,
+                                                        margin: 0,
+                                                    }}>
+                                                        {monthlyStrategy.focus}
+                                                    </p>
                                                 </div>
                                             </div>
                                         )}
 
-                                        {/* Progressions - THE MAIN FOCUS */}
+                                        {/* Progressions */}
                                         {monthlyStrategy.progressions && monthlyStrategy.progressions.length > 0 && (
-                                            <div className="mb-6 flex gap-3">
-                                                <TrendingUp size={18} className="text-green-500 shrink-0 mt-1" />
-                                                <div className="flex-1 min-w-0">
-                                                    <h2 className="text-lg font-semibold text-green-500 uppercase tracking-wide mb-3">
+                                            <div style={{
+                                                display: 'flex',
+                                                gap: '12px',
+                                                marginBottom: '24px',
+                                            }}>
+                                                <TrendingUp size={18} color={EXPORT_COLORS.accentGreen} style={{ flexShrink: 0, marginTop: '4px' }} />
+                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <h2 style={{
+                                                        fontSize: '14px',
+                                                        fontWeight: '600',
+                                                        color: EXPORT_COLORS.accentGreen,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.05em',
+                                                        margin: '0 0 12px 0',
+                                                    }}>
                                                         Progresiones
                                                     </h2>
-                                                    <div className="bg-gray-800/40 rounded-xl p-4 space-y-4 border border-gray-800">
+                                                    <div style={{
+                                                        backgroundColor: `${EXPORT_COLORS.bgTertiary}40`,
+                                                        borderRadius: '12px',
+                                                        padding: '16px',
+                                                        border: `1px solid ${EXPORT_COLORS.border}`,
+                                                    }}>
                                                         {/* Header Row */}
-                                                        <div className="grid grid-cols-5 gap-2 text-center">
-                                                            <div className="text-left text-gray-500 text-xs uppercase tracking-wide">Ejercicio</div>
-                                                            <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 1</div>
-                                                            <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 2</div>
-                                                            <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 3</div>
-                                                            <div className="text-gray-500 text-xs uppercase tracking-wide">Sem 4</div>
+                                                        <div style={{
+                                                            display: 'grid',
+                                                            gridTemplateColumns: '2fr repeat(4, 1fr)',
+                                                            gap: '8px',
+                                                            textAlign: 'center',
+                                                            marginBottom: '8px',
+                                                        }}>
+                                                            <div style={{
+                                                                textAlign: 'left',
+                                                                color: EXPORT_COLORS.textMuted,
+                                                                fontSize: '11px',
+                                                                textTransform: 'uppercase',
+                                                                letterSpacing: '0.05em',
+                                                            }}>
+                                                                Ejercicio
+                                                            </div>
+                                                            {['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'].map((sem, i) => (
+                                                                <div key={i} style={{
+                                                                    color: EXPORT_COLORS.textMuted,
+                                                                    fontSize: '11px',
+                                                                    textTransform: 'uppercase',
+                                                                    letterSpacing: '0.05em',
+                                                                }}>
+                                                                    {sem}
+                                                                </div>
+                                                            ))}
                                                         </div>
                                                         {/* Progression Rows */}
                                                         {monthlyStrategy.progressions.map((prog, idx) => (
-                                                            <div key={idx} className="grid grid-cols-5 gap-2 items-center py-2 border-t border-gray-800/50">
-                                                                <div className="text-left">
-                                                                    <span className="text-white font-medium">{prog.name}</span>
+                                                            <div key={idx} style={{
+                                                                display: 'grid',
+                                                                gridTemplateColumns: '2fr repeat(4, 1fr)',
+                                                                gap: '8px',
+                                                                alignItems: 'center',
+                                                                padding: '8px 0',
+                                                                borderTop: idx > 0 ? `1px solid ${EXPORT_COLORS.border}50` : 'none',
+                                                            }}>
+                                                                <div style={{ textAlign: 'left' }}>
+                                                                    <span style={{
+                                                                        color: EXPORT_COLORS.textPrimary,
+                                                                        fontWeight: '500',
+                                                                        fontSize: '14px',
+                                                                    }}>
+                                                                        {prog.name}
+                                                                    </span>
                                                                     {prog.notes && (
-                                                                        <p className="text-gray-500 text-xs mt-0.5">{prog.notes}</p>
+                                                                        <p style={{
+                                                                            color: EXPORT_COLORS.textMuted,
+                                                                            fontSize: '11px',
+                                                                            margin: '2px 0 0 0',
+                                                                        }}>
+                                                                            {prog.notes}
+                                                                        </p>
                                                                     )}
                                                                 </div>
                                                                 {prog.progression.map((value, weekIdx) => (
-                                                                    <div key={weekIdx} className="text-center">
-                                                                        <span className={`font-mono text-sm ${weekIdx === prog.progression.length - 1 ? 'text-green-400 font-bold' : 'text-gray-300'
-                                                                            }`}>
+                                                                    <div key={weekIdx} style={{ textAlign: 'center' }}>
+                                                                        <span style={{
+                                                                            fontFamily: 'monospace',
+                                                                            fontSize: '13px',
+                                                                            color: weekIdx === prog.progression.length - 1 ? EXPORT_COLORS.accentGreen : EXPORT_COLORS.textSecondary,
+                                                                            fontWeight: weekIdx === prog.progression.length - 1 ? 'bold' : 'normal',
+                                                                        }}>
                                                                             {value}
                                                                         </span>
                                                                     </div>
                                                                 ))}
-                                                                {/* Fill empty cells if less than 4 weeks */}
+                                                                {/* Fill empty cells */}
                                                                 {Array.from({ length: 4 - prog.progression.length }).map((_, i) => (
-                                                                    <div key={`empty-${i}`} className="text-center text-gray-600">-</div>
+                                                                    <div key={`empty-${i}`} style={{
+                                                                        textAlign: 'center',
+                                                                        color: EXPORT_COLORS.textMuted,
+                                                                    }}>
+                                                                        -
+                                                                    </div>
                                                                 ))}
                                                             </div>
                                                         ))}
@@ -269,17 +428,36 @@ export function ExportPreview({
 
                                         {/* Objectives */}
                                         {monthlyStrategy.objectives && monthlyStrategy.objectives.length > 0 && (
-                                            // Align with the text content of the sections above (approx 18px icon + 12px gap = 30px indent)
-                                            // or just use specific padding if no icon.
-                                            // Let's use a placeholder matching the gap to key alignment perfect
-                                            <div className="flex gap-3">
-                                                <div className="w-[18px] shrink-0" /> {/* Spacer for alignment */}
+                                            <div style={{
+                                                display: 'flex',
+                                                gap: '12px',
+                                            }}>
+                                                <div style={{ width: '18px', flexShrink: 0 }} />
                                                 <div>
-                                                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Objetivos del Ciclo</p>
-                                                    <ul className="space-y-1">
+                                                    <p style={{
+                                                        fontSize: '11px',
+                                                        color: EXPORT_COLORS.textMuted,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.05em',
+                                                        margin: '0 0 8px 0',
+                                                    }}>
+                                                        Objetivos del Ciclo
+                                                    </p>
+                                                    <ul style={{
+                                                        margin: 0,
+                                                        padding: 0,
+                                                        listStyle: 'none',
+                                                    }}>
                                                         {monthlyStrategy.objectives.map((obj, idx) => (
-                                                            <li key={idx} className="flex items-start gap-2 text-sm text-gray-300">
-                                                                <span className="text-cv-accent mt-1">•</span>
+                                                            <li key={idx} style={{
+                                                                display: 'flex',
+                                                                alignItems: 'flex-start',
+                                                                gap: '8px',
+                                                                fontSize: '14px',
+                                                                color: EXPORT_COLORS.textSecondary,
+                                                                marginBottom: '4px',
+                                                            }}>
+                                                                <span style={{ color: EXPORT_COLORS.accent, marginTop: '4px' }}>•</span>
                                                                 {obj}
                                                             </li>
                                                         ))}
@@ -290,113 +468,208 @@ export function ExportPreview({
                                     </div>
                                 )}
 
-                                {/* Strategy section from current week (backwards compatibility) */}
+                                {/* Strategy section (backwards compatibility) */}
                                 {!monthlyStrategy && strategy && (strategy.focus || strategy.considerations) && (
-                                    <div className="p-6 border-b border-gray-800">
+                                    <div style={{
+                                        padding: '24px',
+                                        borderBottom: `1px solid ${EXPORT_COLORS.border}`,
+                                    }}>
                                         {strategy.focus && (
                                             <>
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <div className="w-1 h-4 rounded-full bg-cv-accent" />
-                                                    <span className="text-sm font-semibold text-cv-accent uppercase tracking-wide">
+                                                <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '8px',
+                                                    marginBottom: '8px',
+                                                }}>
+                                                    <div style={{
+                                                        width: '4px',
+                                                        height: '16px',
+                                                        borderRadius: '2px',
+                                                        backgroundColor: EXPORT_COLORS.accent,
+                                                    }} />
+                                                    <span style={{
+                                                        fontSize: '12px',
+                                                        fontWeight: '600',
+                                                        color: EXPORT_COLORS.accent,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.05em',
+                                                    }}>
                                                         Enfoque
                                                     </span>
                                                 </div>
-                                                <p className="text-gray-300 text-sm mb-3">{strategy.focus}</p>
+                                                <p style={{
+                                                    color: EXPORT_COLORS.textSecondary,
+                                                    fontSize: '14px',
+                                                    marginBottom: '12px',
+                                                }}>
+                                                    {strategy.focus}
+                                                </p>
                                             </>
                                         )}
                                         {strategy.considerations && (
-                                            <div className="bg-gray-800/50 rounded-lg p-3 mt-2">
-                                                <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Consideraciones del Coach</p>
-                                                <p className="text-gray-300 text-sm whitespace-pre-line">{strategy.considerations}</p>
+                                            <div style={{
+                                                backgroundColor: `${EXPORT_COLORS.bgTertiary}50`,
+                                                borderRadius: '8px',
+                                                padding: '12px',
+                                                marginTop: '8px',
+                                            }}>
+                                                <p style={{
+                                                    fontSize: '11px',
+                                                    color: EXPORT_COLORS.textTertiary,
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.05em',
+                                                    marginBottom: '4px',
+                                                }}>
+                                                    Consideraciones del Coach
+                                                </p>
+                                                <p style={{
+                                                    color: EXPORT_COLORS.textSecondary,
+                                                    fontSize: '14px',
+                                                    whiteSpace: 'pre-line',
+                                                    margin: 0,
+                                                }}>
+                                                    {strategy.considerations}
+                                                </p>
                                             </div>
                                         )}
                                     </div>
                                 )}
 
-                                {/* Technical Clarifications & Scaling (backwards compatibility) */}
-                                {!monthlyStrategy && strategy && (strategy.technicalClarifications || strategy.scalingAlternatives) && (
-                                    <div className="px-6 py-4 border-b border-gray-800 bg-gray-800/30">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            {strategy.technicalClarifications && (
-                                                <div>
-                                                    <p className="text-xs text-blue-400 uppercase tracking-wide mb-1">🔧 Aclaraciones Técnicas</p>
-                                                    <p className="text-gray-400 text-xs whitespace-pre-line">{strategy.technicalClarifications}</p>
-                                                </div>
-                                            )}
-                                            {strategy.scalingAlternatives && (
-                                                <div>
-                                                    <p className="text-xs text-orange-400 uppercase tracking-wide mb-1">⚠️ Escalado & Alternativas</p>
-                                                    <p className="text-gray-400 text-xs whitespace-pre-line">{strategy.scalingAlternatives}</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* ============================================ */}
                                 {/* WEEKLY BREAKDOWN */}
-                                {/* ============================================ */}
                                 {weeks && weeks.length > 0 && (
-                                    <div className="p-6 space-y-8">
-                                        <div className="flex items-center gap-2 mb-4">
-                                            <Dumbbell size={18} className="text-orange-500" />
-                                            <h2 className="text-lg font-semibold text-orange-500 uppercase tracking-wide">
+                                    <div style={{ padding: '24px' }}>
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            marginBottom: '16px',
+                                        }}>
+                                            <Dumbbell size={18} color={EXPORT_COLORS.accent} />
+                                            <h2 style={{
+                                                fontSize: '14px',
+                                                fontWeight: '600',
+                                                color: EXPORT_COLORS.accent,
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.05em',
+                                                margin: 0,
+                                            }}>
                                                 Detalle Semanal
                                             </h2>
                                         </div>
 
                                         {weeks.map((week, weekIdx) => (
-                                            <div key={weekIdx} className="space-y-4">
+                                            <div key={weekIdx} style={{ marginBottom: weekIdx < weeks.length - 1 ? '32px' : 0 }}>
                                                 {/* Week Header */}
-                                                <div className="flex items-center justify-between border-b border-gray-700 pb-2">
-                                                    <h3 className="text-white text-lg font-bold">
+                                                <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    borderBottom: `1px solid ${EXPORT_COLORS.borderLight}`,
+                                                    paddingBottom: '8px',
+                                                    marginBottom: '16px',
+                                                }}>
+                                                    <h3 style={{
+                                                        color: EXPORT_COLORS.textPrimary,
+                                                        fontSize: '18px',
+                                                        fontWeight: 'bold',
+                                                        margin: 0,
+                                                    }}>
                                                         Semana {week.weekNumber}
                                                     </h3>
                                                     {week.focus && (
-                                                        <span className="text-xs text-gray-300 bg-black/20 px-2 py-1 rounded border border-gray-700/50">
+                                                        <span style={{
+                                                            fontSize: '12px',
+                                                            color: EXPORT_COLORS.textSecondary,
+                                                            backgroundColor: `${EXPORT_COLORS.bgSecondary}20`,
+                                                            padding: '4px 8px',
+                                                            borderRadius: '4px',
+                                                            border: `1px solid ${EXPORT_COLORS.border}50`,
+                                                        }}>
                                                             {week.focus}
                                                         </span>
                                                     )}
                                                 </div>
 
                                                 {/* Days Grid */}
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div style={{
+                                                    display: 'grid',
+                                                    gridTemplateColumns: 'repeat(2, 1fr)',
+                                                    gap: '16px',
+                                                }}>
                                                     {week.days && week.days.map((day, dayIdx) => (
-                                                        <div key={dayIdx} className="bg-gray-900/20 rounded-xl border border-gray-700/50 overflow-hidden flex flex-col h-full">
-
-                                                            {/* Day Header - Clearly distinct */}
-                                                            <div className="px-4 py-2 bg-black/20 border-b border-gray-700/50 flex items-center justify-between">
-                                                                <h4 className="text-gray-200 font-semibold text-sm uppercase tracking-wide">
+                                                        <div key={dayIdx} style={{
+                                                            backgroundColor: `${EXPORT_COLORS.bgSecondary}20`,
+                                                            borderRadius: '12px',
+                                                            border: `1px solid ${EXPORT_COLORS.border}50`,
+                                                            overflow: 'hidden',
+                                                        }}>
+                                                            {/* Day Header */}
+                                                            <div style={{
+                                                                padding: '8px 16px',
+                                                                backgroundColor: `${EXPORT_COLORS.bgSecondary}20`,
+                                                                borderBottom: `1px solid ${EXPORT_COLORS.border}50`,
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'space-between',
+                                                            }}>
+                                                                <h4 style={{
+                                                                    color: EXPORT_COLORS.textSecondary,
+                                                                    fontWeight: '600',
+                                                                    fontSize: '12px',
+                                                                    textTransform: 'uppercase',
+                                                                    letterSpacing: '0.05em',
+                                                                    margin: 0,
+                                                                }}>
                                                                     {day.name}
                                                                 </h4>
-                                                                <div className="h-1.5 w-1.5 rounded-full bg-gray-600"></div>
+                                                                <div style={{
+                                                                    width: '6px',
+                                                                    height: '6px',
+                                                                    borderRadius: '50%',
+                                                                    backgroundColor: EXPORT_COLORS.textMuted,
+                                                                }} />
                                                             </div>
 
-                                                            <div className="p-4 space-y-4 flex-1">
+                                                            {/* Day Content */}
+                                                            <div style={{ padding: '16px' }}>
                                                                 {day.blocks.length > 0 ? (
                                                                     day.blocks.map((block, blockIdx) => (
-                                                                        <div key={blockIdx} className="flex gap-3">
-                                                                            {/* Vertical line connector - Now Flex item */}
-                                                                            <div className={`w-1 rounded-full shrink-0 self-stretch ${block.type === 'strength_linear' ? 'bg-red-500/80' :
-                                                                                block.type === 'metcon_structured' ? 'bg-orange-500/80' :
-                                                                                    block.type === 'warmup' ? 'bg-green-500/80' :
-                                                                                        block.type === 'skill' ? 'bg-blue-500/80' :
-                                                                                            'bg-gray-500/80'
-                                                                                }`} />
-
-                                                                            <div className="flex-1 min-w-0 pb-1">
-                                                                                <div className="mb-1">
-                                                                                    <span className="text-sm font-medium text-gray-100 block truncate">
+                                                                        <div key={blockIdx} style={{
+                                                                            display: 'flex',
+                                                                            gap: '12px',
+                                                                            marginBottom: blockIdx < day.blocks.length - 1 ? '16px' : 0,
+                                                                        }}>
+                                                                            {/* Vertical line */}
+                                                                            <div style={{
+                                                                                width: '4px',
+                                                                                borderRadius: '2px',
+                                                                                backgroundColor: `${getBlockColor(block.type)}cc`,
+                                                                                minHeight: '40px',
+                                                                                flexShrink: 0,
+                                                                            }} />
+                                                                            {/* Block content */}
+                                                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                                                <div style={{ marginBottom: '4px' }}>
+                                                                                    <span style={{
+                                                                                        fontSize: '14px',
+                                                                                        fontWeight: '500',
+                                                                                        color: EXPORT_COLORS.textPrimary,
+                                                                                        display: 'block',
+                                                                                    }}>
                                                                                         {block.name}
                                                                                     </span>
                                                                                 </div>
-
-                                                                                <div className="space-y-0.5">
+                                                                                <div>
                                                                                     {block.content.map((line, lineIdx) => (
-                                                                                        <p key={lineIdx} className={`font-mono text-xs leading-relaxed ${lineIdx === 0
-                                                                                            ? 'text-gray-200 font-semibold'
-                                                                                            : 'text-gray-500'
-                                                                                            }`}>
+                                                                                        <p key={lineIdx} style={{
+                                                                                            fontFamily: 'monospace',
+                                                                                            fontSize: '12px',
+                                                                                            lineHeight: 1.5,
+                                                                                            color: lineIdx === 0 ? EXPORT_COLORS.textSecondary : EXPORT_COLORS.textMuted,
+                                                                                            fontWeight: lineIdx === 0 ? '600' : 'normal',
+                                                                                            margin: '2px 0',
+                                                                                        }}>
                                                                                             {line}
                                                                                         </p>
                                                                                     ))}
@@ -405,7 +678,15 @@ export function ExportPreview({
                                                                         </div>
                                                                     ))
                                                                 ) : (
-                                                                    <p className="text-gray-600 text-xs italic py-2 text-center">Descanso</p>
+                                                                    <p style={{
+                                                                        color: EXPORT_COLORS.textMuted,
+                                                                        fontSize: '12px',
+                                                                        fontStyle: 'italic',
+                                                                        padding: '8px 0',
+                                                                        textAlign: 'center',
+                                                                    }}>
+                                                                        Descanso
+                                                                    </p>
                                                                 )}
                                                             </div>
                                                         </div>
@@ -416,15 +697,39 @@ export function ExportPreview({
                                     </div>
                                 )}
 
-                                {/* ============================================ */}
                                 {/* FOOTER - Coach Signature */}
-                                {/* ============================================ */}
-                                <div className="px-6 py-4 border-t border-gray-800 flex items-center justify-between bg-gray-900/50">
-                                    <p className="text-gray-500 text-xs uppercase tracking-wider">
+                                <div style={{
+                                    padding: '16px 24px',
+                                    borderTop: `1px solid ${EXPORT_COLORS.border}`,
+                                    backgroundColor: `${EXPORT_COLORS.bgSecondary}50`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                }}>
+                                    <p style={{
+                                        color: EXPORT_COLORS.textMuted,
+                                        fontSize: '11px',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.1em',
+                                        margin: 0,
+                                    }}>
                                         Programado por {coachName}
                                     </p>
-                                    <p className="text-gray-600 text-xs font-mono flex items-center gap-1.5">
-                                        <span className="w-1.5 h-1.5 bg-cv-accent rounded-full"></span>
+                                    <p style={{
+                                        color: EXPORT_COLORS.textMuted,
+                                        fontSize: '11px',
+                                        fontFamily: 'monospace',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        margin: 0,
+                                    }}>
+                                        <span style={{
+                                            width: '6px',
+                                            height: '6px',
+                                            backgroundColor: EXPORT_COLORS.accent,
+                                            borderRadius: '50%',
+                                        }} />
                                         AI COACH
                                     </p>
                                 </div>
