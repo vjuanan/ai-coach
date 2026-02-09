@@ -200,7 +200,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
             {/* Header - Only show when NOT in builder mode */}
             {!isActiveInBuilder && (
                 <div className="relative z-10 flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
-                    <div className="flex-1">
+                    <div className="flex-1 cursor-pointer" onClick={() => enterBlockBuilder(day.id)}>
                         <h3 className="text-base font-bold text-cv-text-primary">{dayName}</h3>
                         {activeStimulus && (
                             <span
