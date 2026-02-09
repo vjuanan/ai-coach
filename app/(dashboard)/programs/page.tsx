@@ -14,7 +14,8 @@ import {
     Target,
     Zap,
     LayoutGrid,
-    List
+    List,
+    Download
 } from 'lucide-react';
 import {
     getPrograms,
@@ -24,6 +25,7 @@ import {
 } from '@/lib/actions';
 import { ProgramsGrid } from './ProgramsGrid';
 import { ProgramsTable } from './ProgramsTable';
+import { ProgramCardExporter } from '@/components/export/ProgramCardExporter';
 
 interface Program {
     id: string;
@@ -73,6 +75,10 @@ export default function ProgramsPage() {
     const [selectedPrograms, setSelectedPrograms] = useState<Set<string>>(new Set());
     const isSelectionMode = selectedPrograms.size > 0;
 
+    // State for Export
+    const [exportPrograms, setExportPrograms] = useState<Program[]>([]);
+    const [isExportOpen, setIsExportOpen] = useState(false);
+
     useEscapeKey(() => !isDeleting && setProgramToDelete(null), !!programToDelete);
 
     const router = useRouter();
@@ -116,6 +122,24 @@ export default function ProgramsPage() {
             setSelectedPrograms(new Set());
         } else {
             setSelectedPrograms(new Set(filteredPrograms.map(p => p.id)));
+        }
+    }
+
+    // Export handler - single program
+    function handleExport(programId: string) {
+        const program = programs.find(p => p.id === programId);
+        if (program) {
+            setExportPrograms([program]);
+            setIsExportOpen(true);
+        }
+    }
+
+    // Export handler - bulk (selected programs)
+    function handleBulkExport() {
+        const toExport = programs.filter(p => selectedPrograms.has(p.id));
+        if (toExport.length > 0) {
+            setExportPrograms(toExport);
+            setIsExportOpen(true);
         }
     }
 
@@ -188,16 +212,28 @@ export default function ProgramsPage() {
                         </div>
 
                         {isSelectionMode ? (
-                            <button
-                                onClick={() => setProgramToDelete('BULK')} // Open confirmation modal correctly
-                                className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors flex items-center justify-center relative group"
-                                title="Eliminar selección"
-                            >
-                                <Trash2 size={18} />
-                                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] text-white font-medium">
-                                    {selectedPrograms.size}
-                                </span>
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={handleBulkExport}
+                                    className="p-2 bg-orange-50 hover:bg-orange-100 text-cv-accent rounded-lg transition-colors flex items-center justify-center relative group"
+                                    title="Exportar selección"
+                                >
+                                    <Download size={18} />
+                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-cv-accent text-[10px] text-white font-medium">
+                                        {selectedPrograms.size}
+                                    </span>
+                                </button>
+                                <button
+                                    onClick={() => setProgramToDelete('BULK')} // Open confirmation modal correctly
+                                    className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors flex items-center justify-center relative group"
+                                    title="Eliminar selección"
+                                >
+                                    <Trash2 size={18} />
+                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] text-white font-medium">
+                                        {selectedPrograms.size}
+                                    </span>
+                                </button>
+                            </div>
                         ) : (
                             <GlobalCreateButton />
                         )}
@@ -243,6 +279,7 @@ export default function ProgramsPage() {
                                 isSelectionMode={isSelectionMode}
                                 toggleSelection={toggleSelection}
                                 promptDelete={promptDelete}
+                                onExport={handleExport}
                                 CARD_GRADIENTS={CARD_GRADIENTS}
                                 CARD_ICONS={CARD_ICONS}
                             />
@@ -255,6 +292,7 @@ export default function ProgramsPage() {
                                 selectAll={selectAll}
                                 totalFiltered={filteredPrograms.length}
                                 promptDelete={promptDelete}
+                                onExport={handleExport}
                                 CARD_GRADIENTS={CARD_GRADIENTS}
                                 CARD_ICONS={CARD_ICONS}
                             />
@@ -303,6 +341,16 @@ export default function ProgramsPage() {
                     </div>
                 )}
             </div>
+
+            {/* Export Modal */}
+            <ProgramCardExporter
+                isOpen={isExportOpen}
+                onClose={() => {
+                    setIsExportOpen(false);
+                    setExportPrograms([]);
+                }}
+                programs={exportPrograms}
+            />
         </>
     );
 }

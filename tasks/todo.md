@@ -1,7 +1,10 @@
-# Redesigning "+" Button
+# TODO - Exportación de Programas
 
-- [x] Locate the "+" button component (`GlobalCreateButton.tsx`)
-- [/] Apply new premium button styles (gradient, shadow, hover effects)
-- [ ] Update other usages (`gyms/page.tsx`, `admin/users/page.tsx`)
-- [ ] Push to GitHub
-- [ ] Verify on production with screenshots
+## Tareas
+
+- [x] Crear `ProgramCardExporter.tsx` con lógica de exportación PNG/PDF *(ya existía)*
+- [x] Modificar `ProgramsGrid.tsx` - agregar botón de exportar en cada card
+- [x] Modificar `ProgramsTable.tsx` - agregar botón de exportar en acciones
+- [x] Modificar `page.tsx` - integrar exportador y botón masivo
+- [ ] Push a GitHub y verificar en producción
+- [ ] Verificar con screenshots que funciona correctamente
