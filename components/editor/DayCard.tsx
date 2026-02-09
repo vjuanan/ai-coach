@@ -197,11 +197,11 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                 </div>
             )}
 
-            {/* Header - Improved hierarchy */}
-            <div className="relative z-10 flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
-                {(!isActiveInBuilder || activeStimulus) && (
+            {/* Header - Only show when NOT in builder mode */}
+            {!isActiveInBuilder && (
+                <div className="relative z-10 flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex-1">
-                        {!isActiveInBuilder && <h3 className="text-base font-bold text-cv-text-primary">{dayName}</h3>}
+                        <h3 className="text-base font-bold text-cv-text-primary">{dayName}</h3>
                         {activeStimulus && (
                             <span
                                 className="text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider mt-0.5 inline-block"
@@ -215,107 +215,104 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                             </span>
                         )}
                     </div>
-                )}
-                <div className={isActiveInBuilder && !activeStimulus ? "flex items-center justify-between w-full px-1" : "flex items-center gap-1"}>
-                    {/* Stimulus Selector */}
-                    <Popover.Root>
-                        <Popover.Trigger asChild>
-                            <button
-                                className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 hover:scale-110 hover:shadow-sm hover:text-cv-accent"
-                                title="Cambiar foco del día"
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <Target size={14} className={activeStimulus ? '' : 'opacity-40'} style={activeStimulus ? { color: activeStimulus.color } : {}} />
-                            </button>
-                        </Popover.Trigger>
-                        <Popover.Portal>
-                            <Popover.Content
-                                className="min-w-[220px] bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-2 z-50 animate-in fade-in zoom-in-95 duration-200"
-                                sideOffset={5}
-                            >
-                                <p className="text-xs font-semibold text-cv-text-tertiary mb-2 px-2">Foco / Estímulo</p>
-                                <div className="space-y-1">
-                                    <button
-                                        onClick={() => updateDay(day.id, { stimulus_id: null })}
-                                        className="w-full text-left px-2 py-1.5 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-cv-text-secondary flex items-center gap-2"
-                                    >
-                                        <div className="w-3 h-3 rounded-full border border-slate-300 dark:border-slate-600" />
-                                        <span>Sin asignar</span>
-                                    </button>
-                                    {stimulusFeatures.map(s => (
+                    <div className="flex items-center gap-1">
+                        {/* Stimulus Selector */}
+                        <Popover.Root>
+                            <Popover.Trigger asChild>
+                                <button
+                                    className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 hover:scale-110 hover:shadow-sm hover:text-cv-accent"
+                                    title="Cambiar foco del día"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <Target size={14} className={activeStimulus ? '' : 'opacity-40'} style={activeStimulus ? { color: activeStimulus.color } : {}} />
+                                </button>
+                            </Popover.Trigger>
+                            <Popover.Portal>
+                                <Popover.Content
+                                    className="min-w-[220px] bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-2 z-50 animate-in fade-in zoom-in-95 duration-200"
+                                    sideOffset={5}
+                                >
+                                    <p className="text-xs font-semibold text-cv-text-tertiary mb-2 px-2">Foco / Estímulo</p>
+                                    <div className="space-y-1">
                                         <button
-                                            key={s.id}
-                                            onClick={() => updateDay(day.id, { stimulus_id: s.id })}
-                                            className="w-full text-left px-2 py-1.5 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-cv-text-primary flex items-center gap-2"
+                                            onClick={() => updateDay(day.id, { stimulus_id: null })}
+                                            className="w-full text-left px-2 py-1.5 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-cv-text-secondary flex items-center gap-2"
                                         >
-                                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: s.color }} />
-                                            <span>{s.name}</span>
+                                            <div className="w-3 h-3 rounded-full border border-slate-300 dark:border-slate-600" />
+                                            <span>Sin asignar</span>
                                         </button>
-                                    ))}
-                                    {stimulusFeatures.length === 0 && (
-                                        <p className="text-xs text-cv-text-tertiary px-2 italic">Configura estímulos en ajustes</p>
-                                    )}
-                                </div>
-                                <Popover.Arrow className="fill-white dark:fill-slate-900 border-t border-l border-slate-200 dark:border-slate-700" />
-                            </Popover.Content>
-                        </Popover.Portal>
-                    </Popover.Root>
+                                        {stimulusFeatures.map(s => (
+                                            <button
+                                                key={s.id}
+                                                onClick={() => updateDay(day.id, { stimulus_id: s.id })}
+                                                className="w-full text-left px-2 py-1.5 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-cv-text-primary flex items-center gap-2"
+                                            >
+                                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: s.color }} />
+                                                <span>{s.name}</span>
+                                            </button>
+                                        ))}
+                                        {stimulusFeatures.length === 0 && (
+                                            <p className="text-xs text-cv-text-tertiary px-2 italic">Configura estímulos en ajustes</p>
+                                        )}
+                                    </div>
+                                    <Popover.Arrow className="fill-white dark:fill-slate-900 border-t border-l border-slate-200 dark:border-slate-700" />
+                                </Popover.Content>
+                            </Popover.Portal>
+                        </Popover.Root>
 
-                    <button
-                        onClick={(e) => { e.stopPropagation(); toggleRestDay(day.id); }}
-                        className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 hover:scale-110 hover:shadow-sm opacity-60 hover:opacity-100 hover:text-indigo-500"
-                        title="Marcar como descanso"
-                    >
-                        <Moon size={14} />
-                    </button>
-                    {/* More Options Menu */}
-                    <Popover.Root>
-                        <Popover.Trigger asChild>
-                            <button
-                                className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 hover:scale-110 hover:shadow-sm"
-                                title="Más opciones"
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <MoreHorizontal size={16} />
-                            </button>
-                        </Popover.Trigger>
-                        <Popover.Portal>
-                            <Popover.Content
-                                className="min-w-[180px] bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-1 z-50 animate-in fade-in zoom-in-95 duration-200"
-                                sideOffset={5}
-                                align="end"
-                            >
-                                <div className="space-y-0.5">
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            // Close popover logic is handled by Radix automatically when clicking outside, 
-                                            // but for internal buttons we might need a way to close it. 
-                                            // However, for now standard behavior is fine.
-                                            clearDay(day.id);
-                                        }}
-                                        className="w-full text-left px-2 py-2 text-sm rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center gap-2 transition-colors"
-                                    >
-                                        <Trash2 size={14} />
-                                        <span>Limpiar contenido</span>
-                                    </button>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            toggleRestDay(day.id);
-                                        }}
-                                        className="w-full text-left px-2 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-cv-text-secondary flex items-center gap-2 transition-colors"
-                                    >
-                                        <Moon size={14} />
-                                        <span>Marcar como descanso</span>
-                                    </button>
-                                </div>
-                                <Popover.Arrow className="fill-white dark:fill-slate-900 border-t border-l border-slate-200 dark:border-slate-700" />
-                            </Popover.Content>
-                        </Popover.Portal>
-                    </Popover.Root>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); toggleRestDay(day.id); }}
+                            className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 hover:scale-110 hover:shadow-sm opacity-60 hover:opacity-100 hover:text-indigo-500"
+                            title="Marcar como descanso"
+                        >
+                            <Moon size={14} />
+                        </button>
+                        {/* More Options Menu */}
+                        <Popover.Root>
+                            <Popover.Trigger asChild>
+                                <button
+                                    className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 hover:scale-110 hover:shadow-sm"
+                                    title="Más opciones"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <MoreHorizontal size={16} />
+                                </button>
+                            </Popover.Trigger>
+                            <Popover.Portal>
+                                <Popover.Content
+                                    className="min-w-[180px] bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-1 z-50 animate-in fade-in zoom-in-95 duration-200"
+                                    sideOffset={5}
+                                    align="end"
+                                >
+                                    <div className="space-y-0.5">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                clearDay(day.id);
+                                            }}
+                                            className="w-full text-left px-2 py-2 text-sm rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center gap-2 transition-colors"
+                                        >
+                                            <Trash2 size={14} />
+                                            <span>Limpiar contenido</span>
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleRestDay(day.id);
+                                            }}
+                                            className="w-full text-left px-2 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-cv-text-secondary flex items-center gap-2 transition-colors"
+                                        >
+                                            <Moon size={14} />
+                                            <span>Marcar como descanso</span>
+                                        </button>
+                                    </div>
+                                    <Popover.Arrow className="fill-white dark:fill-slate-900 border-t border-l border-slate-200 dark:border-slate-700" />
+                                </Popover.Content>
+                            </Popover.Portal>
+                        </Popover.Root>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Workout Blocks - Cards within Card style */}
             <div className="flex-1 space-y-3 mb-8 overflow-y-auto p-4 -m-4">
