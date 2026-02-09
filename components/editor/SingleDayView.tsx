@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { DayCard } from './DayCard';
-import { ChevronDown, Calendar } from 'lucide-react';
+import { ChevronDown, Calendar, Check } from 'lucide-react';
+import * as Popover from '@radix-ui/react-popover';
 import type { DraftMesocycle } from '@/lib/store';
 
 interface SingleDayViewProps {
@@ -49,24 +50,46 @@ export function SingleDayView({ mesocycle, dayId, onSelectDay }: SingleDayViewPr
         <div className="h-full flex flex-col bg-slate-50/50 dark:bg-cv-bg-primary/50">
             {/* Day Selector Header */}
             <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary flex items-center justify-between shadow-sm z-10">
-                <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-cv-accent/10 rounded-lg text-cv-accent">
-                        <Calendar size={20} />
+                <div className="flex items-center gap-1">
+                    <div className="p-1 bg-cv-accent/10 rounded-lg text-cv-accent">
+                        <Calendar size={18} />
                     </div>
-                    <div className="relative group flex items-center">
-                        <select
-                            value={dayId}
-                            onChange={(e) => onSelectDay(e.target.value)}
-                            className="appearance-none bg-transparent font-bold text-lg text-cv-text-primary pr-6 cursor-pointer focus:outline-none"
-                        >
-                            {days.map((day, index) => (
-                                <option key={day.id} value={day.id}>
-                                    {DAY_NAMES[index]}
-                                </option>
-                            ))}
-                        </select>
-                        <ChevronDown size={16} className="absolute right-0 top-1/2 -translate-y-1/2 text-cv-text-secondary pointer-events-none" />
-                    </div>
+
+                    <Popover.Root>
+                        <Popover.Trigger asChild>
+                            <button className="flex items-center gap-0.5 focus:outline-none hover:bg-slate-50 dark:hover:bg-slate-800 rounded px-1 -ml-1 transition-colors">
+                                <span className="font-bold text-lg text-cv-text-primary text-left">
+                                    {DAY_NAMES[days.findIndex(d => d.id === dayId)] || 'Seleccionar'}
+                                </span>
+                                <ChevronDown size={14} className="text-cv-text-secondary mt-0.5" />
+                            </button>
+                        </Popover.Trigger>
+                        <Popover.Portal>
+                            <Popover.Content
+                                className="min-w-[160px] bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-1 z-50 animate-in fade-in zoom-in-95 duration-200"
+                                sideOffset={4}
+                                align="start"
+                            >
+                                <div className="flex flex-col gap-0.5">
+                                    {days.map((day, index) => (
+                                        <button
+                                            key={day.id}
+                                            onClick={() => onSelectDay(day.id)}
+                                            className={`
+                                                w-full text-left px-3 py-2 text-sm rounded-lg transition-colors flex items-center justify-between
+                                                ${day.id === dayId
+                                                    ? 'bg-cv-accent/10 text-cv-accent font-medium'
+                                                    : 'text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800'}
+                                            `}
+                                        >
+                                            <span>{DAY_NAMES[index]}</span>
+                                            {day.id === dayId && <Check size={14} />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </Popover.Content>
+                        </Popover.Portal>
+                    </Popover.Root>
                 </div>
 
                 <div className="text-right">

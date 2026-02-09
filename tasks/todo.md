@@ -5,8 +5,8 @@
 
 ## Tasks
 
-- [ ] Analyze `app/editor/[programId]/page.tsx` structure.
-- [ ] Check for `autoFocus` on inputs that might be stealing focus inappropriately.
-- [ ] Check for overlay elements (z-index) blocking pointer events initially.
-- [ ] Fix the issue.
-- [ ] Verify fix.
+- [x] Analyze `app/editor/[programId]/page.tsx` structure.
+- [x] Check for `autoFocus` on inputs that might be stealing focus inappropriately.
+- [x] Check for overlay elements (z-index) blocking pointer events initially.
+- [x] Fix the issue (Refactored to CSS hover effects).
+- [ ] Verify fix (User to verify visually).

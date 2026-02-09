@@ -199,36 +199,21 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
         <>
             <div
                 ref={setNodeRef}
-                style={style}
+                style={
+                    {
+                        ...style,
+                        '--block-glow': getGlowColor(),
+                    } as React.CSSProperties
+                }
                 className={`
                     group relative bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer active:cursor-grabbing touch-none
                     transition-all duration-200
                     ${blockStyle.color}
                     ${isSelected ? 'ring-2 ring-cv-accent' : ''}
-                    ${isBeingDragged
-                        ? 'opacity-50 scale-95 shadow-none'
-                        : '' // Hover effects handled by inline styles
-                    }
+                    ${isBeingDragged ? 'opacity-50 scale-95 shadow-none' : ''}
+                    
+                    ${!isSelected && !isBeingDragged ? 'hover:shadow-[0_4px_15px_-4px_var(--block-glow)] hover:-translate-y-0.5 hover:scale-[1.01] hover:border-cv-accent' : ''}
                 `}
-                style={!isSelected && !isBeingDragged ? { '--block-glow': getGlowColor() } as React.CSSProperties : undefined}
-                onMouseEnter={(e) => {
-                    if (!isSelected && !isBeingDragged) {
-                        const el = e.currentTarget;
-                        el.style.boxShadow = `0 4px 15px -4px ${getGlowColor()}`;
-                        el.style.transform = 'translateY(-2px) scale(1.01)';
-                        el.style.borderColor = 'var(--cv-accent, #86c4a3)'; // Optional: highlight border too
-                        // el.style.backgroundColor = 'white'; // Optional: if needed to override dark mode slightly
-                    }
-                }}
-                onMouseLeave={(e) => {
-                    if (!isSelected && !isBeingDragged) {
-                        const el = e.currentTarget;
-                        el.style.boxShadow = '';
-                        el.style.transform = '';
-                        el.style.borderColor = '';
-                        // el.style.backgroundColor = '';
-                    }
-                }}
                 onClick={(e) => {
                     e.stopPropagation();
                     // Prevent click if we just finished dragging (just in case, though handled by grip now)
