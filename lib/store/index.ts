@@ -683,10 +683,79 @@ export const useEditorStore = create<EditorState>()(
                 selectedDayId: dayId,
                 selectedBlockId: null
             }),
-            exitBlockBuilder: () => set({
-                blockBuilderMode: false,
-                blockBuilderDayId: null
-            }),
+            exitBlockBuilder: () => {
+                const { mesocycles, blockBuilderDayId } = get();
+
+                // If no day was being edited, just exit
+                if (!blockBuilderDayId) {
+                    set({
+                        blockBuilderMode: false,
+                        blockBuilderDayId: null
+                    });
+                    return;
+                }
+
+                // Find and clean empty blocks from the current day
+                const updatedMesocycles = mesocycles.map(meso => ({
+                    ...meso,
+                    days: meso.days.map(day => {
+                        if (day.id === blockBuilderDayId) {
+                            // Filter out empty blocks
+                            const nonEmptyBlocks = day.blocks.filter(block => {
+                                // Check if block is empty using same logic as BlockBuilderPanel
+                                const config = block.config;
+                                switch (block.type) {
+                                    case 'strength_linear':
+                                        return config.sets || config.reps || config.exercise;
+                                    case 'metcon_structured': {
+                                        const movements = config.movements as string[] || [];
+                                        return block.format || movements.length > 0 || config.time_cap;
+                                    }
+                                    case 'free_text':
+                                        const content = config.content as string;
+                                        return content && typeof content === 'string' && content.trim() !== '';
+                                    case 'warmup':
+                                    case 'accessory':
+                                    case 'skill': {
+                                        const movements = config.movements as unknown[] || [];
+                                        const exercises = config.exercises as unknown[] || [];
+                                        const notes = config.notes as string;
+                                        return movements.length > 0 || exercises.length > 0 || (notes && typeof notes === 'string' && notes.trim() !== '');
+                                    }
+                                    default:
+                                        const keys = Object.keys(config).filter(k => k !== 'is_completed');
+                                        return keys.length > 0 && !keys.every(k => {
+                                            const val = config[k];
+                                            return val === null || val === undefined || val === '' ||
+                                                (Array.isArray(val) && val.length === 0);
+                                        });
+                                }
+                            });
+
+                            // Re-index remaining blocks
+                            const reindexedBlocks = nonEmptyBlocks.map((block, idx) => ({
+                                ...block,
+                                order_index: idx
+                            }));
+
+                            // Only mark as dirty if blocks were removed
+                            const hasChanges = day.blocks.length !== reindexedBlocks.length;
+
+                            return hasChanges
+                                ? { ...day, blocks: reindexedBlocks, isDirty: true }
+                                : day;
+                        }
+                        return day;
+                    })
+                }));
+
+                set({
+                    mesocycles: updatedMesocycles,
+                    blockBuilderMode: false,
+                    blockBuilderDayId: null,
+                    hasUnsavedChanges: updatedMesocycles !== mesocycles // Only mark dirty if changes were made
+                });
+            },
 
             // Block Navigation - Next block in current day
             selectNextBlock: () => {

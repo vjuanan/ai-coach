@@ -93,6 +93,38 @@ const blockTypeOptions: {
         },
     ];
 
+// Check if a block is empty (no meaningful content)
+export const isBlockEmpty = (block: { type: string; format: string | null; config: Record<string, unknown> }): boolean => {
+    const config = block.config;
+    switch (block.type) {
+        case 'strength_linear':
+            return !config.sets && !config.reps && !config.exercise;
+        case 'metcon_structured': {
+            const movements = config.movements as string[] || [];
+            return !block.format && movements.length === 0 && !config.time_cap;
+        }
+        case 'free_text':
+            const content = config.content as string;
+            return !content || (typeof content === 'string' && content.trim() === '');
+        case 'warmup':
+        case 'accessory':
+        case 'skill': {
+            // Check 'movements' (new standard) and 'exercises' (legacy)
+            const movements = config.movements as unknown[] || [];
+            const exercises = config.exercises as unknown[] || [];
+            const notes = config.notes as string;
+            return movements.length === 0 && exercises.length === 0 && (!notes || (typeof notes === 'string' && notes.trim() === ''));
+        }
+        default:
+            const keys = Object.keys(config).filter(k => k !== 'is_completed');
+            return keys.length === 0 || keys.every(k => {
+                const val = config[k];
+                return val === null || val === undefined || val === '' ||
+                    (Array.isArray(val) && val.length === 0);
+            });
+    }
+};
+
 export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanelProps) {
     const { addBlock, selectedBlockId, selectBlock, mesocycles, deleteBlock, toggleBlockProgression } = useEditorStore();
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
@@ -107,38 +139,6 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
             break;
         }
     }
-
-    // Check if a block is empty (no meaningful content)
-    const isBlockEmpty = (block: { type: string; format: string | null; config: Record<string, unknown> }): boolean => {
-        const config = block.config;
-        switch (block.type) {
-            case 'strength_linear':
-                return !config.sets && !config.reps && !config.exercise;
-            case 'metcon_structured': {
-                const movements = config.movements as string[] || [];
-                return !block.format && movements.length === 0 && !config.time_cap;
-            }
-            case 'free_text':
-                const content = config.content as string;
-                return !content || (typeof content === 'string' && content.trim() === '');
-            case 'warmup':
-            case 'accessory':
-            case 'skill': {
-                // Check 'movements' (new standard) and 'exercises' (legacy)
-                const movements = config.movements as unknown[] || [];
-                const exercises = config.exercises as unknown[] || [];
-                const notes = config.notes as string;
-                return movements.length === 0 && exercises.length === 0 && (!notes || (typeof notes === 'string' && notes.trim() === ''));
-            }
-            default:
-                const keys = Object.keys(config).filter(k => k !== 'is_completed');
-                return keys.length === 0 || keys.every(k => {
-                    const val = config[k];
-                    return val === null || val === undefined || val === '' ||
-                        (Array.isArray(val) && val.length === 0);
-                });
-        }
-    };
 
     const handleDeleteBlock = (e: React.MouseEvent, block: { id: string; type: string; format: string | null; config: Record<string, unknown> }) => {
         e.stopPropagation();
