@@ -134,8 +134,12 @@ export default function ProgramsPage() {
         }
     }
 
-    // Export handler - bulk (selected programs)
+    // Export handler - bulk (selected programs) - limit to 10
     function handleBulkExport() {
+        if (selectedPrograms.size > 10) {
+            alert('Solo puedes exportar hasta 10 programas a la vez.');
+            return;
+        }
         const toExport = programs.filter(p => selectedPrograms.has(p.id));
         if (toExport.length > 0) {
             setExportPrograms(toExport);
