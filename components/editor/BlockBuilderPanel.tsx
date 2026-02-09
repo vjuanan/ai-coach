@@ -147,25 +147,22 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
     return (
         <div className="h-full flex flex-col bg-white dark:bg-cv-bg-secondary">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-white dark:from-cv-bg-tertiary dark:to-cv-bg-secondary">
+            <div className="relative flex items-center justify-center px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-white dark:from-cv-bg-tertiary dark:to-cv-bg-secondary">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cv-accent to-cv-accent/70 flex items-center justify-center shadow-lg shadow-cv-accent/20">
                         <Zap size={20} className="text-white" />
                     </div>
-                    <div>
-                        <h2 className="font-bold text-cv-text-primary text-lg">Block Builder</h2>
-                        <p className="text-xs text-cv-text-tertiary">
-                            Añadiendo bloques a <span className="font-semibold text-cv-accent">{dayName}</span>
-                        </p>
-                    </div>
+                    <h2 className="font-bold text-cv-text-primary text-lg">Block Builder</h2>
                 </div>
-                <button
-                    onClick={onClose}
-                    className="flex items-center gap-2 px-4 py-2 bg-cv-accent text-white rounded-xl font-medium text-sm hover:bg-cv-accent/90 transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-cv-accent/30 hover:scale-105"
-                >
-                    <Check size={16} />
-                    Guardar y Salir
-                </button>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                    <button
+                        onClick={onClose}
+                        className="flex items-center gap-2 px-4 py-2 bg-cv-accent text-white rounded-xl font-medium text-sm hover:bg-cv-accent/90 transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-cv-accent/30 hover:scale-105"
+                    >
+                        <Check size={16} />
+                        Guardar y Salir
+                    </button>
+                </div>
             </div>
 
             {/* Main Content - Split into Block Selector and Speed Editor */}
