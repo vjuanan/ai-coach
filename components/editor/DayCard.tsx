@@ -76,9 +76,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
             <div
                 className={`
                     cv-card h-full min-h-[100px] flex flex-col p-2.5
-                    ${isActiveInBuilder
-                        ? 'ring-2 ring-cv-accent shadow-lg bg-cv-accent/5'
-                        : 'bg-white dark:bg-cv-bg-secondary'}
+                    bg-white dark:bg-cv-bg-secondary
                     ${day.is_rest_day ? 'opacity-60' : ''}
                     transition-all duration-200
                 `}
@@ -88,9 +86,6 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                     <h4 className="text-xs font-bold text-cv-text-primary truncate">
                         {dayName}
                     </h4>
-                    {isActiveInBuilder && (
-                        <span className="w-2 h-2 rounded-full bg-cv-accent animate-pulse" />
-                    )}
                 </div>
 
                 {/* Compact Content */}
@@ -206,29 +201,19 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
             {/* Header - Improved hierarchy */}
             <div className="relative z-10 flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                        <h3 className="text-base font-bold text-cv-text-primary">{dayName}</h3>
-                        {day.blocks.length > 0 && (
-                            <span className="px-2 py-0.5 bg-cv-accent/10 text-cv-accent text-xs font-medium rounded-full">
-                                {day.blocks.length} {day.blocks.length === 1 ? 'bloque' : 'bloques'}
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                        <p className="text-xs text-cv-text-tertiary">Día {day.day_number}</p>
-                        {activeStimulus && (
-                            <span
-                                className="text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider"
-                                style={{
-                                    color: activeStimulus.color,
-                                    borderColor: activeStimulus.color + '40',
-                                    backgroundColor: activeStimulus.color + '10'
-                                }}
-                            >
-                                {activeStimulus.name}
-                            </span>
-                        )}
-                    </div>
+                    <h3 className="text-base font-bold text-cv-text-primary">{dayName}</h3>
+                    {activeStimulus && (
+                        <span
+                            className="text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider mt-0.5"
+                            style={{
+                                color: activeStimulus.color,
+                                borderColor: activeStimulus.color + '40',
+                                backgroundColor: activeStimulus.color + '10'
+                            }}
+                        >
+                            {activeStimulus.name}
+                        </span>
+                    )}
                 </div>
                 <div className="flex items-center gap-1">
                     {/* Stimulus Selector */}
