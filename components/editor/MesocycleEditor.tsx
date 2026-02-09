@@ -23,6 +23,7 @@ import {
     Save
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ExportPreview } from '@/components/export';
 
 interface MesocycleEditorProps {
@@ -84,16 +85,35 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
 
 
-    // Handle ESC to exit Block Builder Mode
+    const router = useRouter();
+
+    // Handle ESC Navigation & Actions
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && blockBuilderMode) {
-                exitBlockBuilder();
+            if (e.key === 'Escape') {
+                if (showExport) {
+                    setShowExport(false); // Close export modal if open
+                    return;
+                }
+                if (showStrategy) {
+                    setShowStrategy(false); // Close strategy modal if open
+                    return;
+                }
+
+                if (blockBuilderMode) {
+                    exitBlockBuilder();
+                } else {
+                    // Save validation before exit
+                    if (hasUnsavedChanges) {
+                        forceSave();
+                    }
+                    router.push('/programs');
+                }
             }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [blockBuilderMode, exitBlockBuilder]);
+    }, [blockBuilderMode, exitBlockBuilder, hasUnsavedChanges, forceSave, router, showExport, showStrategy]);
 
     // Find day name for Block Builder
     const blockBuilderDayName = useMemo(() => {
