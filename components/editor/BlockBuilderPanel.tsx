@@ -216,8 +216,8 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                 <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/30 dark:bg-cv-bg-tertiary/10">
                     {/* Added Blocks List - Horizontal Horizontal Scrolling */}
                     {currentDay && currentDay.blocks.length > 0 && (
-                        <div className="flex-shrink-0 p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary z-10">
-                            <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                        <div className="flex-shrink-0 px-3 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
+                            <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar">
                                 {[...currentDay.blocks]
                                     .sort((a, b) => a.order_index - b.order_index)
                                     .map((block, index) => {
@@ -232,10 +232,29 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                 className={`
                                                     group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left min-w-[150px] cursor-pointer
                                                     ${isActive
-                                                        ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-md ring-1 ring-cv-accent/20 scale-[1.02]'
-                                                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:border-cv-accent/50 hover:shadow-md hover:-translate-y-0.5 hover:bg-white dark:hover:bg-slate-800'
+                                                        ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-md ring-2 ring-cv-accent/30 scale-[1.02]'
+                                                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700'
                                                     }
                                                 `}
+                                                style={!isActive ? { '--block-glow': blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)' } as React.CSSProperties : undefined}
+                                                onMouseEnter={(e) => {
+                                                    if (!isActive) {
+                                                        const el = e.currentTarget as HTMLElement;
+                                                        el.style.boxShadow = `0 4px 20px -4px ${blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)'}`;
+                                                        el.style.borderColor = 'var(--cv-accent, #86c4a3)';
+                                                        el.style.transform = 'translateY(-2px) scale(1.01)';
+                                                        el.style.backgroundColor = 'white';
+                                                    }
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    if (!isActive) {
+                                                        const el = e.currentTarget as HTMLElement;
+                                                        el.style.boxShadow = 'none';
+                                                        el.style.borderColor = '';
+                                                        el.style.transform = '';
+                                                        el.style.backgroundColor = '';
+                                                    }
+                                                }}
                                             >
                                                 {/* Delete X Button - Visible on Hover */}
                                                 <button
