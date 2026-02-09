@@ -49,15 +49,15 @@ export function SingleDayView({ mesocycle, dayId, onSelectDay }: SingleDayViewPr
         <div className="h-full flex flex-col bg-slate-50/50 dark:bg-cv-bg-primary/50">
             {/* Day Selector Header */}
             <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary flex items-center justify-between shadow-sm z-10">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-cv-accent/10 rounded-lg text-cv-accent">
+                <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-cv-accent/10 rounded-lg text-cv-accent">
                         <Calendar size={20} />
                     </div>
                     <div className="relative group flex items-center">
                         <select
                             value={dayId}
                             onChange={(e) => onSelectDay(e.target.value)}
-                            className="appearance-none bg-transparent font-bold text-lg text-cv-text-primary pr-8 cursor-pointer focus:outline-none"
+                            className="appearance-none bg-transparent font-bold text-lg text-cv-text-primary pr-6 cursor-pointer focus:outline-none"
                         >
                             {days.map((day, index) => (
                                 <option key={day.id} value={day.id}>
