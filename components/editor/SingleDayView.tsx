@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { DayCard } from './DayCard';
-import { Calendar, Target, Moon, Trash2, MoreHorizontal } from 'lucide-react';
+import { ChevronDown, Calendar, Check, Target, Moon, Trash2, MoreHorizontal } from 'lucide-react';
 import * as Popover from '@radix-ui/react-popover';
 import type { DraftMesocycle } from '@/lib/store';
 import { useEditorStore } from '@/lib/store';
@@ -55,15 +55,51 @@ export function SingleDayView({ mesocycle, dayId, onSelectDay }: SingleDayViewPr
         <div className="h-full flex flex-col bg-slate-50/50 dark:bg-cv-bg-primary/50">
             {/* Day Selector Header */}
             <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary flex items-center justify-between shadow-sm z-10">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                     <div className="p-1 bg-cv-accent/10 rounded-lg text-cv-accent">
                         <Calendar size={18} />
                     </div>
 
+                    <Popover.Root>
+                        <Popover.Trigger asChild>
+                            <button className="flex items-center gap-0.5 focus:outline-none hover:bg-slate-50 dark:hover:bg-slate-800 rounded px-1 -ml-1 transition-colors">
+                                <span className="font-bold text-lg text-cv-text-primary text-left">
+                                    {DAY_NAMES[days.findIndex(d => d.id === dayId)] || 'Seleccionar'}
+                                </span>
+                                <ChevronDown size={14} className="text-cv-text-secondary mt-0.5" />
+                            </button>
+                        </Popover.Trigger>
+                        <Popover.Portal>
+                            <Popover.Content
+                                className="min-w-[160px] bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-1 z-50 animate-in fade-in zoom-in-95 duration-200"
+                                sideOffset={4}
+                                align="start"
+                            >
+                                <div className="flex flex-col gap-0.5">
+                                    {days.map((day, index) => (
+                                        <button
+                                            key={day.id}
+                                            onClick={() => onSelectDay(day.id)}
+                                            className={`
+                                                w-full text-left px-3 py-2 text-sm rounded-lg transition-colors flex items-center justify-between
+                                                ${day.id === dayId
+                                                    ? 'bg-cv-accent/10 text-cv-accent font-medium'
+                                                    : 'text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800'}
+                                            `}
+                                        >
+                                            <span>{DAY_NAMES[index]}</span>
+                                            {day.id === dayId && <Check size={14} />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </Popover.Content>
+                        </Popover.Portal>
+                    </Popover.Root>
+
                     {/* Active Stimulus Badge */}
                     {activeStimulus && (
                         <span
-                            className="text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider"
+                            className="text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ml-2"
                             style={{
                                 color: activeStimulus.color,
                                 borderColor: activeStimulus.color + '40',

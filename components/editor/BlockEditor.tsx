@@ -818,6 +818,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     type="number"
                     icon={Layers}
                     presets={[3, 4, 5]}
+                    defaultValue={4}
                 />
 
                 {/* 2. REPS / DISTANCE */}
@@ -829,7 +830,8 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         onChange={(val) => onChange('distance', val)}
                         type="text"
                         icon={Activity}
-                        presets={['200m', '400m', '800m', '1k']}
+                        presets={['200m', '400m', '800m']}
+                        defaultValue="400m"
                         placeholder="400m"
                         isDistance
                     />
@@ -840,7 +842,8 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         onChange={(val) => onChange('reps', val)}
                         type="number-text" // Allow ranges like 5-8
                         icon={Repeat}
-                        presets={[5, 8, 10, 12, 15]}
+                        presets={[8, 10, 12]}
+                        defaultValue={10}
                         placeholder="10"
                     />
                 )}
@@ -855,7 +858,8 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     }}
                     type="number"
                     icon={intensityType === '% 1RM' ? Percent : Flame}
-                    presets={intensityType === '% 1RM' ? [60, 70, 75, 80] : [7, 8, 9, 10]}
+                    presets={intensityType === '% 1RM' ? [70, 75, 80] : [8, 9, 10]}
+                    defaultValue={intensityType === '% 1RM' ? 75 : 9}
                     headerAction={
                         <button
                             onClick={() => setIntensityType(prev => prev === '% 1RM' ? 'RPE' : '% 1RM')}
@@ -874,6 +878,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     type="text"
                     icon={Clock}
                     presets={['1:30', '2:00', '3:00']}
+                    defaultValue="2:00"
                     placeholder="2:00"
                 />
 
@@ -944,6 +949,7 @@ interface InputCardProps {
     placeholder?: string;
     headerAction?: React.ReactNode;
     isDistance?: boolean;
+    defaultValue?: string | number;
 }
 
 function InputCard({
@@ -956,19 +962,16 @@ function InputCard({
     presets = [],
     placeholder,
     headerAction,
-    isDistance
+    isDistance,
+    defaultValue
 }: InputCardProps) {
 
-    const handleIncrement = (amount: number) => {
-        if (typeof value === 'number') {
-            onChange(value + amount);
-        } else if (typeof value === 'string' && !isNaN(Number(value))) {
-            onChange(Number(value) + amount);
-        } else {
-            // If empty or text, start at amount
-            onChange(amount);
+    // Apply default value when field is empty
+    useEffect(() => {
+        if (!value && defaultValue !== undefined) {
+            onChange(defaultValue);
         }
-    };
+    }, []);
 
     return (
         <div className="bg-white dark:bg-cv-bg-secondary rounded-xl border border-slate-200 dark:border-slate-700 p-3 flex flex-col gap-2 shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden">
@@ -994,26 +997,14 @@ function InputCard({
                         else onChange(val);
                     }}
                     placeholder={placeholder || '-'}
-                    className="bg-transparent border-none p-0 text-3xl font-bold text-cv-text-primary placeholder:text-slate-200 dark:placeholder:text-slate-700 text-center w-full focus:ring-0"
+                    className="bg-transparent border-none p-0 text-3xl font-bold text-cv-text-primary placeholder:text-slate-200 dark:placeholder:text-slate-700 text-center w-full focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 {isDistance && <span className="text-sm font-medium text-cv-text-tertiary">meters</span>}
                 {label === '% 1RM' && <span className="text-sm font-medium text-cv-text-tertiary">%</span>}
             </div>
 
-            {/* Controls / Presets */}
+            {/* Presets */}
             <div className="flex items-center justify-center gap-1 z-10 mt-auto">
-                {type === 'number' && (
-                    <>
-                        <button
-                            onClick={() => handleIncrement(-1)}
-                            className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors"
-                        >
-                            <TrendingDown size={12} />
-                        </button>
-                    </>
-                )}
-
-                {/* Presets */}
                 <div className="flex gap-1 flex-wrap justify-center w-full">
                     {presets.map(preset => (
                         <button
@@ -1030,17 +1021,6 @@ function InputCard({
                         </button>
                     ))}
                 </div>
-
-                {type === 'number' && (
-                    <>
-                        <button
-                            onClick={() => handleIncrement(1)}
-                            className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors"
-                        >
-                            <TrendingUp size={12} />
-                        </button>
-                    </>
-                )}
             </div>
 
             {/* Background Decoration */}

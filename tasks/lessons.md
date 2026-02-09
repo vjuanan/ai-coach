@@ -51,4 +51,9 @@ CREATE POLICY "workout_blocks_select"
 - [x] Centralizar el control de estado (como el guardado) en el componente padre (`MesocycleEditor`) facilita la gestión de acciones globales como "Guardar y Salir", en lugar de delegar en componentes hijos (`BlockBuilderPanel`).
 - [x] **Crucial**: Al mover elementos UI que usan iconos (como `Zap`) de un componente a otro, SIEMPRE verificar que se han añadido los imports correspondientes en el componente de destino. Un import faltante rompe la compilación silenciosamente en algunos entornos de desarrollo, haciendo que la UI no se actualice y frustre al usuario.
 - [x] **Verificación en Producción**: Cuando el usuario reporta que "sigue igual", verificar siempre si se está probando en Local vs Producción. Si es Producción, asegurar que se ha hecho el Push y explicar los tiempos de despliegue.
-- [ ] **Persistencia Vercel/Next.js**: A veces, incluso después de un push exitoso, el despliegue automático puede fallar o tardar. Si el usuario sigue sin ver cambios, verificar el estado del despliegue en Vercel o forzar una recompilación.
+- [x] **Persistencia Vercel/Next.js**: A veces, incluso después de un push exitoso, el despliegue automático puede fallar o tardar. Si el usuario sigue sin ver cambios:
+  1. Verificar que `git log` muestra los commit con los cambios
+  2. Verificar que `git push` dice "Everything up-to-date"
+  3. **Asumir que hay problema con deployment** y notificar inmediatamente al usuario
+  4. El usuario debe ir a Vercel Dashboard y forzar un redeploy manual
+  5. NUNCA asumir que el cambio está en producción solo porque está en `origin/main`

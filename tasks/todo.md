@@ -1,8 +1,8 @@
 # Eliminación Automática de Bloques Vacíos
 
 ## Problema
-- [ ] Los bloques que se agregan pero no se completan (sin ejercicios/contenido) quedan visibles
-- [ ] Ejemplo: bloques de CALENTAMIENTO, ACCESORIO, HABILIDAD sin contenido
+- [x] Los bloques que se agregan pero no se completan (sin ejercicios/contenido) quedan visibles
+- [x] Ejemplo: bloques de CALENTAMIENTO, ACCESORIO, HABILIDAD sin contenido
 
 ## Análisis
 - [x] Investigar cuándo detectar que un bloque está vacío
@@ -17,7 +17,7 @@
 - [ ] Considerar UI feedback (opcional: mensaje breve)
 
 ## Verificación
-- [ ] Probar agregando bloques vacíos y verificar que se eliminan
-- [ ] Probar agregando bloques con contenido mínimo y verificar que NO se eliminan
-- [ ] Verificar en producción con screenshots
-- [ ] Confirmar que no afecta el flujo de trabajo normal
+- [x] Probar agregando bloques vacíos y verificar que se eliminan
+- [x] Probar agregando bloques con contenido mínimo y verificar que NO se eliminan
+- [x] Verificar en producción con screenshots
+- [x] Confirmar que no afecta el flujo de trabajo normal
