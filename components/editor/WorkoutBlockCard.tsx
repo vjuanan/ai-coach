@@ -25,12 +25,12 @@ interface WorkoutBlockCardProps {
 }
 
 const blockTypeStyles: Record<string, { color: string; label: string; hoverClass: string }> = {
-    warmup: { color: 'modality-warmup', label: 'Calentamiento', hoverClass: 'hover:border-green-500 hover:shadow-md hover:-translate-y-0.5' },
-    strength_linear: { color: 'modality-strength', label: 'Fuerza', hoverClass: 'hover:border-red-500 hover:shadow-md hover:-translate-y-0.5' },
-    metcon_structured: { color: 'modality-metcon', label: 'MetCon', hoverClass: 'hover:border-cv-accent hover:shadow-md hover:-translate-y-0.5' },
-    accessory: { color: 'modality-accessory', label: 'Accesorio', hoverClass: 'hover:border-purple-500 hover:shadow-md hover:-translate-y-0.5' },
-    skill: { color: 'modality-skill', label: 'Habilidad', hoverClass: 'hover:border-blue-500 hover:shadow-md hover:-translate-y-0.5' },
-    free_text: { color: 'border-l-4 border-l-gray-500', label: 'Notas', hoverClass: 'hover:border-gray-500 hover:shadow-md hover:-translate-y-0.5' },
+    warmup: { color: 'modality-warmup', label: 'Calentamiento', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
+    strength_linear: { color: 'modality-strength', label: 'Fuerza', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
+    metcon_structured: { color: 'modality-metcon', label: 'MetCon', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
+    accessory: { color: 'modality-accessory', label: 'Accesorio', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
+    skill: { color: 'modality-skill', label: 'Habilidad', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
+    free_text: { color: 'border-l-4 border-l-gray-500', label: 'Notas', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
 };
 
 const formatLabels: Record<string, string> = {
@@ -189,6 +189,8 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
             <div
                 ref={setNodeRef}
                 style={style}
+                {...listeners}
+                {...attributes}
                 className={`
                     group relative bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer active:cursor-grabbing touch-none
                     transition-all duration-200
@@ -210,12 +212,8 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
             >
                 {/* Card Inner Content */}
                 <div className="p-2">
-                    {/* Drag Handle - Visual indicator on left - NOW THE ACTUAL DRAG HANDLE */}
-                    <div
-                        {...listeners}
-                        {...attributes}
-                        className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-l-lg z-10"
-                    >
+                    {/* Drag Handle - Visual indicator on left */}
+                    <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity pointer-events-none">
                         <GripVertical size={12} className="text-cv-text-tertiary" />
                     </div>
 
