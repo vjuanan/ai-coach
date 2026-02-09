@@ -117,7 +117,11 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     }
 
     // Get current methodology (needed before hooks)
-    const currentMethodology = trainingMethodologies.find(m => m.code === block?.format);
+    // CRITICAL FIX: Ignore methodology for 'strength_linear' blocks to ensure they use the specialized StrengthForm (Big Inputs)
+    // instead of falling back to the generic DynamicMethodologyForm (Small Inputs) if a matching format (like 'STANDARD') exists.
+    const currentMethodology = block?.type === 'strength_linear'
+        ? undefined
+        : trainingMethodologies.find(m => m.code === block?.format);
 
     // Auto-expand category of current methodology (must be before any return)
     useEffect(() => {
