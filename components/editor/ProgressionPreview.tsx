@@ -99,33 +99,107 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                 )}
             </div>
 
-            {/* Progression Cards */}
-            <div
-                className={isGrid ? "grid gap-3" : "space-y-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar"}
-                style={isGrid ? {
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                    width: '100%'
-                } : undefined}
-            >
-                {progressionBlocks.map((block) => (
-                    <ProgressionBlockCard
-                        key={`${block.blockId}-${isGrid ? 'grid' : 'list'}`}
-                        blockId={block.blockId}
-                        weekNumber={block.weekNumber}
-                        dayName={block.dayName || ''}
-                        config={block.config}
-                        name={block.name}
-                        type={block.type}
-                        format={block.format}
-                        isCurrentWeek={block.isCurrentWeek}
-                        isCurrent={block.blockId === currentBlockId}
-                        onUpdate={handleBlockUpdate}
-                        isGrid={isGrid}
-                    />
-                ))}
+            {/* Progression Table */}
+            <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+                <table className="w-full text-sm">
+                    <thead>
+                        <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                            <th className="px-3 py-2 text-left font-semibold text-cv-text-secondary text-xs uppercase tracking-wider">Semana</th>
+                            <th className="px-3 py-2 text-center font-semibold text-cv-text-secondary text-xs uppercase tracking-wider">Series</th>
+                            <th className="px-3 py-2 text-center font-semibold text-cv-text-secondary text-xs uppercase tracking-wider">Reps</th>
+                            <th className="px-3 py-2 text-center font-semibold text-cv-text-secondary text-xs uppercase tracking-wider">%</th>
+                            <th className="px-3 py-2 text-center font-semibold text-cv-text-secondary text-xs uppercase tracking-wider">Rest</th>
+                            <th className="px-3 py-2 text-center font-semibold text-cv-text-secondary text-xs uppercase tracking-wider">Tempo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {progressionBlocks.map((block, index) => {
+                            const isCurrentRow = block.blockId === currentBlockId;
+                            const config = block.config;
+
+                            return (
+                                <tr
+                                    key={block.blockId}
+                                    className={`
+                                        border-b border-slate-100 dark:border-slate-800 last:border-0
+                                        ${isCurrentRow
+                                            ? 'bg-cv-accent/10 dark:bg-cv-accent/5 ring-2 ring-inset ring-cv-accent/30'
+                                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/30'
+                                        }
+                                        transition-colors
+                                    `}
+                                >
+                                    <td className="px-3 py-3">
+                                        <div className="flex items-center gap-2">
+                                            <span className={`
+                                                inline-flex items-center justify-center w-7 h-7 rounded font-bold text-xs
+                                                ${isCurrentRow
+                                                    ? 'bg-cv-accent text-white'
+                                                    : 'bg-slate-100 dark:bg-slate-800 text-cv-text-secondary'
+                                                }
+                                            `}>
+                                                {block.weekNumber}
+                                            </span>
+                                            <span className="text-xs text-cv-text-tertiary">{block.dayName}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-3 py-3 text-center">
+                                        <input
+                                            type="number"
+                                            value={(config as any).sets || ''}
+                                            onChange={(e) => handleBlockUpdate(block.blockId, {
+                                                config: { ...config, sets: parseInt(e.target.value) || 0 } as WorkoutConfig
+                                            })}
+                                            className="w-16 px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold"
+                                        />
+                                    </td>
+                                    <td className="px-3 py-3 text-center">
+                                        <input
+                                            type="number"
+                                            value={(config as any).reps || ''}
+                                            onChange={(e) => handleBlockUpdate(block.blockId, {
+                                                config: { ...config, reps: parseInt(e.target.value) || 0 } as WorkoutConfig
+                                            })}
+                                            className="w-16 px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold"
+                                        />
+                                    </td>
+                                    <td className="px-3 py-3 text-center">
+                                        <input
+                                            type="number"
+                                            value={(config as any).percentage || ''}
+                                            onChange={(e) => handleBlockUpdate(block.blockId, {
+                                                config: { ...config, percentage: parseInt(e.target.value) || 0 } as WorkoutConfig
+                                            })}
+                                            className="w-16 px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold"
+                                        />
+                                    </td>
+                                    <td className="px-3 py-3 text-center">
+                                        <input
+                                            type="number"
+                                            value={(config as any).rest || ''}
+                                            onChange={(e) => handleBlockUpdate(block.blockId, {
+                                                config: { ...config, rest: parseInt(e.target.value) || 0 } as WorkoutConfig
+                                            })}
+                                            className="w-16 px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold"
+                                        />
+                                    </td>
+                                    <td className="px-3 py-3 text-center">
+                                        <input
+                                            type="text"
+                                            value={(config as any).tempo || ''}
+                                            onChange={(e) => handleBlockUpdate(block.blockId, {
+                                                config: { ...config, tempo: e.target.value } as WorkoutConfig
+                                            })}
+                                            className="w-20 px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-mono text-xs"
+                                            placeholder="30X1"
+                                        />
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
             </div>
         </div>
     );
 }
-
