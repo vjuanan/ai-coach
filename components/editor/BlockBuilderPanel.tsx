@@ -111,18 +111,22 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
         switch (block.type) {
             case 'strength_linear':
                 return !config.sets && !config.reps && !config.exercise;
-            case 'metcon_structured':
+            case 'metcon_structured': {
                 const movements = config.movements as string[] || [];
                 return !block.format && movements.length === 0 && !config.time_cap;
+            }
             case 'free_text':
                 const content = config.content as string;
                 return !content || (typeof content === 'string' && content.trim() === '');
             case 'warmup':
             case 'accessory':
-            case 'skill':
+            case 'skill': {
+                // Check 'movements' (new standard) and 'exercises' (legacy)
+                const movements = config.movements as unknown[] || [];
                 const exercises = config.exercises as unknown[] || [];
                 const notes = config.notes as string;
-                return exercises.length === 0 && (!notes || (typeof notes === 'string' && notes.trim() === ''));
+                return movements.length === 0 && exercises.length === 0 && (!notes || (typeof notes === 'string' && notes.trim() === ''));
+            }
             default:
                 const keys = Object.keys(config).filter(k => k !== 'is_completed');
                 return keys.length === 0 || keys.every(k => {
@@ -240,7 +244,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                 onMouseEnter={(e) => {
                                                     if (!isActive) {
                                                         const el = e.currentTarget as HTMLElement;
-                                                        el.style.boxShadow = `0 4px 20px -4px ${blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)'}`;
+                                                        el.style.boxShadow = `0 8px 30px -4px ${blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)'}`;
                                                         el.style.borderColor = 'var(--cv-accent, #86c4a3)';
                                                         el.style.transform = 'translateY(-2px) scale(1.01)';
                                                         el.style.backgroundColor = 'white';

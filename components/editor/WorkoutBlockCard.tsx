@@ -69,6 +69,19 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
     const config = block.config as Record<string, unknown>;
     const isBeingDragged = isDragging || draggedBlockId === block.id;
 
+    // Defines glow color based on block type
+    const getGlowColor = () => {
+        switch (block.type) {
+            case 'warmup': return 'rgba(34, 197, 94, 0.7)'; // Emerald
+            case 'strength_linear': return 'rgba(239, 68, 68, 0.7)'; // Red
+            case 'metcon_structured': return 'rgba(134, 196, 163, 0.8)'; // Teal
+            case 'accessory': return 'rgba(168, 85, 247, 0.7)'; // Purple
+            case 'skill': return 'rgba(59, 130, 246, 0.7)'; // Blue
+            case 'free_text': return 'rgba(100, 116, 139, 0.5)'; // Slate
+            default: return 'rgba(100, 116, 139, 0.5)';
+        }
+    };
+
     // Determine if block has meaningful content
     const isBlockEmpty = (): boolean => {
         switch (block.type) {
@@ -145,6 +158,30 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                     </div>
                 );
 
+            case 'warmup':
+            case 'accessory':
+            case 'skill':
+                // Check both 'exercises' (old?) and 'movements' (new generic form)
+                const items = (config.movements as string[]) || (config.exercises as string[]) || [];
+                const notes = config.notes as string;
+
+                if (items.length === 0 && !notes) return <div className="min-h-[1.25rem]" />;
+
+                return (
+                    <div className="text-xs text-cv-text-tertiary min-h-[1.25rem]">
+                        {items.length > 0 ? (
+                            <div className="flex flex-col gap-0.5">
+                                {items.slice(0, 2).map((item, i) => (
+                                    <div key={i} className="truncate">• {item}</div>
+                                ))}
+                                {items.length > 2 && <div className="italic">+ {items.length - 2} más</div>}
+                            </div>
+                        ) : (
+                            <div className="italic truncate">{notes}</div>
+                        )}
+                    </div>
+                );
+
             case 'free_text':
                 const content = config.content as string;
                 return (
@@ -163,8 +200,6 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
             <div
                 ref={setNodeRef}
                 style={style}
-                {...listeners}
-                {...attributes}
                 className={`
                     group relative bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer active:cursor-grabbing touch-none
                     transition-all duration-200
@@ -172,12 +207,31 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                     ${isSelected ? 'ring-2 ring-cv-accent' : ''}
                     ${isBeingDragged
                         ? 'opacity-50 scale-95 shadow-none'
-                        : 'hover:-translate-y-0.5 hover:border-cv-accent hover:shadow-lg hover:shadow-cv-accent/20 hover:scale-[1.01]'
+                        : '' // Hover effects handled by inline styles
                     }
                 `}
+                style={!isSelected && !isBeingDragged ? { '--block-glow': getGlowColor() } as React.CSSProperties : undefined}
+                onMouseEnter={(e) => {
+                    if (!isSelected && !isBeingDragged) {
+                        const el = e.currentTarget;
+                        el.style.boxShadow = `0 4px 15px -4px ${getGlowColor()}`;
+                        el.style.transform = 'translateY(-2px) scale(1.01)';
+                        el.style.borderColor = 'var(--cv-accent, #86c4a3)'; // Optional: highlight border too
+                        // el.style.backgroundColor = 'white'; // Optional: if needed to override dark mode slightly
+                    }
+                }}
+                onMouseLeave={(e) => {
+                    if (!isSelected && !isBeingDragged) {
+                        const el = e.currentTarget;
+                        el.style.boxShadow = '';
+                        el.style.transform = '';
+                        el.style.borderColor = '';
+                        // el.style.backgroundColor = '';
+                    }
+                }}
                 onClick={(e) => {
                     e.stopPropagation();
-                    // Prevent click if we just finished dragging
+                    // Prevent click if we just finished dragging (just in case, though handled by grip now)
                     if (wasDraggingRef.current) {
                         wasDraggingRef.current = false;
                         return;
@@ -188,8 +242,12 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
             >
                 {/* Card Inner Content */}
                 <div className="p-2">
-                    {/* Drag Handle - Visual indicator on left */}
-                    <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    {/* Drag Handle - Visual indicator on left - NOW THE ACTUAL DRAG HANDLE */}
+                    <div
+                        {...listeners}
+                        {...attributes}
+                        className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-l-lg z-10"
+                    >
                         <GripVertical size={12} className="text-cv-text-tertiary" />
                     </div>
 
