@@ -31,7 +31,8 @@ import {
     Percent, // Nuevo icono para % 1RM
     HelpCircle,
     Check,
-    Link
+    Link,
+    FileText
 } from 'lucide-react';
 import type { BlockType, WorkoutFormat, WorkoutConfig, TrainingMethodology, TrainingMethodologyFormField } from '@/lib/supabase/types';
 import type { LucideIcon } from 'lucide-react';

@@ -18,7 +18,7 @@ const ACCESS_TOKEN = env.SUPABASE_ACCESS_TOKEN;
 const PROJECT_REF = 'dfbxffnuwkcbnxfwyvcc';
 
 // Read SQL file
-const sqlPath = path.join(__dirname, '../supabase/migrations/20260209130000_debug_blocks_rls.sql');
+const sqlPath = path.join(__dirname, '../supabase/migrations/20260209140000_fix_workout_blocks_rls_final.sql');
 const sql = fs.readFileSync(sqlPath, 'utf8');
 
 console.log('🔓 Applying migration via Management API:', sqlPath);
