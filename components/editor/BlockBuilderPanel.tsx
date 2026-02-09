@@ -236,50 +236,28 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                 className={`
                                                     group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left min-w-[150px] cursor-pointer hover:z-20
                                                     ${isActive
-                                                        ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-md ring-2 ring-cv-accent/30 scale-[1.02] z-10'
-                                                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700'
+                                                        ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-md ring-2 ring-cv-accent/30 z-10'
+                                                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md hover:border-cv-accent/50'
                                                     }
                                                 `}
-                                                style={!isActive ? { '--block-glow': blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)' } as React.CSSProperties : undefined}
-                                                onMouseEnter={(e) => {
-                                                    if (!isActive) {
-                                                        const el = e.currentTarget as HTMLElement;
-                                                        el.style.boxShadow = `0 8px 30px -4px ${blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)'}`;
-                                                        el.style.borderColor = 'var(--cv-accent, #86c4a3)';
-                                                        el.style.transform = 'translateY(-2px) scale(1.01)';
-                                                        el.style.backgroundColor = 'white';
-                                                    }
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    if (!isActive) {
-                                                        const el = e.currentTarget as HTMLElement;
-                                                        el.style.boxShadow = 'none';
-                                                        el.style.borderColor = '';
-                                                        el.style.transform = '';
-                                                        el.style.backgroundColor = '';
-                                                    }
-                                                }}
+                                                style={!isActive ? { '--hover-shadow': blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)' } as React.CSSProperties : undefined}
                                             >
-                                                {/* Delete X Button - Visible on Hover - Premium Style */}
+                                                {/* Delete Trash Button - Visible on Hover - Minimalist Style */}
                                                 <button
                                                     onClick={(e) => handleDeleteBlock(e, block)}
                                                     className="
                                                         absolute top-1.5 right-1.5 
                                                         w-6 h-6 
                                                         rounded-full 
-                                                        bg-white/90 dark:bg-slate-800/90 
-                                                        text-slate-400 hover:text-white 
-                                                        border border-slate-200 dark:border-slate-600
+                                                        text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
                                                         flex items-center justify-center 
                                                         opacity-0 group-hover:opacity-100 
                                                         transition-all duration-200 
-                                                        shadow-sm hover:shadow-md 
-                                                        hover:bg-red-500 hover:border-red-500
                                                         z-50
                                                     "
                                                     title="Eliminar bloque"
                                                 >
-                                                    <X size={12} strokeWidth={2.5} />
+                                                    <Trash2 size={13} strokeWidth={2.5} />
                                                 </button>
 
                                                 <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'
@@ -298,11 +276,6 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                         {Boolean((block as any).progression_id) && (
                                                             <div className="w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0 text-cv-accent bg-cv-accent/10">
                                                                 <Link size={8} />
-                                                            </div>
-                                                        )}
-                                                        {Boolean(block.config?.is_completed) && (
-                                                            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
-                                                                <Check size={6} className="text-white stroke-[3]" />
                                                             </div>
                                                         )}
                                                     </div>
