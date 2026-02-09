@@ -854,8 +854,8 @@ function StrengthForm({ config, onChange, blockName }: FormProps) {
                 <button
                     onClick={toggleTempo}
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all ${showTempo
-                            ? 'bg-cv-accent/10 border-cv-accent text-cv-accent'
-                            : 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700 text-cv-text-secondary hover:border-cv-accent/50'
+                        ? 'bg-cv-accent/10 border-cv-accent text-cv-accent'
+                        : 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700 text-cv-text-secondary hover:border-cv-accent/50'
                         }`}
                 >
                     <Timer size={16} />
@@ -1124,39 +1124,67 @@ function ProgressionSettings({ blockId, progressionId, showSelector, setShowSele
 
             {/* Progression Variable Selector */}
             {showSelector && (
-                <div className="absolute top-8 right-0 z-50 w-56 p-2 bg-white dark:bg-cv-bg-tertiary rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200">
-                    <h4 className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">TIPO DE VARIABLE</h4>
-                    <div className="space-y-1">
-                        {[
-                            { id: 'percentage', label: '% 1RM', sub: 'Sobrecarga de Intensidad', icon: Percent, color: 'text-orange-500' },
-                            { id: 'sets', label: 'Series', sub: 'Sobrecarga de Volumen', icon: Layers, color: 'text-emerald-500' },
-                            { id: 'reps', label: 'Repeticiones', sub: 'Sobrecarga de Volumen', icon: Repeat, color: 'text-emerald-500' },
-                        ].map(opt => (
-                            <button
-                                key={opt.id}
-                                onClick={() => {
-                                    onToggle(blockId, true, opt.id as any);
-                                    setShowSelector(false);
-                                }}
-                                className="w-full text-left px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors group"
-                            >
-                                <div className={`p-1.5 rounded-md bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-600 transition-colors ${opt.color}`}>
-                                    <opt.icon size={16} strokeWidth={2.5} />
-                                </div>
-                                <div>
-                                    <div className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">
-                                        {opt.label}
-                                    </div>
-                                    <div className="text-[10px] text-slate-400 font-medium">
-                                        {opt.sub}
-                                    </div>
-                                </div>
-                            </button>
-                        ))}
+                <div className="absolute top-8 right-0 z-50 w-64 p-3 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200">
+
+                    {/* FUERZA Section */}
+                    <div className="mb-3">
+                        <div className="flex items-center gap-2 px-2 py-1.5 mb-2">
+                            <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                            <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Fuerza</span>
+                            <div className="flex-1 h-px bg-orange-200 dark:bg-orange-900/50"></div>
+                        </div>
+                        <button
+                            onClick={() => {
+                                onToggle(blockId, true, 'percentage');
+                                setShowSelector(false);
+                            }}
+                            className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 border border-transparent hover:border-orange-200 dark:hover:border-orange-800 flex items-center gap-3 transition-all group"
+                        >
+                            <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors">
+                                <Percent size={18} strokeWidth={2.5} />
+                            </div>
+                            <div>
+                                <div className="text-sm font-semibold text-slate-800 dark:text-white">% 1RM</div>
+                                <div className="text-[11px] text-slate-500 dark:text-slate-400">Intensidad progresiva</div>
+                            </div>
+                        </button>
                     </div>
+
+                    {/* VOLUMEN Section */}
+                    <div>
+                        <div className="flex items-center gap-2 px-2 py-1.5 mb-2">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                            <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">Volumen</span>
+                            <div className="flex-1 h-px bg-emerald-200 dark:bg-emerald-900/50"></div>
+                        </div>
+                        <div className="space-y-1">
+                            {[
+                                { id: 'sets', label: 'Series', sub: 'Más sets por semana', icon: Layers },
+                                { id: 'reps', label: 'Repeticiones', sub: 'Más reps por serie', icon: Repeat },
+                            ].map(opt => (
+                                <button
+                                    key={opt.id}
+                                    onClick={() => {
+                                        onToggle(blockId, true, opt.id as any);
+                                        setShowSelector(false);
+                                    }}
+                                    className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 flex items-center gap-3 transition-all group"
+                                >
+                                    <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/50 transition-colors">
+                                        <opt.icon size={18} strokeWidth={2.5} />
+                                    </div>
+                                    <div>
+                                        <div className="text-sm font-semibold text-slate-800 dark:text-white">{opt.label}</div>
+                                        <div className="text-[11px] text-slate-500 dark:text-slate-400">{opt.sub}</div>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     <button
                         onClick={() => setShowSelector(false)}
-                        className="mt-2 w-full text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-center py-1.5 transition-colors"
+                        className="mt-3 w-full text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-center py-1.5 border-t border-slate-100 dark:border-slate-800 transition-colors"
                     >
                         Cancelar
                     </button>

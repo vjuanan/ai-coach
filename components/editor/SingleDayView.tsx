@@ -53,24 +53,19 @@ export function SingleDayView({ mesocycle, dayId, onSelectDay }: SingleDayViewPr
                     <div className="p-2 bg-cv-accent/10 rounded-lg text-cv-accent">
                         <Calendar size={20} />
                     </div>
-                    <div className="flex flex-col">
-                        <label className="text-[10px] uppercase font-bold text-cv-text-tertiary tracking-wider">
-                            Día Seleccionado
-                        </label>
-                        <div className="relative group">
-                            <select
-                                value={dayId}
-                                onChange={(e) => onSelectDay(e.target.value)}
-                                className="appearance-none bg-transparent font-bold text-lg text-cv-text-primary pr-8 cursor-pointer focus:outline-none"
-                            >
-                                {days.map((day, index) => (
-                                    <option key={day.id} value={day.id}>
-                                        {DAY_NAMES[index]}
-                                    </option>
-                                ))}
-                            </select>
-                            <ChevronDown size={16} className="absolute right-0 top-1/2 -translate-y-1/2 text-cv-text-secondary pointer-events-none" />
-                        </div>
+                    <div className="relative group flex items-center">
+                        <select
+                            value={dayId}
+                            onChange={(e) => onSelectDay(e.target.value)}
+                            className="appearance-none bg-transparent font-bold text-lg text-cv-text-primary pr-8 cursor-pointer focus:outline-none"
+                        >
+                            {days.map((day, index) => (
+                                <option key={day.id} value={day.id}>
+                                    {DAY_NAMES[index]}
+                                </option>
+                            ))}
+                        </select>
+                        <ChevronDown size={16} className="absolute right-0 top-1/2 -translate-y-1/2 text-cv-text-secondary pointer-events-none" />
                     </div>
                 </div>
 
