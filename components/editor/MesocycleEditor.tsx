@@ -501,7 +501,11 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
                         <div className="w-px h-4 bg-cv-border" />
 
-                        <button className="cv-btn-ghost p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Preview">
+                        <button
+                            onClick={() => setShowExport(true)}
+                            className="cv-btn-ghost p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                            title="Preview"
+                        >
                             <Eye size={14} />
                         </button>
                         <button
