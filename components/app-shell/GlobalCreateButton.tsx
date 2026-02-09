@@ -65,10 +65,10 @@ export function GlobalCreateButton() {
                             setIsOpen(!isOpen);
                         }
                     }}
-                    className="cv-btn-primary cv-btn-mas-only flex items-center justify-center w-10 h-10 p-0"
+                    className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
                     title="Crear..."
                 >
-                    <Plus size={20} />
+                    <Plus size={20} className={`transition-transform duration-200 ${isOpen ? 'rotate-45' : ''}`} />
                 </button>
 
                 {/* Dropdown Menu */}

@@ -29,6 +29,7 @@ export function ProgramsGrid({
     isSelectionMode,
     toggleSelection,
     promptDelete,
+    onExport,
     CARD_GRADIENTS,
     CARD_ICONS
 }: ProgramsGridProps) {
@@ -129,6 +130,17 @@ export function ProgramsGrid({
                                     <div className="flex gap-2">
                                         {!isSelectionMode && (
                                             <>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        onExport(program.id);
+                                                    }}
+                                                    className="w-8 h-8 rounded-full bg-white/10 hover:bg-cv-accent/80 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-all duration-200"
+                                                    title="Exportar"
+                                                >
+                                                    <Download size={14} />
+                                                </button>
                                                 <button
                                                     onClick={(e) => {
                                                         e.preventDefault();

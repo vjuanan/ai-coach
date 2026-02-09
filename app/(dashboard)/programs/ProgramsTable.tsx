@@ -1,4 +1,4 @@
-import { Calendar, Check, Trash2, Edit2, MoreHorizontal, Square, CheckSquare } from 'lucide-react';
+import { Calendar, Check, Trash2, Edit2, MoreHorizontal, Square, CheckSquare, Download } from 'lucide-react';
 import Link from 'next/link';
 
 // Helper for formatted dates
@@ -26,6 +26,7 @@ interface ProgramsTableProps {
     selectAll: () => void;
     totalFiltered: number;
     promptDelete: (id: string) => void;
+    onExport: (id: string) => void;
     CARD_GRADIENTS: string[];
     CARD_ICONS: any[];
 }
@@ -38,6 +39,7 @@ export function ProgramsTable({
     selectAll,
     totalFiltered,
     promptDelete,
+    onExport,
     CARD_GRADIENTS,
     CARD_ICONS
 }: ProgramsTableProps) {
@@ -78,7 +80,7 @@ export function ProgramsTable({
                             <th className="py-3 px-6 text-xs font-semibold text-cv-text-tertiary uppercase tracking-wider hidden md:table-cell">
                                 Actualizado
                             </th>
-                            <th className="py-3 px-6 w-24"></th>
+                            <th className="py-3 px-6 w-32"></th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
@@ -154,6 +156,16 @@ export function ProgramsTable({
                                     {/* Actions */}
                                     <td className="py-4 px-6 text-right">
                                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onExport(program.id);
+                                                }}
+                                                className="p-2 text-cv-text-secondary hover:text-cv-accent hover:bg-orange-50 rounded-lg transition-all"
+                                                title="Exportar"
+                                            >
+                                                <Download size={16} />
+                                            </button>
                                             <Link
                                                 href={`/editor/${program.id}`}
                                                 className="p-2 text-cv-text-secondary hover:text-cv-primary hover:bg-gray-100 rounded-lg transition-all"
