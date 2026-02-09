@@ -1,7 +1,7 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import { useEditorStore } from '@/lib/store';
-import { ProgressionBlockCard } from './ProgressionBlockCard';
 import { TrendingUp, Layers } from 'lucide-react';
 import type { WorkoutConfig } from '@/lib/supabase/types';
 
@@ -31,6 +31,84 @@ const DAY_NAMES: Record<number, string> = {
     6: 'Sábado',
     7: 'Domingo'
 };
+
+interface TableInputWithPresetsProps {
+    value: string | number;
+    onChange: (value: string) => void;
+    presets: (string | number)[];
+    type?: string;
+    placeholder?: string;
+    width?: string;
+    min?: number;
+    step?: number;
+}
+
+function TableInputWithPresets({
+    value,
+    onChange,
+    presets,
+    type = "number",
+    placeholder,
+    width = "w-16",
+    min = 0,
+    step = 1
+}: TableInputWithPresetsProps) {
+    const [isFocused, setIsFocused] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setIsFocused(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    return (
+        <div className="relative flex justify-center" ref={containerRef}>
+            <input
+                type={type}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                onFocus={() => setIsFocused(true)}
+                className={`${width} px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold appearance-none`}
+                placeholder={placeholder}
+                min={min}
+                step={step}
+            />
+
+            {isFocused && (
+                <div className="absolute z-50 top-full mt-1 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl rounded-lg p-1.5 flex gap-1 min-w-max animate-in fade-in zoom-in-95 duration-100">
+                    {presets.map((preset) => (
+                        <button
+                            key={preset}
+                            onClick={(e) => {
+                                e.stopPropagation(); // Prevent closing immediately
+                                onChange(preset.toString());
+                                // Keep focus or close? Better to keep open for rapid changes or close? 
+                                // User usually selects one. Let's close after selection? 
+                                // Actually keeping it open might be annoying if it covers things, but closing is standard behavior for dropdowns.
+                                // Let's try closing it.
+                                setIsFocused(false);
+                            }}
+                            className={`
+                                px-2 py-1 text-xs font-medium rounded transition-colors
+                                ${value == preset
+                                    ? 'bg-cv-accent text-white'
+                                    : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                                }
+                            `}
+                        >
+                            {preset}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
 
 export function ProgressionPreview({ currentBlockId, progressionId }: ProgressionPreviewProps) {
     const { mesocycles, selectedWeek, updateBlock } = useEditorStore();
@@ -71,10 +149,31 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
     }
 
     const totalWeeks = progressionBlocks.length;
-    const isGrid = totalWeeks <= 4;
+
+    // Determine progression variable for highlighting
+    const progressionVariable = progressionBlocks[0]?.config?.progression_variable as string | undefined;
 
     const handleBlockUpdate = (blockId: string, updates: { config: WorkoutConfig }) => {
         updateBlock(blockId, updates);
+    };
+
+    // Style helpers for columns
+    const getColumnHeaderStyle = (variable: string) => {
+        const isTarget = progressionVariable === variable;
+        return `px-3 py-2 text-center font-semibold text-xs uppercase tracking-wider ${isTarget
+                ? 'text-cv-accent bg-cv-accent/10 border-b-2 border-cv-accent'
+                : 'text-cv-text-secondary'
+            }`;
+    };
+
+    const getColumnCellStyle = (variable: string, isCurrentRow: boolean) => {
+        const isTarget = progressionVariable === variable;
+        return `px-3 py-3 text-center transition-colors ${isTarget
+                ? isCurrentRow
+                    ? 'bg-cv-accent/10' // slightly darker overlap? or same? Let's use specific logic.
+                    : 'bg-cv-accent/5'
+                : ''
+            }`;
     };
 
     return (
@@ -89,31 +188,31 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                     <Layers size={12} />
                     <span className="text-xs">{totalWeeks} semanas</span>
                 </div>
-                {progressionBlocks[0]?.config?.progression_variable && (
-                    <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${(progressionBlocks[0].config.progression_variable as string) === 'percentage'
+                {progressionVariable && (
+                    <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${progressionVariable === 'percentage'
                         ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
                         : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
                         }`}>
-                        {(progressionBlocks[0].config.progression_variable as string) === 'percentage' ? 'Fuerza' : 'Volumen'}
+                        {progressionVariable === 'percentage' ? 'Fuerza' : 'Volumen'}
                     </span>
                 )}
             </div>
 
             {/* Progression Table */}
-            <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
-                <table className="w-full text-sm">
+            <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/30">
+                <table className="w-full text-sm border-collapse">
                     <thead>
                         <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
-                            <th className="px-3 py-2 text-left font-semibold text-cv-text-secondary text-xs uppercase tracking-wider">Semana</th>
-                            <th className="px-3 py-2 text-center font-semibold text-cv-text-secondary text-xs uppercase tracking-wider">Series</th>
-                            <th className="px-3 py-2 text-center font-semibold text-cv-text-secondary text-xs uppercase tracking-wider">Reps</th>
-                            <th className="px-3 py-2 text-center font-semibold text-cv-text-secondary text-xs uppercase tracking-wider">%</th>
-                            <th className="px-3 py-2 text-center font-semibold text-cv-text-secondary text-xs uppercase tracking-wider">Rest</th>
-                            <th className="px-3 py-2 text-center font-semibold text-cv-text-secondary text-xs uppercase tracking-wider">Tempo</th>
+                            <th className="px-3 py-2 text-left font-semibold text-cv-text-secondary text-xs uppercase tracking-wider w-32">Semana</th>
+                            <th className={getColumnHeaderStyle('sets')}>Series</th>
+                            <th className={getColumnHeaderStyle('reps')}>Reps</th>
+                            <th className={getColumnHeaderStyle('percentage')}>%</th>
+                            <th className={getColumnHeaderStyle('rest')}>Rest</th>
+                            <th className={getColumnHeaderStyle('tempo')}>Tempo</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {progressionBlocks.map((block, index) => {
+                        {progressionBlocks.map((block) => {
                             const isCurrentRow = block.blockId === currentBlockId;
                             const config = block.config;
 
@@ -123,7 +222,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                                     className={`
                                         border-b border-slate-100 dark:border-slate-800 last:border-0
                                         ${isCurrentRow
-                                            ? 'bg-cv-accent/10 dark:bg-cv-accent/5 ring-2 ring-inset ring-cv-accent/30'
+                                            ? 'bg-cv-accent/10 dark:bg-cv-accent/5 ring-1 ring-inset ring-cv-accent/30 z-10 relative'
                                             : 'hover:bg-slate-50 dark:hover:bg-slate-800/30'
                                         }
                                         transition-colors
@@ -132,58 +231,67 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                                     <td className="px-3 py-3">
                                         <div className="flex items-center gap-2">
                                             <span className={`
-                                                inline-flex items-center justify-center w-7 h-7 rounded font-bold text-xs
+                                                inline-flex items-center justify-center w-6 h-6 rounded font-bold text-[10px]
                                                 ${isCurrentRow
-                                                    ? 'bg-cv-accent text-white'
+                                                    ? 'bg-cv-accent text-white shadow-sm shadow-cv-accent/30'
                                                     : 'bg-slate-100 dark:bg-slate-800 text-cv-text-secondary'
                                                 }
                                             `}>
                                                 {block.weekNumber}
                                             </span>
-                                            <span className="text-xs text-cv-text-tertiary">{block.dayName}</span>
+                                            <div className="flex flex-col leading-tight">
+                                                <span className="text-xs font-medium text-cv-text-primary">{block.dayName}</span>
+                                            </div>
                                         </div>
                                     </td>
-                                    <td className="px-3 py-3 text-center">
-                                        <input
-                                            type="number"
+
+                                    <td className={getColumnCellStyle('sets', isCurrentRow)}>
+                                        <TableInputWithPresets
                                             value={(config as any).sets || ''}
-                                            onChange={(e) => handleBlockUpdate(block.blockId, {
-                                                config: { ...config, sets: parseInt(e.target.value) || 0 } as WorkoutConfig
+                                            onChange={(val) => handleBlockUpdate(block.blockId, {
+                                                config: { ...config, sets: parseInt(val) || 0 } as WorkoutConfig
                                             })}
-                                            className="w-16 px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold"
+                                            presets={[3, 4, 5, 6]}
+                                            placeholder="-"
                                         />
                                     </td>
-                                    <td className="px-3 py-3 text-center">
-                                        <input
-                                            type="number"
+
+                                    <td className={getColumnCellStyle('reps', isCurrentRow)}>
+                                        <TableInputWithPresets
                                             value={(config as any).reps || ''}
-                                            onChange={(e) => handleBlockUpdate(block.blockId, {
-                                                config: { ...config, reps: parseInt(e.target.value) || 0 } as WorkoutConfig
+                                            onChange={(val) => handleBlockUpdate(block.blockId, {
+                                                config: { ...config, reps: parseInt(val) || 0 } as WorkoutConfig
                                             })}
-                                            className="w-16 px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold"
+                                            presets={[5, 8, 10, 12, 15]}
+                                            placeholder="-"
                                         />
                                     </td>
-                                    <td className="px-3 py-3 text-center">
-                                        <input
-                                            type="number"
+
+                                    <td className={getColumnCellStyle('percentage', isCurrentRow)}>
+                                        <TableInputWithPresets
                                             value={(config as any).percentage || ''}
-                                            onChange={(e) => handleBlockUpdate(block.blockId, {
-                                                config: { ...config, percentage: parseInt(e.target.value) || 0 } as WorkoutConfig
+                                            onChange={(val) => handleBlockUpdate(block.blockId, {
+                                                config: { ...config, percentage: parseInt(val) || 0 } as WorkoutConfig
                                             })}
-                                            className="w-16 px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold"
+                                            presets={[60, 65, 70, 75, 80, 85, 90]}
+                                            placeholder="-"
+                                            step={2.5}
                                         />
                                     </td>
-                                    <td className="px-3 py-3 text-center">
-                                        <input
-                                            type="number"
+
+                                    <td className={getColumnCellStyle('rest', isCurrentRow)}>
+                                        <TableInputWithPresets
                                             value={(config as any).rest || ''}
-                                            onChange={(e) => handleBlockUpdate(block.blockId, {
-                                                config: { ...config, rest: parseInt(e.target.value) || 0 } as WorkoutConfig
+                                            onChange={(val) => handleBlockUpdate(block.blockId, {
+                                                config: { ...config, rest: parseInt(val) || 0 } as WorkoutConfig
                                             })}
-                                            className="w-16 px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold"
+                                            presets={[60, 90, 120, 180]}
+                                            placeholder="-"
+                                            step={30}
                                         />
                                     </td>
-                                    <td className="px-3 py-3 text-center">
+
+                                    <td className={getColumnCellStyle('tempo', isCurrentRow)}>
                                         <input
                                             type="text"
                                             value={(config as any).tempo || ''}

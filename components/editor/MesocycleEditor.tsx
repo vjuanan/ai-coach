@@ -390,11 +390,6 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                                         <Zap size={12} className="text-cv-accent" />
                                     </div>
                                     <span className="text-sm font-bold text-cv-text-primary">Block Builder</span>
-                                    {blockBuilderDayName && (
-                                        <span className="text-xs text-cv-text-tertiary font-medium px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800">
-                                            {blockBuilderDayName}
-                                        </span>
-                                    )}
                                 </div>
                             ) : (
                                 <h2 className="text-sm font-semibold text-cv-text-primary flex items-center gap-1.5">
