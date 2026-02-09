@@ -171,8 +171,8 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
         <div
             ref={setNodeRef}
             className={`
-                cv-card h-full flex flex-col p-4 relative overflow-hidden
-                ${isSelected ? 'ring-2 ring-cv-accent shadow-lg' : ''}
+                cv-card h-full flex flex-col p-4 relative
+                ${isSelected ? 'shadow-lg' : ''}
                 ${isDropTarget && isDragging ? 'ring-2 ring-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/20 shadow-lg scale-[1.02]' : ''}
                 ${isDragging && !isDropTarget ? 'opacity-80' : ''}
                 transition-all duration-200 cursor-pointer hover:shadow-md
@@ -199,22 +199,24 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
 
             {/* Header - Improved hierarchy */}
             <div className="relative z-10 flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
-                <div className="flex-1">
-                    {!isActiveInBuilder && <h3 className="text-base font-bold text-cv-text-primary">{dayName}</h3>}
-                    {activeStimulus && (
-                        <span
-                            className="text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider mt-0.5"
-                            style={{
-                                color: activeStimulus.color,
-                                borderColor: activeStimulus.color + '40',
-                                backgroundColor: activeStimulus.color + '10'
-                            }}
-                        >
-                            {activeStimulus.name}
-                        </span>
-                    )}
-                </div>
-                <div className="flex items-center gap-1">
+                {(!isActiveInBuilder || activeStimulus) && (
+                    <div className="flex-1">
+                        {!isActiveInBuilder && <h3 className="text-base font-bold text-cv-text-primary">{dayName}</h3>}
+                        {activeStimulus && (
+                            <span
+                                className="text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider mt-0.5 inline-block"
+                                style={{
+                                    color: activeStimulus.color,
+                                    borderColor: activeStimulus.color + '40',
+                                    backgroundColor: activeStimulus.color + '10'
+                                }}
+                            >
+                                {activeStimulus.name}
+                            </span>
+                        )}
+                    </div>
+                )}
+                <div className={isActiveInBuilder && !activeStimulus ? "flex items-center justify-between w-full px-1" : "flex items-center gap-1"}>
                     {/* Stimulus Selector */}
                     <Popover.Root>
                         <Popover.Trigger asChild>
@@ -316,7 +318,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
             </div>
 
             {/* Workout Blocks - Cards within Card style */}
-            <div className="flex-1 space-y-3 mb-4 overflow-y-auto">
+            <div className="flex-1 space-y-3 mb-8 overflow-y-auto p-4 -m-4">
                 {day.blocks
                     .sort((a, b) => a.order_index - b.order_index)
                     .map(block => (

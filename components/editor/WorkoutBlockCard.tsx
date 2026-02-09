@@ -24,13 +24,13 @@ interface WorkoutBlockCardProps {
     block: DraftWorkoutBlock;
 }
 
-const blockTypeStyles: Record<string, { color: string; label: string }> = {
-    warmup: { color: 'modality-warmup', label: 'Calentamiento' },
-    strength_linear: { color: 'modality-strength', label: 'Fuerza' },
-    metcon_structured: { color: 'modality-metcon', label: 'MetCon' },
-    accessory: { color: 'modality-accessory', label: 'Accesorio' },
-    skill: { color: 'modality-skill', label: 'Habilidad' },
-    free_text: { color: 'border-l-4 border-l-gray-500', label: 'Notas' },
+const blockTypeStyles: Record<string, { color: string; label: string; hoverClass: string }> = {
+    warmup: { color: 'modality-warmup', label: 'Calentamiento', hoverClass: 'hover:border-green-500 hover:shadow-md hover:-translate-y-0.5' },
+    strength_linear: { color: 'modality-strength', label: 'Fuerza', hoverClass: 'hover:border-red-500 hover:shadow-md hover:-translate-y-0.5' },
+    metcon_structured: { color: 'modality-metcon', label: 'MetCon', hoverClass: 'hover:border-cv-accent hover:shadow-md hover:-translate-y-0.5' },
+    accessory: { color: 'modality-accessory', label: 'Accesorio', hoverClass: 'hover:border-purple-500 hover:shadow-md hover:-translate-y-0.5' },
+    skill: { color: 'modality-skill', label: 'Habilidad', hoverClass: 'hover:border-blue-500 hover:shadow-md hover:-translate-y-0.5' },
+    free_text: { color: 'border-l-4 border-l-gray-500', label: 'Notas', hoverClass: 'hover:border-gray-500 hover:shadow-md hover:-translate-y-0.5' },
 };
 
 const formatLabels: Record<string, string> = {
@@ -69,18 +69,7 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
     const config = block.config as Record<string, unknown>;
     const isBeingDragged = isDragging || draggedBlockId === block.id;
 
-    // Defines glow color based on block type
-    const getGlowColor = () => {
-        switch (block.type) {
-            case 'warmup': return 'rgba(34, 197, 94, 0.7)'; // Emerald
-            case 'strength_linear': return 'rgba(239, 68, 68, 0.7)'; // Red
-            case 'metcon_structured': return 'rgba(134, 196, 163, 0.8)'; // Teal
-            case 'accessory': return 'rgba(168, 85, 247, 0.7)'; // Purple
-            case 'skill': return 'rgba(59, 130, 246, 0.7)'; // Blue
-            case 'free_text': return 'rgba(100, 116, 139, 0.5)'; // Slate
-            default: return 'rgba(100, 116, 139, 0.5)';
-        }
-    };
+
 
     // Determine if block has meaningful content
     const isBlockEmpty = (): boolean => {
@@ -199,20 +188,14 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
         <>
             <div
                 ref={setNodeRef}
-                style={
-                    {
-                        ...style,
-                        '--block-glow': getGlowColor(),
-                    } as React.CSSProperties
-                }
+                style={style}
                 className={`
                     group relative bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer active:cursor-grabbing touch-none
                     transition-all duration-200
                     ${blockStyle.color}
+                    ${!isBeingDragged && !isSelected ? blockStyle.hoverClass : ''}
                     ${isSelected ? 'ring-2 ring-cv-accent' : ''}
                     ${isBeingDragged ? 'opacity-50 scale-95 shadow-none' : ''}
-                    
-                    ${!isSelected && !isBeingDragged ? 'hover:shadow-[0_4px_15px_-4px_var(--block-glow)] hover:-translate-y-0.5 hover:scale-[1.01] hover:border-cv-accent' : ''}
                 `}
                 onClick={(e) => {
                     e.stopPropagation();

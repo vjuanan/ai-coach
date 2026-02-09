@@ -1,12 +1,15 @@
-# Fix Editor Hover Issue
+# Implementar Click en Área de Bloque
 
-## Objective
-- Ensure hover effects work immediately upon entering the editor, without requiring an initial click.
+## Objetivo
+- Al hacer hover sobre cualquier área del bloque, poder hacer click para ir a la edición del mismo (sin seleccionar un componente específico)
+- Si se hace click sobre un componente específico, se abre directamente ESE componente
 
-## Tasks
+## Tareas
 
-- [x] Analyze `app/editor/[programId]/page.tsx` structure.
-- [x] Check for `autoFocus` on inputs that might be stealing focus inappropriately.
-- [x] Check for overlay elements (z-index) blocking pointer events initially.
-- [x] Fix the issue (Refactored to CSS hover effects).
-- [ ] Verify fix (User to verify visually).
+- [x] Analizar estructura actual de bloques y componentes
+- [x] Modificar `WorkoutBlockCard.tsx` para:
+  - Hacer clickeable toda el área del bloque → abre Block Builder con el bloque seleccionado
+  - Detectar clicks en ejercicios específicos → abre Block Builder en ese ejercicio
+- [x] Agregar indicador visual de hover en el área del bloque
+- [x] Solucionar conflicto de Click vs Drag (Mover listener al Grip)
+- [x] Verificar cambios en producción con screenshots
