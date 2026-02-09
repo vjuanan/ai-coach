@@ -235,7 +235,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                     <Popover.Root>
                         <Popover.Trigger asChild>
                             <button
-                                className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 hover:scale-110 hover:shadow-sm hover:text-cv-accent"
                                 title="Cambiar foco del día"
                                 onClick={(e) => e.stopPropagation()}
                             >
@@ -277,7 +277,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
 
                     <button
                         onClick={(e) => { e.stopPropagation(); toggleRestDay(day.id); }}
-                        className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors opacity-60 hover:opacity-100"
+                        className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 hover:scale-110 hover:shadow-sm opacity-60 hover:opacity-100 hover:text-indigo-500"
                         title="Marcar como descanso"
                     >
                         <Moon size={14} />
@@ -286,7 +286,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                     <Popover.Root>
                         <Popover.Trigger asChild>
                             <button
-                                className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 hover:scale-110 hover:shadow-sm"
                                 title="Más opciones"
                                 onClick={(e) => e.stopPropagation()}
                             >
@@ -360,12 +360,12 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
             </div>
 
             {/* Add Block Button - Opens Block Builder Mode */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 group/add">
                 <button
-                    className="w-full py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-cv-text-secondary hover:text-cv-accent hover:border-cv-accent hover:bg-cv-accent/5 transition-all flex items-center justify-center gap-2 font-medium"
+                    className="w-full py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-cv-text-secondary group-hover/add:text-cv-accent group-hover/add:border-cv-accent group-hover/add:bg-cv-accent/5 group-hover/add:shadow-[0_0_20px_rgba(var(--color-cv-accent-rgb),0.15)] group-hover/add:scale-[1.01] transition-all duration-300 flex items-center justify-center gap-2 font-medium"
                     onClick={handleOpenBlockBuilder}
                 >
-                    <Plus size={16} />
+                    <Plus size={16} className="group-hover/add:stroke-[2.5] transition-all" />
                     <span className="text-sm">Añadir Bloque</span>
                 </button>
             </div>

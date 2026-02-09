@@ -122,8 +122,8 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                 const reps = config.reps as string;
                 const percentage = config.percentage as string;
                 return (
-                    <div className="text-sm">
-                        {sets && reps ? `${sets} x ${reps}` : 'Configurar...'}
+                    <div className="text-sm min-h-[1.25rem]">
+                        {sets && reps ? `${sets} x ${reps}` : ''}
                         {percentage && <span className="text-cv-accent ml-1">@ {percentage}</span>}
                     </div>
                 );
@@ -132,7 +132,7 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                 const format = block.format;
                 const movements = config.movements as string[] || [];
                 return (
-                    <div>
+                    <div className="min-h-[1.25rem]">
                         {format && (
                             <span className="cv-badge-accent mb-1">{formatLabels[format] || format}</span>
                         )}
@@ -142,22 +142,19 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                                 {movements.length > 2 && ` +${movements.length - 2} más`}
                             </div>
                         )}
-                        {!format && movements.length === 0 && (
-                            <span className="text-cv-text-tertiary text-xs">Configurar entreno...</span>
-                        )}
                     </div>
                 );
 
             case 'free_text':
                 const content = config.content as string;
                 return (
-                    <div className="text-xs text-cv-text-tertiary truncate">
-                        {content || 'Añadir notas...'}
+                    <div className="text-xs text-cv-text-tertiary truncate min-h-[1.25rem]">
+                        {content || ''}
                     </div>
                 );
 
             default:
-                return <span className="text-cv-text-tertiary text-xs">Configurar...</span>;
+                return <div className="min-h-[1.25rem]" />;
         }
     };
 
@@ -170,10 +167,13 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                 {...attributes}
                 className={`
                     group relative bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm cursor-grab active:cursor-grabbing touch-none
-                    transition-all
+                    transition-all duration-200
                     ${blockStyle.color}
-                    ${isSelected ? 'ring-2 ring-cv-accent' : ''}
-                    ${isBeingDragged ? 'opacity-50 scale-95 shadow-none' : 'hover:shadow'}
+                    ${isSelected ? 'ring-2 ring-cv-accent shadow-md' : ''}
+                    ${isBeingDragged
+                        ? 'opacity-50 scale-95 shadow-none'
+                        : 'hover:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:border-cv-accent/40 hover:-translate-y-0.5'
+                    }
                 `}
                 onClick={(e) => {
                     e.stopPropagation();
@@ -219,17 +219,17 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button
                                     onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id); }}
-                                    className="p-1 rounded hover:bg-cv-bg-secondary text-cv-text-tertiary hover:text-cv-text-primary"
+                                    className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-cv-accent transition-all duration-200 hover:scale-110 hover:shadow-sm"
                                     title="Duplicar"
                                 >
-                                    <Copy size={12} />
+                                    <Copy size={13} />
                                 </button>
                                 <button
                                     onClick={handleDelete}
-                                    className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-cv-text-tertiary hover:text-red-500"
-                                    title="Eliminar"
+                                    className="p-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition-all duration-200 hover:scale-110 hover:shadow-sm group/delete"
+                                    title="Eliminar bloque"
                                 >
-                                    <X size={14} className="stroke-[2.5]" />
+                                    <Trash2 size={14} className="group-hover/delete:stroke-[2.5]" />
                                 </button>
                             </div>
                         </div>

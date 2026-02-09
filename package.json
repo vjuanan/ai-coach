@@ -26,6 +26,7 @@
     "lucide-react": "^0.303.0",
     "next": "14.0.4",
     "pg": "^8.18.0",
+    "postgres": "^3.4.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.71.1",

@@ -28,6 +28,7 @@ import {
     Skull,
     ListOrdered,
     Puzzle,
+    Percent, // Nuevo icono para % 1RM
     HelpCircle,
     Check,
     Link
@@ -219,8 +220,19 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
             return Boolean(config.content);
         }
 
-        // For all other types, just require a name
-        return Boolean(block.name && block.name.trim().length > 0);
+        // For Strength (Classic), require a name (Exercise)
+        if (block.type === 'strength_linear') {
+            return Boolean(block.name && block.name.trim().length > 0);
+        }
+
+        // For structured blocks (Metcon, Warmup, etc), require a methodology (format)
+        // The block name is optional/hidden for these types.
+        if (['metcon_structured', 'warmup', 'accessory', 'skill'].includes(block.type)) {
+            return Boolean(block.format);
+        }
+
+        // Default fallback
+        return true;
     };
 
     const isValid = validateBlock();
@@ -237,8 +249,15 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             <label className="block text-sm font-medium text-cv-text-secondary">
                                 Metodología de Entrenamiento
                             </label>
-                            {/* OK BUTTON INLINE */}
-                            {/* OK BUTTON REMOVED FROM HERE */}
+
+                            {/* Progression Toggle - Now here for structured blocks */}
+                            <ProgressionSettings
+                                blockId={blockId}
+                                progressionId={block.progression_id}
+                                showSelector={showProgressionSelector}
+                                setShowSelector={setShowProgressionSelector}
+                                onToggle={toggleBlockProgression}
+                            />
                         </div>
 
                         {loading ? (
@@ -264,10 +283,10 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                                 className={`
                                                     flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border
                                                     ${isExpanded
-                                                        ? 'bg-cv-accent text-white border-cv-accent shadow-sm'
+                                                        ? 'bg-cv-accent text-white border-cv-accent shadow-md scale-105'
                                                         : hasSelectedItem
-                                                            ? 'bg-cv-accent/10 text-cv-accent border-cv-accent/30 hover:bg-cv-accent/20'
-                                                            : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                            ? 'bg-cv-accent/10 text-cv-accent border-cv-accent/30 hover:bg-cv-accent/20 hover:shadow-sm hover:scale-105'
+                                                            : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-cv-accent/50 hover:text-cv-accent hover:shadow-sm hover:scale-105'
                                                     }
                                                 `}
                                             >
@@ -295,8 +314,8 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                                             px-3 py-2 rounded-lg text-xs font-medium transition-all
                                                             flex items-center gap-2 border flex-1 min-w-[120px] justify-center
                                                             ${isSelected
-                                                                ? 'bg-white dark:bg-cv-bg-primary text-cv-accent border-cv-accent shadow-sm ring-1 ring-cv-accent/20'
-                                                                : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-50 dark:hover:bg-cv-bg-primary border-slate-200 dark:border-slate-700'
+                                                                ? 'bg-white dark:bg-cv-bg-primary text-cv-accent border-cv-accent shadow-md ring-1 ring-cv-accent/20 scale-[1.02]'
+                                                                : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary hover:text-cv-accent hover:bg-slate-50 dark:hover:bg-cv-bg-primary border-slate-200 dark:border-slate-700 hover:border-cv-accent/30 hover:shadow-sm hover:-translate-y-0.5'
                                                             }
                                                         `}
                                                     >
@@ -328,80 +347,24 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                       User requested: "El nombre del ejercicio no tiene sentido que este arriba".
                       Let's make it a simple "Nombre del Bloque (Opcional)" input for MetCons.
                 */}
-                <div>
-                    <div className="flex items-center justify-between mb-2">
-                        <label className="block text-sm font-medium text-cv-text-secondary">
-                            {block.type === 'strength_linear' ? 'Ejercicio Principal' : 'Nombre del Bloque (Opcional)'}
-                        </label>
-
-                        {/* Progression Toggle */}
-                        {/* Progression Toggle */}
-                        <div className="flex items-center gap-3 relative">
-                            <label className="flex items-center gap-2 cursor-pointer group select-none">
-                                <span className={`text-xs font-semibold transition-colors ${block.progression_id ? 'text-cv-accent' : 'text-cv-text-tertiary group-hover:text-cv-text-secondary'}`}>
-                                    Progresión
-                                </span>
-                                <div className="relative w-8 h-4">
-                                    <input
-                                        type="checkbox"
-                                        className="sr-only"
-                                        checked={Boolean(block.progression_id)}
-                                        onChange={(e) => {
-                                            if (e.target.checked) {
-                                                setShowProgressionSelector(true);
-                                            } else {
-                                                toggleBlockProgression(blockId, false);
-                                            }
-                                        }}
-                                    />
-                                    <div className={`w-8 h-4 rounded-full transition-colors ${block.progression_id ? 'bg-cv-accent' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
-                                    <div className={`absolute top-0.5 left-0.5 bg-white w-3 h-3 rounded-full transition-transform ${block.progression_id ? 'translate-x-4' : 'translate-x-0'}`}></div>
-                                </div>
+                {/* 2. BLOCK NAME / EXERCISE INPUT (ONLY FOR STRENGTH) */}
+                {block.type === 'strength_linear' && (
+                    <div>
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="block text-sm font-medium text-cv-text-secondary">
+                                Ejercicio Principal
                             </label>
-                            {block.progression_id && (
-                                <div className="text-cv-accent animate-in fade-in zoom-in duration-200" title="Progresión activa">
-                                    <Link size={14} />
-                                </div>
-                            )}
 
-                            {/* Progression Variable Selector */}
-                            {showProgressionSelector && (
-                                <div className="absolute top-8 right-0 z-50 w-64 p-4 bg-white dark:bg-cv-bg-secondary rounded-xl shadow-cv-lg border border-cv-border animate-in zoom-in-95 duration-200">
-                                    <h4 className="text-sm font-semibold mb-3 text-cv-text-primary">Variable Principal</h4>
-                                    <div className="space-y-2">
-                                        {[
-                                            { id: 'percentage', label: '% 1RM', desc: 'Fuerza', icon: '🔥' },
-                                            { id: 'sets', label: 'Series', desc: 'Volumen', icon: '📊' },
-                                            { id: 'reps', label: 'Repeticiones', desc: 'Volumen', icon: '🔁' },
-                                        ].map(opt => (
-                                            <button
-                                                key={opt.id}
-                                                onClick={() => {
-                                                    toggleBlockProgression(blockId, true, opt.id as any);
-                                                    setShowProgressionSelector(false);
-                                                }}
-                                                className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-sm flex items-center justify-between group transition-colors"
-                                            >
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-base">{opt.icon}</span>
-                                                    <span className="font-medium text-cv-text-secondary group-hover:text-cv-text-primary">{opt.label}</span>
-                                                </div>
-                                                <span className="text-[10px] text-cv-text-tertiary uppercase tracking-wider">{opt.desc}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <button
-                                        onClick={() => setShowProgressionSelector(false)}
-                                        className="mt-3 w-full text-xs text-cv-text-tertiary hover:text-cv-text-secondary text-center py-1"
-                                    >
-                                        Cancelar
-                                    </button>
-                                </div>
-                            )}
+                            {/* Progression Toggle - Here for Strength blocks */}
+                            <ProgressionSettings
+                                blockId={blockId}
+                                progressionId={block.progression_id}
+                                showSelector={showProgressionSelector}
+                                setShowSelector={setShowProgressionSelector}
+                                onToggle={toggleBlockProgression}
+                            />
                         </div>
-                    </div>
 
-                    {block.type === 'strength_linear' ? (
                         <SmartExerciseInput
                             value={block.name || ''}
                             onChange={(val) => updateBlock(blockId, { name: val || null })}
@@ -409,19 +372,8 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             className="cv-input"
                             inputRef={firstInputRef}
                         />
-                    ) : (
-                        <input
-                            type="text"
-                            value={block.name || ''}
-                            onChange={(e) => updateBlock(blockId, { name: e.target.value || null })}
-                            placeholder={currentMethodology ? `${currentMethodology.name} - Definir nombre...` : "Nombre del bloque..."}
-                            className="cv-input"
-                            // Only auto-focus if it's NOT a MetCon, because for MetCon users want to click the methodology first?
-                            // Actually, maybe keep auto-focus but on this input.
-                            ref={firstInputRef}
-                        />
-                    )}
-                </div>
+                    </div>
+                )}
 
                 {/* 3. SPECIALIZED EDITORS */}
                 {currentMethodology && (
@@ -523,7 +475,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 <div className="flex items-center gap-3 pt-4 mt-auto border-t border-slate-100 dark:border-slate-800">
                     <button
                         onClick={() => { deleteBlock(blockId); selectBlock(null); }}
-                        className="flex-1 py-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                        className="flex-1 py-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-lg transition-all duration-200 hover:shadow-md hover:scale-[1.02] flex items-center justify-center gap-2 text-sm font-medium"
                     >
                         <Trash2 size={16} />
                         Eliminar
@@ -538,9 +490,9 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             }
                         }}
                         disabled={!isValid}
-                        className={`flex-1 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-bold shadow-sm border
+                        className={`flex-1 py-2.5 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm font-bold shadow-sm border
                             ${isValid
-                                ? 'bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600'
+                                ? 'bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-500/30 hover:scale-[1.02]'
                                 : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'}`}
                     >
                         <Check size={16} className="stroke-[3]" />
@@ -787,7 +739,7 @@ function MovementsListField({ label, value, onChange, help }: MovementsListProps
 }
 
 // ============================================
-// STRENGTH FORM (Fallback for strength_linear)
+// STRENGTH FORM (Redesigned)
 // ============================================
 interface FormProps {
     config: Record<string, unknown>;
@@ -803,6 +755,16 @@ function StrengthForm({ config, onChange, blockName }: FormProps) {
     const exercise = blockName ? searchLocal(blockName).find(e => e.name === blockName) : null;
     const showDistance = exercise?.tracking_parameters?.distance === true;
 
+    // Toggles
+    const [intensityType, setIntensityType] = useState<'% 1RM' | 'RPE' | 'Weight'>((config.percentage ? '% 1RM' : config.rpe ? 'RPE' : 'Weight'));
+
+    // Update intensity type if config changes externally (or checking initial state more robustly)
+    useEffect(() => {
+        if (config.percentage) setIntensityType('% 1RM');
+        else if (config.rpe) setIntensityType('RPE');
+    }, [config.percentage, config.rpe]);
+
+
     const toggleTempo = () => {
         const newValue = !showTempo;
         onChange('show_tempo', newValue);
@@ -812,107 +774,237 @@ function StrengthForm({ config, onChange, blockName }: FormProps) {
     };
 
     return (
-        <div className="animate-in fade-in duration-300">
-            <div className="flex flex-wrap items-center gap-3">
-                {/* Sets */}
-                <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <span className="text-sm font-semibold text-cv-text-primary">Series</span>
-                    <input
-                        type="number"
-                        min={1}
-                        value={(config.sets as number) || ''}
-                        onChange={(e) => onChange('sets', parseInt(e.target.value) || null)}
-                        placeholder="3"
-                        className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-12 text-center"
-                    />
-                </div>
+        <div className="animate-in fade-in duration-300 space-y-4">
 
-                {/* Distance Option (Replaces Reps or Adds to it) */}
-                {showDistance && (
-                    <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in duration-200">
-                        <span className="text-sm font-semibold text-cv-text-primary">Distancia</span>
-                        <input
-                            type="text"
-                            value={(config.distance as string) || ''}
-                            onChange={(e) => onChange('distance', e.target.value)}
-                            placeholder="400m"
-                            className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-20 text-center"
-                        />
-                    </div>
+            {/* MAIN GRID */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+
+                {/* 1. SERIES */}
+                <InputCard
+                    label="SERIES"
+                    value={config.sets as string | number}
+                    onChange={(val) => onChange('sets', val)}
+                    type="number"
+                    icon={Layers}
+                    presets={[3, 4, 5]}
+                />
+
+                {/* 2. REPS / DISTANCE */}
+                {showDistance ? (
+                    <InputCard
+                        label="DISTANCIA"
+                        subLabel={exercise?.name || 'Ejercicio'}
+                        value={config.distance as string}
+                        onChange={(val) => onChange('distance', val)}
+                        type="text"
+                        icon={Activity}
+                        presets={['200m', '400m', '800m', '1k']}
+                        placeholder="400m"
+                        isDistance
+                    />
+                ) : (
+                    <InputCard
+                        label="REPETICIONES"
+                        value={config.reps as string}
+                        onChange={(val) => onChange('reps', val)}
+                        type="number-text" // Allow ranges like 5-8
+                        icon={Repeat}
+                        presets={[5, 8, 10, 12, 15]}
+                        placeholder="10"
+                    />
                 )}
 
-                {/* Reps */}
-                <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <span className="text-sm font-semibold text-cv-text-primary">Reps</span>
-                    <input
-                        type="text"
-                        value={(config.reps as string) || ''}
-                        onChange={(e) => onChange('reps', e.target.value)}
-                        placeholder="10"
-                        className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-14 text-center"
-                    />
-                </div>
+                {/* 3. INTENSITY */}
+                <InputCard
+                    label={intensityType}
+                    value={(intensityType === '% 1RM' ? config.percentage : config.rpe) as string | number}
+                    onChange={(val) => {
+                        if (intensityType === '% 1RM') onChange('percentage', val);
+                        else onChange('rpe', val);
+                    }}
+                    type="number"
+                    icon={intensityType === '% 1RM' ? Percent : Flame}
+                    presets={intensityType === '% 1RM' ? [60, 70, 75, 80] : [7, 8, 9, 10]}
+                    headerAction={
+                        <button
+                            onClick={() => setIntensityType(prev => prev === '% 1RM' ? 'RPE' : '% 1RM')}
+                            className="text-xs font-semibold text-cv-accent hover:text-cv-accent/80 transition-colors"
+                        >
+                            {intensityType === '% 1RM' ? 'Usar RPE' : 'Usar %'}
+                        </button>
+                    }
+                />
 
-                {/* % */}
-                <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <span className="text-sm font-semibold text-cv-text-primary">% 1RM</span>
-                    <input
-                        type="number"
-                        value={typeof config.percentage === 'string' ? config.percentage.replace('%', '') : (config.percentage as number) || ''}
-                        onChange={(e) => onChange('percentage', e.target.value)}
-                        placeholder="75"
-                        className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-16 text-center"
-                    />
-                </div>
+                {/* 4. DESCANSO */}
+                <InputCard
+                    label="DESCANSO"
+                    value={config.rest as string}
+                    onChange={(val) => onChange('rest', val)}
+                    type="text"
+                    icon={Clock}
+                    presets={['1:30', '2:00', '3:00']}
+                    placeholder="2:00"
+                />
 
-                {/* RPE */}
-                <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <span className="text-sm font-semibold text-cv-text-primary">RPE</span>
-                    <input
-                        type="text"
-                        value={(config.rpe as string) || ''}
-                        onChange={(e) => onChange('rpe', e.target.value)}
-                        placeholder="8"
-                        className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-10 text-center"
-                    />
-                </div>
+            </div>
 
-                {/* Descanso */}
-                <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <span className="text-sm font-semibold text-cv-text-primary">Descanso</span>
-                    <input
-                        type="text"
-                        value={(config.rest as string) || ''}
-                        onChange={(e) => onChange('rest', e.target.value)}
-                        placeholder="2:00"
-                        className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-14 text-center"
-                    />
-                </div>
+            {/* SECONDARY ROW: TEMPO & WEIGHT (Optional) */}
+            <div className="flex flex-wrap gap-3">
+                {/* Tempo Toggle Button */}
+                <button
+                    onClick={toggleTempo}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all ${showTempo
+                            ? 'bg-cv-accent/10 border-cv-accent text-cv-accent'
+                            : 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700 text-cv-text-secondary hover:border-cv-accent/50'
+                        }`}
+                >
+                    <Timer size={16} />
+                    <span className="text-sm font-semibold">Tempo</span>
+                    {showTempo && <span className="text-xs ml-1 bg-white/50 px-1.5 py-0.5 rounded">ON</span>}
+                </button>
 
-                {/* Tempo with toggle */}
-                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${showTempo ? 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700' : 'border-dashed border-slate-300 dark:border-slate-600'}`}>
-                    <button
-                        onClick={toggleTempo}
-                        type="button"
-                        className={`w-8 h-4 rounded-full transition-colors relative focus:outline-none ${showTempo ? 'bg-cv-accent' : 'bg-slate-300 dark:bg-slate-600'}`}
-                    >
-                        <span className={`block w-3 h-3 bg-white rounded-full transition-transform absolute top-0.5 left-0.5 ${showTempo ? 'translate-x-4' : 'translate-x-0'}`} />
-                    </button>
-                    <span className={`text-sm font-semibold ${showTempo ? 'text-cv-text-primary' : 'text-cv-text-tertiary'}`}>Tempo</span>
-                    {showTempo && (
+                {showTempo && (
+                    <div className="flex-1 max-w-[200px] bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-xl border border-cv-accent animate-in fade-in slide-in-from-left-2">
+                        <label className="text-xs uppercase tracking-wider font-bold text-cv-accent mb-1 block">Tempo</label>
                         <input
                             type="text"
                             value={(config.tempo as string) || ''}
                             onChange={(e) => onChange('tempo', e.target.value)}
                             placeholder="30X1"
-                            className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-16 text-center animate-in fade-in duration-150"
+                            className="w-full bg-transparent border-none p-0 text-lg font-bold text-cv-text-primary placeholder:text-slate-300 focus:ring-0"
+                            autoFocus
                         />
-                    )}
+                    </div>
+                )}
+            </div>
+
+        </div>
+    );
+}
+
+// ----------------------------------------------------------------------
+// NEW COMPONENT: InputCard
+// ----------------------------------------------------------------------
+interface InputCardProps {
+    label: string;
+    subLabel?: string;
+    value: string | number;
+    onChange: (val: any) => void;
+    type?: 'number' | 'text' | 'number-text';
+    icon?: LucideIcon;
+    presets?: (string | number)[];
+    placeholder?: string;
+    headerAction?: React.ReactNode;
+    isDistance?: boolean;
+}
+
+function InputCard({
+    label,
+    subLabel,
+    value,
+    onChange,
+    type = 'text',
+    icon: Icon,
+    presets = [],
+    placeholder,
+    headerAction,
+    isDistance
+}: InputCardProps) {
+
+    const handleIncrement = (amount: number) => {
+        if (typeof value === 'number') {
+            onChange(value + amount);
+        } else if (typeof value === 'string' && !isNaN(Number(value))) {
+            onChange(Number(value) + amount);
+        } else {
+            // If empty or text, start at amount
+            onChange(amount);
+        }
+    };
+
+    return (
+        <div className="bg-white dark:bg-cv-bg-secondary rounded-xl border border-slate-200 dark:border-slate-700 p-3 flex flex-col gap-2 shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between z-10">
+                <div className="flex items-center gap-1.5">
+                    {Icon && <Icon size={14} className="text-cv-text-tertiary group-hover:text-cv-accent transition-colors" />}
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-cv-text-tertiary group-hover:text-cv-text-secondary transition-colors">
+                        {label}
+                    </span>
                 </div>
+                {headerAction}
+            </div>
+
+            {/* Input Area */}
+            <div className="flex items-baseline justify-center gap-1 my-1 z-10">
+                <input
+                    type={type === 'number' ? 'number' : 'text'}
+                    value={value || ''}
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        if (type === 'number') onChange(val ? Number(val) : '');
+                        else onChange(val);
+                    }}
+                    placeholder={placeholder || '-'}
+                    className="bg-transparent border-none p-0 text-3xl font-bold text-cv-text-primary placeholder:text-slate-200 dark:placeholder:text-slate-700 text-center w-full focus:ring-0"
+                />
+                {isDistance && <span className="text-sm font-medium text-cv-text-tertiary">meters</span>}
+                {label === '% 1RM' && <span className="text-sm font-medium text-cv-text-tertiary">%</span>}
+            </div>
+
+            {/* Controls / Presets */}
+            <div className="flex items-center justify-center gap-1 z-10 mt-auto">
+                {type === 'number' && (
+                    <>
+                        <button
+                            onClick={() => handleIncrement(-1)}
+                            className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors"
+                        >
+                            <TrendingDown size={12} />
+                        </button>
+                    </>
+                )}
+
+                {/* Scrollable Presets */}
+                <div className="flex gap-1 overflow-x-auto no-scrollbar max-w-[120px] px-1">
+                    {presets.map(preset => (
+                        <button
+                            key={preset}
+                            onClick={() => onChange(preset)}
+                            className={`
+                                flex-shrink-0 px-2 py-1 rounded-md text-[10px] font-semibold transition-all border
+                                ${value == preset
+                                    ? 'bg-cv-accent text-white border-cv-accent'
+                                    : 'bg-slate-50 dark:bg-slate-800 text-cv-text-secondary border-slate-100 dark:border-slate-700 hover:border-cv-accent/30'}
+                            `}
+                        >
+                            {preset}
+                        </button>
+                    ))}
+                </div>
+
+                {type === 'number' && (
+                    <>
+                        <button
+                            onClick={() => handleIncrement(1)}
+                            className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors"
+                        >
+                            <TrendingUp size={12} />
+                        </button>
+                    </>
+                )}
+            </div>
+
+            {/* Background Decoration */}
+            <div className="absolute -bottom-4 -right-4 text-slate-50 dark:text-slate-800/50 pointer-events-none group-hover:scale-110 transition-transform">
+                {Icon && <Icon size={64} strokeWidth={1} />}
             </div>
         </div>
     );
 }
+
+// ============================================
+// GENERIC MOVEMENT FORM
 
 // ============================================
 // FREE TEXT FORM
@@ -991,3 +1083,85 @@ function GenericMovementForm({ config, onChange }: FormProps) {
     );
 }
 // Force redeploy - Thu Feb  5 17:00:43 -03 2026
+
+interface ProgressionSettingsProps {
+    blockId: string;
+    progressionId?: string | null;
+    showSelector: boolean;
+    setShowSelector: (show: boolean) => void;
+    onToggle: (blockId: string, active: boolean, variable?: any) => void;
+}
+
+function ProgressionSettings({ blockId, progressionId, showSelector, setShowSelector, onToggle }: ProgressionSettingsProps) {
+    return (
+        <div className="flex items-center gap-3 relative">
+            <label className="flex items-center gap-2 cursor-pointer group select-none">
+                <span className={`text-xs font-semibold transition-colors ${progressionId ? 'text-cv-accent' : 'text-cv-text-tertiary group-hover:text-cv-text-secondary'}`}>
+                    Progresión
+                </span>
+                <div className="relative w-8 h-4">
+                    <input
+                        type="checkbox"
+                        className="sr-only"
+                        checked={Boolean(progressionId)}
+                        onChange={(e) => {
+                            if (e.target.checked) {
+                                setShowSelector(true);
+                            } else {
+                                onToggle(blockId, false);
+                            }
+                        }}
+                    />
+                    <div className={`w-8 h-4 rounded-full transition-colors ${progressionId ? 'bg-cv-accent' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
+                    <div className={`absolute top-0.5 left-0.5 bg-white w-3 h-3 rounded-full transition-transform ${progressionId ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                </div>
+            </label>
+            {progressionId && (
+                <div className="text-cv-accent animate-in fade-in zoom-in duration-200" title="Progresión activa">
+                    <Link size={14} />
+                </div>
+            )}
+
+            {/* Progression Variable Selector */}
+            {showSelector && (
+                <div className="absolute top-8 right-0 z-50 w-56 p-2 bg-white dark:bg-cv-bg-tertiary rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200">
+                    <h4 className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">TIPO DE VARIABLE</h4>
+                    <div className="space-y-1">
+                        {[
+                            { id: 'percentage', label: '% 1RM', sub: 'Sobrecarga de Intensidad', icon: Percent, color: 'text-orange-500' },
+                            { id: 'sets', label: 'Series', sub: 'Sobrecarga de Volumen', icon: Layers, color: 'text-emerald-500' },
+                            { id: 'reps', label: 'Repeticiones', sub: 'Sobrecarga de Volumen', icon: Repeat, color: 'text-emerald-500' },
+                        ].map(opt => (
+                            <button
+                                key={opt.id}
+                                onClick={() => {
+                                    onToggle(blockId, true, opt.id as any);
+                                    setShowSelector(false);
+                                }}
+                                className="w-full text-left px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors group"
+                            >
+                                <div className={`p-1.5 rounded-md bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-600 transition-colors ${opt.color}`}>
+                                    <opt.icon size={16} strokeWidth={2.5} />
+                                </div>
+                                <div>
+                                    <div className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">
+                                        {opt.label}
+                                    </div>
+                                    <div className="text-[10px] text-slate-400 font-medium">
+                                        {opt.sub}
+                                    </div>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        onClick={() => setShowSelector(false)}
+                        className="mt-2 w-full text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-center py-1.5 transition-colors"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+}

@@ -12,7 +12,8 @@ import {
     FileText,
     Check,
     TrendingUp,
-    Trash2
+    Trash2,
+    Link
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
@@ -160,7 +161,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                 </div>
                 <button
                     onClick={onClose}
-                    className="flex items-center gap-2 px-4 py-2 bg-cv-accent text-white rounded-xl font-medium text-sm hover:bg-cv-accent/90 transition-colors shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-cv-accent text-white rounded-xl font-medium text-sm hover:bg-cv-accent/90 transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-cv-accent/30 hover:scale-105"
                 >
                     <Check size={16} />
                     Guardar y Salir
@@ -184,7 +185,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                     <button
                                         key={option.type}
                                         onClick={() => handleAddBlock(option.type)}
-                                        className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${option.bgColor} group`}
+                                        className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${option.bgColor} group hover:shadow-[0_0_15px_rgba(var(--color-cv-accent-rgb),0.1)] hover:scale-[1.02] hover:ring-1 hover:ring-cv-accent/30`}
                                     >
                                         <div className={`w-9 h-9 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm ${option.color}`}>
                                             <Icon size={18} />
@@ -218,10 +219,10 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                 key={block.id}
                                                 onClick={() => selectBlock(block.id)}
                                                 className={`
-                                                    group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all text-left min-w-[150px] cursor-pointer
+                                                    group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left min-w-[150px] cursor-pointer
                                                     ${isActive
-                                                        ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-sm ring-1 ring-cv-accent/10'
-                                                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                        ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-md ring-1 ring-cv-accent/20 scale-[1.02]'
+                                                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:border-cv-accent/50 hover:shadow-md hover:-translate-y-0.5 hover:bg-white dark:hover:bg-slate-800'
                                                     }
                                                 `}
                                             >
@@ -246,6 +247,12 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                         <p className="text-[10px] text-cv-text-tertiary truncate">
                                                             {block.format}
                                                         </p>
+                                                        {/* Progression Indicator */}
+                                                        {Boolean((block as any).progression_id) && (
+                                                            <div className="w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0 text-cv-accent bg-cv-accent/10">
+                                                                <Link size={8} />
+                                                            </div>
+                                                        )}
                                                         {Boolean(block.config?.is_completed) && (
                                                             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
                                                                 <Check size={6} className="text-white stroke-[3]" />
