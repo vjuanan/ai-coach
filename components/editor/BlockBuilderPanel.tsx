@@ -40,7 +40,7 @@ const blockTypeOptions: {
             description: 'Preparación y movilidad',
             color: 'text-emerald-600 dark:text-emerald-400',
             bgColor: 'bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50',
-            glowColor: 'rgba(34, 197, 94, 0.4)',
+            glowColor: 'rgba(34, 197, 94, 0.7)',
             icon: Flame
         },
         {
@@ -49,7 +49,7 @@ const blockTypeOptions: {
             description: 'Series, reps y porcentajes',
             color: 'text-red-600 dark:text-red-400',
             bgColor: 'bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50',
-            glowColor: 'rgba(239, 68, 68, 0.4)',
+            glowColor: 'rgba(239, 68, 68, 0.7)',
             icon: Dumbbell
         },
         {
@@ -58,7 +58,7 @@ const blockTypeOptions: {
             description: 'AMRAP, EMOM, For Time',
             color: 'text-cv-accent',
             bgColor: 'bg-teal-50 dark:bg-teal-900/30 hover:bg-teal-100 dark:hover:bg-teal-900/50',
-            glowColor: 'rgba(134, 196, 163, 0.5)',
+            glowColor: 'rgba(134, 196, 163, 0.8)',
             icon: Zap
         },
         {
@@ -67,7 +67,7 @@ const blockTypeOptions: {
             description: 'Trabajo complementario',
             color: 'text-purple-600 dark:text-purple-400',
             bgColor: 'bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50',
-            glowColor: 'rgba(168, 85, 247, 0.4)',
+            glowColor: 'rgba(168, 85, 247, 0.7)',
             icon: ListOrdered
         },
         {
@@ -76,7 +76,7 @@ const blockTypeOptions: {
             description: 'Práctica técnica',
             color: 'text-blue-600 dark:text-blue-400',
             bgColor: 'bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50',
-            glowColor: 'rgba(59, 130, 246, 0.4)',
+            glowColor: 'rgba(59, 130, 246, 0.7)',
             icon: Sparkles
         },
         {
@@ -85,7 +85,7 @@ const blockTypeOptions: {
             description: 'Notas y comentarios',
             color: 'text-slate-600 dark:text-slate-400',
             bgColor: 'bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800',
-            glowColor: 'rgba(100, 116, 139, 0.3)',
+            glowColor: 'rgba(100, 116, 139, 0.5)',
             icon: FileText
         },
     ];

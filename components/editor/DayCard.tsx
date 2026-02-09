@@ -138,7 +138,6 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
                     <div>
                         <h3 className="text-base font-bold text-cv-text-primary">{dayName}</h3>
-                        <p className="text-xs text-cv-text-tertiary">Día {day.day_number}</p>
                     </div>
                     <button
                         onClick={(e) => { e.stopPropagation(); toggleRestDay(day.id); }}
