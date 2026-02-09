@@ -56,22 +56,19 @@ export function MesocycleStrategyForm({
     return (
         <AnimatePresence>
             {isOpen && (
-                <>
-                    {/* Backdrop */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+                    onClick={onClose}
+                >
                     <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
-                        onClick={onClose}
-                    />
-
-                    {/* Modal */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-auto md:w-full md:max-w-2xl h-auto md:max-h-[85vh] flex flex-col bg-white border border-slate-200 rounded-xl shadow-2xl z-[70] overflow-hidden font-sans"
+                        initial={{ scale: 0.95, y: 20 }}
+                        animate={{ scale: 1, y: 0 }}
+                        exit={{ scale: 0.95, y: 20 }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-full max-w-2xl max-h-[85vh] flex flex-col bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden font-sans"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white sticky top-0 z-10">
@@ -196,7 +193,7 @@ export function MesocycleStrategyForm({
                             </button>
                         </div>
                     </motion.div>
-                </>
+                </motion.div>
             )}
         </AnimatePresence>
     );

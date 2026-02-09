@@ -686,7 +686,7 @@ export const useEditorStore = create<EditorState>()(
             exitBlockBuilder: () => {
                 const { blockBuilderDayId } = get();
 
-                // 1. Immediate UI update - Close the builder first for speed
+                // 1. Immediate UI update - Close the builder first for speed (Optimized)
                 set({
                     blockBuilderMode: false,
                     blockBuilderDayId: null
