@@ -1,15 +1,16 @@
-# Implementar Click en Área de Bloque
+# Progression Mode Fixes
 
-## Objetivo
-- Al hacer hover sobre cualquier área del bloque, poder hacer click para ir a la edición del mismo (sin seleccionar un componente específico)
-- Si se hace click sobre un componente específico, se abre directamente ESE componente
+## Issues to Fix
+- [/] **BUG 1**: Ejercicio en "Modo progresión" no se duplica en todas las semanas
+- [ ] **BUG 2**: Drag and drop dice "se va a modificar en TODAS las semanas" (error - debe poder mover solo el bloque de esa semana)
+- [ ] **BUG 3**: Drag and drop tiene mucho lag en la transición del efecto
+- [ ] **BUG 4**: Debe poder arrastrar desde cualquier parte del bloque, no solo los puntos del grip
 
-## Tareas
-
-- [x] Analizar estructura actual de bloques y componentes
-- [x] Modificar `WorkoutBlockCard.tsx` para:
-  - Hacer clickeable toda el área del bloque → abre Block Builder con el bloque seleccionado
-  - Detectar clicks en ejercicios específicos → abre Block Builder en ese ejercicio
-- [x] Agregar indicador visual de hover en el área del bloque
-- [x] Solucionar conflicto de Click vs Drag (Mover listener al Grip)
-- [x] Verificar cambios en producción con screenshots
+## Tasks
+- [/] Investigar código actual de progresiones
+- [ ] Crear implementation_plan.md
+- [ ] Revisar funcionalidad de `toggleBlockProgression` en store
+- [ ] Corregir lógica de drag and drop para bloques con progression_id
+- [ ] Mover listeners de drag al bloque completo
+- [ ] Mejorar animación/transición de drag overlay
+- [ ] Verificar en producción

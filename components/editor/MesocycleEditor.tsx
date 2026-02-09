@@ -145,13 +145,8 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
             if (sourceBlock) {
                 if (sourceBlock.day_id !== targetDayId) {
-                    const targetDay = currentMeso?.days.find(d => d.id === targetDayId);
-
-                    if (sourceBlock.progression_id && targetDay) {
-                        moveProgressionToDay(sourceBlock.progression_id, targetDay.day_number);
-                    } else {
-                        moveBlockToDay(blockId, targetDayId);
-                    }
+                    // Always move individual block - progressions are independent per week
+                    moveBlockToDay(blockId, targetDayId);
                 }
             }
         }
@@ -567,20 +562,18 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                 />
 
                 {/* Drag Overlay - Shows a preview of the block being dragged */}
-                <DragOverlay dropAnimation={null}>
+                <DragOverlay dropAnimation={{
+                    duration: 200,
+                    easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+                }}>
                     {draggedBlockData ? (
-                        <div className="bg-white dark:bg-cv-bg-secondary rounded-lg shadow-xl border-2 border-cv-accent p-3 opacity-90 max-w-[200px] z-50 pointer-events-none">
+                        <div className="bg-white dark:bg-cv-bg-secondary rounded-lg shadow-xl border-2 border-cv-accent p-3 opacity-95 max-w-[200px] z-50 pointer-events-none">
                             <div className="flex items-center gap-2">
                                 <GripVertical size={14} className="text-cv-accent" />
                                 <span className="text-sm font-medium text-cv-text-primary truncate">
                                     {draggedBlockData.name || 'Bloque'}
                                 </span>
                             </div>
-                            {draggedBlockData.progression_id && (
-                                <p className="text-xs text-cv-accent mt-1">
-                                    ↔ Se moverá en todas las semanas
-                                </p>
-                            )}
                         </div>
                     ) : null}
                 </DragOverlay>
