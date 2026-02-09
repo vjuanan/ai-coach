@@ -33,6 +33,7 @@ interface WeekData {
 interface MonthlyProgression {
     name: string;
     progression: string[];
+    variable?: string;
     notes?: string;
 }
 
@@ -261,6 +262,7 @@ export function ExportPreview({
                                             fontWeight: 'bold',
                                             color: EXPORT_COLORS.textPrimary,
                                             margin: 0,
+                                            lineHeight: 1.2,
                                         }}>
                                             {clientInfo.name}
                                         </h1>
@@ -268,6 +270,8 @@ export function ExportPreview({
                                             color: EXPORT_COLORS.textTertiary,
                                             margin: 0,
                                             fontSize: '14px',
+                                            lineHeight: 1.2,
+                                            marginTop: '4px',
                                         }}>
                                             {programName}
                                         </p>
@@ -286,6 +290,9 @@ export function ExportPreview({
                                             <span style={{
                                                 fontSize: '14px',
                                                 color: EXPORT_COLORS.textSecondary,
+                                                lineHeight: 1,
+                                                display: 'block',
+                                                marginTop: '2px', // Slight optical adjustment for vertical centering
                                             }}>
                                                 {monthlyStrategy.duration}
                                             </span>
@@ -410,6 +417,35 @@ export function ExportPreview({
                                                                         }}>
                                                                             {prog.notes}
                                                                         </p>
+                                                                    )}
+                                                                    {prog.variable && (
+                                                                        <div style={{
+                                                                            marginTop: '4px',
+                                                                            display: 'inline-flex',
+                                                                            alignItems: 'center',
+                                                                            gap: '4px',
+                                                                            padding: '2px 6px',
+                                                                            borderRadius: '4px',
+                                                                            backgroundColor: (prog.variable === 'sets' || prog.variable === 'reps')
+                                                                                ? `${EXPORT_COLORS.accentGreen}20`
+                                                                                : `${EXPORT_COLORS.accent}20`,
+                                                                            border: `1px solid ${(prog.variable === 'sets' || prog.variable === 'reps')
+                                                                                ? `${EXPORT_COLORS.accentGreen}40`
+                                                                                : `${EXPORT_COLORS.accent}40`
+                                                                                }`
+                                                                        }}>
+                                                                            <span style={{
+                                                                                fontSize: '9px',
+                                                                                fontWeight: 'bold',
+                                                                                color: (prog.variable === 'sets' || prog.variable === 'reps')
+                                                                                    ? EXPORT_COLORS.accentGreen
+                                                                                    : EXPORT_COLORS.accent,
+                                                                                textTransform: 'uppercase',
+                                                                                letterSpacing: '0.05em',
+                                                                            }}>
+                                                                                {(prog.variable === 'sets' || prog.variable === 'reps') ? 'VOLUMEN' : 'FUERZA'}
+                                                                            </span>
+                                                                        </div>
                                                                     )}
                                                                 </div>
                                                                 {prog.progression.map((value, weekIdx) => (
@@ -567,6 +603,8 @@ export function ExportPreview({
                                                 textTransform: 'uppercase',
                                                 letterSpacing: '0.05em',
                                                 margin: 0,
+                                                lineHeight: 1,
+                                                marginTop: '2px', // Optical alignment with icon
                                             }}>
                                                 Detalle Semanal
                                             </h2>
@@ -599,6 +637,8 @@ export function ExportPreview({
                                                             padding: '4px 8px',
                                                             borderRadius: '4px',
                                                             border: `1px solid ${EXPORT_COLORS.border}50`,
+                                                            lineHeight: 1,
+                                                            display: 'block',
                                                         }}>
                                                             {week.focus}
                                                         </span>
@@ -634,6 +674,7 @@ export function ExportPreview({
                                                                     textTransform: 'uppercase',
                                                                     letterSpacing: '0.05em',
                                                                     margin: 0,
+                                                                    lineHeight: 1,
                                                                 }}>
                                                                     {day.name}
                                                                 </h4>

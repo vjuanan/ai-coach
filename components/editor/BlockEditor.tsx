@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useEditorStore } from '@/lib/store';
+import { useExerciseCache } from '@/hooks/useExerciseCache';
 import { SmartExerciseInput } from './SmartExerciseInput';
 import { EmomEditor } from './methodologies/EmomEditor';
 import { CircuitEditor } from './methodologies/AmrapEditor';
@@ -483,7 +484,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 {!currentMethodology && (
                     <>
                         {block.type === 'strength_linear' && (
-                            <StrengthForm config={config} onChange={handleConfigChange} />
+                            <StrengthForm config={config} onChange={handleConfigChange} blockName={block.name} />
                         )}
 
                         {block.type === 'free_text' && (
@@ -791,10 +792,16 @@ function MovementsListField({ label, value, onChange, help }: MovementsListProps
 interface FormProps {
     config: Record<string, unknown>;
     onChange: (key: string, value: unknown) => void;
+    blockName?: string | null;
 }
 
-function StrengthForm({ config, onChange }: FormProps) {
+function StrengthForm({ config, onChange, blockName }: FormProps) {
     const showTempo = config.show_tempo === true || (!!config.tempo && config.tempo !== '');
+
+    // Check if current exercise needs distance
+    const { searchLocal } = useExerciseCache();
+    const exercise = blockName ? searchLocal(blockName).find(e => e.name === blockName) : null;
+    const showDistance = exercise?.tracking_parameters?.distance === true;
 
     const toggleTempo = () => {
         const newValue = !showTempo;
@@ -819,6 +826,20 @@ function StrengthForm({ config, onChange }: FormProps) {
                         className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-12 text-center"
                     />
                 </div>
+
+                {/* Distance Option (Replaces Reps or Adds to it) */}
+                {showDistance && (
+                    <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in duration-200">
+                        <span className="text-sm font-semibold text-cv-text-primary">Distancia</span>
+                        <input
+                            type="text"
+                            value={(config.distance as string) || ''}
+                            onChange={(e) => onChange('distance', e.target.value)}
+                            placeholder="400m"
+                            className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-20 text-center"
+                        />
+                    </div>
+                )}
 
                 {/* Reps */}
                 <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">

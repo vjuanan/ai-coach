@@ -12,13 +12,12 @@ The goal is to fix the Foreign Key violation error when assigning a template to 
 
 #### [MODIFY] [actions.ts](file:///Users/juanan/Library/CloudStorage/OneDrive-EPNStore/Team%20Ventas%20y%20Administracion%20%F0%9F%A4%91/AI%20Deveolpments/AI%20Coach/lib/actions.ts)
 - [x] Modified `copyTemplateToProgram` function.
-    - Check if `assignedClientId` exists in `clients`.
-    - If not, check `profiles` table.
-    - If found in `profiles`, auto-create a `client` record with the same ID, effectively "onboarding" the user as a client.
-    - Use this ID for the new program's `client_id` to satisfy FK constraint.
+    - Removed auto-creation logic.
+    - Strictly expects a valid `client_id` from the `clients` table.
 - [x] Modified `getClients` function.
-    - Only Admins can see self-registered profiles in the list.
-    - Coaches only see their assigned clients from the `clients` table.
+    - **Removed** logic that fetched profiles for admins.
+    - Now strictly returns records from the `clients` table for ALL users (Admins and Coaches).
+    - Admins see all clients; Coaches see only their assigned clients.
 
 ## Verification Plan
 

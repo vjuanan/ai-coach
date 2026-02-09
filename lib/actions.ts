@@ -213,58 +213,6 @@ export async function copyTemplateToProgram(templateId: string, assignedClientId
         // We verified the user via ensureCoach, so we can safely write as admin.
         const writeClient = adminSupabase;
 
-        // HANDLE PROFILE-TO-CLIENT CONVERSION
-        // If assignedClientId is provided, check if it's already a client. 
-        // If not, and it's a valid profile, create the client record first.
-        let finalClientId = assignedClientId || null;
-
-        if (assignedClientId) {
-            // Check if exists in clients
-            const { data: existingClient } = await writeClient
-                .from('clients')
-                .select('id')
-                .eq('id', assignedClientId)
-                .single();
-
-            if (!existingClient) {
-                console.log(`Client ${assignedClientId} not found in clients table. Checking profiles...`);
-                // Check if exists in profiles
-                const { data: profile } = await writeClient
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', assignedClientId)
-                    .single();
-
-                if (profile) {
-                    console.log(`Found profile ${profile.id}. Auto-creating client record...`);
-                    // Create client record
-                    const isGym = profile.role === 'gym';
-                    const { data: newClient, error: clientCreateError } = await writeClient
-                        .from('clients')
-                        .insert({
-                            id: profile.id, // Keep same ID as profile for consistency 1-to-1
-                            coach_id: coachId,
-                            type: isGym ? 'gym' : 'athlete',
-                            name: isGym ? (profile.gym_name || profile.full_name || 'Gimnasio') : (profile.full_name || 'Atleta'),
-                            email: profile.email,
-                            details: { source: 'auto-created-from-profile' }
-                        })
-                        .select()
-                        .single();
-
-                    if (clientCreateError) {
-                        // If error is duplicate key, it might have been created concurrently, or some other issue.
-                        // But if it's duplicate key, we should be fine to use the ID.
-                        console.warn('Error creating client from profile (might exist):', clientCreateError);
-                    } else {
-                        console.log('Successfully created client from profile:', newClient.id);
-                    }
-                    // Even if error (e.g. race condition), we try to use the ID. 
-                    // If it failed because of something else, the program insert will fail next and be caught.
-                }
-            }
-        }
-
         const { data: newProgram, error: newProgError } = await writeClient
             .from('programs')
             .insert({
@@ -274,7 +222,7 @@ export async function copyTemplateToProgram(templateId: string, assignedClientId
                 status: 'draft',
                 // Explicitly not a template
                 is_template: false,
-                client_id: finalClientId
+                client_id: assignedClientId || null // Assign if provided
             })
             .select()
             .single();
@@ -672,92 +620,6 @@ export async function getClients(type: 'athlete' | 'gym') {
 
             if (clientsError) {
                 console.error('getClients [Admin Bypass] Error:', clientsError);
-            }
-
-            // ONLY admins can see self-registered profiles
-            // Coaches should only see clients they have explicitly added
-            if (!isAdmin) {
-                // Non-admin: return only clients from clients table
-                return clientsData || [];
-            }
-
-            // Admin: Also fetch self-registered users from profiles table
-            if (type === 'athlete') {
-                const { data: profilesData, error: profilesError } = await adminSupabase
-                    .from('profiles')
-                    .select('id, email, full_name, role, created_at')
-                    .eq('role', 'athlete')
-                    .order('full_name');
-
-                if (profilesError) {
-                    console.error('getClients [Profiles] Error:', profilesError);
-                }
-
-                // Merge both sources - convert profiles to client-like format
-                const profilesAsClients = (profilesData || []).map(p => ({
-                    id: p.id,
-                    name: p.full_name || p.email || 'Atleta Sin Nombre',
-                    email: p.email,
-                    phone: null,
-                    details: { source: 'self-registered' },
-                    created_at: p.created_at,
-                    type: 'athlete' as const,
-                    coach_id: null, // Not assigned to any coach yet
-                    _isFromProfiles: true // Internal flag
-                }));
-
-                // Combine and deduplicate by email
-                const clientsList = clientsData || [];
-                const clientEmails = new Set(clientsList.map(c => c.email?.toLowerCase()).filter(Boolean));
-
-                // Only add profiles that aren't already in clients (by email)
-                const uniqueProfiles = profilesAsClients.filter(
-                    p => !p.email || !clientEmails.has(p.email.toLowerCase())
-                );
-
-                return [...clientsList, ...uniqueProfiles];
-            }
-
-            // For gyms, also fetch self-registered gyms from profiles table
-            if (type === 'gym') {
-                const { data: profilesData, error: profilesError } = await adminSupabase
-                    .from('profiles')
-                    .select('id, email, full_name, role, created_at, gym_name, gym_location, gym_type, member_count, equipment_available')
-                    .eq('role', 'gym')
-                    .order('full_name');
-
-                if (profilesError) {
-                    console.error('getClients [Gym Profiles] Error:', profilesError);
-                }
-
-                // Merge both sources - convert profiles to client-like format
-                const profilesAsGyms = (profilesData || []).map(p => ({
-                    id: p.id,
-                    name: p.gym_name || p.full_name || p.email || 'Gimnasio Sin Nombre',
-                    email: p.email,
-                    phone: null,
-                    details: {
-                        source: 'self-registered',
-                        gym_type: p.gym_type,
-                        location: p.gym_location,
-                        member_count: p.member_count,
-                        equipment: p.equipment_available
-                    },
-                    created_at: p.created_at,
-                    type: 'gym' as const,
-                    coach_id: null,
-                    _isFromProfiles: true
-                }));
-
-                // Combine and deduplicate by email
-                const clientsList = clientsData || [];
-                const clientEmails = new Set(clientsList.map(c => c.email?.toLowerCase()).filter(Boolean));
-
-                const uniqueProfiles = profilesAsGyms.filter(
-                    p => !p.email || !clientEmails.has(p.email.toLowerCase())
-                );
-
-                return [...clientsList, ...uniqueProfiles];
             }
 
             return clientsData || [];
@@ -1737,7 +1599,7 @@ export async function getAllExercisesLight() {
 
     const { data, error } = await supabase
         .from('exercises')
-        .select('id, name, category, subcategory')
+        .select('id, name, category, subcategory, equipment, tracking_parameters')
         .order('name', { ascending: true });
 
     if (error) {

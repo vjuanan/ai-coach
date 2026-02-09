@@ -143,7 +143,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         const firstMeso = mesocycles.find(m => m.week_number === 1);
         const firstAttrs = (firstMeso?.attributes || {}) as Record<string, unknown>;
 
-        const progressionMap = new Map<string, string[]>();
+        const progressionMap = new Map<string, { values: string[], variable?: string }>();
         mesocycles
             .sort((a, b) => a.week_number - b.week_number)
             .forEach(meso => {
@@ -157,11 +157,19 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                             const config = block.config as Record<string, unknown>;
                             let value = '';
 
+                            // Determine value based on progression_variable if available
+                            const progressionVar = config.progression_variable as string;
+
                             if (block.type === 'strength_linear') {
                                 const percentage = config.percentage as string || '';
                                 const sets = config.sets as number || 0;
                                 const reps = config.reps as number || 0;
-                                value = percentage || `${sets}x${reps}`;
+                                const weight = config.weight as string || '';
+
+                                if (progressionVar === 'percentage') value = percentage || '-';
+                                else if (progressionVar === 'sets') value = sets ? `${sets} series` : '-';
+                                else if (progressionVar === 'reps') value = reps ? `${reps} reps` : '-';
+                                else value = percentage || `${sets}x${reps}`; // Default fallback
                             } else if (block.type === 'metcon_structured') {
                                 // For metcons, maybe show time cap, rounds, or just "Check"
                                 value = (config.time_cap as string) || (config.rounds as string) || 'Active';
@@ -170,22 +178,27 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                             }
 
                             if (!progressionMap.has(block.name)) {
-                                progressionMap.set(block.name, []);
+                                progressionMap.set(block.name, { values: [], variable: progressionVar });
                             }
-                            const arr = progressionMap.get(block.name)!;
+
+                            const entry = progressionMap.get(block.name)!;
+                            // Update variable if not set (or if changed, though usually consistent per ID)
+                            if (!entry.variable && progressionVar) entry.variable = progressionVar;
+
                             // Fill gaps with dashes if missed weeks
-                            while (arr.length < meso.week_number - 1) {
-                                arr.push('-');
+                            while (entry.values.length < meso.week_number - 1) {
+                                entry.values.push('-');
                             }
-                            arr.push(value);
+                            entry.values.push(value);
                         }
                     });
                 });
             });
 
-        const progressions = Array.from(progressionMap.entries()).map(([name, progression]) => ({
+        const progressions = Array.from(progressionMap.entries()).map(([name, data]) => ({
             name,
-            progression,
+            progression: data.values,
+            variable: data.variable
         }));
 
         const objectives: string[] = [];
@@ -427,16 +440,19 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 // Helper to format block config for preview
 function convertConfigToText(type: string, config: any): string[] {
     if (type === 'strength_linear') {
-        const parts = [
-            `${config.sets}x${config.reps}`,
-            config.percentage ? `@ ${config.percentage}` : '',
-            config.rpe ? `@ RPE ${config.rpe}` : ''
-        ].filter(Boolean).join(' ');
+        // If distance is present, use it instead of reps or alongside
+        const mainMetric = config.distance ? config.distance : config.reps;
 
-        return [
-            parts,
-            config.notes // Notes on new line (will be gray)
-        ].filter(Boolean);
+        const parts = [
+            config.sets && mainMetric ? `${config.sets} x ${mainMetric}` : '',
+            config.percentage ? `@ ${config.percentage}%` : '', // Added % symbol for clarity
+            config.rpe ? `@ RPE ${config.rpe}` : ''
+        ].filter(Boolean).join('  '); // Double space for better separation
+
+        const lines = [parts];
+        if (config.notes) lines.push(config.notes);
+
+        return lines.filter(Boolean);
     }
     if (type === 'metcon_structured') {
         const lines = [];
