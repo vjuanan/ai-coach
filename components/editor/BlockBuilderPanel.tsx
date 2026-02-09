@@ -1,4 +1,7 @@
 'use client';
+// Force rebuild: 2026-02-09T19:10:00
+console.log("BLOCK BUILDER PANEL LOADING - CHECK VERSION");
+
 
 import { useEditorStore } from '@/lib/store';
 import { BlockEditor } from './BlockEditor';

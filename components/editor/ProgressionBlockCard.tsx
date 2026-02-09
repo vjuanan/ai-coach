@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useEditorStore } from '@/lib/store';
-import { ChevronDown, ChevronUp, Calendar, ArrowRight } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calendar, ArrowRight, Layers, Repeat, Percent, Clock, Timer } from 'lucide-react';
 import type { WorkoutConfig } from '@/lib/supabase/types';
 
 interface ProgressionBlockCardProps {
@@ -42,10 +42,8 @@ export function ProgressionBlockCard({
         selectWeek(weekNumber);
     };
 
-    // Determine if this is a strength/classic block based on type
     const isStrength = type === 'strength_linear';
 
-    // Type-safe accessors for config values
     const sets = 'sets' in config ? config.sets : undefined;
     const reps = 'reps' in config ? config.reps : undefined;
     const percentage = 'percentage' in config ? config.percentage : undefined;
@@ -57,154 +55,174 @@ export function ProgressionBlockCard({
     return (
         <div
             className={`
-                rounded-lg border transition-all duration-200
+                rounded-xl border transition-all duration-200 overflow-hidden
                 ${isCurrent
-                    ? 'bg-cv-accent/5 border-cv-accent/30 ring-1 ring-cv-accent/20'
+                    ? 'bg-white dark:bg-cv-bg-secondary border-cv-accent shadow-sm ring-1 ring-cv-accent/20'
                     : isCurrentWeek
-                        ? 'bg-slate-50 dark:bg-cv-bg-tertiary/50 border-slate-200 dark:border-slate-700'
-                        : 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                        ? 'bg-slate-50/50 dark:bg-cv-bg-tertiary/30 border-slate-200 dark:border-slate-700'
+                        : 'bg-white dark:bg-cv-bg-secondary border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                 }
             `}
         >
-            {/* Header - Always visible */}
+            {/* Header */}
             <div
-                className="flex items-center justify-between px-3 py-2 cursor-pointer"
+                className="flex items-center justify-between px-3 py-2.5 cursor-pointer bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                 onClick={() => setIsExpanded(!isExpanded)}
             >
-                <div className="flex items-center gap-2">
-                    {/* Week Badge */}
+                <div className="flex items-center gap-3">
                     <span className={`
-                        text-xs font-bold px-2 py-0.5 rounded
+                        text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider
                         ${isCurrent
                             ? 'bg-cv-accent text-white'
-                            : 'bg-slate-200 dark:bg-slate-700 text-cv-text-secondary'
+                            : 'bg-slate-100 dark:bg-slate-800 text-cv-text-tertiary'
                         }
                     `}>
-                        S{weekNumber}
+                        Week {weekNumber}
                     </span>
 
-                    {/* Day Name */}
-                    <div className="flex items-center gap-1 text-cv-text-secondary">
-                        <Calendar size={12} />
-                        <span className="text-xs">{dayName}</span>
+                    <div className="flex items-center gap-1.5 text-cv-text-secondary">
+                        <span className="text-xs font-medium">{dayName}</span>
                     </div>
-
-                    {/* Current indicator */}
-                    {isCurrent && (
-                        <span className="text-xs text-cv-accent font-medium">(actual)</span>
-                    )}
                 </div>
 
-                <div className="flex items-center gap-2">
-                    {/* Go to week button */}
+                <div className="flex items-center gap-1">
                     {!isCurrent && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleGoToWeek();
                             }}
-                            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-cv-text-tertiary hover:text-cv-accent transition-colors"
-                            title={`Ir a Semana ${weekNumber}`}
+                            className="p-1.5 rounded-md text-cv-text-tertiary hover:text-cv-accent hover:bg-cv-accent/5 transition-all"
                         >
                             <ArrowRight size={14} />
                         </button>
                     )}
-
-                    {/* Expand/Collapse */}
-                    <div className="text-cv-text-tertiary">
-                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    <div className={`text-cv-text-tertiary transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+                        <ChevronDown size={14} />
                     </div>
                 </div>
             </div>
 
-            {/* Expanded Content - Editable Fields */}
+            {/* Expanded Content */}
             {isExpanded && (
-                <div className="px-3 pb-3 pt-1 border-t border-slate-100 dark:border-slate-700/50 animate-in fade-in slide-in-from-top-1 duration-200">
+                <div className="px-3 pb-3 pt-0 animate-in slide-in-from-top-1 duration-200">
+                    <div className="h-px w-full bg-slate-100 dark:bg-slate-800 mb-3" />
+
                     {isStrength ? (
-                        /* Strength Block Fields */
-                        <div className="flex flex-wrap gap-2">
-                            {/* Sets */}
-                            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-cv-bg-tertiary px-2 py-1.5 rounded border border-slate-200 dark:border-slate-700">
-                                <span className="text-xs font-medium text-cv-text-secondary">Series</span>
-                                <input
-                                    type="number"
-                                    min={1}
-                                    value={sets !== undefined ? String(sets) : ''}
-                                    onChange={(e) => handleConfigChange('sets', parseInt(e.target.value) || null)}
-                                    className="bg-transparent border-none p-0 text-sm focus:ring-0 text-cv-text-primary font-bold w-8 text-center"
-                                    placeholder="3"
-                                />
-                            </div>
+                        <div className="grid grid-cols-4 gap-2">
+                            <MiniInput
+                                label="SERIES"
+                                value={sets}
+                                onChange={(v) => handleConfigChange('sets', parseInt(v) || null)}
+                                type="number"
+                                placeholder="3"
+                                icon={Layers}
+                            />
+                            <MiniInput
+                                label="REPS"
+                                value={reps}
+                                onChange={(v) => handleConfigChange('reps', v)}
+                                type="text"
+                                placeholder="5"
+                                icon={Repeat}
+                            />
+                            <MiniInput
+                                label="INTENSIDAD"
+                                value={percentage}
+                                onChange={(v) => handleConfigChange('percentage', v)}
+                                type="number"
+                                placeholder="75"
+                                suffix="%"
+                                icon={Percent}
+                            />
+                            <MiniInput
+                                label="REST"
+                                value={rest}
+                                onChange={(v) => handleConfigChange('rest', v)}
+                                type="text"
+                                placeholder="2m"
+                                icon={Clock}
+                            />
 
-                            {/* Reps */}
-                            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-cv-bg-tertiary px-2 py-1.5 rounded border border-slate-200 dark:border-slate-700">
-                                <span className="text-xs font-medium text-cv-text-secondary">Reps</span>
-                                <input
-                                    type="text"
-                                    value={reps !== undefined ? String(reps) : ''}
-                                    onChange={(e) => handleConfigChange('reps', e.target.value)}
-                                    className="bg-transparent border-none p-0 text-sm focus:ring-0 text-cv-text-primary font-bold w-10 text-center"
-                                    placeholder="5"
-                                />
-                            </div>
-
-                            {/* Percentage */}
-                            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-cv-bg-tertiary px-2 py-1.5 rounded border border-slate-200 dark:border-slate-700">
-                                <span className="text-xs font-medium text-cv-text-secondary">%</span>
-                                <input
-                                    type="number"
-                                    value={percentage !== undefined ? String(percentage) : ''}
-                                    onChange={(e) => handleConfigChange('percentage', e.target.value)}
-                                    className="bg-transparent border-none p-0 text-sm focus:ring-0 text-cv-text-primary font-medium w-10 text-center"
-                                    placeholder="75"
-                                />
-                            </div>
-
-                            {/* Rest */}
-                            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-cv-bg-tertiary px-2 py-1.5 rounded border border-slate-200 dark:border-slate-700">
-                                <span className="text-xs font-medium text-cv-text-secondary">Desc</span>
-                                <input
-                                    type="text"
-                                    value={rest !== undefined ? String(rest) : ''}
-                                    onChange={(e) => handleConfigChange('rest', e.target.value)}
-                                    className="bg-transparent border-none p-0 text-sm focus:ring-0 text-cv-text-primary font-medium w-8 text-center"
-                                    placeholder="2m"
-                                />
-                            </div>
-
-                            {/* Tempo (if visible) */}
                             {(showTempo || tempo) && (
-                                <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-cv-bg-tertiary px-2 py-1.5 rounded border border-slate-200 dark:border-slate-700">
-                                    <span className="text-xs font-medium text-cv-text-secondary">Tempo</span>
-                                    <input
+                                <div className="col-span-4 mt-1">
+                                    <MiniInput
+                                        label="TEMPO"
+                                        value={tempo}
+                                        onChange={(v) => handleConfigChange('tempo', v)}
                                         type="text"
-                                        value={tempo !== undefined ? String(tempo) : ''}
-                                        onChange={(e) => handleConfigChange('tempo', e.target.value)}
-                                        className="bg-transparent border-none p-0 text-sm focus:ring-0 text-cv-text-primary font-medium w-12 text-center"
                                         placeholder="30X1"
+                                        icon={Timer}
+                                        fullWidth
                                     />
                                 </div>
                             )}
                         </div>
                     ) : (
-                        /* Non-strength block - show notes only */
-                        <div className="text-xs text-cv-text-tertiary italic">
+                        <div className="text-xs text-cv-text-tertiary italic p-1">
                             {name || 'Sin nombre'}
                         </div>
                     )}
 
-                    {/* Notes - Always available for all block types */}
-                    <div className="mt-2">
+                    {/* Notes */}
+                    <div className="mt-2.5">
                         <input
                             type="text"
                             value={notes !== undefined ? String(notes) : ''}
                             onChange={(e) => handleConfigChange('notes', e.target.value)}
-                            className="w-full bg-slate-50 dark:bg-cv-bg-tertiary text-xs text-cv-text-secondary px-2 py-1.5 rounded border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-cv-accent/30 focus:border-cv-accent/30"
-                            placeholder="Notas para esta semana..."
+                            className="w-full bg-transparent text-xs text-cv-text-secondary placeholder:text-cv-text-tertiary/50 border-b border-transparent hover:border-slate-200 focus:border-cv-accent focus:ring-0 px-0 py-1 transition-colors"
+                            placeholder="Añadir notas..."
                         />
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+// Mini Input Component equivalent to the new design
+function MiniInput({
+    label,
+    value,
+    onChange,
+    type,
+    placeholder,
+    suffix,
+    icon: Icon,
+    fullWidth
+}: {
+    label: string,
+    value: any,
+    onChange: (v: string) => void,
+    type: string,
+    placeholder: string,
+    suffix?: string,
+    icon?: any,
+    fullWidth?: boolean
+}) {
+    return (
+        <div className={`
+            bg-slate-50 dark:bg-slate-900/50 rounded-lg p-1.5 border border-slate-100 dark:border-slate-800
+            hover:border-slate-300 dark:hover:border-slate-700 transition-colors group
+            ${fullWidth ? 'flex items-center gap-3' : 'flex flex-col gap-0.5'}
+        `}>
+            <div className="flex items-center gap-1 text-[9px] font-bold text-cv-text-tertiary uppercase tracking-wider">
+                {Icon && <Icon size={10} className="stroke-[2.5px] opacity-70" />}
+                <span>{label}</span>
+            </div>
+            <div className="flex items-baseline justify-center">
+                <input
+                    type={type}
+                    value={value !== undefined ? String(value) : ''}
+                    onChange={(e) => onChange(e.target.value)}
+                    className={`
+                        bg-transparent border-none p-0 text-cv-text-primary font-bold focus:ring-0 text-center
+                        ${fullWidth ? 'text-sm text-left w-full pl-1' : 'text-sm w-full'}
+                    `}
+                    placeholder={placeholder}
+                />
+                {suffix && <span className="text-[10px] text-cv-text-tertiary ml-0.5 font-medium">{suffix}</span>}
+            </div>
         </div>
     );
 }

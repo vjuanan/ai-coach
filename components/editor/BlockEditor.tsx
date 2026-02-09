@@ -463,12 +463,19 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 </div>
 
                 {/* 5.5. PROGRESSION PREVIEW - Show all weeks when progression is active */}
-                {block.progression_id && (
-                    <ProgressionPreview
-                        currentBlockId={blockId}
-                        progressionId={block.progression_id}
-                    />
-                )}
+                {(() => {
+                    console.log('[DEBUG_PROG] BlockEditor Render Preview?', {
+                        id: block.id,
+                        progId: block.progression_id,
+                        hasProgId: Boolean(block.progression_id)
+                    });
+                    return block.progression_id;
+                })() && (
+                        <ProgressionPreview
+                            currentBlockId={blockId}
+                            progressionId={block.progression_id as string}
+                        />
+                    )}
 
                 {/* 6. DELETE BUTTON */}
                 {/* 6. BOTTOM ACTIONS (DELETE + LISTO) */}

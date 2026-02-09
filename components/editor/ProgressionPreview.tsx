@@ -35,6 +35,8 @@ const DAY_NAMES: Record<number, string> = {
 export function ProgressionPreview({ currentBlockId, progressionId }: ProgressionPreviewProps) {
     const { mesocycles, selectedWeek, updateBlock } = useEditorStore();
 
+    console.log('[DEBUG_PROG] ProgressionPreview MOUNTED/RENDER', { currentBlockId, progressionId });
+
     // Find all blocks with this progression_id across all weeks
     const progressionBlocks: ProgressionBlock[] = [];
 
@@ -71,6 +73,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
     }
 
     const totalWeeks = progressionBlocks.length;
+    console.log('[DEBUG_PROG] Found blocks:', totalWeeks, progressionBlocks);
 
     const handleBlockUpdate = (blockId: string, updates: { config: WorkoutConfig }) => {
         updateBlock(blockId, updates);
