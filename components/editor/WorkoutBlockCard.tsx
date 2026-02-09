@@ -189,9 +189,11 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
             <div
                 ref={setNodeRef}
                 style={style}
+                {...listeners}
+                {...attributes}
                 className={`
-                    group/block relative bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer
-                    transition-all duration-200
+                    group/block relative bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm cursor-grab active:cursor-grabbing touch-none
+                    transition-all duration-150
                     ${blockStyle.color}
                     ${!isBeingDragged && !isSelected ? blockStyle.hoverClass : ''}
                     ${isSelected ? 'ring-2 ring-cv-accent' : ''}
@@ -199,7 +201,7 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                 `}
                 onClick={(e) => {
                     e.stopPropagation();
-                    // Prevent click if we just finished dragging (just in case, though handled by grip now)
+                    // Prevent click if we just finished dragging
                     if (wasDraggingRef.current) {
                         wasDraggingRef.current = false;
                         return;
@@ -210,11 +212,9 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
             >
                 {/* Card Inner Content */}
                 <div className="p-2">
-                    {/* Drag Handle - Click and drag from here */}
+                    {/* Drag Handle - Visual indicator */}
                     <div
-                        {...listeners}
-                        {...attributes}
-                        className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-40 group-hover/block:opacity-100 transition-opacity cursor-grab active:cursor-grabbing touch-none hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-l-lg"
+                        className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-40 group-hover/block:opacity-100 transition-opacity rounded-l-lg"
                     >
                         <GripVertical size={12} className="text-cv-text-tertiary" />
                     </div>
