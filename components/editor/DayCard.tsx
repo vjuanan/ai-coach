@@ -177,7 +177,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                 ${isDragging && !isDropTarget ? 'opacity-80' : ''}
                 transition-all duration-200 cursor-pointer hover:shadow-md
             `}
-            onClick={() => !isActiveInBuilder && selectDay(day.id)}
+            onClick={() => !isActiveInBuilder && enterBlockBuilder(day.id)}
             style={activeStimulus ? { borderColor: activeStimulus.color + '40' } : {}}
         >
             {/* Stimulus Blur Effect */}
