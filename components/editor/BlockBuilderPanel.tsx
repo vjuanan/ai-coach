@@ -221,7 +221,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                     {/* Added Blocks List - Horizontal Horizontal Scrolling */}
                     {currentDay && currentDay.blocks.length > 0 && (
                         <div className="flex-shrink-0 px-3 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
-                            <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar">
+                            <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-2 pl-1 no-scrollbar" style={{ isolation: 'isolate' }}>
                                 {[...currentDay.blocks]
                                     .sort((a, b) => a.order_index - b.order_index)
                                     .map((block, index) => {
@@ -236,8 +236,8 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                 className={`
                                                     group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left min-w-[150px] cursor-pointer
                                                     ${isActive
-                                                        ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-md ring-2 ring-cv-accent/30 z-10 scale-[1.02]'
-                                                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-lg hover:border-cv-accent hover:-translate-y-0.5 hover:scale-[1.02] hover:z-20'
+                                                        ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-lg ring-2 ring-cv-accent/40 z-20'
+                                                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-lg hover:border-cv-accent hover:z-30'
                                                     }
                                                 `}
                                                 style={!isActive ? { '--hover-shadow': blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)' } as React.CSSProperties : undefined}
