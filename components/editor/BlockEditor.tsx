@@ -147,6 +147,12 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         });
     };
 
+    const handleBatchConfigChange = (updates: Record<string, unknown>) => {
+        updateBlock(blockId, {
+            config: { ...config, ...updates } as WorkoutConfig,
+        });
+    };
+
     const handleFormatChange = (format: string) => {
         // Find methodology and apply its default values
         const methodology = trainingMethodologies.find(m => m.code === format);
@@ -431,6 +437,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 methodology={currentMethodology}
                                 config={config}
                                 onChange={handleConfigChange}
+                                onBatchChange={handleBatchConfigChange}
                             />
                         )}
                     </div>
@@ -440,7 +447,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 {!currentMethodology && (
                     <>
                         {block.type === 'strength_linear' && (
-                            <StrengthForm config={config} onChange={handleConfigChange} blockName={block.name} />
+                            <StrengthForm config={config} onChange={handleConfigChange} onBatchChange={handleBatchConfigChange} blockName={block.name} />
                         )}
 
                         {block.type === 'free_text' && (
@@ -453,33 +460,28 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     </>
                 )}
 
-                {/* 5. NOTES (Always visible) */}
-                <div>
-                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                        Notas
-                    </label>
-                    <textarea
-                        value={(config.notes as string) || ''}
-                        onChange={(e) => handleConfigChange('notes', e.target.value)}
-                        placeholder="Focus on quality, tempo, etc."
-                        className="cv-input min-h-[60px] resize-none"
-                    />
-                </div>
+                {/* 5. NOTES (Visible for all except Strength, which has it inline) */}
+                {block.type !== 'strength_linear' && (
+                    <div>
+                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">
+                            Notas
+                        </label>
+                        <textarea
+                            value={(config.notes as string) || ''}
+                            onChange={(e) => handleConfigChange('notes', e.target.value)}
+                            placeholder="Focus on quality, tempo, etc."
+                            className="cv-input min-h-[60px] resize-none"
+                        />
+                    </div>
+                )}
 
                 {/* 5.5. PROGRESSION PREVIEW - Show all weeks when progression is active */}
-                {(() => {
-                    console.log('[DEBUG_PROG] BlockEditor Render Preview?', {
-                        id: block.id,
-                        progId: block.progression_id,
-                        hasProgId: Boolean(block.progression_id)
-                    });
-                    return block.progression_id;
-                })() && (
-                        <ProgressionPreview
-                            currentBlockId={blockId}
-                            progressionId={block.progression_id as string}
-                        />
-                    )}
+                {block.progression_id && (
+                    <ProgressionPreview
+                        currentBlockId={blockId}
+                        progressionId={block.progression_id}
+                    />
+                )}
 
                 {/* 6. DELETE BUTTON */}
                 {/* 6. BOTTOM ACTIONS (DELETE + LISTO) */}
@@ -523,9 +525,10 @@ interface DynamicFormProps {
     methodology: TrainingMethodology;
     config: Record<string, unknown>;
     onChange: (key: string, value: unknown) => void;
+    onBatchChange?: (updates: Record<string, unknown>) => void;
 }
 
-function DynamicMethodologyForm({ methodology, config, onChange }: DynamicFormProps) {
+function DynamicMethodologyForm({ methodology, config, onChange, onBatchChange }: DynamicFormProps) {
     const fields = methodology.form_config?.fields || [];
 
     // Group fields: Keep movements_list separate, group others
@@ -545,6 +548,7 @@ function DynamicMethodologyForm({ methodology, config, onChange }: DynamicFormPr
                                 onChange={(value) => onChange(field.key, value)}
                                 allConfig={config}
                                 onConfigChange={onChange}
+                                onBatchConfigChange={onBatchChange}
                             />
                         </div>
                     ))}
@@ -571,9 +575,10 @@ interface DynamicFieldProps {
     // Optional props for advanced fields like Tempo that need context
     allConfig?: Record<string, unknown>;
     onConfigChange?: (key: string, value: unknown) => void;
+    onBatchConfigChange?: (updates: Record<string, unknown>) => void;
 }
 
-function DynamicField({ field, value, onChange, allConfig, onConfigChange }: DynamicFieldProps) {
+function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBatchConfigChange }: DynamicFieldProps) {
     if (field.type === 'movements_list') {
         return (
             <MovementsListField
@@ -612,11 +617,17 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange }: Dyn
         const showTempo = allConfig?.show_tempo === true || (!!value && value !== '');
 
         const toggleTempo = () => {
-            if (onConfigChange) {
-                const newValue = !showTempo;
+            const newValue = !showTempo;
+            if (!newValue && onBatchConfigChange) {
+                // Batch update: turn off show_tempo AND clear tempo value
+                onBatchConfigChange({
+                    'show_tempo': false,
+                    [field.key]: ''
+                });
+            } else if (onConfigChange) {
                 onConfigChange('show_tempo', newValue);
                 if (!newValue) {
-                    onChange(''); // Clear value
+                    onChange(''); // Fallback if no batch support (shouldn't happen with new code)
                 }
             }
         };
@@ -755,10 +766,11 @@ function MovementsListField({ label, value, onChange, help }: MovementsListProps
 interface FormProps {
     config: Record<string, unknown>;
     onChange: (key: string, value: unknown) => void;
+    onBatchChange?: (updates: Record<string, unknown>) => void;
     blockName?: string | null;
 }
 
-function StrengthForm({ config, onChange, blockName }: FormProps) {
+function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps) {
     const showTempo = config.show_tempo === true || (!!config.tempo && config.tempo !== '');
 
     // Check if current exercise needs distance
@@ -778,9 +790,16 @@ function StrengthForm({ config, onChange, blockName }: FormProps) {
 
     const toggleTempo = () => {
         const newValue = !showTempo;
-        onChange('show_tempo', newValue);
-        if (!newValue) {
-            onChange('tempo', ''); // Clear tempo if hidden
+        if (!newValue && onBatchChange) {
+            onBatchChange({
+                'show_tempo': false,
+                'tempo': ''
+            });
+        } else {
+            onChange('show_tempo', newValue);
+            if (!newValue) {
+                onChange('tempo', ''); // Clear tempo if hidden (fallback)
+            }
         }
     };
 
@@ -859,34 +878,51 @@ function StrengthForm({ config, onChange, blockName }: FormProps) {
 
             </div>
 
-            {/* SECONDARY ROW: TEMPO & WEIGHT (Optional) */}
-            <div className="flex flex-wrap gap-3">
-                {/* Tempo Toggle Button */}
-                <button
-                    onClick={toggleTempo}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all ${showTempo
-                        ? 'bg-cv-accent/10 border-cv-accent text-cv-accent'
-                        : 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700 text-cv-text-secondary hover:border-cv-accent/50'
-                        }`}
-                >
-                    <Timer size={16} />
-                    <span className="text-sm font-semibold">Tempo</span>
-                    {showTempo && <span className="text-xs ml-1 bg-white/50 px-1.5 py-0.5 rounded">ON</span>}
-                </button>
+            {/* SECONDARY ROW: TEMPO & NOTES */}
+            <div className="flex flex-wrap gap-2 items-stretch">
+                {/* Tempo Group */}
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={toggleTempo}
+                        className={`h-full flex items-center gap-2 px-3 pl-4 rounded-xl border transition-all ${showTempo
+                            ? 'bg-cv-accent/10 border-cv-accent text-cv-accent'
+                            : 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700 text-cv-text-secondary hover:border-cv-accent/50'
+                            }`}
+                        title="Activar configuración de Tempo"
+                    >
+                        <Timer size={16} />
+                        <span className="text-sm font-semibold">Tempo</span>
+                        {showTempo && <span className="text-[10px] ml-0.5 bg-white/60 dark:bg-black/20 px-1.5 py-0.5 rounded font-bold">ON</span>}
+                    </button>
 
-                {showTempo && (
-                    <div className="flex-1 max-w-[200px] bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-xl border border-cv-accent animate-in fade-in slide-in-from-left-2">
-                        <label className="text-xs uppercase tracking-wider font-bold text-cv-accent mb-1 block">Tempo</label>
-                        <input
-                            type="text"
-                            value={(config.tempo as string) || ''}
-                            onChange={(e) => onChange('tempo', e.target.value)}
-                            placeholder="30X1"
-                            className="w-full bg-transparent border-none p-0 text-lg font-bold text-cv-text-primary placeholder:text-slate-300 focus:ring-0"
-                            autoFocus
-                        />
+                    {showTempo && (
+                        <div className="w-[80px] h-full bg-white dark:bg-cv-bg-secondary px-1 py-1 rounded-xl border border-cv-accent flex flex-col justify-center animate-in fade-in slide-in-from-left-2">
+                            <span className="text-[9px] uppercase tracking-wider font-bold text-cv-accent text-center leading-none mb-0.5">Tempo</span>
+                            <input
+                                type="text"
+                                value={(config.tempo as string) || ''}
+                                onChange={(e) => onChange('tempo', e.target.value)}
+                                placeholder="30X1"
+                                className="w-full bg-transparent border-none p-0 text-sm font-bold text-cv-text-primary placeholder:text-slate-300 focus:ring-0 text-center leading-none"
+                                autoFocus
+                            />
+                        </div>
+                    )}
+                </div>
+
+                {/* Notes Input - Takes remaining space */}
+                <div className="flex-1 min-w-[140px] relative group">
+                    <div className="absolute top-2.5 left-3 text-slate-400 group-focus-within:text-cv-accent transition-colors">
+                        <FileText size={14} />
                     </div>
-                )}
+                    <textarea
+                        value={(config.notes as string) || ''}
+                        onChange={(e) => onChange('notes', e.target.value)}
+                        placeholder="Notas técnicas (opcional)..."
+                        className="w-full h-full min-h-[44px] pl-9 pr-3 py-2.5 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-xl text-xs leading-snug text-cv-text-primary placeholder:text-slate-400 focus:ring-0 focus:border-cv-accent transition-all resize-none overflow-hidden"
+                        style={{ fieldSizing: 'content' } as React.CSSProperties} // Modern CSS to auto-grow
+                    />
+                </div>
             </div>
 
         </div>

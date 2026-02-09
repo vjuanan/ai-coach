@@ -18,9 +18,6 @@ import {
     Target,
     Loader2,
     CheckCircle2,
-    Cloud,
-    CloudOff,
-    Edit3,
     ArrowLeft,
     Save,
     Zap
@@ -47,28 +44,7 @@ interface MesocycleEditorProps {
     onToggleFullScreen?: () => void;
 }
 
-// Save status indicator component
-function SaveStatusIndicator({ status }: { status: SaveStatus }) {
-    const configs = {
-        idle: { icon: Cloud, text: '', className: 'text-cv-text-tertiary' },
-        typing: { icon: Edit3, text: 'Editando...', className: 'text-amber-500' },
-        saving: { icon: Loader2, text: 'Guardando...', className: 'text-cv-accent animate-pulse' },
-        saved: { icon: CheckCircle2, text: 'Guardado', className: 'text-emerald-500' },
-        error: { icon: CloudOff, text: 'Error', className: 'text-red-500' },
-    };
 
-    const config = configs[status];
-    const Icon = config.icon;
-
-    if (status === 'idle') return null;
-
-    return (
-        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 ${config.className} transition-all`}>
-            <Icon size={14} className={status === 'saving' ? 'animate-spin' : ''} />
-            <span className="text-xs font-medium">{config.text}</span>
-        </div>
-    );
-}
 
 export function MesocycleEditor({ programId, programName, isFullScreen = false, onToggleFullScreen }: MesocycleEditorProps) {
     const {
@@ -433,8 +409,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                             )}
                         </div>
 
-                        {/* Save Status Indicator */}
-                        {!blockBuilderMode && <SaveStatusIndicator status={saveStatus} />}
+
                     </div>
 
                     {/* Center - Week Tabs */}

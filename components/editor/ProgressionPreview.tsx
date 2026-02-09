@@ -35,8 +35,6 @@ const DAY_NAMES: Record<number, string> = {
 export function ProgressionPreview({ currentBlockId, progressionId }: ProgressionPreviewProps) {
     const { mesocycles, selectedWeek, updateBlock } = useEditorStore();
 
-    console.log('[DEBUG_PROG] ProgressionPreview MOUNTED/RENDER', { currentBlockId, progressionId });
-
     // Find all blocks with this progression_id across all weeks
     const progressionBlocks: ProgressionBlock[] = [];
 
@@ -73,7 +71,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
     }
 
     const totalWeeks = progressionBlocks.length;
-    console.log('[DEBUG_PROG] Found blocks:', totalWeeks, progressionBlocks);
+    const isGrid = totalWeeks <= 4;
 
     const handleBlockUpdate = (blockId: string, updates: { config: WorkoutConfig }) => {
         updateBlock(blockId, updates);
@@ -102,10 +100,10 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
             </div>
 
             {/* Progression Cards */}
-            <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
+            <div className={isGrid ? "grid grid-cols-2 gap-3 w-full" : "space-y-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar"}>
                 {progressionBlocks.map((block) => (
                     <ProgressionBlockCard
-                        key={block.blockId}
+                        key={`${block.blockId}-${isGrid ? 'grid' : 'list'}`}
                         blockId={block.blockId}
                         weekNumber={block.weekNumber}
                         dayName={block.dayName || ''}
@@ -116,6 +114,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                         isCurrentWeek={block.isCurrentWeek}
                         isCurrent={block.blockId === currentBlockId}
                         onUpdate={handleBlockUpdate}
+                        isGrid={isGrid}
                     />
                 ))}
             </div>

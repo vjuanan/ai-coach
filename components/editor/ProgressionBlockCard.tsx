@@ -16,6 +16,7 @@ interface ProgressionBlockCardProps {
     isCurrentWeek: boolean;
     isCurrent: boolean;
     onUpdate: (blockId: string, updates: { config: WorkoutConfig }) => void;
+    isGrid?: boolean;
 }
 
 export function ProgressionBlockCard({
@@ -27,9 +28,10 @@ export function ProgressionBlockCard({
     type,
     isCurrentWeek,
     isCurrent,
-    onUpdate
+    onUpdate,
+    isGrid = false
 }: ProgressionBlockCardProps) {
-    const [isExpanded, setIsExpanded] = useState(isCurrent);
+    const [isExpanded, setIsExpanded] = useState(isCurrent || isGrid);
     const { selectWeek } = useEditorStore();
 
     const handleConfigChange = (key: string, value: unknown) => {
@@ -86,7 +88,7 @@ export function ProgressionBlockCard({
                 </div>
 
                 <div className="flex items-center gap-1">
-                    {!isCurrent && (
+                    {!isCurrent && !isGrid && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -97,6 +99,9 @@ export function ProgressionBlockCard({
                             <ArrowRight size={14} />
                         </button>
                     )}
+                    {/* Hide chevron if grid to save space, or keep it? existing behavior was hide chevron on header click? no it rotated.
+                        In Grid mode, user wants inputs. Let's keep toggle but default to open.
+                    */}
                     <div className={`text-cv-text-tertiary transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
                         <ChevronDown size={14} />
                     </div>
@@ -117,6 +122,7 @@ export function ProgressionBlockCard({
                                 type="number"
                                 placeholder="3"
                                 icon={Layers}
+                                isGrid={isGrid}
                             />
                             <MiniInput
                                 label="REPS"
@@ -125,23 +131,27 @@ export function ProgressionBlockCard({
                                 type="text"
                                 placeholder="5"
                                 icon={Repeat}
+                                isGrid={isGrid}
                             />
                             <MiniInput
-                                label="INTENSIDAD"
+                                label="%"
                                 value={percentage}
                                 onChange={(v) => handleConfigChange('percentage', v)}
                                 type="number"
                                 placeholder="75"
-                                suffix="%"
+                                suffix="%" // Removed suffix to save space or keep? User said "inputs mas grandes". Let's keep suffix but inside input group.
+                                // Actually user said "quiero que ... input sean mas grandes".
                                 icon={Percent}
+                                isGrid={isGrid}
                             />
                             <MiniInput
-                                label="REST"
+                                label="DESC" // Shortened from REST
                                 value={rest}
                                 onChange={(v) => handleConfigChange('rest', v)}
                                 type="text"
                                 placeholder="2m"
                                 icon={Clock}
+                                isGrid={isGrid}
                             />
 
                             {(showTempo || tempo) && (
@@ -154,6 +164,7 @@ export function ProgressionBlockCard({
                                         placeholder="30X1"
                                         icon={Timer}
                                         fullWidth
+                                        isGrid={isGrid}
                                     />
                                 </div>
                             )}
@@ -164,14 +175,16 @@ export function ProgressionBlockCard({
                         </div>
                     )}
 
-                    {/* Notes */}
+                    {/* Notes - Only show in non-grid or if there are notes?
+                        User wants to save space. Let's keep notes for now but maybe styled differently.
+                    */}
                     <div className="mt-2.5">
                         <input
                             type="text"
                             value={notes !== undefined ? String(notes) : ''}
                             onChange={(e) => handleConfigChange('notes', e.target.value)}
                             className="w-full bg-transparent text-xs text-cv-text-secondary placeholder:text-cv-text-tertiary/50 border-b border-transparent hover:border-slate-200 focus:border-cv-accent focus:ring-0 px-0 py-1 transition-colors"
-                            placeholder="Añadir notas..."
+                            placeholder="Notas para esta semana..."
                         />
                     </div>
                 </div>
@@ -180,7 +193,7 @@ export function ProgressionBlockCard({
     );
 }
 
-// Mini Input Component equivalent to the new design
+// Mini Input Component (Modified for larger size support)
 function MiniInput({
     label,
     value,
@@ -189,7 +202,8 @@ function MiniInput({
     placeholder,
     suffix,
     icon: Icon,
-    fullWidth
+    fullWidth,
+    isGrid
 }: {
     label: string,
     value: any,
@@ -198,30 +212,36 @@ function MiniInput({
     placeholder: string,
     suffix?: string,
     icon?: any,
-    fullWidth?: boolean
+    fullWidth?: boolean,
+    isGrid?: boolean
 }) {
+    // If isGrid is true, we use larger styling
+    const containerClass = isGrid
+        ? `bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2 border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors group ${fullWidth ? 'flex items-center gap-4' : 'flex flex-row items-center justify-between gap-1'}`
+        : `bg-slate-50 dark:bg-slate-900/50 rounded-lg p-1.5 border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors group ${fullWidth ? 'flex items-center gap-3' : 'flex flex-col gap-0.5'}`;
+
     return (
-        <div className={`
-            bg-slate-50 dark:bg-slate-900/50 rounded-lg p-1.5 border border-slate-100 dark:border-slate-800
-            hover:border-slate-300 dark:hover:border-slate-700 transition-colors group
-            ${fullWidth ? 'flex items-center gap-3' : 'flex flex-col gap-0.5'}
-        `}>
-            <div className="flex items-center gap-1 text-[9px] font-bold text-cv-text-tertiary uppercase tracking-wider">
-                {Icon && <Icon size={10} className="stroke-[2.5px] opacity-70" />}
+        <div className={containerClass}>
+            <div className={`flex items-center gap-1 font-bold text-cv-text-tertiary uppercase tracking-wider ${isGrid ? 'text-[10px]' : 'text-[9px]'}`}>
+                {/* Hide icon in grid if space is tight? Or keep it. User wants "inputs mas grandes". */}
+                {!isGrid && Icon && <Icon size={10} className="stroke-[2.5px] opacity-70" />}
                 <span>{label}</span>
             </div>
-            <div className="flex items-baseline justify-center">
+            <div className={`flex items-baseline ${fullWidth ? 'flex-1' : 'justify-center'}`}>
                 <input
                     type={type}
                     value={value !== undefined ? String(value) : ''}
                     onChange={(e) => onChange(e.target.value)}
                     className={`
-                        bg-transparent border-none p-0 text-cv-text-primary font-bold focus:ring-0 text-center
-                        ${fullWidth ? 'text-sm text-left w-full pl-1' : 'text-sm w-full'}
+                        bg-transparent border-none p-0 text-cv-text-primary font-bold focus:ring-0
+                        ${isGrid
+                            ? (fullWidth ? 'text-base text-left w-full' : 'text-base text-right w-full')
+                            : (fullWidth ? 'text-sm text-left w-full pl-1' : 'text-sm text-center w-full')
+                        }
                     `}
                     placeholder={placeholder}
                 />
-                {suffix && <span className="text-[10px] text-cv-text-tertiary ml-0.5 font-medium">{suffix}</span>}
+                {suffix && <span className={`${isGrid ? 'text-xs ml-1' : 'text-[10px] ml-0.5'} text-cv-text-tertiary font-medium`}>{suffix}</span>}
             </div>
         </div>
     );
