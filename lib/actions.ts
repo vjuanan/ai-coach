@@ -1539,7 +1539,7 @@ export async function saveMesocycleChanges(
             }
         }
 
-        revalidatePath(`/editor/${programId}`);
+        // revalidatePath(`/editor/${programId}`);
 
         // Touch program updated_at
         await adminSupabase
