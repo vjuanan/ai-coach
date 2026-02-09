@@ -100,7 +100,14 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
             </div>
 
             {/* Progression Cards */}
-            <div className={isGrid ? "grid grid-cols-2 gap-3 w-full" : "space-y-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar"}>
+            <div
+                className={isGrid ? "grid gap-3" : "space-y-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar"}
+                style={isGrid ? {
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                    width: '100%'
+                } : undefined}
+            >
                 {progressionBlocks.map((block) => (
                     <ProgressionBlockCard
                         key={`${block.blockId}-${isGrid ? 'grid' : 'list'}`}
