@@ -25,6 +25,17 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ExportPreview } from '@/components/export';
+import {
+    DndContext,
+    DragEndEvent,
+    DragOverEvent,
+    DragStartEvent,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragOverlay,
+} from '@dnd-kit/core';
+import { GripVertical } from 'lucide-react';
 
 interface MesocycleEditorProps {
     programId: string;
@@ -70,8 +81,102 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         blockBuilderMode,
         blockBuilderDayId,
         exitBlockBuilder,
-        enterBlockBuilder
+        enterBlockBuilder,
+        // Dnd Actions
+        setDraggedBlock,
+        setDropTarget,
+        moveBlockToDay,
+        moveProgressionToDay,
+        draggedBlockId
     } = useEditorStore();
+
+    // Dnd Sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        })
+    );
+
+    // Dnd Handlers
+    const handleDragStart = (event: DragStartEvent) => {
+        const blockId = event.active.id as string;
+        setDraggedBlock(blockId);
+    };
+
+    const handleDragOver = (event: DragOverEvent) => {
+        const overId = event.over?.id as string | undefined;
+        if (overId?.startsWith('day-')) {
+            const dayId = overId.replace('day-', '');
+            setDropTarget(dayId);
+        } else {
+            setDropTarget(null);
+        }
+    };
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (!over) {
+            setDraggedBlock(null);
+            setDropTarget(null);
+            return;
+        }
+
+        const blockId = active.id as string;
+        const overId = over.id as string;
+
+        if (overId.startsWith('day-')) {
+            const targetDayId = overId.replace('day-', '');
+
+            // Find current mesocycle (or search all if necessary)
+            // Ideally we find the source block to know where it comes from
+            let sourceBlock: any = null;
+
+            // Search in current mesocycle first
+            const currentMeso = mesocycles.find(m => m.week_number === selectedWeek);
+            if (currentMeso) {
+                for (const day of currentMeso.days) {
+                    const found = day.blocks.find(b => b.id === blockId);
+                    if (found) { sourceBlock = found; break; }
+                }
+            }
+
+            if (sourceBlock) {
+                if (sourceBlock.day_id !== targetDayId) {
+                    const targetDay = currentMeso?.days.find(d => d.id === targetDayId);
+
+                    if (sourceBlock.progression_id && targetDay) {
+                        moveProgressionToDay(sourceBlock.progression_id, targetDay.day_number);
+                    } else {
+                        moveBlockToDay(blockId, targetDayId);
+                    }
+                }
+            }
+        }
+
+        setDraggedBlock(null);
+        setDropTarget(null);
+    };
+
+    const handleDragCancel = () => {
+        setDraggedBlock(null);
+        setDropTarget(null);
+    };
+
+    // Find dragged block for overlay
+    const draggedBlockData = useMemo(() => {
+        if (!draggedBlockId) return null;
+        for (const meso of mesocycles) {
+            for (const day of meso.days) {
+                const block = day.blocks.find(b => b.id === draggedBlockId);
+                if (block) return block;
+            }
+        }
+        return null;
+    }, [draggedBlockId, mesocycles]);
+
 
     // Auto-save hook
     const { status: saveStatus, forceSave } = useAutoSave({ programId, debounceMs: 500 });
@@ -262,198 +367,225 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
     );
 
     return (
-        <div className="flex flex-col h-screen">
-            {/* Editor Header - Refined with more height */}
-            <div className="flex items-center justify-between px-4 py-2 border-b border-cv-border bg-white/80 dark:bg-cv-bg-secondary/80 backdrop-blur-sm flex-shrink-0">
-                {/* Left Section - Breadcrumbs & Save Status */}
-                <div className="flex items-center gap-2">
-                    {/* Back Button - Conditional behavior based on mode */}
-                    {blockBuilderMode ? (
-                        <button
-                            onClick={exitBlockBuilder}
-                            className="cv-btn-ghost p-1.5 rounded-lg flex items-center gap-1 text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                            title="Volver a Vista Semanal"
-                        >
-                            <ArrowLeft size={16} />
-                        </button>
-                    ) : (
-                        <Link
-                            href="/programs"
-                            className="cv-btn-ghost p-1.5 rounded-lg flex items-center gap-1 text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                            title="Volver a Programas"
-                        >
-                            <ArrowLeft size={16} />
-                        </Link>
-                    )}
+        <DndContext
+            sensors={sensors}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+        >
+            <div className="flex flex-col h-screen">
+                {/* Editor Header - Refined with more height */}
+                <div className="flex items-center justify-between px-4 py-2 border-b border-cv-border bg-white/80 dark:bg-cv-bg-secondary/80 backdrop-blur-sm flex-shrink-0">
+                    {/* Left Section - Breadcrumbs & Save Status */}
+                    <div className="flex items-center gap-2">
+                        {/* Back Button - Conditional behavior based on mode */}
+                        {blockBuilderMode ? (
+                            <button
+                                onClick={exitBlockBuilder}
+                                className="cv-btn-ghost p-1.5 rounded-lg flex items-center gap-1 text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                title="Volver a Vista Semanal"
+                            >
+                                <ArrowLeft size={16} />
+                            </button>
+                        ) : (
+                            <Link
+                                href="/programs"
+                                className="cv-btn-ghost p-1.5 rounded-lg flex items-center gap-1 text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                title="Volver a Programas"
+                            >
+                                <ArrowLeft size={16} />
+                            </Link>
+                        )}
 
-                    <div className="w-px h-5 bg-cv-border" />
+                        <div className="w-px h-5 bg-cv-border" />
 
-                    {/* Program Name (Editable feel) */}
-                    <div>
-                        <h2 className="text-sm font-semibold text-cv-text-primary flex items-center gap-1.5">
-                            {programName}
-                            {currentMesocycle?.focus && (
-                                <>
-                                    <span className="text-cv-text-tertiary">/</span>
-                                    <span className="text-cv-accent font-medium">{currentMesocycle.focus}</span>
-                                </>
-                            )}
-                        </h2>
+                        {/* Program Name (Editable feel) */}
+                        <div>
+                            <h2 className="text-sm font-semibold text-cv-text-primary flex items-center gap-1.5">
+                                {programName}
+                                {currentMesocycle?.focus && (
+                                    <>
+                                        <span className="text-cv-text-tertiary">/</span>
+                                        <span className="text-cv-accent font-medium">{currentMesocycle.focus}</span>
+                                    </>
+                                )}
+                            </h2>
+                        </div>
+
+                        {/* Save Status Indicator */}
+                        <SaveStatusIndicator status={saveStatus} />
                     </div>
 
-                    {/* Save Status Indicator */}
-                    <SaveStatusIndicator status={saveStatus} />
-                </div>
-
-                {/* Center - Week Tabs */}
-                <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-cv-bg-tertiary rounded-lg p-0.5">
-                    {[1, 2, 3, 4].map(week => (
-                        <button
-                            key={week}
-                            onClick={() => selectWeek(week)}
-                            className={`
+                    {/* Center - Week Tabs */}
+                    <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-cv-bg-tertiary rounded-lg p-0.5">
+                        {[1, 2, 3, 4].map(week => (
+                            <button
+                                key={week}
+                                onClick={() => selectWeek(week)}
+                                className={`
                                 px-3 py-1 rounded-md text-xs font-medium transition-all
                                 ${selectedWeek === week
-                                    ? 'bg-white dark:bg-cv-accent text-cv-text-primary dark:text-white shadow-sm'
-                                    : 'text-cv-text-secondary hover:text-cv-text-primary hover:bg-white/50 dark:hover:bg-cv-bg-elevated'}
+                                        ? 'bg-white dark:bg-cv-accent text-cv-text-primary dark:text-white shadow-sm'
+                                        : 'text-cv-text-secondary hover:text-cv-text-primary hover:bg-white/50 dark:hover:bg-cv-bg-elevated'}
                             `}
-                        >
-                            Semana {week}
-                        </button>
-                    ))}
-                </div>
+                            >
+                                Semana {week}
+                            </button>
+                        ))}
+                    </div>
 
-                {/* Right Section - Actions */}
-                <div className="flex items-center gap-1">
-                    {/* Manual Save Button - HIGHLIGHTED */}
-                    <button
-                        onClick={() => forceSave()}
-                        disabled={saveStatus === 'saving'}
-                        className={`
+                    {/* Right Section - Actions */}
+                    <div className="flex items-center gap-1">
+                        {/* Manual Save Button - HIGHLIGHTED */}
+                        <button
+                            onClick={() => forceSave()}
+                            disabled={saveStatus === 'saving'}
+                            className={`
                             px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-all mr-1
                             ${hasUnsavedChanges
-                                ? 'bg-cv-accent text-white hover:bg-cv-accent/90 shadow-sm'
-                                : 'bg-transparent text-cv-text-secondary hover:bg-slate-100 dark:hover:bg-slate-800'}
+                                    ? 'bg-cv-accent text-white hover:bg-cv-accent/90 shadow-sm'
+                                    : 'bg-transparent text-cv-text-secondary hover:bg-slate-100 dark:hover:bg-slate-800'}
                         `}
-                        title={hasUnsavedChanges ? 'Guardar cambios' : 'Todo guardado'}
-                    >
-                        {saveStatus === 'saving' ? (
-                            <Loader2 size={14} className="animate-spin" />
-                        ) : hasUnsavedChanges ? (
-                            <Save size={14} />
-                        ) : (
-                            <CheckCircle2 size={14} className="text-emerald-500" />
-                        )}
+                            title={hasUnsavedChanges ? 'Guardar cambios' : 'Todo guardado'}
+                        >
+                            {saveStatus === 'saving' ? (
+                                <Loader2 size={14} className="animate-spin" />
+                            ) : hasUnsavedChanges ? (
+                                <Save size={14} />
+                            ) : (
+                                <CheckCircle2 size={14} className="text-emerald-500" />
+                            )}
 
-                        {saveStatus === 'saving'
-                            ? 'Guardando...'
-                            : hasUnsavedChanges
-                                ? 'Guardar'
-                                : 'Guardado'}
-                    </button>
+                            {saveStatus === 'saving'
+                                ? 'Guardando...'
+                                : hasUnsavedChanges
+                                    ? 'Guardar'
+                                    : 'Guardado'}
+                        </button>
 
-                    <div className="w-px h-4 bg-cv-border mx-1" />
+                        <div className="w-px h-4 bg-cv-border mx-1" />
 
-                    {/* Strategy Button */}
-                    <button
-                        onClick={() => setShowStrategy(true)}
-                        className={`cv-btn-ghost px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-medium transition-colors
+                        {/* Strategy Button */}
+                        <button
+                            onClick={() => setShowStrategy(true)}
+                            className={`cv-btn-ghost px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-medium transition-colors
                             ${hasStrategy ? 'text-cv-accent bg-cv-accent/5' : 'text-cv-text-secondary hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                        title="Estrategia del Mesociclo"
-                    >
-                        <Target size={14} />
-                        Estrategia
-                        {hasStrategy && (
-                            <span className="w-2 h-2 rounded-full bg-cv-accent" />
-                        )}
-                    </button>
+                            title="Estrategia del Mesociclo"
+                        >
+                            <Target size={14} />
+                            Estrategia
+                            {hasStrategy && (
+                                <span className="w-2 h-2 rounded-full bg-cv-accent" />
+                            )}
+                        </button>
 
-                    <div className="w-px h-4 bg-cv-border" />
+                        <div className="w-px h-4 bg-cv-border" />
 
-                    <button className="cv-btn-ghost p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Undo">
-                        <Undo size={14} />
-                    </button>
-                    <button className="cv-btn-ghost p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Redo">
-                        <Redo size={14} />
-                    </button>
+                        <button className="cv-btn-ghost p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Undo">
+                            <Undo size={14} />
+                        </button>
+                        <button className="cv-btn-ghost p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Redo">
+                            <Redo size={14} />
+                        </button>
 
-                    <div className="w-px h-4 bg-cv-border" />
+                        <div className="w-px h-4 bg-cv-border" />
 
-                    <button className="cv-btn-ghost p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Preview">
-                        <Eye size={14} />
-                    </button>
-                    <button
-                        onClick={() => setShowExport(true)}
-                        className="cv-btn-secondary px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-medium"
-                        title="Exportar PDF"
-                    >
-                        <Download size={14} />
-                        Exportar
-                    </button>
-                </div>
-            </div>
-
-            {/* Main Editor Area - Split or Full based on Block Builder Mode */}
-            {blockBuilderMode && blockBuilderDayId ? (
-                /* SPLIT LAYOUT: Block Builder Mode Active */
-                <div className="flex-1 flex overflow-hidden">
-                    {/* Single Day View with Selector */}
-                    <div className="w-[350px] flex-shrink-0 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-primary z-10 shadow-xl">
-                        {currentMesocycle && (
-                            <SingleDayView
-                                mesocycle={currentMesocycle}
-                                dayId={blockBuilderDayId}
-                                onSelectDay={(dayId: string) => enterBlockBuilder(dayId)}
-                            />
-                        )}
-                    </div>
-                    {/* Block Builder Panel */}
-                    <div className="flex-1 overflow-hidden animate-in slide-in-from-right-4 duration-300">
-                        <BlockBuilderPanel
-                            dayId={blockBuilderDayId}
-                            dayName={blockBuilderDayName}
-                            onClose={exitBlockBuilder}
-                        />
+                        <button className="cv-btn-ghost p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Preview">
+                            <Eye size={14} />
+                        </button>
+                        <button
+                            onClick={() => setShowExport(true)}
+                            className="cv-btn-secondary px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-medium"
+                            title="Exportar PDF"
+                        >
+                            <Download size={14} />
+                            Exportar
+                        </button>
                     </div>
                 </div>
-            ) : (
-                /* NORMAL LAYOUT: Full Width Week View */
-                <div className="flex-1 overflow-auto p-4 bg-gradient-to-br from-slate-50 to-white dark:from-cv-bg-primary dark:to-cv-bg-secondary">
-                    {currentMesocycle ? (
-                        <WeekView mesocycle={currentMesocycle} programGlobalFocus={globalFocus} />
-                    ) : (
-                        <div className="flex items-center justify-center h-full">
-                            <div className="text-center">
-                                <p className="text-cv-text-tertiary mb-4">No hay datos para la Semana {selectedWeek}</p>
-                            </div>
+
+                {/* Main Editor Area - Split or Full based on Block Builder Mode */}
+                {blockBuilderMode && blockBuilderDayId ? (
+                    /* SPLIT LAYOUT: Block Builder Mode Active */
+                    <div className="flex-1 flex overflow-hidden">
+                        {/* Single Day View with Selector */}
+                        <div className="w-[350px] flex-shrink-0 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-primary z-10 shadow-xl">
+                            {currentMesocycle && (
+                                <SingleDayView
+                                    mesocycle={currentMesocycle}
+                                    dayId={blockBuilderDayId}
+                                    onSelectDay={(dayId: string) => enterBlockBuilder(dayId)}
+                                />
+                            )}
                         </div>
-                    )}
-                </div>
-            )}
+                        {/* Block Builder Panel */}
+                        <div className="flex-1 overflow-hidden animate-in slide-in-from-right-4 duration-300">
+                            <BlockBuilderPanel
+                                dayId={blockBuilderDayId}
+                                dayName={blockBuilderDayName}
+                                onClose={exitBlockBuilder}
+                            />
+                        </div>
+                    </div>
+                ) : (
+                    /* NORMAL LAYOUT: Full Width Week View */
+                    <div className="flex-1 overflow-auto p-4 bg-gradient-to-br from-slate-50 to-white dark:from-cv-bg-primary dark:to-cv-bg-secondary">
+                        {currentMesocycle ? (
+                            <WeekView mesocycle={currentMesocycle} programGlobalFocus={globalFocus} />
+                        ) : (
+                            <div className="flex items-center justify-center h-full">
+                                <div className="text-center">
+                                    <p className="text-cv-text-tertiary mb-4">No hay datos para la Semana {selectedWeek}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
 
 
 
-            {/* Strategy Modal */}
-            <MesocycleStrategyForm
-                isOpen={showStrategy}
-                onClose={() => setShowStrategy(false)}
-                weekNumber={selectedWeek}
-                initialData={currentStrategy}
-                onSave={handleSaveStrategy}
-            />
+                {/* Strategy Modal */}
+                <MesocycleStrategyForm
+                    isOpen={showStrategy}
+                    onClose={() => setShowStrategy(false)}
+                    weekNumber={selectedWeek}
+                    initialData={currentStrategy}
+                    onSave={handleSaveStrategy}
+                />
 
-            {/* Export Modal */}
-            <ExportPreview
-                isOpen={showExport}
-                onClose={() => setShowExport(false)}
-                programName={programName}
-                clientInfo={{ name: 'Cliente' }}
-                coachName={programCoachName || 'Coach'}
-                monthlyStrategy={monthlyStrategy}
-                weeks={exportWeeks}
-                strategy={exportStrategy}
-            />
-        </div>
+                {/* Export Modal */}
+                <ExportPreview
+                    isOpen={showExport}
+                    onClose={() => setShowExport(false)}
+                    programName={programName}
+                    clientInfo={{ name: 'Cliente' }}
+                    coachName={programCoachName || 'Coach'}
+                    monthlyStrategy={monthlyStrategy}
+                    weeks={exportWeeks}
+                    strategy={exportStrategy}
+                />
+
+                {/* Drag Overlay - Shows a preview of the block being dragged */}
+                <DragOverlay dropAnimation={null}>
+                    {draggedBlockData ? (
+                        <div className="bg-white dark:bg-cv-bg-secondary rounded-lg shadow-xl border-2 border-cv-accent p-3 opacity-90 max-w-[200px] z-50 pointer-events-none">
+                            <div className="flex items-center gap-2">
+                                <GripVertical size={14} className="text-cv-accent" />
+                                <span className="text-sm font-medium text-cv-text-primary truncate">
+                                    {draggedBlockData.name || 'Bloque'}
+                                </span>
+                            </div>
+                            {draggedBlockData.progression_id && (
+                                <p className="text-xs text-cv-accent mt-1">
+                                    ↔ Se moverá en todas las semanas
+                                </p>
+                            )}
+                        </div>
+                    ) : null}
+                </DragOverlay>
+            </div>
+        </DndContext>
     );
 }
 

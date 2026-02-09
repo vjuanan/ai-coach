@@ -234,10 +234,10 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                 key={block.id}
                                                 onClick={() => selectBlock(block.id)}
                                                 className={`
-                                                    group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left min-w-[150px] cursor-pointer hover:z-20
+                                                    group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left min-w-[150px] cursor-pointer
                                                     ${isActive
-                                                        ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-md ring-2 ring-cv-accent/30 z-10'
-                                                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md hover:border-cv-accent/50'
+                                                        ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-md ring-2 ring-cv-accent/30 z-10 scale-[1.02]'
+                                                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-lg hover:border-cv-accent hover:-translate-y-0.5 hover:scale-[1.02] hover:z-20'
                                                     }
                                                 `}
                                                 style={!isActive ? { '--hover-shadow': blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)' } as React.CSSProperties : undefined}
