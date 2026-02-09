@@ -18,6 +18,7 @@ interface ProgramsGridProps {
     isSelectionMode: boolean;
     toggleSelection: (id: string) => void;
     promptDelete: (id: string) => void;
+    onExport: (id: string) => void;
     CARD_GRADIENTS: string[];
     CARD_ICONS: any[];
 }
