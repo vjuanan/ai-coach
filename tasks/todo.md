@@ -1,15 +1,10 @@
-# Active Tasks
+# TODO - Exportación de Programas
 
-- [/] Drag and Drop entre Días
-    - [ ] Añadir `moveProgressionToDay` al store
-    - [ ] Modificar `WeekView.tsx` con DndContext
-    - [ ] Modificar `DayCard.tsx` como Droppable
-    - [ ] Modificar `WorkoutBlockCard.tsx` como Draggable
-    - [ ] Verificar en producción con screenshots
+## Tareas
 
-# Completed Tasks
-
-- [x] Vista Global de Progresiones (2026-02-08)
-    - Implementada previsualización de todas las semanas cuando "Progresión" está activa
-    - Edición cross-week funciona correctamente
-    - Verificado en producción con screenshots
+- [ ] Crear `ProgramCardExporter.tsx` con lógica de exportación PNG/PDF
+- [ ] Modificar `ProgramsGrid.tsx` - agregar botón de exportar en cada card
+- [ ] Modificar `ProgramsTable.tsx` - agregar botón de exportar en acciones
+- [ ] Modificar `page.tsx` - integrar exportador y botón masivo
+- [ ] Push a GitHub y verificar en producción
+- [ ] Verificar con screenshots que funciona correctamente

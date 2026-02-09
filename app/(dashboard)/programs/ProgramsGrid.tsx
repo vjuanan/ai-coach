@@ -85,14 +85,14 @@ export function ProgramsGrid({
                                     toggleSelection(program.id);
                                 }}
                                 className={`
-                                    w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-200
+                                    w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-200 border-2
                                     ${isSelected
-                                        ? 'bg-white text-cv-primary shadow-lg'
-                                        : 'bg-white/20 text-white hover:bg-white/30'
+                                        ? 'bg-white border-white text-cv-primary shadow-lg'
+                                        : 'bg-black/10 border-white/30 text-transparent hover:bg-white hover:border-white hover:text-cv-primary'
                                     }
                                 `}
                             >
-                                {isSelected && <Check size={16} strokeWidth={3} />}
+                                <Check size={16} strokeWidth={3} className={`transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-0 hover:opacity-100'}`} />
                             </button>
                         </div>
 

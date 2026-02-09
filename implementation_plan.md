@@ -1,40 +1,34 @@
-# Implementation Plan - Block Ready State
+# Implementation Plan: Handle Profile Assignation in Template Duplication
 
-The goal is to show a "Green Tick" on the workout block card when the user clicks "OK" in the Block Editor, indicating the block is "ready" or "completed".
+The goal is to fix the Foreign Key violation error when assigning a template to a "Profile" (Athleta/Gym) that does not yet have a corresponding "Client" record.
+
+## User Review Required
+> [!IMPORTANT]
+> This change will automatically create a new `Client` record in the database when a user assigns a template to a platform `Profile` (registered user) that is not yet in the coach's `Client` list. This effectively "onboards" the user as a client of the coach.
 
 ## Proposed Changes
 
-### 1. Data Structure (`lib/supabase/types.ts`)
-*   Add `is_completed?: boolean` to the `WorkoutConfig` related interfaces (or rely on dynamic nature since it's JSONB, but better to document in types if possible).
-*   *Self-correction*: Since `WorkoutConfig` is a union of types which all have `[key: string]: any`, strictly speaking, we don't *need* to change the types to make it work, but adding it to `StrengthConfig`, `MetconConfig`, etc. makes it explicit. For now, I will treat it as an optional property in the config object.
+### [Backend Logic] `lib/actions.ts`
 
-### 2. Block Editor (`components/editor/BlockEditor.tsx`)
-*   Modify the "OK" button's `onClick` handler.
-*   Current behavior: `if (isValid) selectBlock(null);`
-*   New behavior:
-    *   Set `config.is_completed = true`.
-    *   Call `updateBlock(blockId, { config: newConfig })`.
-    *   Then `selectBlock(null)`.
-
-### 3. Workout Block Card (`components/editor/WorkoutBlockCard.tsx`)
-*   Read `is_completed` from `block.config`.
-*   If `is_completed` is true:
-    *   Display a green Check / Tick icon.
-    *   Proposed location: In the header row, next to the block name or the "Quick Actions".
-    *   I will place it to the right of the block name, or maybe on the far right if space permits.
-    *   Use `CheckCircle` or `Check` icon from `lucide-react` with a green color (`text-green-500` or `text-cv-success`).
+#### [MODIFY] [actions.ts](file:///Users/juanan/Library/CloudStorage/OneDrive-EPNStore/Team%20Ventas%20y%20Administracion%20%F0%9F%A4%91/AI%20Deveolpments/AI%20Coach/lib/actions.ts)
+- Modify `copyTemplateToProgram` function.
+- Before creating the program, check if `assignedClientId` exists in the `clients` table.
+- If it doesn't exist, check if it exists in the `profiles` table.
+- If found in `profiles`:
+    - Create a new `client` record linked to the current `coachId`, using the profile's name and email.
+    - Use the newly created `client.id` as the `client_id` for the new program.
+    - Set the `type` of the client based on the profile role ('athlete' or 'gym').
 
 ## Verification Plan
 
-### Manual Verification
-1.  Open the workout editor.
-2.  Click on a block to edit it.
-3.  Fill in required fields if empty.
-4.  Click "OK".
-5.  Observe the block card in the list collapses.
-6.  **Verify**: The block card now displays a Green Tick.
-7.  Click the block again.
-8.  **Verify**: The editor opens. The `config` should still have `is_completed: true` until manually unset (not implementing unset logic unless needed, user only asked "al apretar OK... aparezca Tick").
+### Automated Tests
+- None exist for this specific flow.
 
-### Automated Verification
-*   I will use the browser tool to perform the manual steps above.
+### Manual Verification
+1.  **Select a Profile**: In the "Duplicate Template" dialog, select an "Atleta" who is a registered user (Profile) but NOT yet in the Clients list (indicated by coming from the profiles section, or typically just appear in the list if not already a client).
+2.  **Confirm**: Click "Confirmar".
+3.  **Result**:
+    -   The system should NOT show an error.
+    -   Redirection to the editor should happen.
+    -   A new `client` should be created in the database (can verify by going to Clients page if it exists, or checking DB if possible).
+    -   The program should be assigned to this new client.

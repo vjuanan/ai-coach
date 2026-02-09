@@ -160,8 +160,10 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
             <div
                 ref={setNodeRef}
                 style={style}
+                {...listeners}
+                {...attributes}
                 className={`
-                    group relative bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer
+                    group relative bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm cursor-grab active:cursor-grabbing touch-none
                     transition-all
                     ${blockStyle.color}
                     ${isSelected ? 'ring-2 ring-cv-accent' : ''}
@@ -171,13 +173,8 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
             >
                 {/* Card Inner Content */}
                 <div className="p-2">
-                    {/* Drag Handle - Always visible on left */}
-                    <div
-                        {...listeners}
-                        {...attributes}
-                        className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing rounded-l-lg hover:bg-slate-100 dark:hover:bg-slate-700"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                    {/* Drag Handle - Visual indicator on left */}
+                    <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity pointer-events-none">
                         <GripVertical size={12} className="text-cv-text-tertiary" />
                     </div>
 
