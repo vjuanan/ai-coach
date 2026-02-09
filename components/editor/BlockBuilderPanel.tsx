@@ -31,6 +31,7 @@ const blockTypeOptions: {
     description: string;
     color: string;
     bgColor: string;
+    glowColor: string;
     icon: React.ElementType;
 }[] = [
         {
@@ -39,6 +40,7 @@ const blockTypeOptions: {
             description: 'Preparación y movilidad',
             color: 'text-emerald-600 dark:text-emerald-400',
             bgColor: 'bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50',
+            glowColor: 'rgba(34, 197, 94, 0.4)',
             icon: Flame
         },
         {
@@ -47,6 +49,7 @@ const blockTypeOptions: {
             description: 'Series, reps y porcentajes',
             color: 'text-red-600 dark:text-red-400',
             bgColor: 'bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50',
+            glowColor: 'rgba(239, 68, 68, 0.4)',
             icon: Dumbbell
         },
         {
@@ -55,6 +58,7 @@ const blockTypeOptions: {
             description: 'AMRAP, EMOM, For Time',
             color: 'text-cv-accent',
             bgColor: 'bg-teal-50 dark:bg-teal-900/30 hover:bg-teal-100 dark:hover:bg-teal-900/50',
+            glowColor: 'rgba(134, 196, 163, 0.5)',
             icon: Zap
         },
         {
@@ -63,6 +67,7 @@ const blockTypeOptions: {
             description: 'Trabajo complementario',
             color: 'text-purple-600 dark:text-purple-400',
             bgColor: 'bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50',
+            glowColor: 'rgba(168, 85, 247, 0.4)',
             icon: ListOrdered
         },
         {
@@ -71,6 +76,7 @@ const blockTypeOptions: {
             description: 'Práctica técnica',
             color: 'text-blue-600 dark:text-blue-400',
             bgColor: 'bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50',
+            glowColor: 'rgba(59, 130, 246, 0.4)',
             icon: Sparkles
         },
         {
@@ -79,6 +85,7 @@ const blockTypeOptions: {
             description: 'Notas y comentarios',
             color: 'text-slate-600 dark:text-slate-400',
             bgColor: 'bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800',
+            glowColor: 'rgba(100, 116, 139, 0.3)',
             icon: FileText
         },
     ];
@@ -182,7 +189,14 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                     <button
                                         key={option.type}
                                         onClick={() => handleAddBlock(option.type)}
-                                        className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${option.bgColor} group hover:shadow-[0_0_15px_rgba(var(--color-cv-accent-rgb),0.1)] hover:scale-[1.02] hover:ring-1 hover:ring-cv-accent/30`}
+                                        className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${option.bgColor} group hover:scale-[1.02] hover:-translate-y-0.5`}
+                                        style={{ '--glow-color': option.glowColor } as React.CSSProperties}
+                                        onMouseEnter={(e) => {
+                                            (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px -4px ${option.glowColor}`;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                                        }}
                                     >
                                         <div className={`w-9 h-9 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm ${option.color}`}>
                                             <Icon size={18} />
