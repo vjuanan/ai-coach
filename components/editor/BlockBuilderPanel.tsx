@@ -192,7 +192,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                         className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${option.bgColor} group hover:scale-[1.02] hover:-translate-y-0.5`}
                                         style={{ '--glow-color': option.glowColor } as React.CSSProperties}
                                         onMouseEnter={(e) => {
-                                            (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px -4px ${option.glowColor}`;
+                                            (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 30px -4px ${option.glowColor}`;
                                         }}
                                         onMouseLeave={(e) => {
                                             (e.currentTarget as HTMLElement).style.boxShadow = 'none';
