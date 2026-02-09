@@ -169,10 +169,10 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                     group relative bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm cursor-grab active:cursor-grabbing touch-none
                     transition-all duration-200
                     ${blockStyle.color}
-                    ${isSelected ? 'ring-2 ring-cv-accent shadow-md' : ''}
+                    ${isSelected ? 'ring-2 ring-cv-accent' : ''}
                     ${isBeingDragged
                         ? 'opacity-50 scale-95 shadow-none'
-                        : 'hover:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:border-cv-accent/40 hover:-translate-y-0.5'
+                        : 'hover:-translate-y-0.5 hover:border-slate-300 dark:hover:border-slate-600'
                     }
                 `}
                 onClick={(e) => {

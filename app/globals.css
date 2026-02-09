@@ -1,5 +1,3 @@
-
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -120,6 +118,27 @@
 
   .modality-skill {
     @apply border-l-4 border-l-blue-500;
+  }
+
+  /* Modality Hover Glow Effects */
+  .modality-strength:hover {
+    box-shadow: 0 4px 20px -4px rgba(239, 68, 68, 0.35);
+  }
+
+  .modality-metcon:hover {
+    box-shadow: 0 4px 20px -4px rgba(134, 196, 163, 0.4);
+  }
+
+  .modality-warmup:hover {
+    box-shadow: 0 4px 20px -4px rgba(34, 197, 94, 0.35);
+  }
+
+  .modality-accessory:hover {
+    box-shadow: 0 4px 20px -4px rgba(168, 85, 247, 0.35);
+  }
+
+  .modality-skill:hover {
+    box-shadow: 0 4px 20px -4px rgba(59, 130, 246, 0.35);
   }
 
   /* Command Palette Overlay */
