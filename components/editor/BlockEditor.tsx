@@ -880,7 +880,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
             </div>
 
             {/* SECONDARY ROW: TEMPO & NOTES */}
-            <div className="flex flex-wrap gap-2 items-stretch">
+            <div className="flex flex-wrap gap-4 items-stretch">
                 {/* Tempo Group */}
                 <div className="flex items-center gap-2">
                     <button
@@ -1013,8 +1013,8 @@ function InputCard({
                     </>
                 )}
 
-                {/* Scrollable Presets */}
-                <div className="flex gap-1 overflow-x-auto no-scrollbar max-w-[120px] px-1">
+                {/* Presets */}
+                <div className="flex gap-1 flex-wrap justify-center px-1">
                     {presets.map(preset => (
                         <button
                             key={preset}
