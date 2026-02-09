@@ -585,6 +585,19 @@ export async function getClients(type: 'athlete' | 'gym') {
                 process.env.SUPABASE_SERVICE_ROLE_KEY
             );
 
+            // Get current user and check if admin
+            const { data: { user } } = await supabase.auth.getUser();
+            let isAdmin = false;
+
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+                isAdmin = profile?.role === 'admin';
+            }
+
             // We need to filter by Coach ID to mimic RLS.
             // But first we need the coach ID of the current user.
             // Note: ensureCoach uses 'supabase' (user client) to find coach by auth.uid().
@@ -593,18 +606,30 @@ export async function getClients(type: 'athlete' | 'gym') {
             const coachId = await ensureCoach(supabase); // Use user session to identify coach
 
             // Fetch from clients table (manually created)
-            const { data: clientsData, error: clientsError } = await adminSupabase
+            // Admin sees ALL clients, coaches see only their own
+            let clientsQuery = adminSupabase
                 .from('clients')
                 .select('*')
-                .eq('type', type)
-                .eq('coach_id', coachId) // Manual RLS
-                .order('name');
+                .eq('type', type);
+
+            if (!isAdmin) {
+                clientsQuery = clientsQuery.eq('coach_id', coachId);
+            }
+
+            const { data: clientsData, error: clientsError } = await clientsQuery.order('name');
 
             if (clientsError) {
                 console.error('getClients [Admin Bypass] Error:', clientsError);
             }
 
-            // For athletes, also fetch self-registered users from profiles table
+            // ONLY admins can see self-registered profiles
+            // Coaches should only see clients they have explicitly added
+            if (!isAdmin) {
+                // Non-admin: return only clients from clients table
+                return clientsData || [];
+            }
+
+            // Admin: Also fetch self-registered users from profiles table
             if (type === 'athlete') {
                 const { data: profilesData, error: profilesError } = await adminSupabase
                     .from('profiles')
@@ -700,6 +725,7 @@ export async function getClients(type: 'athlete' | 'gym') {
     if (error) return [];
     return data;
 }
+
 
 export async function getClient(id: string) {
     // Use admin client to bypass RLS, similar to createClient

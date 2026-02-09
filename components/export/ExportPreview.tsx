@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { X, Download, Image, FileText, Loader2, Calendar, Target, TrendingUp, Dumbbell } from 'lucide-react';
@@ -94,6 +94,20 @@ export function ExportPreview({
     const exportRef = useRef<HTMLDivElement>(null);
     const [isExporting, setIsExporting] = useState(false);
     const [exportFormat, setExportFormat] = useState<'png' | 'pdf'>('png');
+
+    // Handle ESC key to close modal
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onClose]);
 
     const handleExport = async () => {
         if (!exportRef.current) return;

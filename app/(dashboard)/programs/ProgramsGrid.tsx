@@ -1,4 +1,4 @@
-import { Calendar, Check, Trash2, Dumbbell, Flame, Target, Zap } from 'lucide-react';
+import { Calendar, Check, Trash2, Dumbbell, Flame, Target, Zap, Download } from 'lucide-react';
 import Link from 'next/link';
 // import { Program } from '@/lib/types'; // Removed to fix build error
 
