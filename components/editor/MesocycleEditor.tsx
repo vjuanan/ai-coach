@@ -480,14 +480,13 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                         {/* Strategy Button */}
                         <button
                             onClick={() => setShowStrategy(true)}
-                            className={`cv-btn-ghost px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-medium transition-colors
+                            className={`cv-btn-ghost p-1.5 rounded-lg flex items-center justify-center relative transition-colors
                             ${hasStrategy ? 'text-cv-accent bg-cv-accent/5' : 'text-cv-text-secondary hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title="Estrategia del Mesociclo"
                         >
                             <Target size={14} />
-                            Estrategia
                             {hasStrategy && (
-                                <span className="w-2 h-2 rounded-full bg-cv-accent" />
+                                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-cv-accent" />
                             )}
                         </button>
 
