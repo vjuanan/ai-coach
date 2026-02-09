@@ -6,5 +6,5 @@
 - [x] Modificar `ProgramsGrid.tsx` - agregar botón de exportar en cada card
 - [x] Modificar `ProgramsTable.tsx` - agregar botón de exportar en acciones
 - [x] Modificar `page.tsx` - integrar exportador y botón masivo
-- [ ] Push a GitHub y verificar en producción
-- [ ] Verificar con screenshots que funciona correctamente
+- [x] Push a GitHub y verificar en producción
+- [x] Verificar con screenshots que funciona correctamente

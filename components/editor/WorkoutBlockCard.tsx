@@ -2,7 +2,7 @@
 
 import { useEditorStore } from '@/lib/store';
 import { GripVertical, Copy, Trash2, ChevronDown, TrendingUp, Check, X, Link } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
@@ -48,11 +48,17 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
     const { selectBlock, selectedBlockId, deleteBlock, deleteProgression, duplicateBlock, enterBlockBuilder, draggedBlockId } = useEditorStore();
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+    const wasDraggingRef = useRef(false);
 
     // Setup draggable
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
         id: block.id,
     });
+
+    // Track drag state to prevent onClick after drag
+    if (isDragging && !wasDraggingRef.current) {
+        wasDraggingRef.current = true;
+    }
 
     const style = transform ? {
         transform: CSS.Translate.toString(transform),
@@ -169,7 +175,16 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                     ${isSelected ? 'ring-2 ring-cv-accent' : ''}
                     ${isBeingDragged ? 'opacity-50 scale-95 shadow-none' : 'hover:shadow'}
                 `}
-                onClick={(e) => { e.stopPropagation(); enterBlockBuilder(block.day_id); selectBlock(block.id); }}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    // Prevent click if we just finished dragging
+                    if (wasDraggingRef.current) {
+                        wasDraggingRef.current = false;
+                        return;
+                    }
+                    enterBlockBuilder(block.day_id);
+                    selectBlock(block.id);
+                }}
             >
                 {/* Card Inner Content */}
                 <div className="p-2">
