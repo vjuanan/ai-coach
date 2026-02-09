@@ -230,9 +230,9 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                 key={block.id}
                                                 onClick={() => selectBlock(block.id)}
                                                 className={`
-                                                    group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left min-w-[150px] cursor-pointer
+                                                    group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left min-w-[150px] cursor-pointer hover:z-20
                                                     ${isActive
-                                                        ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-md ring-2 ring-cv-accent/30 scale-[1.02]'
+                                                        ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-md ring-2 ring-cv-accent/30 scale-[1.02] z-10'
                                                         : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700'
                                                     }
                                                 `}
@@ -256,13 +256,26 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                     }
                                                 }}
                                             >
-                                                {/* Delete X Button - Visible on Hover */}
+                                                {/* Delete X Button - Visible on Hover - Premium Style */}
                                                 <button
                                                     onClick={(e) => handleDeleteBlock(e, block)}
-                                                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md hover:bg-red-600 hover:scale-110 z-50"
+                                                    className="
+                                                        absolute top-1.5 right-1.5 
+                                                        w-6 h-6 
+                                                        rounded-full 
+                                                        bg-white/90 dark:bg-slate-800/90 
+                                                        text-slate-400 hover:text-white 
+                                                        border border-slate-200 dark:border-slate-600
+                                                        flex items-center justify-center 
+                                                        opacity-0 group-hover:opacity-100 
+                                                        transition-all duration-200 
+                                                        shadow-sm hover:shadow-md 
+                                                        hover:bg-red-500 hover:border-red-500
+                                                        z-50
+                                                    "
                                                     title="Eliminar bloque"
                                                 >
-                                                    <X size={10} className="stroke-[3]" />
+                                                    <X size={12} strokeWidth={2.5} />
                                                 </button>
 
                                                 <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'
