@@ -1,10 +1,7 @@
-# TODO - Exportación de Programas
+# Export Alignment Fixes
 
-## Tareas
-
-- [x] Crear `ProgramCardExporter.tsx` con lógica de exportación PNG/PDF *(ya existía)*
-- [x] Modificar `ProgramsGrid.tsx` - agregar botón de exportar en cada card
-- [x] Modificar `ProgramsTable.tsx` - agregar botón de exportar en acciones
-- [x] Modificar `page.tsx` - integrar exportador y botón masivo
-- [x] Push a GitHub y verificar en producción
-- [x] Verificar con screenshots que funciona correctamente
+- [ ] Identify the components responsible for the export view.
+- [ ] Fix the header alignment (Name, Gym, Week count).
+- [ ] Fix the Weekly Detail alignment (Title, Objective, Days).
+- [ ] Verify the changes by code review.
+- [ ] Manual verification by user (as requested).

@@ -104,7 +104,7 @@ interface EditorState {
     deleteProgression: (progressionId: string) => void; // New action
     reorderBlocks: (dayId: string, blockIds: string[]) => void;
     duplicateBlock: (blockId: string, targetDayId?: string) => void;
-    toggleBlockProgression: (blockId: string, isProgression: boolean) => void;
+    toggleBlockProgression: (blockId: string, isProgression: boolean, progressionVariable?: 'sets' | 'reps' | 'percentage') => void;
 
     // Day operations
     updateDay: (dayId: string, updates: Partial<DraftDay>) => void;
@@ -501,7 +501,7 @@ export const useEditorStore = create<EditorState>()(
             },
 
             // Toggle progression for an existing block
-            toggleBlockProgression: (blockId, isProgression) => {
+            toggleBlockProgression: (blockId, isProgression, progressionVariable) => {
                 const { mesocycles } = get();
 
                 // 1. Find the source block
@@ -535,7 +535,15 @@ export const useEditorStore = create<EditorState>()(
                                     ...day,
                                     blocks: day.blocks.map(b =>
                                         b.id === blockId
-                                            ? { ...b, progression_id: progressionId, isDirty: true }
+                                            ? {
+                                                ...b,
+                                                progression_id: progressionId,
+                                                config: {
+                                                    ...b.config,
+                                                    progression_variable: progressionVariable
+                                                },
+                                                isDirty: true
+                                            }
                                             : b
                                     )
                                 })),
@@ -556,6 +564,10 @@ export const useEditorStore = create<EditorState>()(
                                         day_id: day.id,
                                         order_index: day.blocks.length, // Append to end
                                         progression_id: progressionId,
+                                        config: {
+                                            ...sourceBlock!.config,
+                                            progression_variable: progressionVariable
+                                        },
                                         isDirty: true
                                     };
                                     return {
@@ -581,7 +593,15 @@ export const useEditorStore = create<EditorState>()(
                                 ...day,
                                 blocks: day.blocks.map(b =>
                                     b.progression_id === currentProgressionId
-                                        ? { ...b, progression_id: null, isDirty: true }
+                                        ? {
+                                            ...b,
+                                            progression_id: null,
+                                            config: {
+                                                ...b.config,
+                                                progression_variable: undefined
+                                            },
+                                            isDirty: true
+                                        }
                                         : b
                                 )
                             })),

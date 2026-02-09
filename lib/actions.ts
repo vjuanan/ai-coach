@@ -213,6 +213,58 @@ export async function copyTemplateToProgram(templateId: string, assignedClientId
         // We verified the user via ensureCoach, so we can safely write as admin.
         const writeClient = adminSupabase;
 
+        // HANDLE PROFILE-TO-CLIENT CONVERSION
+        // If assignedClientId is provided, check if it's already a client. 
+        // If not, and it's a valid profile, create the client record first.
+        let finalClientId = assignedClientId || null;
+
+        if (assignedClientId) {
+            // Check if exists in clients
+            const { data: existingClient } = await writeClient
+                .from('clients')
+                .select('id')
+                .eq('id', assignedClientId)
+                .single();
+
+            if (!existingClient) {
+                console.log(`Client ${assignedClientId} not found in clients table. Checking profiles...`);
+                // Check if exists in profiles
+                const { data: profile } = await writeClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', assignedClientId)
+                    .single();
+
+                if (profile) {
+                    console.log(`Found profile ${profile.id}. Auto-creating client record...`);
+                    // Create client record
+                    const isGym = profile.role === 'gym';
+                    const { data: newClient, error: clientCreateError } = await writeClient
+                        .from('clients')
+                        .insert({
+                            id: profile.id, // Keep same ID as profile for consistency 1-to-1
+                            coach_id: coachId,
+                            type: isGym ? 'gym' : 'athlete',
+                            name: isGym ? (profile.gym_name || profile.full_name || 'Gimnasio') : (profile.full_name || 'Atleta'),
+                            email: profile.email,
+                            details: { source: 'auto-created-from-profile' }
+                        })
+                        .select()
+                        .single();
+
+                    if (clientCreateError) {
+                        // If error is duplicate key, it might have been created concurrently, or some other issue.
+                        // But if it's duplicate key, we should be fine to use the ID.
+                        console.warn('Error creating client from profile (might exist):', clientCreateError);
+                    } else {
+                        console.log('Successfully created client from profile:', newClient.id);
+                    }
+                    // Even if error (e.g. race condition), we try to use the ID. 
+                    // If it failed because of something else, the program insert will fail next and be caught.
+                }
+            }
+        }
+
         const { data: newProgram, error: newProgError } = await writeClient
             .from('programs')
             .insert({
@@ -222,7 +274,7 @@ export async function copyTemplateToProgram(templateId: string, assignedClientId
                 status: 'draft',
                 // Explicitly not a template
                 is_template: false,
-                client_id: assignedClientId || null // Assign if provided
+                client_id: finalClientId
             })
             .select()
             .single();

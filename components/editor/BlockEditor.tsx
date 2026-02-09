@@ -62,6 +62,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     // const [methodologies, setMethodologies] = useState<TrainingMethodology[]>([]); // Removed local state
     const [loading, setLoading] = useState(trainingMethodologies.length === 0);
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+    const [showProgressionSelector, setShowProgressionSelector] = useState(false);
     const firstInputRef = useRef<HTMLInputElement>(null);
 
     // Load methodologies from database (only if not already loaded)
@@ -333,7 +334,8 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                         </label>
 
                         {/* Progression Toggle */}
-                        <div className="flex items-center gap-3">
+                        {/* Progression Toggle */}
+                        <div className="flex items-center gap-3 relative">
                             <label className="flex items-center gap-2 cursor-pointer group select-none">
                                 <span className={`text-xs font-semibold transition-colors ${block.progression_id ? 'text-cv-accent' : 'text-cv-text-tertiary group-hover:text-cv-text-secondary'}`}>
                                     Progresión
@@ -343,7 +345,13 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                         type="checkbox"
                                         className="sr-only"
                                         checked={Boolean(block.progression_id)}
-                                        onChange={(e) => toggleBlockProgression(blockId, e.target.checked)}
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                setShowProgressionSelector(true);
+                                            } else {
+                                                toggleBlockProgression(blockId, false);
+                                            }
+                                        }}
                                     />
                                     <div className={`w-8 h-4 rounded-full transition-colors ${block.progression_id ? 'bg-cv-accent' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
                                     <div className={`absolute top-0.5 left-0.5 bg-white w-3 h-3 rounded-full transition-transform ${block.progression_id ? 'translate-x-4' : 'translate-x-0'}`}></div>
@@ -352,6 +360,41 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             {block.progression_id && (
                                 <div className="text-cv-accent animate-in fade-in zoom-in duration-200" title="Progresión activa">
                                     <Link size={14} />
+                                </div>
+                            )}
+
+                            {/* Progression Variable Selector */}
+                            {showProgressionSelector && (
+                                <div className="absolute top-8 right-0 z-50 w-64 p-4 bg-white dark:bg-cv-bg-secondary rounded-xl shadow-cv-lg border border-cv-border animate-in zoom-in-95 duration-200">
+                                    <h4 className="text-sm font-semibold mb-3 text-cv-text-primary">Variable Principal</h4>
+                                    <div className="space-y-2">
+                                        {[
+                                            { id: 'percentage', label: '% 1RM', desc: 'Fuerza', icon: '🔥' },
+                                            { id: 'sets', label: 'Series', desc: 'Volumen', icon: '📊' },
+                                            { id: 'reps', label: 'Repeticiones', desc: 'Volumen', icon: '🔁' },
+                                        ].map(opt => (
+                                            <button
+                                                key={opt.id}
+                                                onClick={() => {
+                                                    toggleBlockProgression(blockId, true, opt.id as any);
+                                                    setShowProgressionSelector(false);
+                                                }}
+                                                className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-sm flex items-center justify-between group transition-colors"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-base">{opt.icon}</span>
+                                                    <span className="font-medium text-cv-text-secondary group-hover:text-cv-text-primary">{opt.label}</span>
+                                                </div>
+                                                <span className="text-[10px] text-cv-text-tertiary uppercase tracking-wider">{opt.desc}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <button
+                                        onClick={() => setShowProgressionSelector(false)}
+                                        className="mt-3 w-full text-xs text-cv-text-tertiary hover:text-cv-text-secondary text-center py-1"
+                                    >
+                                        Cancelar
+                                    </button>
                                 </div>
                             )}
                         </div>

@@ -11,13 +11,14 @@ The goal is to fix the Foreign Key violation error when assigning a template to 
 ### [Backend Logic] `lib/actions.ts`
 
 #### [MODIFY] [actions.ts](file:///Users/juanan/Library/CloudStorage/OneDrive-EPNStore/Team%20Ventas%20y%20Administracion%20%F0%9F%A4%91/AI%20Deveolpments/AI%20Coach/lib/actions.ts)
-- Modify `copyTemplateToProgram` function.
-- Before creating the program, check if `assignedClientId` exists in the `clients` table.
-- If it doesn't exist, check if it exists in the `profiles` table.
-- If found in `profiles`:
-    - Create a new `client` record linked to the current `coachId`, using the profile's name and email.
-    - Use the newly created `client.id` as the `client_id` for the new program.
-    - Set the `type` of the client based on the profile role ('athlete' or 'gym').
+- [x] Modified `copyTemplateToProgram` function.
+    - Check if `assignedClientId` exists in `clients`.
+    - If not, check `profiles` table.
+    - If found in `profiles`, auto-create a `client` record with the same ID, effectively "onboarding" the user as a client.
+    - Use this ID for the new program's `client_id` to satisfy FK constraint.
+- [x] Modified `getClients` function.
+    - Only Admins can see self-registered profiles in the list.
+    - Coaches only see their assigned clients from the `clients` table.
 
 ## Verification Plan
 

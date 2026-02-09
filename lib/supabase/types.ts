@@ -13,6 +13,7 @@ export interface StrengthConfig {
     percentage?: string;
     tempo?: string;
     rest?: string;
+    distance?: string | number; // For distance-based exercises
     notes?: string;
     [key: string]: any;
 }
@@ -194,6 +195,12 @@ export interface Exercise {
     equipment: string[];
     description: string | null;
     video_url: string | null;
+    tracking_parameters?: {
+        distance?: boolean;
+        time?: boolean;
+        weight?: boolean;
+        reps?: boolean;
+    } | null;
     created_at: string;
 }
 
