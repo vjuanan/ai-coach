@@ -166,13 +166,13 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                 {...listeners}
                 {...attributes}
                 className={`
-                    group relative bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm cursor-grab active:cursor-grabbing touch-none
+                    group relative bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer active:cursor-grabbing touch-none
                     transition-all duration-200
                     ${blockStyle.color}
                     ${isSelected ? 'ring-2 ring-cv-accent' : ''}
                     ${isBeingDragged
                         ? 'opacity-50 scale-95 shadow-none'
-                        : 'hover:-translate-y-0.5 hover:border-slate-300 dark:hover:border-slate-600'
+                        : 'hover:-translate-y-0.5 hover:border-cv-accent hover:shadow-lg hover:shadow-cv-accent/20 hover:scale-[1.01]'
                     }
                 `}
                 onClick={(e) => {

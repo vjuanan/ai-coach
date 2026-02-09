@@ -301,7 +301,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                     <div className="flex-1 overflow-hidden relative">
                         {selectedBlockId ? (
                             <div className="h-full">
-                                <BlockEditor blockId={selectedBlockId} autoFocusFirst={true} />
+                                <BlockEditor blockId={selectedBlockId} autoFocusFirst={false} />
                             </div>
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center text-center p-8">

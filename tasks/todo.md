@@ -1,19 +1,14 @@
-#- [x] **Modificar Store** (`lib/store/index.ts`)
-  - [x] Actualizar `toggleBlockProgression` para aceptar `progressionVariable`
-  - [x] Guardar `progression_variable` en config del bloque
+# Implementar Click en Área de Bloque
 
-- [x] **Modificar BlockEditor** (`components/editor/BlockEditor.tsx`)
-  - [x] Agregar selector de variable al activar switch de Progresión
-  - [x] Opciones: Series, Repeticiones, % 1RM
-  - [x] Hacer obligatorio elegir una opción
+## Objetivo
+- Al hacer hover sobre cualquier área del bloque, poder hacer click para ir a la edición del mismo (sin seleccionar un componente específico)
+- Si se hace click sobre un componente específico, se abre directamente ESE componente
 
-- [x] **Modificar Exportación**
-  - [x] Actualizar `MesocycleEditor.tsx` para extraer `progression_variable`
-  - [x] Actualizar `ExportPreview.tsx` para mostrar badges VOLUMEN/FUERZA
+## Tareas
 
-- [x] **Modificar ProgressionPreview** (`components/editor/ProgressionPreview.tsx`)
-  - [x] Identify the components responsible for the export view.
-- [x] Fix the header alignment (Name, Gym, Week count).
-- [x] Fix the Weekly Detail alignment (Title, Objective, Days).
-- [x] Verify the changes by code review.
-- [x] Manual verification by user (as requested).
+- [/] Analizar estructura actual de bloques y componentes
+- [ ] Modificar `WorkoutBlockCard.tsx` para:
+  - Hacer clickeable toda el área del bloque → abre Block Builder con el bloque seleccionado
+  - Detectar clicks en ejercicios específicos → abre Block Builder en ese ejercicio
+- [ ] Agregar indicador visual de hover en el área del bloque
+- [ ] Verificar cambios en producción con screenshots
