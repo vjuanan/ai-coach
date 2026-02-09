@@ -1014,13 +1014,13 @@ function InputCard({
                 )}
 
                 {/* Presets */}
-                <div className="flex gap-1 flex-wrap justify-center px-1">
+                <div className="flex gap-1 flex-wrap justify-center w-full">
                     {presets.map(preset => (
                         <button
                             key={preset}
                             onClick={() => onChange(preset)}
                             className={`
-                                flex-shrink-0 px-2 py-1 rounded-md text-[10px] font-semibold transition-all border
+                                flex-shrink-0 min-w-[36px] px-2 py-1 rounded-md text-[10px] font-semibold transition-all border whitespace-nowrap
                                 ${value == preset
                                     ? 'bg-cv-accent text-white border-cv-accent'
                                     : 'bg-slate-50 dark:bg-slate-800 text-cv-text-secondary border-slate-100 dark:border-slate-700 hover:border-cv-accent/30'}
