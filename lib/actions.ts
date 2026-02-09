@@ -1534,32 +1534,7 @@ export async function saveMesocycleChanges(
                         throw insertError;
                     }
 
-                    // --- ANTI-GRAVITY DIAGNOSTIC: VERIFY INSERTION & RLS ---
-                    // 1. Check if Admin can see them (Did insert really work?)
-                    const { count: adminCount, error: adminCountError } = await adminSupabase
-                        .from('workout_blocks')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('day_id', day.id);
 
-                    if (adminCountError) throw adminCountError;
-
-                    if (adminCount !== day.blocks.length) {
-                        console.error(`DIAGNOSTIC FAIL: Inserted ${day.blocks.length} blocks but Admin found ${adminCount}`);
-                        throw new Error(`INSERT_VERIFICATION_FAILED: Expected ${day.blocks.length}, found ${adminCount}`);
-                    }
-
-                    // 2. Check if User can see them (Is RLS blocking read?)
-                    const { count: userCount, error: userCountError } = await supabase
-                        .from('workout_blocks')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('day_id', day.id);
-
-                    if (userCountError || userCount !== day.blocks.length) {
-                        console.error(`DIAGNOSTIC FAIL: RLS Blocking Read? Admin=${adminCount}, User=${userCount}`);
-                        // Throwing specific error to catch in UI/Logs
-                        throw new Error(`RLS_READ_BLOCKED: Admin saw ${adminCount}, User saw ${userCount}. Check Policies.`);
-                    }
-                    // -------------------------------------------------------
                 }
             }
         }

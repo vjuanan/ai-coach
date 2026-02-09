@@ -96,14 +96,6 @@ export function ProgressionBlockCard({
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {/* Quick preview of values when collapsed */}
-                    {!isExpanded && isStrength && (
-                        <div className="flex items-center gap-1.5 text-xs text-cv-text-tertiary">
-                            {sets && <span>{String(sets)}x{reps ? String(reps) : '?'}</span>}
-                            {percentage && <span>@{String(percentage)}%</span>}
-                        </div>
-                    )}
-
                     {/* Go to week button */}
                     {!isCurrent && (
                         <button

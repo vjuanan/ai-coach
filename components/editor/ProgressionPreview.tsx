@@ -61,9 +61,13 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
     // Sort by week number
     progressionBlocks.sort((a, b) => a.weekNumber - b.weekNumber);
 
-    // If no blocks found or only current block, don't show preview
-    if (progressionBlocks.length <= 1) {
-        return null;
+    // If no blocks found, still show (shouldn't happen if progression_id is valid)
+    if (progressionBlocks.length === 0) {
+        return (
+            <div className="mt-4 p-3 text-sm text-cv-text-tertiary italic bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-dashed border-slate-200 dark:border-slate-700">
+                No se encontraron bloques vinculados a esta progresión.
+            </div>
+        );
     }
 
     const totalWeeks = progressionBlocks.length;
@@ -86,8 +90,8 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                 </div>
                 {progressionBlocks[0]?.config?.progression_variable && (
                     <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${(progressionBlocks[0].config.progression_variable as string) === 'percentage'
-                            ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
-                            : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+                        ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+                        : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
                         }`}>
                         {(progressionBlocks[0].config.progression_variable as string) === 'percentage' ? 'Fuerza' : 'Volumen'}
                     </span>

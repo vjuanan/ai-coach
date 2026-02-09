@@ -38,6 +38,7 @@ interface DayCardProps {
     dayName: string;
     compact?: boolean;
     isActiveInBuilder?: boolean;
+    hideHeader?: boolean;
 }
 
 const blockTypeOptions: { type: BlockType; label: string; color: string }[] = [
@@ -49,7 +50,7 @@ const blockTypeOptions: { type: BlockType; label: string; color: string }[] = [
     { type: 'free_text', label: 'Texto Libre', color: 'bg-gray-500' },
 ];
 
-export function DayCard({ day, dayName, compact = false, isActiveInBuilder = false }: DayCardProps) {
+export function DayCard({ day, dayName, compact = false, isActiveInBuilder = false, hideHeader = false }: DayCardProps) {
     const { addBlock, toggleRestDay, selectDay, selectBlock, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures, clearDay, enterBlockBuilder, blockBuilderMode, draggedBlockId } = useEditorStore();
 
     // Setup droppable
@@ -61,6 +62,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
     const isSelected = selectedDayId === day.id;
     const isDropTarget = isOver || dropTargetDayId === day.id;
     const isDragging = draggedBlockId !== null;
+    const shouldHideHeader = hideHeader || isActiveInBuilder || blockBuilderMode;
 
     // Resolve Stimulus Color
     const activeStimulus = day.stimulus_id ? stimulusFeatures.find(s => s.id === day.stimulus_id) : null;
@@ -135,18 +137,20 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                 onClick={() => selectDay(day.id)}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
-                    <div>
-                        <h3 className="text-base font-bold text-cv-text-primary">{dayName}</h3>
+                {!shouldHideHeader && (
+                    <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
+                        <div>
+                            <h3 className="text-base font-bold text-cv-text-primary">{dayName}</h3>
+                        </div>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); toggleRestDay(day.id); }}
+                            className="cv-btn-ghost p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                            title="Editar día"
+                        >
+                            <MoreHorizontal size={16} />
+                        </button>
                     </div>
-                    <button
-                        onClick={(e) => { e.stopPropagation(); toggleRestDay(day.id); }}
-                        className="cv-btn-ghost p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
-                        title="Editar día"
-                    >
-                        <MoreHorizontal size={16} />
-                    </button>
-                </div>
+                )}
 
                 {/* Rest Day Content */}
                 <div className="flex-1 flex flex-col items-center justify-center text-cv-text-tertiary">
@@ -198,7 +202,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
             )}
 
             {/* Header - Only show when NOT in builder mode */}
-            {!isActiveInBuilder && (
+            {!shouldHideHeader && (
                 <div className="relative z-10 flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex-1 cursor-pointer" onClick={() => enterBlockBuilder(day.id)}>
                         <h3 className="text-base font-bold text-cv-text-primary">{dayName}</h3>

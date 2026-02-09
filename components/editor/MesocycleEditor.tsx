@@ -1,4 +1,6 @@
 'use client';
+// Force rebuild timestamp: 2026-02-09T18:48:00
+
 
 import { useCallback, useState, useMemo, useEffect } from 'react';
 import { useEditorStore } from '@/lib/store';
@@ -20,7 +22,8 @@ import {
     CloudOff,
     Edit3,
     ArrowLeft,
-    Save
+    Save,
+    Zap
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -187,6 +190,14 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
     const router = useRouter();
 
+    // Handle Save & Exit
+    const handleSaveAndExit = useCallback(async () => {
+        if (hasUnsavedChanges) {
+            await forceSave();
+        }
+        exitBlockBuilder();
+    }, [hasUnsavedChanges, forceSave, exitBlockBuilder]);
+
     // Handle ESC Navigation & Actions
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -201,7 +212,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                 }
 
                 if (blockBuilderMode) {
-                    exitBlockBuilder();
+                    handleSaveAndExit();
                 } else {
                     // Save validation before exit
                     if (hasUnsavedChanges) {
@@ -213,7 +224,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [blockBuilderMode, exitBlockBuilder, hasUnsavedChanges, forceSave, router, showExport, showStrategy]);
+    }, [blockBuilderMode, exitBlockBuilder, hasUnsavedChanges, forceSave, router, showExport, showStrategy, handleSaveAndExit]);
 
     // Find day name for Block Builder
     const blockBuilderDayName = useMemo(() => {
@@ -377,9 +388,9 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                         {/* Back Button - Conditional behavior based on mode */}
                         {blockBuilderMode ? (
                             <button
-                                onClick={exitBlockBuilder}
+                                onClick={handleSaveAndExit}
                                 className="cv-btn-ghost p-1.5 rounded-lg flex items-center gap-1 text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                                title="Volver a Vista Semanal"
+                                title="Guardar y Volver a Vista Semanal"
                             >
                                 <ArrowLeft size={16} />
                             </button>
@@ -397,19 +408,33 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
                         {/* Program Name (Editable feel) */}
                         <div>
-                            <h2 className="text-sm font-semibold text-cv-text-primary flex items-center gap-1.5">
-                                {programName}
-                                {currentMesocycle?.focus && (
-                                    <>
-                                        <span className="text-cv-text-tertiary">/</span>
-                                        <span className="text-cv-accent font-medium">{currentMesocycle.focus}</span>
-                                    </>
-                                )}
-                            </h2>
+                            {blockBuilderMode ? (
+                                <div className="flex items-center gap-2">
+                                    <div className="w-5 h-5 rounded flex items-center justify-center bg-cv-accent/10">
+                                        <Zap size={12} className="text-cv-accent" />
+                                    </div>
+                                    <span className="text-sm font-bold text-cv-text-primary">Block Builder</span>
+                                    {blockBuilderDayName && (
+                                        <span className="text-xs text-cv-text-tertiary font-medium px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800">
+                                            {blockBuilderDayName}
+                                        </span>
+                                    )}
+                                </div>
+                            ) : (
+                                <h2 className="text-sm font-semibold text-cv-text-primary flex items-center gap-1.5">
+                                    {programName}
+                                    {currentMesocycle?.focus && (
+                                        <>
+                                            <span className="text-cv-text-tertiary">/</span>
+                                            <span className="text-cv-accent font-medium">{currentMesocycle.focus}</span>
+                                        </>
+                                    )}
+                                </h2>
+                            )}
                         </div>
 
                         {/* Save Status Indicator */}
-                        <SaveStatusIndicator status={saveStatus} />
+                        {!blockBuilderMode && <SaveStatusIndicator status={saveStatus} />}
                     </div>
 
                     {/* Center - Week Tabs */}
@@ -433,31 +458,47 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                     {/* Right Section - Actions */}
                     <div className="flex items-center gap-1">
                         {/* Manual Save Button - HIGHLIGHTED */}
-                        <button
-                            onClick={() => forceSave()}
-                            disabled={saveStatus === 'saving'}
-                            className={`
-                            px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-all mr-1
-                            ${hasUnsavedChanges
-                                    ? 'bg-cv-accent text-white hover:bg-cv-accent/90 shadow-sm'
-                                    : 'bg-transparent text-cv-text-secondary hover:bg-slate-100 dark:hover:bg-slate-800'}
-                        `}
-                            title={hasUnsavedChanges ? 'Guardar cambios' : 'Todo guardado'}
-                        >
-                            {saveStatus === 'saving' ? (
-                                <Loader2 size={14} className="animate-spin" />
-                            ) : hasUnsavedChanges ? (
-                                <Save size={14} />
-                            ) : (
-                                <CheckCircle2 size={14} className="text-emerald-500" />
-                            )}
+                        {blockBuilderMode ? (
+                            <button
+                                onClick={handleSaveAndExit}
+                                className="px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-all mr-1 bg-green-500 hover:bg-green-600 text-white shadow-sm"
+                                title="Guardar cambios y salir"
+                            >
+                                {saveStatus === 'saving' ? (
+                                    <Loader2 size={14} className="animate-spin" />
+                                ) : (
+                                    <CheckCircle2 size={14} />
+                                )}
+                                Guardar y Salir
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => forceSave()}
+                                disabled={saveStatus === 'saving'}
+                                className={`
+                                px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-all mr-1
+                                ${hasUnsavedChanges
+                                        ? 'bg-cv-accent text-white hover:bg-cv-accent/90 shadow-sm'
+                                        : 'bg-transparent text-cv-text-secondary hover:bg-slate-100 dark:hover:bg-slate-800'}
+                            `}
+                                title={hasUnsavedChanges ? 'Guardar cambios' : 'Todo guardado'}
+                            >
+                                {saveStatus === 'saving' ? (
+                                    <Loader2 size={14} className="animate-spin" />
+                                ) : hasUnsavedChanges ? (
+                                    <Save size={14} />
+                                ) : (
+                                    <CheckCircle2 size={14} className="text-emerald-500" />
+                                )}
 
-                            {saveStatus === 'saving'
-                                ? 'Guardando...'
-                                : hasUnsavedChanges
-                                    ? 'Guardar'
-                                    : 'Guardado'}
-                        </button>
+                                {saveStatus === 'saving'
+                                    ? 'Guardando...'
+                                    : hasUnsavedChanges
+                                        ? 'Guardar'
+                                        : 'Guardado'}
+                            </button>
+                        )}
+
 
                         <div className="w-px h-4 bg-cv-border mx-1" />
 
@@ -519,7 +560,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                             <BlockBuilderPanel
                                 dayId={blockBuilderDayId}
                                 dayName={blockBuilderDayName}
-                                onClose={exitBlockBuilder}
+                                onClose={handleSaveAndExit}
                             />
                         </div>
                     </div>

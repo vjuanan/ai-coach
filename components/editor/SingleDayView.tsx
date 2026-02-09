@@ -213,9 +213,11 @@ export function SingleDayView({ mesocycle, dayId, onSelectDay }: SingleDayViewPr
             <div className="flex-1 p-4 overflow-y-auto">
                 <div className="h-full max-w-2xl mx-auto">
                     <DayCard
+                        key={displayDay.id}
                         day={displayDay}
                         dayName={DAY_NAMES[displayDayIndex]}
                         isActiveInBuilder={true}
+                        hideHeader={true}
                     />
                 </div>
             </div>

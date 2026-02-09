@@ -1,17 +1,15 @@
-# Progression Mode Fixes
+# Tareas Pendientes
 
-## Issues to Fix
-- [x] **BUG 1**: Drag and drop decia "se va a modificar en TODAS las semanas" - CORREGIDO
-- [x] **BUG 2**: Drag and drop movía todos los bloques de la progresion - CORREGIDO  
-- [x] **BUG 3**: Drag and drop tenia mucho lag en la transición - CORREGIDO
-- [x] **BUG 4**: Solo podia arrastrar desde los puntos del grip - CORREGIDO
+- [x] Analizar estructura de `MesocycleEditor.tsx` y `BlockBuilderPanel.tsx`
+- [x] Mover el encabezado de "Block Builder" a la izquierda de las semanas en `MesocycleEditor.tsx`
+- [x] Compactar el encabezado
+- [x] Reemplazar botón "Guardar" con "Guardar y Salir" en la barra superior cuando el Builder está activo
+- [x] Implementar auto-guardado al salir (Escape o Atrás)
+- [ ] Verificar cambios y asegurar que no se puede salir sin guardar
 
-## Changes Made
-- `MesocycleEditor.tsx`: Removido `moveProgressionToDay`, ahora usa solo `moveBlockToDay`
-- `MesocycleEditor.tsx`: Removido mensaje "Se moverá en todas las semanas"  
-- `MesocycleEditor.tsx`: Agregada animación suave al DragOverlay
-- `WorkoutBlockCard.tsx`: Movidos listeners de drag al contenedor principal
+# Revisión de Resultados
 
-## Verification
-- [ ] Push to GitHub
-- [ ] Test en producción
+- Se modificó `MesocycleEditor.tsx` para integrar el título "Block Builder" en la barra de herramientas principal.
+- Se implementó la lógica de `handleSaveAndExit` para guardar automáticamente al salir.
+- Se reemplazó el botón "Guardar" con "Guardar y Salir" en modo Block Builder.
+- Se eliminó el encabezado redundante de `BlockBuilderPanel.tsx`.

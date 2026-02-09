@@ -11,13 +11,21 @@ import { Loader2 } from 'lucide-react';
 export default function EditorPage() {
     const params = useParams();
     const programId = params.programId as string;
-    const { initializeEditor, loadMesocycles, resetEditor, programName } = useEditorStore();
+    const { initializeEditor, loadMesocycles, resetEditor, programName, programId: storeProgramId, mesocycles } = useEditorStore();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const [isFullScreen, setIsFullScreen] = useState(true);
 
     useEffect(() => {
+        // Prevent reloading if we already have the data for this program
+        // This avoids resetting the store (and losing unsaved changes/UI state) 
+        // when Next.js revalidates the path after an autosave.
+        if (storeProgramId === programId && mesocycles.length > 0) {
+            setIsLoading(false);
+            return;
+        }
+
         async function loadData() {
             setIsLoading(true);
             setError(null);
@@ -67,7 +75,7 @@ export default function EditorPage() {
         if (programId) {
             loadData();
         }
-    }, [programId, initializeEditor, loadMesocycles, resetEditor]);
+    }, [programId, initializeEditor, loadMesocycles, resetEditor, storeProgramId, mesocycles.length]);
 
     if (isLoading) {
         return (
