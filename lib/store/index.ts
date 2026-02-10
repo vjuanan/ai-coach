@@ -686,7 +686,7 @@ export const useEditorStore = create<EditorState>()(
             exitBlockBuilder: () => {
                 const { blockBuilderDayId } = get();
 
-                // 1. Immediate UI update - Close the builder first for speed (Optimized)
+                // 1. Immediate UI update - Close the builder first for speed
                 set({
                     blockBuilderMode: false,
                     blockBuilderDayId: null
@@ -756,29 +756,12 @@ export const useEditorStore = create<EditorState>()(
 
                     // Only update if there were changes
                     if (updatedMesocycles !== mesocycles) {
-                        // Check deep equality effectively via reference check from map above
-                        // Actually, we need to know if we *really* changed something to trigger autosave
-                        // The map always returns new refs, but we only set isDirty if changes happened inside
-
-                        // We can check if any day was marked dirty in this operation, or simply rely on the fact 
-                        // that we construct a new structure if necessary. 
-                        // The map above constructs new structure regardless. 
-
-                        // Let's refine the hasUnsavedChanges logic:
-                        // We only want to set updatedMesocycles if we actually filtered something?
-                        // But the map already ran. 
-                        // Let's check if the stringified version changed? No, too expensive.
-
-                        // Simplify: Just update. If no blocks removed, re-indexing is idempotent.
-                        // But references changed, so React will re-render. 
-                        // That's fine, it's deferred.
-
                         set({
                             mesocycles: updatedMesocycles,
                             hasUnsavedChanges: true
                         });
                     }
-                }, 0);
+                }, 50);
             },
 
             // Block Navigation - Next block in current day
