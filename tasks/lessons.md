@@ -57,3 +57,4 @@ CREATE POLICY "workout_blocks_select"
   3. **Asumir que hay problema con deployment** y notificar inmediatamente al usuario
   4. El usuario debe ir a Vercel Dashboard y forzar un redeploy manual
   5. NUNCA asumir que el cambio está en producción solo porque está en `origin/main`
+- [x] **Ambigüedad en Referencias UI**: Cuando el usuario dice "Arriba de todo" o "El header", verificar con precisión a QUÉ elemento se refiere si existen múltiples headers o instancias similares (ej: día en top bar vs día en card header). Pedir clarificación visual o describir ambos para confirmar antes de eliminar código.

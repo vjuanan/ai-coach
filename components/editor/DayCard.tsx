@@ -43,7 +43,7 @@ interface DayCardProps {
 
 const blockTypeOptions: { type: BlockType; label: string; color: string }[] = [
     { type: 'warmup', label: 'Calentamiento', color: 'bg-green-500' },
-    { type: 'strength_linear', label: 'Fuerza', color: 'bg-red-500' },
+    { type: 'strength_linear', label: 'Velocidad y Potencia', color: 'bg-red-500' },
     { type: 'metcon_structured', label: 'MetCon', color: 'bg-cv-accent' },
     { type: 'accessory', label: 'Accesorio', color: 'bg-purple-500' },
     { type: 'skill', label: 'Habilidad', color: 'bg-blue-500' },

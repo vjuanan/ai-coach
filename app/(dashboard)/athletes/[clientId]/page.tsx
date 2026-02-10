@@ -4,15 +4,12 @@ import { getCoaches } from '@/lib/actions-coach';
 import { CoachAssigner } from '@/components/athletes/CoachAssigner';
 import { GymAssigner } from '@/components/athletes/GymAssigner';
 import { ProfileDetailsEditor } from '@/components/athletes/ProfileDetailsEditor';
+import { BenchmarksEditor } from '@/components/athletes/BenchmarksEditor';
 import {
     Mail,
     Calendar,
     Ruler,
     Weight,
-    Target,
-    Activity,
-    Trophy,
-    Timer,
     ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
@@ -128,40 +125,14 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
                             }}
                         />
 
-                        {/* Benchmarks (Kept separately as they are distinct from bio profile) */}
-                        <div className="cv-card">
-                            <h3 className="font-semibold text-cv-text-primary mb-4 flex items-center gap-2">
-                                <Trophy size={18} className="text-cv-text-tertiary" />
-                                Marcajes (1RM)
-                            </h3>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="p-2 rounded-lg bg-cv-bg-tertiary border border-cv-border">
-                                    <p className="text-2xs text-cv-text-tertiary uppercase font-bold">Snatch</p>
-                                    <p className="text-lg font-bold text-cv-text-primary">{benchmarks.snatch || '-'} <span className="text-xs font-normal">kg</span></p>
-                                </div>
-                                <div className="p-2 rounded-lg bg-cv-bg-tertiary border border-cv-border">
-                                    <p className="text-2xs text-cv-text-tertiary uppercase font-bold">C&J</p>
-                                    <p className="text-lg font-bold text-cv-text-primary">{benchmarks.cnj || '-'} <span className="text-xs font-normal">kg</span></p>
-                                </div>
-                                <div className="p-2 rounded-lg bg-cv-bg-tertiary border border-cv-border">
-                                    <p className="text-2xs text-cv-text-tertiary uppercase font-bold">Back SQ</p>
-                                    <p className="text-lg font-bold text-cv-text-primary">{benchmarks.backSquat || '-'} <span className="text-xs font-normal">kg</span></p>
-                                </div>
-                                <div className="p-2 rounded-lg bg-cv-bg-tertiary border border-cv-border">
-                                    <p className="text-2xs text-cv-text-tertiary uppercase font-bold">Deadlift</p>
-                                    <p className="text-lg font-bold text-cv-text-primary">{benchmarks.deadlift || '-'} <span className="text-xs font-normal">kg</span></p>
-                                </div>
-                            </div>
-                            {details?.franTime && (
-                                <div className="mt-4 p-2 rounded-lg bg-cv-accent-muted border border-cv-accent/20 flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <Timer size={16} className="text-cv-accent" />
-                                        <span className="text-xs font-bold text-cv-accent uppercase">Fran Time</span>
-                                    </div>
-                                    <p className="font-bold text-cv-accent">{Math.floor(details.franTime / 60)}:{(details.franTime % 60).toString().padStart(2, '0')}</p>
-                                </div>
-                            )}
-                        </div>
+                        {/* Benchmarks (Editable) */}
+                        <BenchmarksEditor
+                            athleteId={athlete.id}
+                            initialStats={benchmarks}
+                            franTime={details?.franTime}
+                            run1km={details?.run1km}
+                            run5km={details?.run5km}
+                        />
                     </div>
 
                     {/* Right Column: Programs */}

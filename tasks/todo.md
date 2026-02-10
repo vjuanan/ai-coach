@@ -22,3 +22,14 @@
 - [x] Probar agregando bloques con contenido mínimo y verificar que NO se eliminan
 - [x] Verificar en producción con screenshots
 - [x] Confirmar que no afecta el flujo de trabajo normal
+
+# Corregir Header del Editor
+
+## Problema
+- [x] El día aparece duplicado: en el header superior (pequeño/badge) y en el card principal (grande/selector).
+- [x] El usuario quiere eliminar el etiqueta del header superior y mantener el selector grande.
+
+## Acciones
+- [x] Revertir cambios incorrectos en SingleDayView.tsx (restaurar selector grande).
+- [x] Modificar MesocycleEditor.tsx para eliminar el label de día del header superior.
+- [x] Verificar que los cambios se hayan pusheado correctamente.

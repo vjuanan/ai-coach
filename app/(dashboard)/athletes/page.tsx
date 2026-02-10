@@ -63,7 +63,12 @@ export default function AthletesPage() {
         deadlift: '',
         frontSquat: '',
         cleanPull: '',
-        franTime: ''  // in seconds
+        strictPress: '',
+        benchPress: '',
+        // Time-based benchmarks (seconds)
+        franTime: '',
+        run1km: '',
+        run5km: ''
     });
     const [isAdding, setIsAdding] = useState(false);
 
@@ -108,7 +113,11 @@ export default function AthletesPage() {
             deadlift: '',
             frontSquat: '',
             cleanPull: '',
-            franTime: ''
+            strictPress: '',
+            benchPress: '',
+            franTime: '',
+            run1km: '',
+            run5km: ''
         });
     }
 
@@ -134,10 +143,14 @@ export default function AthletesPage() {
                     backSquat: formData.backSquat ? parseInt(formData.backSquat) : null,
                     deadlift: formData.deadlift ? parseInt(formData.deadlift) : null,
                     frontSquat: formData.frontSquat ? parseInt(formData.frontSquat) : null,
-                    cleanPull: formData.cleanPull ? parseInt(formData.cleanPull) : null
+                    cleanPull: formData.cleanPull ? parseInt(formData.cleanPull) : null,
+                    strictPress: formData.strictPress ? parseInt(formData.strictPress) : null,
+                    benchPress: formData.benchPress ? parseInt(formData.benchPress) : null
                 },
-                // Metcon Benchmarks
-                franTime: formData.franTime ? parseInt(formData.franTime) : null  // seconds
+                // Time-based Benchmarks (seconds)
+                franTime: formData.franTime ? parseInt(formData.franTime) : null,
+                run1km: formData.run1km ? parseInt(formData.run1km) : null,
+                run5km: formData.run5km ? parseInt(formData.run5km) : null
             };
 
             await createClient({
@@ -579,16 +592,53 @@ export default function AthletesPage() {
                                             placeholder="Clean Pull"
                                             className="cv-input text-sm"
                                         />
-                                    </div>
-                                    <div className="mt-2">
-                                        <label className="block text-xs text-cv-text-tertiary mb-1">Fran Time (segundos)</label>
                                         <input
                                             type="number"
-                                            value={formData.franTime}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, franTime: e.target.value }))}
-                                            placeholder="Ej: 180 (= 3:00)"
+                                            value={formData.strictPress}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, strictPress: e.target.value }))}
+                                            placeholder="Strict Press"
                                             className="cv-input text-sm"
                                         />
+                                        <input
+                                            type="number"
+                                            value={formData.benchPress}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, benchPress: e.target.value }))}
+                                            placeholder="Bench Press"
+                                            className="cv-input text-sm"
+                                        />
+                                    </div>
+                                    <label className="block text-sm font-medium text-cv-text-primary mt-4 mb-3">Tiempos</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <div>
+                                            <label className="block text-xs text-cv-text-tertiary mb-1">Fran (seg)</label>
+                                            <input
+                                                type="number"
+                                                value={formData.franTime}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, franTime: e.target.value }))}
+                                                placeholder="180"
+                                                className="cv-input text-sm"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-cv-text-tertiary mb-1">1KM (seg)</label>
+                                            <input
+                                                type="number"
+                                                value={formData.run1km}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, run1km: e.target.value }))}
+                                                placeholder="240"
+                                                className="cv-input text-sm"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-cv-text-tertiary mb-1">5KM (seg)</label>
+                                            <input
+                                                type="number"
+                                                value={formData.run5km}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, run5km: e.target.value }))}
+                                                placeholder="1500"
+                                                className="cv-input text-sm"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

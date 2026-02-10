@@ -153,6 +153,9 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
     // Determine progression variable for highlighting
     const progressionVariable = progressionBlocks[0]?.config?.progression_variable as string | undefined;
 
+    // Check if any block has distance data
+    const hasDistance = progressionVariable === 'distance' || progressionBlocks.some(b => (b.config as any)?.distance);
+
     const handleBlockUpdate = (blockId: string, updates: { config: WorkoutConfig }) => {
         updateBlock(blockId, updates);
     };
@@ -191,9 +194,11 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                 {progressionVariable && (
                     <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${progressionVariable === 'percentage'
                         ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
-                        : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+                        : progressionVariable === 'distance'
+                            ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                            : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
                         }`}>
-                        {progressionVariable === 'percentage' ? 'Fuerza' : 'Volumen'}
+                        {progressionVariable === 'percentage' ? 'Velocidad y Potencia' : progressionVariable === 'distance' ? 'Distancia' : 'Volumen'}
                     </span>
                 )}
             </div>
@@ -206,6 +211,9 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                             <th className="px-3 py-2 text-left font-semibold text-cv-text-secondary text-xs uppercase tracking-wider w-32">Semana</th>
                             <th className={getColumnHeaderStyle('sets')}>Series</th>
                             <th className={getColumnHeaderStyle('reps')}>Reps</th>
+                            {hasDistance && (
+                                <th className={getColumnHeaderStyle('distance')}>Dist.</th>
+                            )}
                             <th className={getColumnHeaderStyle('percentage')}>%</th>
                             <th className={getColumnHeaderStyle('rest')}>Rest</th>
                             <th className={getColumnHeaderStyle('tempo')}>Tempo</th>
@@ -266,6 +274,19 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                                             placeholder="-"
                                         />
                                     </td>
+
+                                    {hasDistance && (
+                                        <td className={getColumnCellStyle('distance', isCurrentRow)}>
+                                            <TableInputWithPresets
+                                                value={(config as any).distance || ''}
+                                                onChange={(val) => handleBlockUpdate(block.blockId, {
+                                                    config: { ...config, distance: val } as WorkoutConfig
+                                                })}
+                                                presets={['200m', '400m', '800m', '1600m']}
+                                                placeholder="-"
+                                            />
+                                        </td>
+                                    )}
 
                                     <td className={getColumnCellStyle('percentage', isCurrentRow)}>
                                         <TableInputWithPresets

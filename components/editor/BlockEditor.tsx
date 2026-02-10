@@ -32,7 +32,8 @@ import {
     HelpCircle,
     Check,
     Link,
-    FileText
+    FileText,
+    Route
 } from 'lucide-react';
 import type { BlockType, WorkoutFormat, WorkoutConfig, TrainingMethodology, TrainingMethodologyFormField } from '@/lib/supabase/types';
 import type { LucideIcon } from 'lucide-react';
@@ -67,6 +68,9 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
     const [showProgressionSelector, setShowProgressionSelector] = useState(false);
     const firstInputRef = useRef<HTMLInputElement>(null);
+
+    // Check if current exercise has distance tracking (for progression selector)
+    const { searchLocal } = useExerciseCache();
 
     // Load methodologies from database (only if not already loaded)
     useEffect(() => {
@@ -268,6 +272,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 showSelector={showProgressionSelector}
                                 setShowSelector={setShowProgressionSelector}
                                 onToggle={toggleBlockProgression}
+                                showDistance={false}
                             />
                         </div>
 
@@ -373,6 +378,10 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 showSelector={showProgressionSelector}
                                 setShowSelector={setShowProgressionSelector}
                                 onToggle={toggleBlockProgression}
+                                showDistance={(() => {
+                                    const ex = block.name ? searchLocal(block.name).find(e => e.name === block.name) : null;
+                                    return ex?.tracking_parameters?.distance === true;
+                                })()}
                             />
                         </div>
 
@@ -1118,9 +1127,10 @@ interface ProgressionSettingsProps {
     showSelector: boolean;
     setShowSelector: (show: boolean) => void;
     onToggle: (blockId: string, active: boolean, variable?: any) => void;
+    showDistance?: boolean;
 }
 
-function ProgressionSettings({ blockId, progressionId, showSelector, setShowSelector, onToggle }: ProgressionSettingsProps) {
+function ProgressionSettings({ blockId, progressionId, showSelector, setShowSelector, onToggle, showDistance = false }: ProgressionSettingsProps) {
     return (
         <div className="flex items-center gap-3 relative">
             <label className="flex items-center gap-2 cursor-pointer group select-none">
@@ -1154,11 +1164,11 @@ function ProgressionSettings({ blockId, progressionId, showSelector, setShowSele
             {showSelector && (
                 <div className="absolute top-8 right-0 z-50 w-64 p-3 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200">
 
-                    {/* FUERZA Section */}
+                    {/* VELOCIDAD Y POTENCIA Section */}
                     <div className="mb-3">
                         <div className="flex items-center gap-2 px-2 py-1.5 mb-2">
                             <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                            <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Fuerza</span>
+                            <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Velocidad y Potencia</span>
                             <div className="flex-1 h-px bg-orange-200 dark:bg-orange-900/50"></div>
                         </div>
                         <button
@@ -1177,6 +1187,32 @@ function ProgressionSettings({ blockId, progressionId, showSelector, setShowSele
                             </div>
                         </button>
                     </div>
+
+                    {/* DISTANCIA Section - Only for distance exercises */}
+                    {showDistance && (
+                        <div className="mb-3">
+                            <div className="flex items-center gap-2 px-2 py-1.5 mb-2">
+                                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Distancia</span>
+                                <div className="flex-1 h-px bg-blue-200 dark:bg-blue-900/50"></div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    onToggle(blockId, true, 'distance');
+                                    setShowSelector(false);
+                                }}
+                                className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-transparent hover:border-blue-200 dark:hover:border-blue-800 flex items-center gap-3 transition-all group"
+                            >
+                                <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
+                                    <Route size={18} strokeWidth={2.5} />
+                                </div>
+                                <div>
+                                    <div className="text-sm font-semibold text-slate-800 dark:text-white">Distancia</div>
+                                    <div className="text-[11px] text-slate-500 dark:text-slate-400">Más metros por semana</div>
+                                </div>
+                            </button>
+                        </div>
+                    )}
 
                     {/* VOLUMEN Section */}
                     <div>

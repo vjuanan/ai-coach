@@ -276,6 +276,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                                 if (progressionVar === 'percentage') value = percentage || '-';
                                 else if (progressionVar === 'sets') value = sets ? `${sets} series` : '-';
                                 else if (progressionVar === 'reps') value = reps ? `${reps} reps` : '-';
+                                else if (progressionVar === 'distance') value = (config.distance as string) || '-';
                                 else value = percentage || `${sets}x${reps}`; // Default fallback
                             } else if (block.type === 'metcon_structured') {
                                 // For metcons, maybe show time cap, rounds, or just "Check"
