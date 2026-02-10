@@ -14,6 +14,7 @@
 - [x] Implementar hook/efecto que detecte bloques vacíos al salir del Block Builder
 - [x] Integrar con el store de Zustand (`useEditorStore`)
 - [x] Agregar función de limpieza automática en el momento apropiado
+- [x] Optimizar velocidad de salida (defer blocking logic) para evitar lag
 - [ ] Considerar UI feedback (opcional: mensaje breve)
 
 ## Verificación

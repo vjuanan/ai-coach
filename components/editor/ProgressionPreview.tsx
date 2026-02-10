@@ -73,7 +73,7 @@ function TableInputWithPresets({
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 onFocus={() => setIsFocused(true)}
-                className={`${width} px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold appearance-none`}
+                className={`${width} px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                 placeholder={placeholder}
                 min={min}
                 step={step}
@@ -161,18 +161,18 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
     const getColumnHeaderStyle = (variable: string) => {
         const isTarget = progressionVariable === variable;
         return `px-3 py-2 text-center font-semibold text-xs uppercase tracking-wider ${isTarget
-                ? 'text-cv-accent bg-cv-accent/10 border-b-2 border-cv-accent'
-                : 'text-cv-text-secondary'
+            ? 'text-cv-accent bg-cv-accent/10 border-b-2 border-cv-accent'
+            : 'text-cv-text-secondary'
             }`;
     };
 
     const getColumnCellStyle = (variable: string, isCurrentRow: boolean) => {
         const isTarget = progressionVariable === variable;
         return `px-3 py-3 text-center transition-colors ${isTarget
-                ? isCurrentRow
-                    ? 'bg-cv-accent/10' // slightly darker overlap? or same? Let's use specific logic.
-                    : 'bg-cv-accent/5'
-                : ''
+            ? isCurrentRow
+                ? 'bg-cv-accent/10' // slightly darker overlap? or same? Let's use specific logic.
+                : 'bg-cv-accent/5'
+            : ''
             }`;
     };
 
