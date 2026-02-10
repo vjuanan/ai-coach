@@ -8,6 +8,7 @@ import { EmomEditor } from './methodologies/EmomEditor';
 import { CircuitEditor } from './methodologies/AmrapEditor';
 import { TabataEditor } from './methodologies/TabataEditor';
 import { ProgressionPreview } from './ProgressionPreview';
+import { GenericMovementForm } from './GenericMovementForm';
 import { getTrainingMethodologies } from '@/lib/actions';
 import {
     X,
@@ -33,9 +34,23 @@ import {
     Check,
     Link,
     FileText,
-    Route
+    Route,
+    ChevronDown,
+    ChevronUp
 } from 'lucide-react';
+import { useAthleteRm } from '@/hooks/useAthleteRm';
 import type { BlockType, WorkoutFormat, WorkoutConfig, TrainingMethodology, TrainingMethodologyFormField } from '@/lib/supabase/types';
+
+interface SeriesDetail {
+    reps?: string | number;
+    weight?: string;
+    percentage?: number;
+    rpe?: number;
+    distance?: string;
+    time?: string;
+    rest?: string;
+    notes?: string;
+}
 import type { LucideIcon } from 'lucide-react';
 
 interface BlockEditorProps {
@@ -401,6 +416,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                         {/* EMOM Editor */}
                         {currentMethodology.code === 'EMOM' && (
                             <EmomEditor
+                                key={blockId}
                                 config={config}
                                 onChange={handleConfigChange}
                             />
@@ -409,6 +425,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                         {/* AMRAP Editor */}
                         {currentMethodology.code === 'AMRAP' && (
                             <CircuitEditor
+                                key={blockId}
                                 mode="AMRAP"
                                 config={config}
                                 onChange={handleConfigChange}
@@ -418,6 +435,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                         {/* RFT / Rounds For Time */}
                         {(currentMethodology.code === 'RFT' || currentMethodology.code === 'For Time') && (
                             <CircuitEditor
+                                key={blockId}
                                 mode="RFT"
                                 config={config}
                                 onChange={handleConfigChange}
@@ -427,6 +445,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                         {/* Chipper */}
                         {currentMethodology.code === 'Chipper' && (
                             <CircuitEditor
+                                key={blockId}
                                 mode="CHIPPER"
                                 config={config}
                                 onChange={handleConfigChange}
@@ -436,14 +455,26 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                         {/* Tabata */}
                         {currentMethodology.code === 'Tabata' && (
                             <TabataEditor
+                                key={blockId}
                                 config={config}
                                 onChange={handleConfigChange}
                             />
                         )}
 
-                        {/* Fallback to Dynamic Form for others (or if specialized is not covered) */}
-                        {!['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper', 'Tabata'].includes(currentMethodology.code) && (
+                        {/* Fallback to GenericMovementForm for Warmup/Accessory/Skill with methodology */}
+                        {['warmup', 'accessory', 'skill'].includes(block.type) && !['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper', 'Tabata'].includes(currentMethodology.code) && (
+                            <GenericMovementForm
+                                key={blockId}
+                                config={config}
+                                onChange={handleConfigChange}
+                                methodology={currentMethodology}
+                            />
+                        )}
+
+                        {/* Fallback to Dynamic Form for others (Metcon) */}
+                        {!['warmup', 'accessory', 'skill'].includes(block.type) && !['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper', 'Tabata'].includes(currentMethodology.code) && (
                             <DynamicMethodologyForm
+                                key={blockId}
                                 methodology={currentMethodology}
                                 config={config}
                                 onChange={handleConfigChange}
@@ -457,15 +488,15 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 {!currentMethodology && (
                     <>
                         {block.type === 'strength_linear' && (
-                            <StrengthForm config={config} onChange={handleConfigChange} onBatchChange={handleBatchConfigChange} blockName={block.name} />
+                            <StrengthForm key={blockId} config={config} onChange={handleConfigChange} onBatchChange={handleBatchConfigChange} blockName={block.name} />
                         )}
 
                         {block.type === 'free_text' && (
-                            <FreeTextForm config={config} onChange={handleConfigChange} />
+                            <FreeTextForm key={blockId} config={config} onChange={handleConfigChange} />
                         )}
 
-                        {(block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill') && !block.format && (
-                            <GenericMovementForm config={config} onChange={handleConfigChange} />
+                        {(block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill') && !currentMethodology && (
+                            <GenericMovementForm key={blockId} config={config} onChange={handleConfigChange} methodology={currentMethodology} />
                         )}
                     </>
                 )}
@@ -790,6 +821,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
 
     // Toggles
     const [intensityType, setIntensityType] = useState<'% 1RM' | 'RPE' | 'Weight'>((config.rpe && !config.percentage ? 'RPE' : '% 1RM'));
+    const [showBreakdown, setShowBreakdown] = useState(false);
 
     // Update intensity type if config changes externally (or checking initial state more robustly)
     useEffect(() => {
@@ -797,6 +829,93 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
         else if (config.rpe) setIntensityType('RPE');
     }, [config.percentage, config.rpe]);
 
+    // RM Calculation Setup
+    const { calculateKg } = useAthleteRm();
+    const calculatedWeight = (intensityType === '% 1RM' && config.percentage && blockName)
+        ? calculateKg(blockName, config.percentage as number)
+        : null;
+
+    // Series Details Logic
+    const setsCount = parseInt(config.sets as string) || 3;
+    const seriesDetails = (config.series_details as SeriesDetail[]) || [];
+
+    // Initialize/Sync series details when sets change or global values change
+    // We want to persist existing details if they exist, but resize array if sets change.
+    // However, actively syncing EVERY global change to details might be aggressive if user wants custom.
+    // Strategy: 
+    // - On render/breakdown toggle: ensure array length matches sets.
+    // - On Global Change: Update ALL series details to match global.
+
+    // Helper to get series detail or default
+    const getSeriesDetail = (index: number): SeriesDetail => {
+        const detail = seriesDetails[index] || {};
+        return {
+            reps: detail.reps !== undefined ? detail.reps : config.reps as string | number,
+            distance: detail.distance !== undefined ? detail.distance : config.distance as string,
+            percentage: detail.percentage !== undefined ? detail.percentage : config.percentage as number,
+            rpe: detail.rpe !== undefined ? detail.rpe : config.rpe as number,
+            weight: detail.weight !== undefined ? detail.weight : config.weight as string,
+            rest: detail.rest !== undefined ? detail.rest : config.rest as string,
+            time: detail.time !== undefined ? detail.time : '',
+        };
+    };
+
+    const updateSeriesDetail = (index: number, updates: Partial<SeriesDetail>) => {
+        const newDetails = [...seriesDetails];
+        // Ensure array is filled up to index
+        for (let i = 0; i <= index; i++) {
+            if (!newDetails[i]) newDetails[i] = getSeriesDetail(i);
+        }
+        newDetails[index] = { ...newDetails[index], ...updates };
+        onChange('series_details', newDetails);
+    };
+
+    const handleGlobalChange = (key: string, value: unknown) => {
+        // Update global config
+        onChange(key, value);
+
+        // If breakdown is active (or data exists), we might want to sync globals to all rows?
+        // User Rule: "Default to global, but allow breakdown".
+        // Typical behavior: Changing global overwrites ALL specifics? Or only those that matched before?
+        // Let's go with: Changing global overwrites ALL specifics to keep it simple and consistent ("Reset to Global").
+        // We will do this by CLEARING the specific overrides for that key in series_details? 
+        // Or strictly updating them.
+
+        // Actually, if we just update global 'config', the `getSeriesDetail` function falls back to global value 
+        // IF the specific value is undefined. 
+        // So clearing the specific key in `series_details` effectively resets it to global.
+
+        if (seriesDetails.length > 0) {
+            const newDetails = seriesDetails.map(d => {
+                const dCopy = { ...d };
+                // Remove the specific key so it falls back to global
+                // keys mapping:
+                if (key === 'reps') delete dCopy.reps;
+                if (key === 'distance') delete dCopy.distance;
+                if (key === 'percentage') delete dCopy.percentage;
+                if (key === 'rpe') delete dCopy.rpe;
+                if (key === 'rest') delete dCopy.rest;
+                return dCopy;
+            });
+            // We prefer 'onBatchChange' if available to do it atomically, but onChange is single key.
+            // We can't easily dual-update via `onChange`.
+            // So for now, we accept that Global update might leave old specific values if we don't clear them.
+            // BUT, to keep it "Minimalist", let's say: Global is Global. 
+            // If user wants to edit specific, they use breakdown.
+            // If they touch Global, it's a "Reset All" for that attribute.
+
+            // To implement "Reset All" for that attribute, we'd need to write 'series_details' too.
+            // Since we can't do two `onChange` calls reliably without batch, we'll try:
+            if (key === 'sets') {
+                // Resize logic is handled by the consumer (us) resizing rendering. 
+                // Actual array resizing happens when we write back to series_details.
+                // We don't strictly need to resize the DB array immediately.
+            } else {
+                // Update series_details to remove the overrides
+                onChange('series_details', newDetails);
+            }
+        }
+    };
 
     const toggleTempo = () => {
         const newValue = !showTempo;
@@ -823,11 +942,23 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                 <InputCard
                     label="SERIES"
                     value={config.sets as string | number}
-                    onChange={(val) => onChange('sets', val)}
+                    onChange={(val) => handleGlobalChange('sets', val)}
                     type="number"
                     icon={Layers}
                     presets={[3, 4, 5]}
-                    defaultValue={4}
+                    defaultValue={3}
+                    headerAction={
+                        <button
+                            onClick={() => setShowBreakdown(!showBreakdown)}
+                            className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded transition-colors ${showBreakdown
+                                ? 'bg-cv-accent text-white'
+                                : 'bg-slate-100 dark:bg-slate-800 text-cv-text-tertiary hover:text-cv-accent'
+                                }`}
+                        >
+                            <span>DESGLOSAR</span>
+                            {showBreakdown ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                        </button>
+                    }
                 />
 
                 {/* 2. REPS / DISTANCE */}
@@ -836,7 +967,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         label="DISTANCIA"
                         subLabel={exercise?.name || 'Ejercicio'}
                         value={config.distance as string}
-                        onChange={(val) => onChange('distance', val)}
+                        onChange={(val) => handleGlobalChange('distance', val)}
                         type="text"
                         icon={Activity}
                         presets={['200m', '400m', '800m']}
@@ -848,7 +979,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     <InputCard
                         label="REPETICIONES"
                         value={config.reps as string}
-                        onChange={(val) => onChange('reps', val)}
+                        onChange={(val) => handleGlobalChange('reps', val)}
                         type="number-text" // Allow ranges like 5-8
                         icon={Repeat}
                         presets={[8, 10, 12]}
@@ -862,8 +993,8 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     label={intensityType}
                     value={(intensityType === '% 1RM' ? config.percentage : config.rpe) as string | number}
                     onChange={(val) => {
-                        if (intensityType === '% 1RM') onChange('percentage', val);
-                        else onChange('rpe', val);
+                        if (intensityType === '% 1RM') handleGlobalChange('percentage', val);
+                        else handleGlobalChange('rpe', val);
                     }}
                     type="number"
                     icon={intensityType === '% 1RM' ? Percent : Flame}
@@ -877,13 +1008,14 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                             {intensityType === '% 1RM' ? 'Usar RPE' : 'Usar %'}
                         </button>
                     }
+                    badge={calculatedWeight ? `≈ ${calculatedWeight} kg` : undefined}
                 />
 
                 {/* 4. DESCANSO */}
                 <InputCard
                     label="DESCANSO"
                     value={config.rest as string}
-                    onChange={(val) => onChange('rest', val)}
+                    onChange={(val) => handleGlobalChange('rest', val)}
                     type="text"
                     icon={Clock}
                     presets={['1:30', '2:00', '3:00']}
@@ -892,6 +1024,75 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                 />
 
             </div>
+
+            {/* BREAKDOWN PANEL */}
+            {showBreakdown && (
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                    <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-2 p-2 border-b border-slate-200 dark:border-slate-700 text-[10px] font-bold text-cv-text-tertiary uppercase tracking-wider text-center">
+                        <div className="w-8">#</div>
+                        <div>{showDistance ? 'DISTANCIA' : 'REPS'}</div>
+                        <div>INTENSIDAD</div>
+                        <div>DESCANSO</div>
+                    </div>
+
+                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {Array.from({ length: setsCount }).map((_, i) => {
+                            const detail = getSeriesDetail(i);
+                            return (
+                                <div key={i} className="grid grid-cols-[auto_1fr_1fr_1fr] gap-2 p-2 items-center hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                                    <div className="w-8 text-center font-bold text-cv-text-secondary text-sm">{i + 1}</div>
+
+                                    {/* Reps/Distance */}
+                                    <input
+                                        type="text"
+                                        value={showDistance ? (detail.distance || '') : (detail.reps || '')}
+                                        onChange={(e) => updateSeriesDetail(i, showDistance ? { distance: e.target.value } : { reps: e.target.value })}
+                                        className="w-full bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-cv-accent p-1 text-center font-semibold text-cv-text-primary text-sm focus:outline-none focus:ring-0"
+                                        placeholder="-"
+                                    />
+
+                                    {/* Intensity */}
+                                    <div className="flex justify-center">
+                                        {intensityType === '% 1RM' ? (
+                                            <div className="relative w-full">
+                                                <input
+                                                    type="number"
+                                                    value={detail.percentage || ''}
+                                                    onChange={(e) => updateSeriesDetail(i, { percentage: parseInt(e.target.value) || 0 })}
+                                                    className="w-full bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-cv-accent p-1 text-center font-semibold text-cv-text-primary text-sm focus:outline-none focus:ring-0"
+                                                    placeholder="-"
+                                                />
+                                                <span className="absolute right-0 top-1 text-[10px] text-slate-400">%</span>
+                                            </div>
+                                        ) : (
+                                            <div className="relative w-full">
+                                                <input
+                                                    type="number"
+                                                    value={detail.rpe || ''}
+                                                    onChange={(e) => updateSeriesDetail(i, { rpe: parseInt(e.target.value) || 0 })}
+                                                    className="w-full bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-cv-accent p-1 text-center font-semibold text-cv-text-primary text-sm focus:outline-none focus:ring-0"
+                                                    placeholder="-"
+                                                />
+                                                <span className="absolute right-0 top-1 text-[10px] text-slate-400">RPE</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Rest */}
+                                    <input
+                                        type="text"
+                                        value={detail.rest || ''}
+                                        onChange={(e) => updateSeriesDetail(i, { rest: e.target.value })}
+                                        className="w-full bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-cv-accent p-1 text-center font-semibold text-cv-text-primary text-sm focus:outline-none focus:ring-0"
+                                        placeholder="-"
+                                    />
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
 
             {/* SECONDARY ROW: TEMPO & NOTES */}
             <div className="flex flex-wrap gap-4 items-stretch">
@@ -959,6 +1160,7 @@ interface InputCardProps {
     headerAction?: React.ReactNode;
     isDistance?: boolean;
     defaultValue?: string | number;
+    badge?: string;
 }
 
 function InputCard({
@@ -972,7 +1174,8 @@ function InputCard({
     placeholder,
     headerAction,
     isDistance,
-    defaultValue
+    defaultValue,
+    badge
 }: InputCardProps) {
 
     // Apply default value when field is empty
@@ -1011,6 +1214,12 @@ function InputCard({
                 {isDistance && <span className="text-sm font-medium text-cv-text-tertiary">meters</span>}
                 {label === '% 1RM' && <span className="text-sm font-medium text-cv-text-tertiary">%</span>}
             </div>
+
+            {badge && (
+                <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-cv-accent/10 border border-cv-accent/20 rounded-md text-[10px] font-bold text-cv-accent animate-in fade-in zoom-in duration-200 z-20">
+                    {badge}
+                </div>
+            )}
 
             {/* Presets */}
             <div className="flex items-center justify-center gap-1 z-10 mt-auto">
@@ -1062,64 +1271,7 @@ function FreeTextForm({ config, onChange }: FormProps) {
     );
 }
 
-// ============================================
-// GENERIC MOVEMENT FORM (Warmup, Accessory, Skill)
-// ============================================
-function GenericMovementForm({ config, onChange }: FormProps) {
-    const movements = (config.movements as string[]) || [];
 
-    const addMovement = () => {
-        onChange('movements', [...movements, '']);
-    };
-
-    const updateMovement = (index: number, value: string) => {
-        const updated = [...movements];
-        updated[index] = value;
-        onChange('movements', updated);
-    };
-
-    const removeMovement = (index: number) => {
-        onChange('movements', movements.filter((_, i) => i !== index));
-    };
-
-    return (
-        <div className="space-y-4">
-            <div>
-                <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                    Movimientos / Ejercicios
-                </label>
-                <div className="space-y-2">
-                    {movements.map((movement, index) => (
-                        <div key={index} className="flex gap-2">
-                            <div className="flex-1">
-                                <SmartExerciseInput
-                                    value={movement}
-                                    onChange={(val) => updateMovement(index, val)}
-                                    placeholder="e.g. 3x10 Banded Good Mornings"
-                                    className="cv-input"
-                                />
-                            </div>
-                            <button
-                                onClick={() => removeMovement(index)}
-                                className="cv-btn-ghost p-2 text-red-400 self-start mt-0.5"
-                            >
-                                <Trash2 size={16} />
-                            </button>
-                        </div>
-                    ))}
-                    <button
-                        onClick={addMovement}
-                        className="w-full py-2 border border-dashed border-cv-border rounded-lg text-cv-text-tertiary hover:text-cv-text-primary hover:border-cv-text-tertiary transition-all flex items-center justify-center gap-2"
-                    >
-                        <Plus size={14} />
-                        Add Movement
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-// Force redeploy - Thu Feb  5 17:00:43 -03 2026
 
 interface ProgressionSettingsProps {
     blockId: string;

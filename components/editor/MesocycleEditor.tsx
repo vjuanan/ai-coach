@@ -36,6 +36,7 @@ import {
     DragOverlay,
 } from '@dnd-kit/core';
 import { GripVertical } from 'lucide-react';
+import { calculateKgFromStats } from '@/hooks/useAthleteRm';
 
 interface MesocycleEditorProps {
     programId: string;
@@ -66,7 +67,8 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         setDropTarget,
         moveBlockToDay,
         moveProgressionToDay,
-        draggedBlockId
+        draggedBlockId,
+        programClient
     } = useEditorStore();
 
     // Dnd Sensors
@@ -225,6 +227,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
     // Build monthly export data with all weeks
     const exportWeeks = useMemo(() => {
         const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+        const oneRmStats = (programClient?.details as any)?.oneRmStats;
 
         return mesocycles
             .sort((a, b) => a.week_number - b.week_number)
@@ -239,11 +242,11 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                         blocks: d.blocks.map(b => ({
                             type: b.type,
                             name: b.name || b.type,
-                            content: convertConfigToText(b.type, b.config)
+                            content: convertConfigToText(b.type, b.config, b.name, oneRmStats)
                         }))
                     }))
             }));
-    }, [mesocycles]);
+    }, [mesocycles, programClient]);
 
     // Build monthly strategy with progressions
     const monthlyStrategy = useMemo(() => {
@@ -598,14 +601,21 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 }
 
 // Helper to format block config for preview
-function convertConfigToText(type: string, config: any): string[] {
+function convertConfigToText(type: string, config: any, blockName?: string | null, oneRmStats?: any): string[] {
     if (type === 'strength_linear') {
         // If distance is present, use it instead of reps or alongside
         const mainMetric = config.distance ? config.distance : config.reps;
 
+        // Calculate KG if percentage and stats match
+        let kgBadge = '';
+        if (config.percentage && blockName && oneRmStats) {
+            const kg = calculateKgFromStats(oneRmStats, blockName, config.percentage);
+            if (kg) kgBadge = `(≈${kg}kg)`;
+        }
+
         const parts = [
             config.sets && mainMetric ? `${config.sets} x ${mainMetric}` : '',
-            config.percentage ? `@ ${config.percentage}%` : '', // Added % symbol for clarity
+            config.percentage ? `@ ${config.percentage}% ${kgBadge}` : '', // Added % symbol and KG badge
             config.rpe ? `@ RPE ${config.rpe}` : ''
         ].filter(Boolean).join('  '); // Double space for better separation
 

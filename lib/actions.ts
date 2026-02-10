@@ -777,14 +777,50 @@ export async function updateAthleteProfile(clientId: string, data: any) {
         if (data.preferences !== undefined) updates.training_preferences = data.preferences;
         if (data.whatsapp !== undefined) updates.whatsapp_number = data.whatsapp;
 
-        const { error } = await supabase
-            .from('profiles')
-            .update(updates)
-            .eq('id', clientId);
+        // Update standard profile columns if any
+        if (Object.keys(updates).length > 0) {
+            const { error } = await supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', clientId);
 
-        if (error) {
-            console.error('Error updating profile:', error);
-            throw new Error('Error al actualizar perfil');
+            if (error) {
+                console.error('Error updating profile:', error);
+                throw new Error('Error al actualizar perfil');
+            }
+        }
+
+        // Benchmark data (oneRmStats, franTime, run1km, run5km) is stored in
+        // the clients table's details JSONB even for self-registered users.
+        // Try to find an associated client record, or store in a linked client row.
+        if (data.oneRmStats !== undefined || data.franTime !== undefined || data.run1km !== undefined || data.run5km !== undefined) {
+            // Try to find an existing client record linked to this profile
+            const adminSupabase = createSupabaseClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.SUPABASE_SERVICE_ROLE_KEY!
+            );
+
+            const { data: existingClient } = await adminSupabase
+                .from('clients')
+                .select('id, details')
+                .eq('id', clientId)
+                .single();
+
+            if (existingClient) {
+                // Merge benchmark data into existing client details
+                const benchmarkUpdates: any = { ...existingClient.details };
+                if (data.oneRmStats !== undefined) benchmarkUpdates.oneRmStats = data.oneRmStats;
+                if (data.franTime !== undefined) benchmarkUpdates.franTime = data.franTime;
+                if (data.run1km !== undefined) benchmarkUpdates.run1km = data.run1km;
+                if (data.run5km !== undefined) benchmarkUpdates.run5km = data.run5km;
+
+                await adminSupabase
+                    .from('clients')
+                    .update({ details: benchmarkUpdates })
+                    .eq('id', clientId);
+            }
+            // If no client record exists, benchmarks won't persist for pure profile-only users.
+            // This is acceptable: coaches create athletes via the clients table path.
         }
     } else {
         // 2. Fallback to CLIENTS table (for coach-created athletes)
