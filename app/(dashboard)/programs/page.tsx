@@ -152,11 +152,16 @@ export default function ProgramsPage() {
         if (programToDelete && !isSelectionMode) {
             setIsDeleting(true);
             try {
-                await deleteProgram(programToDelete);
-                await fetchPrograms();
-            } catch (error) {
-                console.error('Delete failed', error);
-                alert('Error al eliminar el programa');
+                const result = await deleteProgram(programToDelete);
+                if (!result.success) {
+                    console.error('Delete failed:', result.error);
+                    alert(`Error al eliminar el programa: ${result.error}`);
+                } else {
+                    await fetchPrograms();
+                }
+            } catch (error: any) {
+                console.error('Delete unexpected error', error);
+                alert(`Error al eliminar el programa: ${error.message || 'Error de red'}`);
             } finally {
                 setIsDeleting(false);
                 setProgramToDelete(null);
@@ -168,12 +173,17 @@ export default function ProgramsPage() {
         if (isSelectionMode) {
             setIsDeleting(true);
             try {
-                await deletePrograms(Array.from(selectedPrograms));
-                await fetchPrograms();
-                setSelectedPrograms(new Set());
-            } catch (error) {
-                console.error('Bulk delete failed', error);
-                alert('Error al eliminar los programas seleccionados');
+                const result = await deletePrograms(Array.from(selectedPrograms));
+                if (!result.success) {
+                    console.error('Bulk delete failed:', result.error);
+                    alert(`Error al eliminar los programas: ${result.error}`);
+                } else {
+                    await fetchPrograms();
+                    setSelectedPrograms(new Set());
+                }
+            } catch (error: any) {
+                console.error('Bulk delete unexpected error', error);
+                alert(`Error al eliminar los programas: ${error.message || 'Error de red'}`);
             } finally {
                 setIsDeleting(false);
             }

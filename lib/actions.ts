@@ -514,10 +514,10 @@ export async function createProgram(
     }
 }
 
-export async function deleteProgram(programId: string) {
+export async function deleteProgram(programId: string): Promise<{ success: boolean; error?: string }> {
     console.log('--- ACTION: deleteProgram STARTED ---', programId);
 
-    // Use Service Role Key to bypass RLS policies that might block deletion (e.g., if user is not owner but should be able to delete, or cascade issues)
+    // Use Service Role Key to bypass RLS policies that might block deletion
     const supabase = process.env.SUPABASE_SERVICE_ROLE_KEY
         ? createSupabaseClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -530,19 +530,20 @@ export async function deleteProgram(programId: string) {
 
         if (error) {
             console.error('deleteProgram: DB Error', error);
-            throw new Error(`Error DB: ${error.message} (${error.code})`);
+            return { success: false, error: `Error DB: ${error.message} (${error.code})` };
         }
 
         console.log('deleteProgram: Success');
         revalidatePath('/programs');
         revalidatePath('/');
+        return { success: true };
     } catch (err: any) {
         console.error('deleteProgram: UNEXPECTED ERROR', err);
-        throw new Error(err.message || 'Error desconocido al eliminar');
+        return { success: false, error: err.message || 'Error desconocido al eliminar' };
     }
 }
 
-export async function deletePrograms(programIds: string[]) {
+export async function deletePrograms(programIds: string[]): Promise<{ success: boolean; error?: string }> {
     console.log('--- ACTION: deletePrograms (BULK) STARTED ---', programIds.length);
 
     // Use Service Role Key to bypass RLS
@@ -558,15 +559,16 @@ export async function deletePrograms(programIds: string[]) {
 
         if (error) {
             console.error('deletePrograms: DB Error', error);
-            throw new Error(`Error DB: ${error.message} (${error.code})`);
+            return { success: false, error: `Error DB: ${error.message} (${error.code})` };
         }
 
         console.log('deletePrograms: Success');
         revalidatePath('/programs');
         revalidatePath('/');
+        return { success: true };
     } catch (err: any) {
         console.error('deletePrograms: UNEXPECTED ERROR', err);
-        throw new Error(err.message || 'Error desconocido al eliminar');
+        return { success: false, error: err.message || 'Error desconocido al eliminar' };
     }
 }
 
