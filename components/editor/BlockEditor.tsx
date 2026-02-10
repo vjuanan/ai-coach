@@ -780,7 +780,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
     const showDistance = exercise?.tracking_parameters?.distance === true;
 
     // Toggles
-    const [intensityType, setIntensityType] = useState<'% 1RM' | 'RPE' | 'Weight'>((config.percentage ? '% 1RM' : config.rpe ? 'RPE' : 'Weight'));
+    const [intensityType, setIntensityType] = useState<'% 1RM' | 'RPE' | 'Weight'>((config.rpe && !config.percentage ? 'RPE' : '% 1RM'));
 
     // Update intensity type if config changes externally (or checking initial state more robustly)
     useEffect(() => {
