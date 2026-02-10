@@ -870,33 +870,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
     }, [config.percentage, config.rpe]);
 
     // Initialize defaults to middle values
-    useEffect(() => {
-        const updates: Record<string, unknown> = {};
 
-        // Defaults: Sets 4, Reps 10, % 75, Rest 2:00
-        if (!config.sets && config.sets !== 0) updates.sets = 4;
-
-        // Handle Reps/Distance default
-        if (showDistance) {
-            if (!config.distance) updates.distance = '400m';
-        } else {
-            if (!config.reps) updates.reps = 10;
-        }
-
-        // Handle Intensity default
-        if (intensityType === '% 1RM') {
-            if (!config.percentage) updates.percentage = 75;
-        } else {
-            if (!config.rpe) updates.rpe = 9;
-        }
-
-        if (!config.rest) updates.rest = '2:00';
-
-        // Apply all at once if needed
-        if (Object.keys(updates).length > 0 && onBatchChange) {
-            onBatchChange(updates);
-        }
-    }, []); // Run once on mount (key={blockId} ensures this runs for each new block)
 
     // RM Calculation Setup
     const { calculateKg } = useAthleteRm();
@@ -1107,47 +1081,41 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                                     <div className="w-8 text-center font-bold text-cv-text-secondary text-sm">{i + 1}</div>
 
                                     {/* Reps/Distance */}
-                                    <input
+                                    <TableInputWithPresets
                                         type="text"
                                         value={showDistance ? (detail.distance || '') : (detail.reps || '')}
-                                        onChange={(e) => updateSeriesDetail(i, showDistance ? { distance: e.target.value } : { reps: e.target.value })}
-                                        className="w-full bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-cv-accent p-1 text-center font-semibold text-cv-text-primary text-sm focus:outline-none focus:ring-0"
+                                        onChange={(val) => updateSeriesDetail(i, showDistance ? { distance: val } : { reps: val })}
+                                        presets={showDistance ? ['200m', '400m', '800m'] : [5, 8, 10, 12]}
                                         placeholder="-"
                                     />
 
                                     {/* Intensity */}
-                                    <div className="flex justify-center">
+                                    <div className="flex justify-center w-full">
                                         {intensityType === '% 1RM' ? (
-                                            <div className="relative w-full">
-                                                <input
-                                                    type="number"
-                                                    value={detail.percentage || ''}
-                                                    onChange={(e) => updateSeriesDetail(i, { percentage: parseInt(e.target.value) || 0 })}
-                                                    className="w-full bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-cv-accent p-1 text-center font-semibold text-cv-text-primary text-sm focus:outline-none focus:ring-0"
-                                                    placeholder="-"
-                                                />
-                                                <span className="absolute right-0 top-1 text-[10px] text-slate-400">%</span>
-                                            </div>
+                                            <TableInputWithPresets
+                                                value={detail.percentage || ''}
+                                                onChange={(val) => updateSeriesDetail(i, { percentage: parseInt(val) || 0 })}
+                                                presets={[70, 75, 80, 85]}
+                                                placeholder="-"
+                                                suffix={<span className="text-[10px] text-slate-400">%</span>}
+                                            />
                                         ) : (
-                                            <div className="relative w-full">
-                                                <input
-                                                    type="number"
-                                                    value={detail.rpe || ''}
-                                                    onChange={(e) => updateSeriesDetail(i, { rpe: parseInt(e.target.value) || 0 })}
-                                                    className="w-full bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-cv-accent p-1 text-center font-semibold text-cv-text-primary text-sm focus:outline-none focus:ring-0"
-                                                    placeholder="-"
-                                                />
-                                                <span className="absolute right-0 top-1 text-[10px] text-slate-400">RPE</span>
-                                            </div>
+                                            <TableInputWithPresets
+                                                value={detail.rpe || ''}
+                                                onChange={(val) => updateSeriesDetail(i, { rpe: parseInt(val) || 0 })}
+                                                presets={[7, 8, 9, 10]}
+                                                placeholder="-"
+                                                suffix={<span className="text-[10px] text-slate-400">RPE</span>}
+                                            />
                                         )}
                                     </div>
 
                                     {/* Rest */}
-                                    <input
+                                    <TableInputWithPresets
                                         type="text"
                                         value={detail.rest || ''}
-                                        onChange={(e) => updateSeriesDetail(i, { rest: e.target.value })}
-                                        className="w-full bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-cv-accent p-1 text-center font-semibold text-cv-text-primary text-sm focus:outline-none focus:ring-0"
+                                        onChange={(val) => updateSeriesDetail(i, { rest: val })}
+                                        presets={['1:30', '2:00', '3:00']}
                                         placeholder="-"
                                     />
                                 </div>

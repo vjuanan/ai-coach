@@ -1,3 +1,5 @@
+import { useState, useRef, useEffect } from 'react';
+
 interface TableInputWithPresetsProps {
     value: string | number;
     onChange: (value: string) => void;

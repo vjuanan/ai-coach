@@ -784,14 +784,9 @@ export async function updateAthleteProfile(clientId: string, data: any) {
         if (data.run1km !== undefined) benchmarkUpdates.run1km = data.run1km;
         if (data.run5km !== undefined) benchmarkUpdates.run5km = data.run5km;
 
-        if (Object.keys(benchmarkUpdates).length > 0) {
-            // Fetch existing benchmarks to merge
-            const { data: currentProfile } = await supabase.from('profiles').select('benchmarks').eq('id', clientId).single();
-            const currentBenchmarks = currentProfile?.benchmarks || {};
-            updates.benchmarks = { ...currentBenchmarks, ...benchmarkUpdates };
-        }
+        if (data.run5km !== undefined) benchmarkUpdates.run5km = data.run5km;
 
-        // Update standard profile columns if any
+        // 1. Update standard profile columns
         if (Object.keys(updates).length > 0) {
             const { error } = await supabase
                 .from('profiles')
@@ -803,6 +798,26 @@ export async function updateAthleteProfile(clientId: string, data: any) {
                 throw new Error('Error al actualizar perfil');
             }
         }
+
+        // 2. Attempt to update benchmarks in profiles (Best effort)
+        if (Object.keys(benchmarkUpdates).length > 0) {
+            try {
+                const { data: currentProfile } = await supabase.from('profiles').select('benchmarks').eq('id', clientId).single();
+                const currentBenchmarks = currentProfile?.benchmarks || {};
+                const newBenchmarks = { ...currentBenchmarks, ...benchmarkUpdates };
+
+                const { error: benchmarksError } = await supabase
+                    .from('profiles')
+                    .update({ benchmarks: newBenchmarks } as any)
+                    .eq('id', clientId);
+
+                if (benchmarksError) console.warn('Could not save benchmarks to profiles (migration likely missing):', benchmarksError.message);
+            } catch (ignore) {
+                // Ignore schema errors if migration isn't run
+            }
+        }
+
+        // Benchmark data (oneRmStats, franTime, run1km, run5km) is ALSO stored in
 
         // Benchmark data (oneRmStats, franTime, run1km, run5km) is ALSO stored in
         // the clients table's details JSONB explicitly for the training program usage.
