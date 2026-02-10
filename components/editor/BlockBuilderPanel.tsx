@@ -155,7 +155,18 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
         // Default to "STANDARD" (Series x Reps) for all structured blocks
         // Only free_text remains without a format
         const format = type !== 'free_text' ? 'STANDARD' as WorkoutFormat : undefined;
-        addBlock(dayId, type, format, undefined, false);
+
+        let initialConfig = undefined;
+        if (type === 'strength_linear') {
+            initialConfig = {
+                sets: 4,
+                reps: 10,
+                percentage: 75,
+                rest: '2:00'
+            };
+        }
+
+        addBlock(dayId, type, format, undefined, false, initialConfig);
     };
 
     return (

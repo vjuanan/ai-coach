@@ -124,7 +124,7 @@ export function SmartExerciseInput({
                         onChange(e.target.value);
                     }}
                     onFocus={() => {
-                        if (query.trim().length >= 2) setIsOpen(true);
+                        setIsOpen(true);
                     }}
                     placeholder={placeholder}
                     className={`${className} pr-8`}
@@ -137,7 +137,7 @@ export function SmartExerciseInput({
             </div>
 
             {/* Dropdown */}
-            {isOpen && query.trim().length >= 2 && (
+            {isOpen && (
                 <div className="absolute z-50 w-full mt-1 bg-cv-bg-elevated border border-cv-border rounded-lg shadow-cv-lg max-h-80 overflow-y-auto transform transition-all">
                     {/* Results List */}
                     {results.length > 0 && (

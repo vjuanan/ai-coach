@@ -43,9 +43,10 @@ export function useExerciseCache() {
     }, []);
 
     const searchLocal = (query: string) => {
-        if (!query) return [];
-        const lowerQuery = query.toLowerCase().trim();
-        if (lowerQuery.length < 2) return [];
+        // if (!query) return []; // Allow empty query for "browse" behavior
+        const lowerQuery = query ? query.toLowerCase().trim() : '';
+        // if (lowerQuery.length < 2) return []; // Disable min length for local search
+
 
         return (exercises || []).filter(ex =>
             ex.name.toLowerCase().includes(lowerQuery)

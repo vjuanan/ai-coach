@@ -1,5 +1,3 @@
-import { useState, useRef, useEffect } from 'react';
-
 interface TableInputWithPresetsProps {
     value: string | number;
     onChange: (value: string) => void;
@@ -10,6 +8,7 @@ interface TableInputWithPresetsProps {
     min?: number;
     step?: number;
     suffix?: React.ReactNode;
+    inputClassName?: string;
 }
 
 export function TableInputWithPresets({
@@ -21,7 +20,8 @@ export function TableInputWithPresets({
     width = "w-full",
     min = 0,
     step = 1,
-    suffix
+    suffix,
+    inputClassName
 }: TableInputWithPresetsProps) {
     const [isFocused, setIsFocused] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -36,6 +36,9 @@ export function TableInputWithPresets({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Default underline style if no class provided
+    const defaultInputClass = "w-full bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-cv-accent p-1 text-center font-semibold text-cv-text-primary text-sm focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+
     return (
         <div className={`relative flex justify-center ${width}`} ref={containerRef}>
             <div className="relative w-full">
@@ -44,7 +47,7 @@ export function TableInputWithPresets({
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     onFocus={() => setIsFocused(true)}
-                    className="w-full bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-cv-accent p-1 text-center font-semibold text-cv-text-primary text-sm focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className={inputClassName || defaultInputClass}
                     placeholder={placeholder}
                     min={min}
                     step={step}

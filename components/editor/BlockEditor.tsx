@@ -39,6 +39,7 @@ import {
     ChevronUp,
     AlertCircle
 } from 'lucide-react';
+import { TableInputWithPresets } from './TableInputWithPresets';
 import { useAthleteRm } from '@/hooks/useAthleteRm';
 import type { BlockType, WorkoutFormat, WorkoutConfig, TrainingMethodology, TrainingMethodologyFormField } from '@/lib/supabase/types';
 
@@ -260,10 +261,36 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
             return !!match;
         }
 
-        // For structured blocks (Metcon, Warmup, etc), require a methodology (format)
+        // For structured blocks (Metcon, Warmup, etc), require a methodology (format) AND valid movements
         // The block name is optional/hidden for these types.
         if (['metcon_structured', 'warmup', 'accessory', 'skill'].includes(block.type)) {
-            return Boolean(block.format);
+            if (!block.format) return false;
+
+            // Validate Movements
+            // They can be distinct shapes in config, usually 'movements'
+            const movements = block.config.movements as any[] || [];
+
+            // If no movements, it might be valid if it's just a placeholder or text-based, 
+            // BUT user wants strictness. If there ARE movements, they MUST be valid.
+            // If the list is empty, we might allow it (or user might want at least one?)
+            // Let's assume: If you type a movement, it must be valid. 
+            // If you leave it empty, maybe that's okay? Or should we force at least one?
+            // "EN TODOS TIENE QUE ESTAR BLOQUEADO" -> implied: if I type "BA", block it.
+
+            if (movements.length > 0) {
+                for (const m of movements) {
+                    let name = '';
+                    if (typeof m === 'string') name = m;
+                    else if (typeof m === 'object' && m && 'name' in m) name = (m as any).name;
+
+                    if (name && name.trim().length > 0) {
+                        const match = searchLocal(name).find(e => e.name.toLowerCase() === name.toLowerCase());
+                        if (!match) return false; // Found an invalid movement
+                    }
+                }
+            }
+
+            return true;
         }
 
         // Default fallback
@@ -334,7 +361,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 </div>
 
                                 {/* Active Category Options */}
-                                {expandedCategory && (
+                                {expandedCategory && (groupedMethodologies[expandedCategory]?.length ?? 0) > 0 && (
                                     <div className="bg-slate-50 dark:bg-cv-bg-tertiary/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-1 duration-200">
                                         <div className="flex flex-wrap gap-2">
                                             {(groupedMethodologies[expandedCategory] || []).map(m => {
@@ -367,7 +394,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                         )}
 
                         {/* Methodology Description */}
-                        {currentMethodology && (
+                        {currentMethodology && block.type !== 'warmup' && (
                             <p className="mt-2 text-xs text-cv-text-tertiary italic">
                                 {currentMethodology.description}
                             </p>
