@@ -156,8 +156,32 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
     // Check if any block has distance data
     const hasDistance = progressionVariable === 'distance' || progressionBlocks.some(b => (b.config as any)?.distance);
 
-    const handleBlockUpdate = (blockId: string, updates: { config: WorkoutConfig }) => {
-        updateBlock(blockId, updates);
+    const handleBlockUpdate = (blockId: string, key: keyof WorkoutConfig, value: any, currentConfig: WorkoutConfig) => {
+        const newConfig = { ...currentConfig, [key]: value };
+
+        // Check if we are updating a global value that might have overrides in series_details
+        // If so, we clear the overrides so the global value takes precedence (sync behavior)
+        if (newConfig.series_details && Array.isArray(newConfig.series_details)) {
+            let detailKeyToRemove: string | null = null;
+
+            if (key === 'reps') detailKeyToRemove = 'reps';
+            else if (key === 'percentage') detailKeyToRemove = 'weight_percentage';
+            else if (key === 'rest') detailKeyToRemove = 'rest_time';
+            else if (key === 'distance') detailKeyToRemove = 'distance';
+            // Note: RPE is not currently editable in ProgressionPreview, but if it was:
+            // else if (key === 'rpe') detailKeyToRemove = 'rpe';
+
+            if (detailKeyToRemove) {
+                newConfig.series_details = newConfig.series_details.map((s: any) => {
+                    if (!s) return s;
+                    const newDetail = { ...s };
+                    delete newDetail[detailKeyToRemove!];
+                    return newDetail;
+                });
+            }
+        }
+
+        updateBlock(blockId, { config: newConfig });
     };
 
     // Style helpers for columns
@@ -256,9 +280,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                                     <td className={getColumnCellStyle('sets', isCurrentRow)}>
                                         <TableInputWithPresets
                                             value={(config as any).sets || ''}
-                                            onChange={(val) => handleBlockUpdate(block.blockId, {
-                                                config: { ...config, sets: parseInt(val) || 0 } as WorkoutConfig
-                                            })}
+                                            onChange={(val) => handleBlockUpdate(block.blockId, 'sets', parseInt(val) || 0, config)}
                                             presets={[3, 4, 5, 6]}
                                             placeholder="-"
                                         />
@@ -267,9 +289,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                                     <td className={getColumnCellStyle('reps', isCurrentRow)}>
                                         <TableInputWithPresets
                                             value={(config as any).reps || ''}
-                                            onChange={(val) => handleBlockUpdate(block.blockId, {
-                                                config: { ...config, reps: parseInt(val) || 0 } as WorkoutConfig
-                                            })}
+                                            onChange={(val) => handleBlockUpdate(block.blockId, 'reps', parseInt(val) || 0, config)}
                                             presets={[5, 8, 10, 12, 15]}
                                             placeholder="-"
                                         />
@@ -279,9 +299,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                                         <td className={getColumnCellStyle('distance', isCurrentRow)}>
                                             <TableInputWithPresets
                                                 value={(config as any).distance || ''}
-                                                onChange={(val) => handleBlockUpdate(block.blockId, {
-                                                    config: { ...config, distance: val } as WorkoutConfig
-                                                })}
+                                                onChange={(val) => handleBlockUpdate(block.blockId, 'distance', val, config)}
                                                 presets={['200m', '400m', '800m', '1600m']}
                                                 placeholder="-"
                                             />
@@ -291,9 +309,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                                     <td className={getColumnCellStyle('percentage', isCurrentRow)}>
                                         <TableInputWithPresets
                                             value={(config as any).percentage || ''}
-                                            onChange={(val) => handleBlockUpdate(block.blockId, {
-                                                config: { ...config, percentage: parseInt(val) || 0 } as WorkoutConfig
-                                            })}
+                                            onChange={(val) => handleBlockUpdate(block.blockId, 'percentage', parseInt(val) || 0, config)}
                                             presets={[60, 65, 70, 75, 80, 85, 90]}
                                             placeholder="-"
                                             step={2.5}
@@ -303,9 +319,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                                     <td className={getColumnCellStyle('rest', isCurrentRow)}>
                                         <TableInputWithPresets
                                             value={(config as any).rest || ''}
-                                            onChange={(val) => handleBlockUpdate(block.blockId, {
-                                                config: { ...config, rest: parseInt(val) || 0 } as WorkoutConfig
-                                            })}
+                                            onChange={(val) => handleBlockUpdate(block.blockId, 'rest', parseInt(val) || 0, config)}
                                             presets={[60, 90, 120, 180]}
                                             placeholder="-"
                                             step={30}
@@ -316,9 +330,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                                         <input
                                             type="text"
                                             value={(config as any).tempo || ''}
-                                            onChange={(e) => handleBlockUpdate(block.blockId, {
-                                                config: { ...config, tempo: e.target.value } as WorkoutConfig
-                                            })}
+                                            onChange={(e) => handleBlockUpdate(block.blockId, 'tempo', e.target.value, config)}
                                             className="w-20 px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-mono text-xs"
                                             placeholder="30X1"
                                         />
