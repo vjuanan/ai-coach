@@ -777,6 +777,20 @@ export async function updateAthleteProfile(clientId: string, data: any) {
         if (data.preferences !== undefined) updates.training_preferences = data.preferences;
         if (data.whatsapp !== undefined) updates.whatsapp_number = data.whatsapp;
 
+        // Construct benchmarks object if any benchmark data is present
+        const benchmarkUpdates: any = {};
+        if (data.oneRmStats !== undefined) benchmarkUpdates.oneRmStats = data.oneRmStats;
+        if (data.franTime !== undefined) benchmarkUpdates.franTime = data.franTime;
+        if (data.run1km !== undefined) benchmarkUpdates.run1km = data.run1km;
+        if (data.run5km !== undefined) benchmarkUpdates.run5km = data.run5km;
+
+        if (Object.keys(benchmarkUpdates).length > 0) {
+            // Fetch existing benchmarks to merge
+            const { data: currentProfile } = await supabase.from('profiles').select('benchmarks').eq('id', clientId).single();
+            const currentBenchmarks = currentProfile?.benchmarks || {};
+            updates.benchmarks = { ...currentBenchmarks, ...benchmarkUpdates };
+        }
+
         // Update standard profile columns if any
         if (Object.keys(updates).length > 0) {
             const { error } = await supabase
@@ -790,8 +804,8 @@ export async function updateAthleteProfile(clientId: string, data: any) {
             }
         }
 
-        // Benchmark data (oneRmStats, franTime, run1km, run5km) is stored in
-        // the clients table's details JSONB even for self-registered users.
+        // Benchmark data (oneRmStats, franTime, run1km, run5km) is ALSO stored in
+        // the clients table's details JSONB explicitly for the training program usage.
         // Try to find an associated client record, or store in a linked client row.
         if (data.oneRmStats !== undefined || data.franTime !== undefined || data.run1km !== undefined || data.run5km !== undefined) {
             // Try to find an existing client record linked to this profile

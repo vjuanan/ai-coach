@@ -10,7 +10,7 @@ const RM_MAPPINGS: [string[], string][] = [
     [['deadlift', 'peso muerto'], 'deadlift'],
     [['snatch', 'arranque', 'squat snatch'], 'snatch'],
     [['clean and jerk', 'clean & jerk', 'c&j', 'cargada y envion'], 'cnj'],
-    [['clean pull', 'tiron de cargada'], 'cleanPull'],
+    [['clean', 'clean pull', 'tiron de cargada', 'cargada'], 'clean'],
     [['strict press', 'press estricto', 'press militar', 'shoulder press', 'press de hombros'], 'strictPress'],
     [['bench press', 'press de banca', 'press banca'], 'benchPress'],
 ];
@@ -75,7 +75,7 @@ export function useAthleteRm() {
             deadlift: 'Deadlift',
             snatch: 'Snatch',
             cnj: 'C&J',
-            cleanPull: 'Clean Pull',
+            clean: 'Clean',
             strictPress: 'Strict Press',
             benchPress: 'Bench Press',
         };

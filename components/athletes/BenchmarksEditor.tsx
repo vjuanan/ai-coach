@@ -11,7 +11,7 @@ interface OneRmStats {
     backSquat?: number | null;
     frontSquat?: number | null;
     deadlift?: number | null;
-    cleanPull?: number | null;
+    clean?: number | null;
     strictPress?: number | null;
     benchPress?: number | null;
 }
@@ -30,7 +30,7 @@ const RM_FIELDS: { key: keyof OneRmStats; label: string }[] = [
     { key: 'backSquat', label: 'Back Squat' },
     { key: 'frontSquat', label: 'Front Squat' },
     { key: 'deadlift', label: 'Deadlift' },
-    { key: 'cleanPull', label: 'Clean Pull' },
+    { key: 'clean', label: 'Clean' },
     { key: 'strictPress', label: 'Strict Press' },
     { key: 'benchPress', label: 'Bench Press' },
 ];
@@ -40,6 +40,49 @@ function formatTime(seconds: number | null | undefined): string {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Helper for Time Input
+function TimeInput({ value, onChange, placeholder }: { value: number | null, onChange: (val: number | null) => void, placeholder?: string }) {
+    const mins = value ? Math.floor(value / 60) : '';
+    const secs = value ? value % 60 : '';
+
+    const handleChange = (newMins: string, newSecs: string) => {
+        const m = parseInt(newMins) || 0;
+        const s = parseInt(newSecs) || 0;
+        if (!newMins && !newSecs && value === null) return;
+        if (newMins === '' && newSecs === '') onChange(null);
+        else onChange(m * 60 + s);
+    };
+
+    return (
+        <div className="flex items-center gap-1">
+            <div className="relative flex-1">
+                <input
+                    type="number"
+                    value={mins}
+                    onChange={(e) => handleChange(e.target.value, secs.toString())}
+                    placeholder="Min"
+                    className="cv-input text-sm pr-6 text-center"
+                    min={0}
+                />
+                <span className="absolute right-2 top-1.5 text-xs text-cv-text-tertiary">m</span>
+            </div>
+            <span className="text-cv-text-tertiary font-bold">:</span>
+            <div className="relative flex-1">
+                <input
+                    type="number"
+                    value={secs === 0 && !mins ? '' : secs}
+                    onChange={(e) => handleChange(mins.toString(), e.target.value)}
+                    placeholder="Seg"
+                    className="cv-input text-sm pr-6 text-center"
+                    min={0}
+                    max={59}
+                />
+                <span className="absolute right-2 top-1.5 text-xs text-cv-text-tertiary">s</span>
+            </div>
+        </div>
+    );
 }
 
 export function BenchmarksEditor({ athleteId, initialStats, franTime, run1km, run5km }: BenchmarksEditorProps) {
@@ -191,36 +234,27 @@ export function BenchmarksEditor({ athleteId, initialStats, franTime, run1km, ru
 
             {/* Time inputs */}
             <div className="mt-4 pt-3 border-t border-cv-border">
-                <label className="block text-xs font-semibold text-cv-text-secondary mb-2">Tiempos (segundos)</label>
-                <div className="grid grid-cols-3 gap-2">
-                    <div>
-                        <label className="block text-2xs text-cv-text-tertiary uppercase font-bold mb-1">Fran</label>
-                        <input
-                            type="number"
-                            value={times.franTime ?? ''}
-                            onChange={(e) => setTimes(prev => ({ ...prev, franTime: e.target.value ? parseInt(e.target.value) : null }))}
-                            placeholder="180"
-                            className="cv-input text-sm"
+                <label className="block text-xs font-semibold text-cv-text-secondary mb-2">Tiempos</label>
+                <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-[80px_1fr] gap-2 items-center">
+                        <label className="text-2xs text-cv-text-tertiary uppercase font-bold text-right">Fran</label>
+                        <TimeInput
+                            value={times.franTime}
+                            onChange={(val) => setTimes(prev => ({ ...prev, franTime: val }))}
                         />
                     </div>
-                    <div>
-                        <label className="block text-2xs text-cv-text-tertiary uppercase font-bold mb-1">1KM</label>
-                        <input
-                            type="number"
-                            value={times.run1km ?? ''}
-                            onChange={(e) => setTimes(prev => ({ ...prev, run1km: e.target.value ? parseInt(e.target.value) : null }))}
-                            placeholder="240"
-                            className="cv-input text-sm"
+                    <div className="grid grid-cols-[80px_1fr] gap-2 items-center">
+                        <label className="text-2xs text-cv-text-tertiary uppercase font-bold text-right">1KM Run</label>
+                        <TimeInput
+                            value={times.run1km}
+                            onChange={(val) => setTimes(prev => ({ ...prev, run1km: val }))}
                         />
                     </div>
-                    <div>
-                        <label className="block text-2xs text-cv-text-tertiary uppercase font-bold mb-1">5KM</label>
-                        <input
-                            type="number"
-                            value={times.run5km ?? ''}
-                            onChange={(e) => setTimes(prev => ({ ...prev, run5km: e.target.value ? parseInt(e.target.value) : null }))}
-                            placeholder="1500"
-                            className="cv-input text-sm"
+                    <div className="grid grid-cols-[80px_1fr] gap-2 items-center">
+                        <label className="text-2xs text-cv-text-tertiary uppercase font-bold text-right">5KM Run</label>
+                        <TimeInput
+                            value={times.run5km}
+                            onChange={(val) => setTimes(prev => ({ ...prev, run5km: val }))}
                         />
                     </div>
                 </div>

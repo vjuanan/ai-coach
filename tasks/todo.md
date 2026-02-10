@@ -1,35 +1,23 @@
-# Eliminación Automática de Bloques Vacíos
+# Task: Calentamiento UI Fix
 
-## Problema
-- [x] Los bloques que se agregan pero no se completan (sin ejercicios/contenido) quedan visibles
-- [x] Ejemplo: bloques de CALENTAMIENTO, ACCESORIO, HABILIDAD sin contenido
+- [x] Locate the component rendering "Metodología de Entrenamiento" <!-- id: 0 -->
+- [x] Identify the code responsible for the "empty bar" (SmartExerciseInput & Description) <!-- id: 1 -->
+- [ ] Implement Fixes <!-- id: 2 -->
+    - [ ] Hide `currentMethodology.description` for Warmup blocks in `BlockEditor.tsx`
+    - [ ] Update `useExerciseCache.ts` to support empty queries (show all/recent)
+    - [ ] Update `SmartExerciseInput.tsx` to trigger search on focus
+- [ ] Verify the fix <!-- id: 3 -->
 
-## Análisis
-- [x] Investigar cuándo detectar que un bloque está vacío
-- [x] Determinar el mejor momento para eliminar (al salir del editor, al deseleccionar, etc.)
-- [x] Verificar la función `isBlockEmpty` existente en `BlockBuilderPanel.tsx`
-- [x] Analizar el flujo de guardado y autosave
+## Implementation Plan
 
-## Implementación
-- [x] Implementar hook/efecto que detecte bloques vacíos al salir del Block Builder
-- [x] Integrar con el store de Zustand (`useEditorStore`)
-- [x] Agregar función de limpieza automática en el momento apropiado
-- [x] Optimizar velocidad de salida (defer blocking logic) para evitar lag
-- [ ] Considerar UI feedback (opcional: mensaje breve)
+### Goal
+Resolve the issue where the user sees a "useless bar" and a confusing description in the Warmup block before selecting a methodology. The "bar" is identified as the Exercise Search Input, which currently does not show results when clicked if empty, and the description "Traditional strength training" is misleading for Warmup.
 
-## Verificación
-- [x] Probar agregando bloques vacíos y verificar que se eliminan
-- [x] Probar agregando bloques con contenido mínimo y verificar que NO se eliminan
-- [x] Verificar en producción con screenshots
-- [x] Confirmar que no afecta el flujo de trabajo normal
+### Proposed Changes
+1. **BlockEditor.tsx**: Hide the description text if `block.type === 'warmup'`.
+2. **useExerciseCache.ts**: Modify `searchLocal` to return first 50 results if query is empty (length < 2).
+3. **SmartExerciseInput.tsx**: Modify `onFocus` to open dropdown immediately (`setIsOpen(true)`) regardless of query length, relying on `searchLocal` handling empty queries.
 
-# Corregir Header del Editor
-
-## Problema
-- [x] El día aparece duplicado: en el header superior (pequeño/badge) y en el card principal (grande/selector).
-- [x] El usuario quiere eliminar el etiqueta del header superior y mantener el selector grande.
-
-## Acciones
-- [x] Revertir cambios incorrectos en SingleDayView.tsx (restaurar selector grande).
-- [x] Modificar MesocycleEditor.tsx para eliminar el label de día del header superior.
-- [x] Verificar que los cambios se hayan pusheado correctamente.
+### Verification
+- Check Warmup UI for hidden description.
+- Click on "Buscar ejercicio..." input and verify dropdown appears with list of exercises.

@@ -36,7 +36,8 @@ import {
     FileText,
     Route,
     ChevronDown,
-    ChevronUp
+    ChevronUp,
+    AlertCircle
 } from 'lucide-react';
 import { useAthleteRm } from '@/hooks/useAthleteRm';
 import type { BlockType, WorkoutFormat, WorkoutConfig, TrainingMethodology, TrainingMethodologyFormField } from '@/lib/supabase/types';
@@ -250,9 +251,13 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
             return Boolean(config.content);
         }
 
-        // For Strength (Classic), require a name (Exercise)
+        // For Strength (Classic), require a name (Exercise) AND it must be valid
         if (block.type === 'strength_linear') {
-            return Boolean(block.name && block.name.trim().length > 0);
+            if (!block.name || block.name.trim().length === 0) return false;
+            // Strict validation: must match an exercise in cache
+            // We use searchLocal to verify match.
+            const match = searchLocal(block.name).find(e => e.name.toLowerCase() === block.name?.toLowerCase());
+            return !!match;
         }
 
         // For structured blocks (Metcon, Warmup, etc), require a methodology (format)
@@ -407,6 +412,14 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             className="cv-input"
                             inputRef={firstInputRef}
                         />
+
+                        {/* Validation Warning */}
+                        {block.name && block.name.trim().length > 0 && !searchLocal(block.name).find(e => e.name.toLowerCase() === block.name?.toLowerCase()) && (
+                            <p className="text-xs text-amber-500 mt-2 flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
+                                <AlertCircle size={12} />
+                                <span>Selecciona un ejercicio válido de la lista para continuar</span>
+                            </p>
+                        )}
                     </div>
                 )}
 
@@ -829,6 +842,35 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
         else if (config.rpe) setIntensityType('RPE');
     }, [config.percentage, config.rpe]);
 
+    // Initialize defaults to middle values
+    useEffect(() => {
+        const updates: Record<string, unknown> = {};
+
+        // Defaults: Sets 4, Reps 10, % 75, Rest 2:00
+        if (!config.sets && config.sets !== 0) updates.sets = 4;
+
+        // Handle Reps/Distance default
+        if (showDistance) {
+            if (!config.distance) updates.distance = '400m';
+        } else {
+            if (!config.reps) updates.reps = 10;
+        }
+
+        // Handle Intensity default
+        if (intensityType === '% 1RM') {
+            if (!config.percentage) updates.percentage = 75;
+        } else {
+            if (!config.rpe) updates.rpe = 9;
+        }
+
+        if (!config.rest) updates.rest = '2:00';
+
+        // Apply all at once if needed
+        if (Object.keys(updates).length > 0 && onBatchChange) {
+            onBatchChange(updates);
+        }
+    }, []); // Run once on mount (key={blockId} ensures this runs for each new block)
+
     // RM Calculation Setup
     const { calculateKg } = useAthleteRm();
     const calculatedWeight = (intensityType === '% 1RM' && config.percentage && blockName)
@@ -836,7 +878,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
         : null;
 
     // Series Details Logic
-    const setsCount = parseInt(config.sets as string) || 3;
+    const setsCount = parseInt(config.sets as string) || 4; // Default to 4 for display if not set yet
     const seriesDetails = (config.series_details as SeriesDetail[]) || [];
 
     // Initialize/Sync series details when sets change or global values change
@@ -946,7 +988,6 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     type="number"
                     icon={Layers}
                     presets={[3, 4, 5]}
-                    defaultValue={3}
                     headerAction={
                         <button
                             onClick={() => setShowBreakdown(!showBreakdown)}
@@ -971,7 +1012,6 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         type="text"
                         icon={Activity}
                         presets={['200m', '400m', '800m']}
-                        defaultValue="400m"
                         placeholder="400m"
                         isDistance
                     />
@@ -983,7 +1023,6 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         type="number-text" // Allow ranges like 5-8
                         icon={Repeat}
                         presets={[8, 10, 12]}
-                        defaultValue={10}
                         placeholder="10"
                     />
                 )}
@@ -999,7 +1038,6 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     type="number"
                     icon={intensityType === '% 1RM' ? Percent : Flame}
                     presets={intensityType === '% 1RM' ? [70, 75, 80] : [8, 9, 10]}
-                    defaultValue={intensityType === '% 1RM' ? 75 : 9}
                     headerAction={
                         <button
                             onClick={() => setIntensityType(prev => prev === '% 1RM' ? 'RPE' : '% 1RM')}
@@ -1019,7 +1057,6 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     type="text"
                     icon={Clock}
                     presets={['1:30', '2:00', '3:00']}
-                    defaultValue="2:00"
                     placeholder="2:00"
                 />
 

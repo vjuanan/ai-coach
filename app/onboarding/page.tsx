@@ -8,7 +8,7 @@ import {
     Dumbbell, UserCog, Building2, ChevronRight, ChevronLeft,
     Calendar, Ruler, Weight, Target, MapPin, Clock, Activity,
     AlertCircle, MessageSquare, Camera, Upload, Check,
-    Users, Globe, Phone, Settings, LogOut
+    Users, Globe, Phone, Settings, LogOut, Trophy
 } from 'lucide-react';
 import { refreshUserRoleReference } from '../auth/actions';
 
@@ -60,6 +60,49 @@ const InputLabel = ({ icon: Icon, label }: { icon: any, label: string }) => (
     </div>
 );
 
+// Helper for Time Input
+function TimeInput({ value, onChange, placeholder }: { value: number | null, onChange: (val: number | null) => void, placeholder?: string }) {
+    const mins = value ? Math.floor(value / 60) : '';
+    const secs = value ? value % 60 : '';
+
+    const handleChange = (newMins: string, newSecs: string) => {
+        const m = parseInt(newMins) || 0;
+        const s = parseInt(newSecs) || 0;
+        if (!newMins && !newSecs && value === null) return;
+        if (newMins === '' && newSecs === '') onChange(null);
+        else onChange(m * 60 + s);
+    };
+
+    return (
+        <div className="flex items-center gap-1">
+            <div className="relative flex-1">
+                <input
+                    type="number"
+                    value={mins}
+                    onChange={(e) => handleChange(e.target.value, secs.toString())}
+                    placeholder="Min"
+                    className="w-full p-2 border-2 border-gray-200 rounded-lg text-center focus:border-blue-500 outline-none"
+                    min={0}
+                />
+                <span className="absolute right-2 top-2.5 text-xs text-gray-400">m</span>
+            </div>
+            <span className="text-gray-400 font-bold">:</span>
+            <div className="relative flex-1">
+                <input
+                    type="number"
+                    value={secs === 0 && !mins ? '' : secs}
+                    onChange={(e) => handleChange(mins.toString(), e.target.value)}
+                    placeholder="Seg"
+                    className="w-full p-2 border-2 border-gray-200 rounded-lg text-center focus:border-blue-500 outline-none"
+                    min={0}
+                    max={59}
+                />
+                <span className="absolute right-2 top-2.5 text-xs text-gray-400">s</span>
+            </div>
+        </div>
+    );
+}
+
 // --- Wizard Steps ---
 
 export default function OnboardingPage() {
@@ -83,7 +126,20 @@ export default function OnboardingPage() {
         injuries: '',
         training_preferences: '',
         whatsapp_number: '',
-        avatar_url: ''
+        avatar_url: '',
+        benchmarks: {
+            snatch: null,
+            cnj: null,
+            backSquat: null,
+            frontSquat: null,
+            deadlift: null,
+            clean: null,
+            strictPress: null,
+            benchPress: null,
+            franTime: null,
+            run1km: null,
+            run5km: null
+        } as any
     });
 
     // Gym Form State
@@ -186,7 +242,7 @@ export default function OnboardingPage() {
 
     const nextAthleteStep = async () => {
         await saveAthleteProgress(athleteData);
-        if (step === 11) {
+        if (step === 12) {
             // Mark onboarding as completed
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
@@ -387,6 +443,60 @@ export default function OnboardingPage() {
                 );
             case 9:
                 return (
+                    <div>
+                        <InputLabel icon={Trophy} label="Marcajes (Si los conoces)" />
+                        <p className="text-sm text-gray-500 mb-4">Ingresa tus RMs actuales para que la IA calcule tus cargas. Puedes dejarlos en blanco.</p>
+
+                        <div className="grid grid-cols-2 gap-3 mb-4 max-h-[300px] overflow-y-auto pr-2">
+                            {[
+                                { k: 'snatch', l: 'Snatch' }, { k: 'cnj', l: 'C&J' },
+                                { k: 'backSquat', l: 'Back Squat' }, { k: 'frontSquat', l: 'Front Squat' },
+                                { k: 'deadlift', l: 'Deadlift' }, { k: 'clean', l: 'Clean' },
+                                { k: 'strictPress', l: 'Strict Press' }, { k: 'benchPress', l: 'Bench Press' }
+                            ].map(({ k, l }) => (
+                                <div key={k}>
+                                    <label className="block text-2xs uppercase font-bold text-gray-400 mb-1">{l}</label>
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            className="w-full p-2 border-2 border-gray-200 rounded-lg text-sm focus:border-blue-500 outline-none"
+                                            placeholder="kg"
+                                            value={athleteData.benchmarks[k] ?? ''}
+                                            onChange={(e) => updateAthleteField('benchmarks', {
+                                                ...athleteData.benchmarks,
+                                                [k]: e.target.value ? parseInt(e.target.value) : null
+                                            })}
+                                        />
+                                        <span className="absolute right-3 top-2.5 text-xs text-gray-400 font-bold">kg</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="border-t border-gray-100 pt-4">
+                            <label className="block text-xs font-bold text-gray-500 mb-2 uppercase">Tiempos</label>
+                            <div className="grid grid-cols-1 gap-3">
+                                {[
+                                    { k: 'franTime', l: 'Fran' },
+                                    { k: 'run1km', l: '1KM Run' },
+                                    { k: 'run5km', l: '5KM Run' }
+                                ].map(({ k, l }) => (
+                                    <div key={k} className="grid grid-cols-[80px_1fr] gap-2 items-center">
+                                        <label className="text-xs uppercase font-bold text-gray-400 text-right">{l}</label>
+                                        <TimeInput
+                                            value={athleteData.benchmarks[k]}
+                                            onChange={(val) => updateAthleteField('benchmarks', {
+                                                ...athleteData.benchmarks,
+                                                [k]: val
+                                            })}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 10:
+                return (
                     <div className="space-y-6">
                         <div>
                             <InputLabel icon={AlertCircle} label="¿Tienes lesiones?" />
@@ -408,7 +518,7 @@ export default function OnboardingPage() {
                         </div>
                     </div>
                 );
-            case 10:
+            case 11:
                 return (
                     <div>
                         <InputLabel icon={MessageSquare} label="Tu WhatsApp" />
@@ -422,7 +532,7 @@ export default function OnboardingPage() {
                         />
                     </div>
                 );
-            case 11:
+            case 12:
                 return (
                     <div className="text-center">
                         <InputLabel icon={Camera} label="Foto de Perfil" />
@@ -589,7 +699,7 @@ export default function OnboardingPage() {
         }
     };
 
-    const totalSteps = role === 'athlete' ? 11 : 6;
+    const totalSteps = role === 'athlete' ? 12 : 6;
     const isGym = role === 'gym';
 
     return (

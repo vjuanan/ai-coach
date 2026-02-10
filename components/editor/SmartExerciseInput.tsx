@@ -13,6 +13,7 @@ interface SmartExerciseInputProps {
     className?: string;
     autoFocus?: boolean;
     inputRef?: React.RefObject<HTMLInputElement>;
+    onSelect?: (exercise: any) => void;
 }
 
 // Force redeploy
@@ -22,7 +23,8 @@ export function SmartExerciseInput({
     placeholder = "Buscar ejercicio...",
     className,
     autoFocus,
-    inputRef
+    inputRef,
+    onSelect
 }: SmartExerciseInputProps) {
     const [query, setQuery] = useState(value);
     const [results, setResults] = useState<any[]>([]);
@@ -82,12 +84,22 @@ export function SmartExerciseInput({
         setQuery(exerciseName);
         onChange(exerciseName);
         setIsOpen(false);
+
+        // Find full exercise object if possible
+        const fullExercise = results.find(r => r.name === exerciseName) || { name: exerciseName };
+        if (onSelect) {
+            onSelect(fullExercise);
+        }
     };
 
     const handleCreateSuccess = (exerciseName: string) => {
         setQuery(exerciseName);
         onChange(exerciseName);
         setShowModal(false);
+
+        if (onSelect) {
+            onSelect({ name: exerciseName });
+        }
     }
 
     // Check if query exactly matches a known exercise result (case insensitive)

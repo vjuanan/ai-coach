@@ -34,8 +34,10 @@ const parseMovements = (data: unknown[]): MovementObject[] => {
 };
 
 export function GenericMovementForm({ config, onChange, methodology }: GenericMovementFormProps) {
-    // Round support for 'Not For Time' (or others needing it)
-    const showRounds = methodology?.code === 'Not For Time' || methodology?.code === 'Qualtiy';
+    // Show rounds for specific methodologies AND for Warmup (generic use case)
+    // Only NOT show if explicitly forbidden, but default to showing for flexibility
+    // logic: if methodology is "Quality" or "Not For Time" OR if it's undefined (Warmup often is undefined or Generic)
+    const showRounds = true;
 
     // Config values
     const movements = parseMovements((config.movements as unknown[]) || []);
@@ -45,8 +47,9 @@ export function GenericMovementForm({ config, onChange, methodology }: GenericMo
         onChange('movements', newMovements);
     };
 
-    const addMovement = () => {
-        handleMovementsChange([...movements, { name: '' }]);
+    const addMovement = (name: string) => {
+        if (!name) return;
+        handleMovementsChange([...movements, { name }]);
     };
 
     const updateMovement = (index: number, updates: Partial<MovementObject>) => {
@@ -99,13 +102,21 @@ export function GenericMovementForm({ config, onChange, methodology }: GenericMo
                         />
                     ))}
 
-                    <button
-                        onClick={addMovement}
-                        className="w-full py-3 border border-dashed border-cv-border rounded-xl text-cv-text-tertiary hover:text-cv-accent hover:border-cv-accent hover:bg-cv-accent/5 transition-all flex items-center justify-center gap-2 group"
-                    >
-                        <Plus size={16} className="text-slate-400 group-hover:text-cv-accent transition-colors" />
-                        <span className="font-medium">Añadir Movimiento</span>
-                    </button>
+                    {/* New "Add Movement" Input (replaces button) */}
+                    <div className="p-3 rounded-xl border border-dashed border-cv-border bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <Plus size={16} className="text-slate-400" />
+                            <div className="flex-1">
+                                <SmartExerciseInput
+                                    value=""
+                                    onChange={() => { }} // Controlled by onSelect mostly, but need empty default
+                                    onSelect={(ex) => addMovement(ex.name)}
+                                    placeholder="Añadir ejercicio..."
+                                    className="bg-transparent border-none p-0 text-sm text-cv-text-primary placeholder:text-slate-400 focus:ring-0 w-full"
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
