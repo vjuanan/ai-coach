@@ -58,3 +58,7 @@ CREATE POLICY "workout_blocks_select"
   4. El usuario debe ir a Vercel Dashboard y forzar un redeploy manual
   5. NUNCA asumir que el cambio está en producción solo porque está en `origin/main`
 - [x] **Ambigüedad en Referencias UI**: Cuando el usuario dice "Arriba de todo" o "El header", verificar con precisión a QUÉ elemento se refiere si existen múltiples headers o instancias similares (ej: día en top bar vs día en card header). Pedir clarificación visual o describir ambos para confirmar antes de eliminar código.
+- [x] **Store Implementation & Interfaces**: When implementing Zustand stores in TypeScript:
+  1. Ensure the Interface definition is completely separate from the implementation.
+  2. Verify that **every method** defined in the Interface is actually implemented in the `create` call. Missing implementations cause silent runtime failures or build errors.
+  3. If helper functions (like UUID generation) are removed or refactored, ensure their replacements (e.g., `generateTempId`) are defined and available in the scope before use.

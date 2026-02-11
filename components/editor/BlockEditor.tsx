@@ -1065,7 +1065,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
 
             {/* BREAKDOWN PANEL */}
             {showBreakdown && (
-                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-2">
                     <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-2 p-2 border-b border-slate-200 dark:border-slate-700 text-[10px] font-bold text-cv-text-tertiary uppercase tracking-wider text-center">
                         <div className="w-8">#</div>
                         <div>{showDistance ? 'DISTANCIA' : 'REPS'}</div>
