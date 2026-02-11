@@ -9,6 +9,7 @@ import { WeekView } from './WeekView';
 import { SingleDayView } from './SingleDayView';
 import { BlockBuilderPanel } from './BlockBuilderPanel';
 import { MesocycleStrategyForm, type MesocycleStrategy } from './MesocycleStrategyForm';
+import { ProgramAssignmentModal } from './ProgramAssignmentModal';
 import { useAutoSave, type SaveStatus } from './useAutoSave';
 import {
     Undo,
@@ -20,7 +21,11 @@ import {
     CheckCircle2,
     ArrowLeft,
     Save,
-    Zap
+    Zap,
+    User,
+    Users,
+    ChevronDown,
+    Building
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -38,6 +43,7 @@ import {
 import { GripVertical } from 'lucide-react';
 import { calculateKgFromStats } from '@/hooks/useAthleteRm';
 import { useExerciseCache } from '@/hooks/useExerciseCache';
+import * as Popover from '@radix-ui/react-popover';
 
 interface MesocycleEditorProps {
     programId: string;
@@ -45,8 +51,6 @@ interface MesocycleEditorProps {
     isFullScreen?: boolean;
     onToggleFullScreen?: () => void;
 }
-
-
 
 export function MesocycleEditor({ programId, programName, isFullScreen = false, onToggleFullScreen }: MesocycleEditorProps) {
     const {
@@ -73,6 +77,24 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         deleteBlock
     } = useEditorStore();
 
+    // Local state for assignment
+    const [showAssignmentModal, setShowAssignmentModal] = useState(false);
+    const [assignmentData, setAssignmentData] = useState<{ id: string | null, name: string | null, type: 'athlete' | 'gym' | null }>({
+        id: programClient?.id || null,
+        name: programClient?.name || null,
+        type: programClient?.type as 'athlete' | 'gym' || null
+    });
+
+    useEffect(() => {
+        if (programClient) {
+            setAssignmentData({
+                id: programClient.id,
+                name: programClient.name,
+                type: programClient.type as 'athlete' | 'gym'
+            });
+        }
+    }, [programClient]);
+
     // Dnd Sensors
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -82,7 +104,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         })
     );
 
-    // Dnd Handlers
+    // ... (rest of Dnd handlers remain the same) 
     const handleDragStart = (event: DragStartEvent) => {
         const blockId = event.active.id as string;
         setDraggedBlock(blockId);
@@ -514,6 +536,52 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                             )}
                         </div>
 
+                        {/* Assignment Badge */}
+                        {!blockBuilderMode && (
+                            <>
+                                <div className="w-px h-5 bg-cv-border mx-2" />
+                                {assignmentData.id ? (
+                                    <Popover.Root>
+                                        <Popover.Trigger asChild>
+                                            <button className="flex items-center gap-2 px-2 py-1 rounded-md bg-cv-accent/5 hover:bg-cv-accent/10 text-xs text-cv-accent font-medium transition-colors">
+                                                {assignmentData.type === 'athlete' ? <User size={12} /> : <Building size={12} />}
+                                                <span>{assignmentData.name}</span>
+                                                <ChevronDown size={12} />
+                                            </button>
+                                        </Popover.Trigger>
+                                        <Popover.Portal>
+                                            <Popover.Content className="z-50 w-48 bg-white dark:bg-[#1a1b1e] rounded-lg shadow-xl border border-gray-200 dark:border-gray-800 p-1 animate-in fade-in zoom-in-95 duration-200" sideOffset={5}>
+                                                <button
+                                                    onClick={() => setShowAssignmentModal(true)}
+                                                    className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors text-left"
+                                                >
+                                                    <Users size={12} />
+                                                    Editar asignación
+                                                </button>
+                                                <Link
+                                                    href={assignmentData.type === 'athlete' ? `/athletes/${assignmentData.id}` : `/gyms/${assignmentData.id}`}
+                                                    target='_blank'
+                                                    className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors text-left"
+                                                >
+                                                    <User size={12} />
+                                                    Ver perfil
+                                                </Link>
+                                                <Popover.Arrow className="fill-white dark:fill-[#1a1b1e]" />
+                                            </Popover.Content>
+                                        </Popover.Portal>
+                                    </Popover.Root>
+                                ) : (
+                                    <button
+                                        onClick={() => setShowAssignmentModal(true)}
+                                        className="flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                                    >
+                                        <Users size={12} />
+                                        <span>Asignar</span>
+                                    </button>
+                                )}
+                            </>
+                        )}
+
 
                     </div>
 
@@ -678,11 +746,19 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                     isOpen={showExport}
                     onClose={() => setShowExport(false)}
                     programName={programName}
-                    clientInfo={{ name: 'Cliente' }}
+                    clientInfo={{ name: assignmentData.name || 'Cliente' }}
                     coachName={programCoachName || 'Coach'}
                     monthlyStrategy={monthlyStrategy}
                     weeks={exportWeeks}
                     strategy={exportStrategy}
+                />
+
+                <ProgramAssignmentModal
+                    isOpen={showAssignmentModal}
+                    onClose={() => setShowAssignmentModal(false)}
+                    programId={programId}
+                    currentClientId={assignmentData.id}
+                    onAssignSuccess={(id, name, type) => setAssignmentData({ id, name, type })}
                 />
 
                 {/* Drag Overlay - Shows a preview of the block being dragged */}

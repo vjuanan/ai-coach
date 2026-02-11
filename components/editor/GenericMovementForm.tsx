@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { SmartExerciseInput } from './SmartExerciseInput';
 import { useExerciseCache } from '@/hooks/useExerciseCache';
-import { Trash2, Plus, Dumbbell, Activity, Timer, RotateCcw } from 'lucide-react';
+import { Trash2, Plus, RotateCcw, Repeat, Activity, Timer, Flame, Clock, FileText, Dumbbell } from 'lucide-react';
 import type { TrainingMethodology } from '@/lib/supabase/types';
+import { InputCard } from './InputCard';
 
 interface GenericMovementFormProps {
     config: Record<string, unknown>;
@@ -14,32 +15,32 @@ interface GenericMovementFormProps {
 
 interface MovementObject {
     name: string;
-    description?: string; // For legacy string-only compatibility or extra notes
-    quantity?: string;    // "10", "5-8"
-    weight?: string;      // "20kg"
-    distance?: string;    // "400m"
-    time?: string;        // "5:00"
-    // potentially other structured fields
+    reps?: string | number;
+    weight?: string;
+    distance?: string;
+    time?: string;
+    rpe?: number;
+    rest?: string;
+    notes?: string;
+
+    // Legacy / Compat
+    quantity?: string;
+    description?: string;
 }
 
-// Helper to parse existing data which might be strings or objects
+// Helper to parse existing data
 const parseMovements = (data: unknown[]): MovementObject[] => {
     if (!Array.isArray(data)) return [];
     return data.map(item => {
         if (typeof item === 'string') {
-            return { name: item }; // Legacy: entire string is name for now, user will split it
+            return { name: item };
         }
         return item as MovementObject;
     });
 };
 
 export function GenericMovementForm({ config, onChange, methodology }: GenericMovementFormProps) {
-    // Show rounds for specific methodologies AND for Warmup (generic use case)
-    // Only NOT show if explicitly forbidden, but default to showing for flexibility
-    // logic: if methodology is "Quality" or "Not For Time" OR if it's undefined (Warmup often is undefined or Generic)
     const showRounds = true;
-
-    // Config values
     const movements = parseMovements((config.movements as unknown[]) || []);
     const rounds = (config.rounds as string) || '';
 
@@ -63,27 +64,25 @@ export function GenericMovementForm({ config, onChange, methodology }: GenericMo
     };
 
     return (
-        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            {/* 1. Rounds Input (Conditional) */}
+        <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+            {/* 1. Global Rounds Input */}
             {showRounds && (
-                <div className="bg-white dark:bg-cv-bg-secondary p-3 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-4">
-                    <div className="flex items-center gap-2 text-cv-text-secondary">
-                        <RotateCcw size={16} />
-                        <span className="text-sm font-semibold">Rondas / Vueltas</span>
-                    </div>
-                    <input
-                        type="text"
+                <div className="flex flex-col gap-2">
+                    <InputCard
+                        label="Rondas / Vueltas"
                         value={rounds}
-                        onChange={(e) => onChange('rounds', e.target.value)}
+                        onChange={(val) => onChange('rounds', val)}
+                        type="text"
+                        icon={RotateCcw}
                         placeholder="Ej: 3, 4, 5-10-15"
-                        className="flex-1 bg-transparent border-none p-0 text-sm font-bold text-cv-text-primary text-right focus:ring-0 placeholder:text-slate-300"
+                        presets={[3, 4, 5]}
                     />
                 </div>
             )}
 
             {/* 2. Movements List */}
             <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-3">
                     <label className="text-sm font-medium text-cv-text-secondary">
                         Movimientos
                     </label>
@@ -92,27 +91,28 @@ export function GenericMovementForm({ config, onChange, methodology }: GenericMo
                     </span>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-4">
                     {movements.map((movement, index) => (
-                        <MovementRow
+                        <MovementCard
                             key={index}
+                            index={index}
                             movement={movement}
                             onChange={(updates) => updateMovement(index, updates)}
                             onRemove={() => removeMovement(index)}
                         />
                     ))}
 
-                    {/* New "Add Movement" Input (replaces button) */}
-                    <div className="p-3 rounded-xl border border-dashed border-cv-border bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                    {/* Add Movement Input */}
+                    <div className="p-4 rounded-xl border border-dashed border-cv-border bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                         <div className="flex items-center gap-3">
-                            <Plus size={16} className="text-slate-400" />
+                            <Plus size={18} className="text-slate-400" />
                             <div className="flex-1">
                                 <SmartExerciseInput
                                     value=""
-                                    onChange={() => { }} // Controlled by onSelect mostly, but need empty default
+                                    onChange={() => { }}
                                     onSelect={(ex) => addMovement(ex.name)}
                                     placeholder="Añadir ejercicio..."
-                                    className="bg-transparent border-none p-0 text-sm text-cv-text-primary placeholder:text-slate-400 focus:ring-0 w-full"
+                                    className="bg-transparent border-none p-0 text-sm font-medium text-cv-text-primary placeholder:text-slate-400 focus:ring-0 w-full"
                                 />
                             </div>
                         </div>
@@ -124,127 +124,129 @@ export function GenericMovementForm({ config, onChange, methodology }: GenericMo
 }
 
 // ----------------------------------------------------------------------
-// Sub-component: MovementRow
-// Handles strict validation and attribute inputs
+// Sub-component: MovementCard
 // ----------------------------------------------------------------------
 
-interface MovementRowProps {
+interface MovementCardProps {
+    index: number;
     movement: MovementObject;
     onChange: (updates: Partial<MovementObject>) => void;
     onRemove: () => void;
 }
 
-function MovementRow({ movement, onChange, onRemove }: MovementRowProps) {
+function MovementCard({ index, movement, onChange, onRemove }: MovementCardProps) {
     const { searchLocal } = useExerciseCache();
 
-    // Check if valid exercise
-    // We assume strict matching for attributes to appear
+    // Check validity
     const exerciseMatch = searchLocal(movement.name).find(e => e.name.toLowerCase() === movement.name.toLowerCase());
     const isValid = !!exerciseMatch;
 
-    // Attributes based on exercise tracking params
+    // Attributes
     const showDistance = exerciseMatch?.tracking_parameters?.distance;
-    const showTime = exerciseMatch?.tracking_parameters?.time;
-    // Default to Reps/Quantity if not pure distance/time or if explicitly set?
-    // User said: "puts attributes of distance/time for some exercises".
-    // "Quantity" handles reps, calories, etc if not distance/time.
+    // const showTime = exerciseMatch?.tracking_parameters?.time;
 
     return (
-        <div className={`p-3 rounded-xl border transition-all duration-200 
+        <div className={`rounded-xl border transition-all duration-200 overflow-hidden
             ${isValid
-                ? 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700 shadow-sm'
+                ? 'bg-slate-50/50 dark:bg-cv-bg-secondary/50 border-slate-200 dark:border-slate-700'
                 : 'bg-slate-50 dark:bg-slate-800/50 border-transparent'
             }`}
         >
-            <div className="flex gap-3">
-                {/* Drag Handle (Optional, maybe later) */}
+            {/* Header: Exercise Name & Actions */}
+            <div className="p-3 flex gap-3 items-center border-b border-slate-100 dark:border-slate-800/50">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-500">
+                    {index + 1}
+                </div>
 
-                {/* Exercise Input */}
                 <div className="flex-1 min-w-0">
                     <SmartExerciseInput
                         value={movement.name}
                         onChange={(val) => onChange({ name: val })}
                         placeholder="Buscar ejercicio..."
-                        className={`w-full bg-transparent ${isValid ? 'font-bold text-cv-text-primary' : 'font-medium text-cv-text-secondary placeholder:text-slate-400'}`}
-                        autoFocus={false}
+                        className={`w-full bg-transparent ${isValid ? 'font-bold text-cv-text-primary text-base' : 'font-medium text-cv-text-secondary placeholder:text-slate-400'}`}
                     />
-
-                    {/* Validation Hint (if empty or invalid) */}
                     {!isValid && movement.name && (
-                        <p className="text-[10px] text-amber-500 mt-1 flex items-center gap-1">
-                            Selecciona un ejercicio de la lista para añadir atributos
-                        </p>
+                        <p className="text-[10px] text-amber-500 mt-1">Selecciona de la lista</p>
                     )}
                 </div>
 
-                {/* Remove Button */}
                 <button
                     onClick={onRemove}
-                    className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                    className="text-slate-400 hover:text-red-500 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg"
                 >
                     <Trash2 size={16} />
                 </button>
             </div>
 
-            {/* Attributes Row - Only visible if Valid */}
+            {/* Inputs Grid - Only if Valid */}
             {isValid && (
-                <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 animate-in fade-in slide-in-from-top-1">
-
-                    {/* Distance Input */}
-                    {showDistance && (
-                        <div className="flex items-center gap-2 bg-slate-50 dark:bg-cv-bg-tertiary px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
-                            <Activity size={12} className="text-cv-text-tertiary" />
-                            <input
-                                type="text"
+                <div className="p-3 bg-white dark:bg-cv-bg-secondary">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {/* 1. Reps / Distance */}
+                        {showDistance ? (
+                            <InputCard
+                                label="DISTANCIA"
                                 value={movement.distance || ''}
-                                onChange={(e) => onChange({ distance: e.target.value })}
-                                placeholder="Distancia (m/km)"
-                                className="w-24 bg-transparent border-none p-0 text-xs font-semibold text-cv-text-primary placeholder:text-slate-300 focus:ring-0"
-                            />
-                        </div>
-                    )}
-
-                    {/* Time/Duration Input */}
-                    {showTime && (
-                        <div className="flex items-center gap-2 bg-slate-50 dark:bg-cv-bg-tertiary px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
-                            <Timer size={12} className="text-cv-text-tertiary" />
-                            <input
+                                onChange={(val) => onChange({ distance: val })}
                                 type="text"
-                                value={movement.time || ''}
-                                onChange={(e) => onChange({ time: e.target.value })}
-                                placeholder="Tiempo"
-                                className="w-20 bg-transparent border-none p-0 text-xs font-semibold text-cv-text-primary placeholder:text-slate-300 focus:ring-0"
+                                icon={Activity}
+                                presets={['200m', '400m', '800m', '1km']}
+                                placeholder="400m"
+                                isDistance
                             />
-                        </div>
-                    )}
-
-                    {/* Generic Quantity/Reps (Always valid unless strictly distance/time only?) 
-                        Usually good to have a catch-all "Quantity" or "Reps" 
-                    */}
-                    {!showDistance && !showTime && (
-                        <div className="flex items-center gap-2 bg-slate-50 dark:bg-cv-bg-tertiary px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
-                            <span className="text-[10px] font-bold text-cv-text-tertiary uppercase">Reps</span>
-                            <input
-                                type="text"
-                                value={movement.quantity || ''}
-                                onChange={(e) => onChange({ quantity: e.target.value })}
-                                placeholder="Cantidad"
-                                className="w-20 bg-transparent border-none p-0 text-xs font-semibold text-cv-text-primary placeholder:text-slate-300 focus:ring-0"
+                        ) : (
+                            <InputCard
+                                label="REPETICIONES"
+                                value={(movement.reps || movement.quantity) as string}
+                                onChange={(val) => onChange({ reps: val, quantity: val })} // sync both
+                                type="number-text"
+                                icon={Repeat}
+                                presets={[8, 10, 12, 15]}
+                                placeholder="10"
                             />
-                        </div>
-                    )}
+                        )}
 
-                    {/* Notes / Details */}
-                    <div className="flex-1 min-w-[100px]">
-                        <input
+                        {/* 2. Intensity / RPE / Weight */}
+                        <InputCard
+                            label="INTENSIDAD / RPE"
+                            value={(movement.rpe || movement.weight) as string}
+                            onChange={(val) => {
+                                // Simple heuristic: if number < 11, assume RPE. If contains 'kg' or big number, weight.
+                                if (typeof val === 'number' && val <= 10) onChange({ rpe: val, weight: undefined });
+                                else onChange({ weight: val ? String(val) : undefined, rpe: undefined });
+                            }}
                             type="text"
-                            value={movement.description || ''}
-                            onChange={(e) => onChange({ description: e.target.value })}
-                            placeholder="Detalles / Notas (opcional)"
-                            className="w-full bg-transparent border-none p-0 text-xs text-cv-text-secondary placeholder:text-slate-300 focus:ring-0 text-right"
+                            icon={Flame}
+                            presets={[7, 8, 9]}
+                            placeholder="RPE 8"
                         />
-                    </div>
 
+                        {/* 3. Rest */}
+                        <InputCard
+                            label="DESCANSO / TRANSICION"
+                            value={movement.rest as string}
+                            onChange={(val) => onChange({ rest: val })}
+                            type="text"
+                            icon={Clock}
+                            presets={['0:00', '0:30', '1:00']}
+                            placeholder="-"
+                        />
+
+                        {/* 4. Notes */}
+                        <div className="bg-slate-50 dark:bg-cv-bg-tertiary/30 rounded-xl border border-slate-100 dark:border-slate-800 p-2 flex flex-col group focus-within:ring-1 ring-cv-accent/50 transition-all">
+                            <div className="flex items-center gap-1.5 mb-1">
+                                <FileText size={12} className="text-cv-text-tertiary" />
+                                <span className="text-[9px] uppercase font-bold text-cv-text-tertiary">Notas</span>
+                            </div>
+                            <textarea
+                                value={movement.notes || movement.description || ''}
+                                onChange={(e) => onChange({ notes: e.target.value, description: e.target.value })}
+                                placeholder="Notas técnicas..."
+                                className="w-full h-full bg-transparent border-none p-0 text-xs text-cv-text-primary placeholder:text-slate-300 focus:ring-0 resize-none"
+                            />
+                        </div>
+
+                    </div>
                 </div>
             )}
         </div>
