@@ -278,7 +278,7 @@ export default function AthletesPage() {
                     </>
                 }
             />
-            <div className="max-w-6xl mx-auto">
+            <div className="w-full px-6">
                 {/* Search removed - using global Topbar search */}
 
                 {bulkDeleteMessage && (
@@ -321,7 +321,9 @@ export default function AthletesPage() {
                                             />
                                         </th>
                                         <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Atleta</th>
-                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Correo</th>
+                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Nivel</th>
+                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Objetivo</th>
+                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Datos Físicos</th>
                                         <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Registrado</th>
                                         <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold text-right">Acciones</th>
                                     </tr>
@@ -345,28 +347,54 @@ export default function AthletesPage() {
                                                 </td>
                                                 <td className="p-4">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-full bg-cv-accent-muted flex items-center justify-center text-cv-accent font-bold text-lg">
+                                                        <div className="w-10 h-10 rounded-full bg-cv-accent-muted flex items-center justify-center text-cv-accent font-bold text-lg shrink-0">
                                                             {athlete.name.charAt(0).toUpperCase()}
                                                         </div>
-                                                        <div>
-                                                            <span className="font-medium text-cv-text-primary block">{athlete.name}</span>
-                                                            <span className="text-xs text-cv-text-tertiary bg-cv-bg-tertiary px-1.5 py-0.5 rounded border border-cv-border-subtle mt-0.5 inline-block">
-                                                                Atleta
-                                                            </span>
+                                                        <div className="min-w-0">
+                                                            <span className="font-medium text-cv-text-primary block truncate">{athlete.name}</span>
+                                                            <div className="flex items-center gap-1 text-xs text-cv-text-tertiary">
+                                                                <Mail size={12} />
+                                                                <span className="truncate">{athlete.email || 'Sin correo'}</span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="p-4 text-cv-text-secondary text-sm">
-                                                    {athlete.email ? (
-                                                        <div className="flex items-center gap-2">
-                                                            <Mail size={14} className="text-cv-text-tertiary" />
-                                                            {athlete.email}
-                                                        </div>
+                                                <td className="p-4">
+                                                    {athlete.details?.level ? (
+                                                        <span className={`text-xs px-2 py-1 rounded-full border border-current opacity-80 font-medium ${athlete.details.level === 'Elite' ? 'text-purple-400 bg-purple-400/10' :
+                                                                athlete.details.level === 'RX' ? 'text-cv-accent bg-cv-accent/10' :
+                                                                    athlete.details.level === 'Scaled' ? 'text-blue-400 bg-blue-400/10' :
+                                                                        'text-cv-text-tertiary bg-cv-bg-tertiary'
+                                                            }`}>
+                                                            {athlete.details.level}
+                                                        </span>
                                                     ) : (
-                                                        <span className="text-cv-text-tertiary italic">Sin correo</span>
+                                                        <span className="text-cv-text-tertiary text-xs">-</span>
                                                     )}
                                                 </td>
-                                                <td className="p-4 text-cv-text-secondary text-sm font-mono">
+                                                <td className="p-4">
+                                                    <div className="max-w-[200px] text-sm text-cv-text-secondary truncate" title={athlete.details?.goal}>
+                                                        {athlete.details?.goal || <span className="text-cv-text-tertiary italic">Sin objetivo</span>}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className="flex gap-3 text-xs text-cv-text-secondary">
+                                                        {athlete.details?.height && (
+                                                            <div title="Altura">
+                                                                <span className="font-medium text-cv-text-primary">{athlete.details.height}</span> cm
+                                                            </div>
+                                                        )}
+                                                        {athlete.details?.weight && (
+                                                            <div title="Peso">
+                                                                <span className="font-medium text-cv-text-primary">{athlete.details.weight}</span> kg
+                                                            </div>
+                                                        )}
+                                                        {!athlete.details?.height && !athlete.details?.weight && (
+                                                            <span className="text-cv-text-tertiary">-</span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-cv-text-secondary text-sm font-mono whitespace-nowrap">
                                                     {new Date(athlete.created_at).toLocaleDateString('es-ES', {
                                                         day: '2-digit',
                                                         month: 'short',

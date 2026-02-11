@@ -879,9 +879,18 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
 
 
     // RM Calculation Setup
-    const { calculateKg } = useAthleteRm();
+    const { getBenchmark } = useAthleteBenchmarks();
     const calculatedWeight = (intensityType === '% 1RM' && config.percentage && blockName)
-        ? calculateKg(blockName, config.percentage as number)
+        ? (() => {
+            const rm = getBenchmark(blockName);
+            if (!rm) return null;
+            let pct = 0;
+            if (typeof config.percentage === 'number') pct = config.percentage;
+            else if (typeof config.percentage === 'string') pct = parseInt(config.percentage.replace('%', ''), 10);
+
+            if (isNaN(pct) || pct <= 0) return null;
+            return Math.round((rm * pct) / 100);
+        })()
         : null;
 
     // Series Details Logic

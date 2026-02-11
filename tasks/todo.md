@@ -1,17 +1,8 @@
-# Todo List: Implement Program Assignment
+# Task: Fix Save Feedback and UI in 1RM Modal
 
-- [ ] Explore Codebase & Plan
-    - [ ] Locate `prisma/schema.prisma` and check relationships (Program -> User/Athlete/Gym)
-    - [ ] Locate Program View/Header component
-    - [ ] Create Implementation Plan
-- [ ] Backend Implementation
-    - [ ] Update Schema if necessary (Assignment relation)
-    - [ ] Create/Update Server Actions/API for assignment
-- [ ] Frontend Implementation
-    - [ ] Add Assignment UI to Program Header
-    - [ ] Create/Update Assignment Modal (Select Athlete/Gym)
-    - [ ] Implement wiring (Fetch/Save assignment)
-- [ ] Verification
-    - [ ] Verify Assignment flow
-    - [ ] Verify Edit Assignment flow
-    - [ ] Verify Navigation to Profile
+- [/] Identify the component for "Editar Marcajes" <!-- id: 0 -->
+- [ ] Create Implementation Plan <!-- id: 1 -->
+- [ ] Fix Save Feedback (Toast/Button state) <!-- id: 2 -->
+- [ ] Verify Database Save <!-- id: 3 -->
+- [ ] Improve Modal UI (Remove empty space) <!-- id: 4 -->
+- [ ] Verify changes <!-- id: 5 -->
