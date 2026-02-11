@@ -99,7 +99,10 @@ export function BenchmarksEditor({ athleteId, initialStats, franTime, run1km, ru
 
     const handleSave = async () => {
         setIsSaving(true);
+        const toastId = toast.loading('Guardando marcajes...');
+
         try {
+            console.log('Sending update for athlete:', athleteId);
             const response = await updateAthleteProfile(athleteId, {
                 oneRmStats: stats,
                 franTime: times.franTime,
@@ -107,16 +110,19 @@ export function BenchmarksEditor({ athleteId, initialStats, franTime, run1km, ru
                 run5km: times.run5km,
             });
 
+            console.log('Response from server:', response);
+
             if (response && response.success) {
-                toast.success('Marcajes guardados correctamente');
+                toast.success('Marcajes guardados correctamente', { id: toastId });
                 setIsEditing(false);
                 router.refresh();
             } else {
-                toast.error('Error al guardar marcajes');
+                const msg = response?.error || 'Error desconocido al guardar';
+                toast.error(`Error: ${msg}`, { id: toastId, duration: 5000 });
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error saving benchmarks:', err);
-            toast.error('Error al guardar marcajes');
+            toast.error(`Error de red/cliente: ${err.message}`, { id: toastId, duration: 5000 });
         } finally {
             setIsSaving(false);
         }
