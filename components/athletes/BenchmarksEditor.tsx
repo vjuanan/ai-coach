@@ -102,27 +102,34 @@ export function BenchmarksEditor({ athleteId, initialStats, franTime, run1km, ru
         const toastId = toast.loading('Guardando marcajes...');
 
         try {
-            console.log('Sending update for athlete:', athleteId);
-            const response = await updateAthleteProfile(athleteId, {
-                oneRmStats: stats,
-                franTime: times.franTime,
-                run1km: times.run1km,
-                run5km: times.run5km,
+            console.log('Sending update via API for athlete:', athleteId);
+
+            const response = await fetch(`/api/athletes/${athleteId}/benchmarks`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    oneRmStats: stats,
+                    franTime: times.franTime,
+                    run1km: times.run1km,
+                    run5km: times.run5km,
+                }),
             });
 
-            console.log('Response from server:', response);
+            const data = await response.json();
 
-            if (response && response.success) {
+            if (response.ok) {
                 toast.success('Marcajes guardados correctamente', { id: toastId });
                 setIsEditing(false);
                 router.refresh();
             } else {
-                const msg = response?.error || 'Error desconocido al guardar';
-                toast.error(`Error: ${msg}`, { id: toastId, duration: 5000 });
+                const msg = data.error || 'Error desconocido al guardar';
+                toast.error(`Error del servidor: ${msg}`, { id: toastId, duration: 5000 });
             }
         } catch (err: any) {
             console.error('Error saving benchmarks:', err);
-            toast.error(`Error de red/cliente: ${err.message}`, { id: toastId, duration: 5000 });
+            toast.error(`Error de red: ${err.message}`, { id: toastId, duration: 5000 });
         } finally {
             setIsSaving(false);
         }

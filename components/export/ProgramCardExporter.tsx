@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { X, Download, Image, FileText, Loader2, Calendar, Dumbbell, Flame, Target, Zap } from 'lucide-react';
+import { X, Download, Image as ImageIcon, FileText, Loader2, Calendar, Dumbbell, Flame, Target, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProgramType {
@@ -147,7 +147,7 @@ export function ProgramCardExporter({ isOpen, onClose, programs }: ProgramCardEx
                                         className={`px-3 py-1 rounded-md text-sm font-medium transition-all flex items-center gap-1.5
                                             ${exportFormat === 'png' ? 'bg-cv-accent text-white' : 'text-cv-text-secondary hover:text-cv-text-primary'}`}
                                     >
-                                        <Image size={14} />
+                                        <ImageIcon size={14} />
                                         PNG
                                     </button>
                                     <button

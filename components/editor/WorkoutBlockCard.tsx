@@ -157,7 +157,7 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                                 </span>
                             )}
                         </div>
-                        {config.rest && (
+                        {(config.rest as string) && (
                             <div className="text-xs text-cv-text-tertiary flex items-center gap-1">
                                 <span className="opacity-70">Descanso:</span>
                                 <span>{config.rest as string}</span>
