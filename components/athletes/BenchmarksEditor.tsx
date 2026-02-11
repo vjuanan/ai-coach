@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Trophy, Edit2, Save, X, Loader2, Timer, Activity } from 'lucide-react';
-// import { updateAthleteProfile } from '@/lib/actions'; // Unused, using fetch now
+import { Trophy, Edit2, Save, X, Loader2, Timer, Activity, TrendingUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Modal } from '@/components/ui/Modal';
 
 interface OneRmStats {
     snatch?: number | null;
@@ -45,7 +43,7 @@ function formatTime(seconds: number | null | undefined): string {
 }
 
 // Helper for Time Input
-function TimeInput({ value, onChange, placeholder }: { value: number | null, onChange: (val: number | null) => void, placeholder?: string }) {
+function TimeInput({ value, onChange }: { value: number | null, onChange: (val: number | null) => void }) {
     const mins = value ? Math.floor(value / 60) : '';
     const secs = value ? value % 60 : '';
 
@@ -58,17 +56,17 @@ function TimeInput({ value, onChange, placeholder }: { value: number | null, onC
     };
 
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 bg-cv-bg-secondary p-1 rounded-lg border border-white/5">
             <div className="relative flex-1">
                 <input
                     type="number"
                     value={mins}
                     onChange={(e) => handleChange(e.target.value, secs.toString())}
-                    placeholder="Min"
-                    className="cv-input text-lg py-2 pr-8 text-center bg-cv-bg-secondary w-full"
+                    placeholder="00"
+                    className="w-full bg-transparent text-center font-mono text-sm focus:outline-none py-1"
                     min={0}
                 />
-                <span className="absolute right-3 top-3 text-xs text-cv-text-tertiary">m</span>
+                <span className="absolute right-1 top-1 text-[10px] text-cv-text-tertiary">m</span>
             </div>
             <span className="text-cv-text-tertiary font-bold">:</span>
             <div className="relative flex-1">
@@ -76,12 +74,12 @@ function TimeInput({ value, onChange, placeholder }: { value: number | null, onC
                     type="number"
                     value={secs === 0 && !mins ? '' : secs}
                     onChange={(e) => handleChange(mins.toString(), e.target.value)}
-                    placeholder="Seg"
-                    className="cv-input text-lg py-2 pr-8 text-center bg-cv-bg-secondary w-full"
+                    placeholder="00"
+                    className="w-full bg-transparent text-center font-mono text-sm focus:outline-none py-1"
                     min={0}
                     max={59}
                 />
-                <span className="absolute right-3 top-3 text-xs text-cv-text-tertiary">s</span>
+                <span className="absolute right-1 top-1 text-[10px] text-cv-text-tertiary">s</span>
             </div>
         </div>
     );
@@ -147,168 +145,176 @@ export function BenchmarksEditor({ athleteId, initialStats, franTime, run1km, ru
     };
 
     return (
-        <>
-            <div className="cv-card">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-cv-text-primary flex items-center gap-2">
-                        <Trophy size={18} className="text-cv-text-tertiary" />
-                        Marcajes (1RM)
-                    </h3>
+        <div className="cv-card p-0 overflow-hidden border-cv-accent/20">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-white/5 bg-gradient-to-r from-cv-bg-secondary to-transparent flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-cv-accent/10 flex items-center justify-center text-cv-accent">
+                        <TrendingUp size={20} />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-cv-text-primary">Benchmarks & RMs</h3>
+                        <p className="text-xs text-cv-text-tertiary">Gestiona los récords personales y tiempos de referencia.</p>
+                    </div>
+                </div>
+
+                {!isEditing ? (
                     <button
                         onClick={() => setIsEditing(true)}
-                        className="cv-btn-ghost p-1.5 hover:bg-cv-bg-secondary rounded-lg transition-colors"
-                        title="Editar Marcajes"
+                        className="cv-btn-secondary text-xs py-2 px-4 flex items-center gap-2"
                     >
                         <Edit2 size={14} />
+                        Editar RMs
                     </button>
-                </div>
-
-                {/* 1RM Grid (Read Only) */}
-                <div className="grid grid-cols-4 gap-3">
-                    {RM_FIELDS.map(({ key, label }) => (
-                        <div key={key} className="p-2 rounded-lg bg-cv-bg-tertiary border border-cv-border">
-                            <p className="text-2xs text-cv-text-tertiary uppercase font-bold truncate" title={label}>{label}</p>
-                            <p className="text-lg font-bold text-cv-text-primary">
-                                {stats[key] || '-'}{' '}
-                                {stats[key] && <span className="text-xs font-normal">kg</span>}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Time-based benchmarks (Read Only) */}
-                {(times.franTime || times.run1km || times.run5km) && (
-                    <div className="mt-4 space-y-2">
-                        {times.franTime && (
-                            <div className="p-2 rounded-lg bg-cv-accent-muted border border-cv-accent/20 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Timer size={16} className="text-cv-accent" />
-                                    <span className="text-xs font-bold text-cv-accent uppercase">Fran</span>
-                                </div>
-                                <p className="font-bold text-cv-accent">{formatTime(times.franTime)}</p>
-                            </div>
-                        )}
-                        {times.run1km && (
-                            <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Activity size={16} className="text-blue-400" />
-                                    <span className="text-xs font-bold text-blue-400 uppercase">1KM Run</span>
-                                </div>
-                                <p className="font-bold text-blue-400">{formatTime(times.run1km)}</p>
-                            </div>
-                        )}
-                        {times.run5km && (
-                            <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Activity size={16} className="text-blue-400" />
-                                    <span className="text-xs font-bold text-blue-400 uppercase">5KM Run</span>
-                                </div>
-                                <p className="font-bold text-blue-400">{formatTime(times.run5km)}</p>
-                            </div>
-                        )}
+                ) : (
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleCancel}
+                            disabled={isSaving}
+                            className="cv-btn-ghost text-xs py-2 px-4"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            className="cv-btn-primary text-xs py-2 px-4 flex items-center gap-2"
+                        >
+                            {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                            Guardar Cambios
+                        </button>
                     </div>
                 )}
             </div>
 
-            {/* EDIT MODAL */}
-            {isEditing && (
-                <Modal
-                    isOpen={isEditing}
-                    onClose={handleCancel}
-                    title="Editar Marcajes y Tiempos"
-                    description="Actualiza los records personales (PR) del atleta. Utiliza el espacio completo para mayor comodidad."
-                    maxWidth="max-w-4xl"
-                >
-                    <div className="space-y-8">
-                        {/* Section 1: Weightlifting */}
-                        <div>
-                            <h4 className="flex items-center gap-2 text-sm font-bold text-cv-text-primary mb-4 uppercase tracking-wider">
-                                <Trophy size={16} className="text-cv-accent" />
-                                Levantamientos (1RM)
-                            </h4>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {RM_FIELDS.map(({ key, label }) => (
-                                    <div key={key} className="bg-cv-bg-tertiary/50 p-4 rounded-xl border border-white/5 hover:border-cv-accent/40 transition-colors">
-                                        <label className="block text-xs font-bold text-cv-text-secondary uppercase mb-2">
-                                            {label}
-                                        </label>
-                                        <div className="relative">
-                                            <input
-                                                type="number"
-                                                value={stats[key] ?? ''}
-                                                onChange={(e) => setStats(prev => ({
-                                                    ...prev,
-                                                    [key]: e.target.value ? parseInt(e.target.value) : null
-                                                }))}
-                                                placeholder="0"
-                                                className="cv-input w-full text-xl font-bold bg-cv-bg-secondary py-3 text-center"
-                                            />
-                                            <span className="absolute right-3 top-4 text-xs font-bold text-cv-text-tertiary pointer-events-none">
-                                                KG
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+            {/* Content Body */}
+            <div className="p-6 space-y-8 bg-cv-bg-primary/30">
 
-                        {/* Section 2: Metabolic Conditioning */}
-                        <div className="pt-6 border-t border-white/10">
-                            <h4 className="flex items-center gap-2 text-sm font-bold text-cv-text-primary mb-4 uppercase tracking-wider">
-                                <Timer size={16} className="text-blue-400" />
-                                Tiempos de Referencia
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="bg-cv-bg-tertiary/50 p-4 rounded-xl border border-white/5">
-                                    <label className="block text-xs font-bold text-cv-text-secondary uppercase mb-2 text-center">
-                                        Fran (21-15-9)
-                                    </label>
+                {/* Section: Weightlifting */}
+                <div>
+                    <h4 className="text-xs font-bold text-cv-text-tertiary uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <Trophy size={14} /> Levantamientos (1RM)
+                    </h4>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+                        {RM_FIELDS.map(({ key, label }) => (
+                            <div key={key} className={`
+                                group relative p-3 rounded-xl border transition-all duration-200
+                                ${isEditing
+                                    ? 'bg-cv-bg-tertiary border-cv-accent/30 hover:border-cv-accent shadow-lg shadow-black/20'
+                                    : 'bg-cv-bg-secondary/50 border-white/5 hover:bg-cv-bg-tertiary'
+                                }
+                            `}>
+                                <label className="block text-[10px] font-bold text-cv-text-tertiary uppercase mb-1 truncate" title={label}>
+                                    {label}
+                                </label>
+
+                                {isEditing ? (
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            value={stats[key] ?? ''}
+                                            onChange={(e) => setStats(prev => ({
+                                                ...prev,
+                                                [key]: e.target.value ? parseInt(e.target.value) : null
+                                            }))}
+                                            placeholder="-"
+                                            className="w-full bg-transparent text-xl font-bold text-white placeholder-white/20 focus:outline-none text-center"
+                                        />
+                                        <span className="absolute right-0 top-1 text-[9px] font-bold text-cv-text-tertiary pointer-events-none">OK</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-end justify-between">
+                                        <span className={`text-lg font-bold ${stats[key] ? 'text-white' : 'text-white/20'}`}>
+                                            {stats[key] || '-'}
+                                        </span>
+                                        <span className="text-[10px] text-cv-text-tertiary mb-1">kg</span>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Section: Metcon */}
+                <div className="pt-6 border-t border-white/5">
+                    <h4 className="text-xs font-bold text-cv-text-tertiary uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <Timer size={14} /> Tiempos de Referencia
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl">
+                        {/* Fran */}
+                        <div className={`
+                             flex items-center justify-between p-4 rounded-xl border
+                             ${isEditing ? 'bg-cv-bg-tertiary border-cv-accent/30' : 'bg-cv-bg-secondary/20 border-white/5'}
+                        `}>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-cv-accent/10 text-cv-accent">
+                                    <Activity size={16} />
+                                </div>
+                                <span className="text-sm font-bold text-cv-text-secondary">Fran</span>
+                            </div>
+                            {isEditing ? (
+                                <div className="w-32">
                                     <TimeInput
                                         value={times.franTime}
                                         onChange={(val) => setTimes(prev => ({ ...prev, franTime: val }))}
                                     />
                                 </div>
-                                <div className="bg-cv-bg-tertiary/50 p-4 rounded-xl border border-white/5">
-                                    <label className="block text-xs font-bold text-cv-text-secondary uppercase mb-2 text-center">
-                                        1KM Run
-                                    </label>
+                            ) : (
+                                <span className="text-lg font-bold text-cv-text-primary font-mono">{formatTime(times.franTime)}</span>
+                            )}
+                        </div>
+
+                        {/* 1km Run */}
+                        <div className={`
+                             flex items-center justify-between p-4 rounded-xl border
+                             ${isEditing ? 'bg-cv-bg-tertiary border-cv-accent/30' : 'bg-cv-bg-secondary/20 border-white/5'}
+                        `}>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+                                    <Activity size={16} />
+                                </div>
+                                <span className="text-sm font-bold text-cv-text-secondary">1KM Run</span>
+                            </div>
+                            {isEditing ? (
+                                <div className="w-32">
                                     <TimeInput
                                         value={times.run1km}
                                         onChange={(val) => setTimes(prev => ({ ...prev, run1km: val }))}
                                     />
                                 </div>
-                                <div className="bg-cv-bg-tertiary/50 p-4 rounded-xl border border-white/5">
-                                    <label className="block text-xs font-bold text-cv-text-secondary uppercase mb-2 text-center">
-                                        5KM Run
-                                    </label>
+                            ) : (
+                                <span className="text-lg font-bold text-cv-text-primary font-mono">{formatTime(times.run1km)}</span>
+                            )}
+                        </div>
+
+                        {/* 5km Run */}
+                        <div className={`
+                             flex items-center justify-between p-4 rounded-xl border
+                             ${isEditing ? 'bg-cv-bg-tertiary border-cv-accent/30' : 'bg-cv-bg-secondary/20 border-white/5'}
+                        `}>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
+                                    <Activity size={16} />
+                                </div>
+                                <span className="text-sm font-bold text-cv-text-secondary">5KM Run</span>
+                            </div>
+                            {isEditing ? (
+                                <div className="w-32">
                                     <TimeInput
                                         value={times.run5km}
                                         onChange={(val) => setTimes(prev => ({ ...prev, run5km: val }))}
                                     />
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* Footer Actions */}
-                        <div className="flex items-center justify-end gap-3 pt-6 border-t border-white/10">
-                            <button
-                                onClick={handleCancel}
-                                className="px-4 py-2 text-sm font-medium text-cv-text-secondary hover:text-white transition-colors"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={handleSave}
-                                disabled={isSaving}
-                                className="cv-btn-primary py-2 px-6 flex items-center gap-2"
-                            >
-                                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                                Guardar Cambios
-                            </button>
+                            ) : (
+                                <span className="text-lg font-bold text-cv-text-primary font-mono">{formatTime(times.run5km)}</span>
+                            )}
                         </div>
                     </div>
-                </Modal>
-            )}
-        </>
+                </div>
+
+            </div>
+        </div>
     );
 }

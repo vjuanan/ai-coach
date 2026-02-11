@@ -86,6 +86,15 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
                     </div>
                 </div>
 
+                {/* Benchmarks Section (Full Width) */}
+                <BenchmarksEditor
+                    athleteId={athlete.id}
+                    initialStats={benchmarks}
+                    franTime={details?.franTime}
+                    run1km={details?.run1km}
+                    run5km={details?.run5km}
+                />
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Left Column: Benchmarks & Goals */}
                     <div className="space-y-6">
@@ -125,14 +134,7 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
                             }}
                         />
 
-                        {/* Benchmarks (Editable) */}
-                        <BenchmarksEditor
-                            athleteId={athlete.id}
-                            initialStats={benchmarks}
-                            franTime={details?.franTime}
-                            run1km={details?.run1km}
-                            run5km={details?.run5km}
-                        />
+
                     </div>
 
                     {/* Right Column: Programs */}
