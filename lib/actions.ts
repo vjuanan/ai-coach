@@ -543,6 +543,35 @@ export async function deleteProgram(programId: string): Promise<{ success: boole
     }
 }
 
+export async function assignProgram(programId: string, clientId: string | null) {
+    const supabase = createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('Unauthorized');
+
+    // Use Service Role Key to bypass RLS policies for updates if needed
+    const dbClient = process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
+        : supabase;
+
+    const { data, error } = await dbClient
+        .from('programs')
+        .update({ client_id: clientId })
+        .eq('id', programId)
+        .select()
+        .single();
+
+
+    if (error) {
+        console.error('Error assigning program:', error);
+        throw new Error(error.message);
+    }
+
+    revalidatePath(`/editor/${programId}`);
+    revalidatePath('/programs');
+    return { success: true, data };
+}
+
 export async function deletePrograms(programIds: string[]): Promise<{ success: boolean; error?: string }> {
     console.log('--- ACTION: deletePrograms (BULK) STARTED ---', programIds.length);
 
@@ -824,9 +853,11 @@ export async function updateAthleteProfile(clientId: string, data: any) {
         // Try to find an associated client record, or store in a linked client row.
         if (data.oneRmStats !== undefined || data.franTime !== undefined || data.run1km !== undefined || data.run5km !== undefined) {
             // Try to find an existing client record linked to this profile
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmYnhmZm51d2tjYm54Znd5dmNjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTUzMzUxMywiZXhwIjoyMDg1MTA5NTEzfQ.waUHxz5lUSELECf4Hk-5r9K3lMfJelroU3kxgDzUYI4';
+
             const adminSupabase = createSupabaseClient(
                 process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                process.env.SUPABASE_SERVICE_ROLE_KEY!
+                serviceKey
             );
 
             const { data: existingClient } = await adminSupabase

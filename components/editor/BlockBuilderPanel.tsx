@@ -1,5 +1,5 @@
 'use client';
-// Force rebuild: 2026-02-09T19:10:00
+// Force rebuild: 2026-02-11T09:05:00
 console.log("BLOCK BUILDER PANEL LOADING - CHECK VERSION");
 
 
@@ -202,13 +202,13 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                         <div className={`w-9 h-9 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm ${option.color}`}>
                                             <Icon size={18} />
                                         </div>
-                                        <div className="text-left flex-1">
+                                        <div className="text-left flex-1 pr-6">
                                             <p className="font-semibold text-sm text-cv-text-primary">{option.label}</p>
                                             <p className="text-[10px] text-cv-text-tertiary">{option.description}</p>
                                         </div>
 
                                         {/* Hover Add Indicator */}
-                                        <div className="absolute top-1/2 -translate-y-1/2 right-3 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-white/50 dark:bg-black/20 p-1.5 rounded-full backdrop-blur-sm scale-90 group-hover:scale-100">
+                                        <div className="absolute top-1/2 -translate-y-1/2 right-3 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-white/50 dark:bg-black/20 p-1.5 rounded-full backdrop-blur-sm scale-90 group-hover:scale-100 shadow-sm border border-black/5 dark:border-white/10">
                                             <Plus size={14} className="text-cv-text-primary" />
                                         </div>
                                     </button>
@@ -293,9 +293,12 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                 )}
 
                                 {/* Header Quick Add Button */}
-                                <div className="relative flex-shrink-0 ml-1">
+                                <div className="relative flex-shrink-0 ml-1 z-40">
                                     <button
-                                        onClick={() => setShowQuickAdd(!showQuickAdd)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowQuickAdd(!showQuickAdd);
+                                        }}
                                         className={`
                                             w-10 h-10 rounded-full border border-dashed border-slate-300 dark:border-slate-600 
                                             flex items-center justify-center text-slate-400 hover:text-cv-accent hover:border-cv-accent 
@@ -312,7 +315,10 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                         <>
                                             <div
                                                 className="fixed inset-0 z-[60]"
-                                                onClick={() => setShowQuickAdd(false)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setShowQuickAdd(false);
+                                                }}
                                             />
                                             <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 p-1.5 z-[70] animate-in fade-in zoom-in-95 duration-200">
                                                 <div className="text-[10px] font-bold uppercase tracking-wider text-cv-text-tertiary mb-1 px-2 py-1">
@@ -324,7 +330,8 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                         return (
                                                             <button
                                                                 key={option.type}
-                                                                onClick={() => {
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
                                                                     handleAddBlock(option.type);
                                                                     setShowQuickAdd(false);
                                                                 }}

@@ -29,7 +29,7 @@ import {
     Skull,
     ListOrdered,
     Puzzle,
-    Percent, // Nuevo icono para % 1RM
+    Percent,
     HelpCircle,
     Check,
     Link,
@@ -37,10 +37,12 @@ import {
     Route,
     ChevronDown,
     ChevronUp,
-    AlertCircle
+    AlertCircle,
+    Scale // Added Scale icon
 } from 'lucide-react';
 import { TableInputWithPresets } from './TableInputWithPresets';
 import { useAthleteRm } from '@/hooks/useAthleteRm';
+import { useAthleteBenchmarks } from '@/hooks/useAthleteBenchmarks'; // New Hook
 import type { BlockType, WorkoutFormat, WorkoutConfig, TrainingMethodology, TrainingMethodologyFormField } from '@/lib/supabase/types';
 
 interface SeriesDetail {

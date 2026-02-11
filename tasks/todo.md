@@ -1,13 +1,17 @@
-# Task: Calentamiento UI Fix
+# Todo List: Implement Program Assignment
 
-- [x] Locate the component rendering "Metodología de Entrenamiento" <!-- id: 0 -->
-- [x] Identify the code responsible for the "empty bar" (SmartExerciseInput & Description) <!-- id: 1 -->
-- [x] Implement Fixes <!-- id: 2 -->
-    - [x] Hide `currentMethodology.description` for Warmup blocks in `BlockEditor.tsx`
-    - [x] Update `useExerciseCache.ts` to support empty queries (show all/recent)
-    - [x] Update `SmartExerciseInput.tsx` to trigger search on focus
-    - [x] Fix build error in `lib/store/index.ts` (Restructure and missing methods)
-    - [x] Fix build error in `BlockBuilderPanel.tsx` (Type mismatch)
-- [x] Verify the fix <!-- id: 3 -->
-    - [x] Push to GitHub
-    - [x] Verify on Production (Attempt 4 - Success)
+- [ ] Explore Codebase & Plan
+    - [ ] Locate `prisma/schema.prisma` and check relationships (Program -> User/Athlete/Gym)
+    - [ ] Locate Program View/Header component
+    - [ ] Create Implementation Plan
+- [ ] Backend Implementation
+    - [ ] Update Schema if necessary (Assignment relation)
+    - [ ] Create/Update Server Actions/API for assignment
+- [ ] Frontend Implementation
+    - [ ] Add Assignment UI to Program Header
+    - [ ] Create/Update Assignment Modal (Select Athlete/Gym)
+    - [ ] Implement wiring (Fetch/Save assignment)
+- [ ] Verification
+    - [ ] Verify Assignment flow
+    - [ ] Verify Edit Assignment flow
+    - [ ] Verify Navigation to Profile

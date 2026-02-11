@@ -111,9 +111,9 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
     // Style helpers for columns
     const getColumnHeaderStyle = (variable: string) => {
         const isTarget = progressionVariable === variable;
-        return `px-3 py-2 text-center font-semibold text-xs uppercase tracking-wider ${isTarget
+        return `relative px-3 pt-3 pb-7 text-center font-semibold text-xs uppercase tracking-wider align-top ${isTarget
             ? 'text-cv-accent bg-cv-accent/10 border-b-2 border-cv-accent'
-            : 'text-cv-text-secondary'
+            : 'text-cv-text-secondary border-b-2 border-transparent'
             }`;
     };
 
@@ -156,68 +156,56 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                 <table className="w-full text-sm border-collapse">
                     <thead>
                         <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
-                            <th className="px-3 py-2 text-left font-semibold text-cv-text-secondary text-xs uppercase tracking-wider w-32">Semana</th>
+                            <th className="px-3 pt-3 pb-7 text-left font-semibold text-cv-text-secondary text-xs uppercase tracking-wider w-32 align-top border-b-2 border-transparent">Semana</th>
                             <th className={getColumnHeaderStyle('sets')}>
-                                {progressionVariable === 'sets' ? (
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span>Series</span>
-                                        <span className="text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20">
-                                            Progresión
-                                        </span>
-                                    </div>
-                                ) : 'Series'}
+                                <span>Series</span>
+                                {progressionVariable === 'sets' && (
+                                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20 whitespace-nowrap">
+                                        Progresión
+                                    </span>
+                                )}
                             </th>
                             <th className={getColumnHeaderStyle('reps')}>
-                                {progressionVariable === 'reps' ? (
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span>Reps</span>
-                                        <span className="text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20">
-                                            Progresión
-                                        </span>
-                                    </div>
-                                ) : 'Reps'}
+                                <span>Reps</span>
+                                {progressionVariable === 'reps' && (
+                                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20 whitespace-nowrap">
+                                        Progresión
+                                    </span>
+                                )}
                             </th>
                             {hasDistance && (
                                 <th className={getColumnHeaderStyle('distance')}>
-                                    {progressionVariable === 'distance' ? (
-                                        <div className="flex flex-col items-center gap-1">
-                                            <span>Dist.</span>
-                                            <span className="text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20">
-                                                Progresión
-                                            </span>
-                                        </div>
-                                    ) : 'Dist.'}
+                                    <span>Dist.</span>
+                                    {progressionVariable === 'distance' && (
+                                        <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20 whitespace-nowrap">
+                                            Progresión
+                                        </span>
+                                    )}
                                 </th>
                             )}
                             <th className={getColumnHeaderStyle('percentage')}>
-                                {progressionVariable === 'percentage' ? (
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span>%</span>
-                                        <span className="text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20">
-                                            Progresión
-                                        </span>
-                                    </div>
-                                ) : '%'}
+                                <span>%</span>
+                                {progressionVariable === 'percentage' && (
+                                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20 whitespace-nowrap">
+                                        Progresión
+                                    </span>
+                                )}
                             </th>
                             <th className={getColumnHeaderStyle('rest')}>
-                                {progressionVariable === 'rest' ? (
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span>Rest</span>
-                                        <span className="text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20">
-                                            Progresión
-                                        </span>
-                                    </div>
-                                ) : 'Rest'}
+                                <span>Rest</span>
+                                {progressionVariable === 'rest' && (
+                                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20 whitespace-nowrap">
+                                        Progresión
+                                    </span>
+                                )}
                             </th>
                             <th className={getColumnHeaderStyle('tempo')}>
-                                {progressionVariable === 'tempo' ? (
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span>Tempo</span>
-                                        <span className="text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20">
-                                            Progresión
-                                        </span>
-                                    </div>
-                                ) : 'Tempo'}
+                                <span>Tempo</span>
+                                {progressionVariable === 'tempo' && (
+                                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20 whitespace-nowrap">
+                                        Progresión
+                                    </span>
+                                )}
                             </th>
                         </tr>
                     </thead>

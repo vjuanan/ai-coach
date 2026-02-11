@@ -7,6 +7,7 @@ import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { createPortal } from 'react-dom';
+import { useAthleteBenchmarks } from '@/hooks/useAthleteBenchmarks'; // New Hook
 
 interface DraftWorkoutBlock {
     id: string;
@@ -124,10 +125,28 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                 const sets = config.sets as number;
                 const reps = config.reps as string;
                 const percentage = config.percentage as string;
+
+                // Calculate weight for preview
+                let calculatedWeight: number | null = null;
+                const { getBenchmark } = useAthleteBenchmarks();
+
+                if (percentage && (block.name || config.exercise)) {
+                    const exerciseName = (config.exercise as string) || block.name || '';
+                    const rm = getBenchmark(exerciseName);
+                    const pct = parseInt(percentage.replace('%', ''), 10);
+
+                    if (rm && !isNaN(pct) && pct > 0) {
+                        calculatedWeight = Math.round((rm * pct) / 100);
+                    }
+                }
+
                 return (
                     <div className="text-sm min-h-[1.25rem]">
                         {sets && reps ? `${sets} x ${reps}` : ''}
                         {percentage && <span className="text-cv-accent ml-1">@ {percentage}</span>}
+                        {calculatedWeight !== null && (
+                            <span className="text-cv-text-tertiary ml-1 text-xs">({calculatedWeight} kg)</span>
+                        )}
                     </div>
                 );
 
