@@ -177,45 +177,50 @@ export function ClientsTable({ clients, coaches }: ClientsTableProps) {
 
     return (
         <Card className="w-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <div className="flex items-center gap-4">
-                    <CardTitle className="text-xl font-bold">Listado de Clientes</CardTitle>
-                    <span className="text-sm text-cv-text-secondary">
-                        {filteredClients.length} clientes totales
-                    </span>
-                </div>
-
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-cv-border-subtle bg-cv-bg-tertiary/20">
                 <div className="flex bg-cv-bg-secondary p-1 rounded-lg border border-cv-border-subtle">
                     <button
                         onClick={() => { setFilterType('athlete'); setSelectedClients(new Set()); }}
-                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${filterType === 'athlete'
-                                ? 'bg-cv-bg-primary text-cv-text-primary shadow-sm'
-                                : 'text-cv-text-secondary hover:text-cv-text-primary'
+                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${filterType === 'athlete'
+                            ? 'bg-cv-bg-primary text-cv-text-primary shadow-sm'
+                            : 'text-cv-text-secondary hover:text-cv-text-primary'
                             }`}
                     >
                         Atletas
+                        {filterType === 'athlete' && (
+                            <span className="bg-cv-accent/10 text-cv-accent px-1.5 rounded-md text-xs">
+                                {filteredClients.length}
+                            </span>
+                        )}
                     </button>
                     <button
                         onClick={() => { setFilterType('gym'); setSelectedClients(new Set()); }}
-                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${filterType === 'gym'
-                                ? 'bg-cv-bg-primary text-cv-text-primary shadow-sm'
-                                : 'text-cv-text-secondary hover:text-cv-text-primary'
+                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${filterType === 'gym'
+                            ? 'bg-cv-bg-primary text-cv-text-primary shadow-sm'
+                            : 'text-cv-text-secondary hover:text-cv-text-primary'
                             }`}
                     >
                         Gimnasios
+                        {filterType === 'gym' && (
+                            <span className="bg-cv-accent/10 text-cv-accent px-1.5 rounded-md text-xs">
+                                {filteredClients.length}
+                            </span>
+                        )}
                     </button>
                 </div>
 
-                {selectedClients.size > 0 && (
-                    <button
-                        onClick={handleBulkDelete}
-                        disabled={isBulkDeleting}
-                        className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors animate-in fade-in"
-                    >
-                        {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
-                        Eliminar ({selectedClients.size})
-                    </button>
-                )}
+                <div className="flex items-center gap-2">
+                    {selectedClients.size > 0 && (
+                        <button
+                            onClick={handleBulkDelete}
+                            disabled={isBulkDeleting}
+                            className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors animate-in fade-in"
+                        >
+                            {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                            Eliminar ({selectedClients.size})
+                        </button>
+                    )}
+                </div>
             </CardHeader>
 
             {message && (
