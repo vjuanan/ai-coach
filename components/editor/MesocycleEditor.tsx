@@ -203,8 +203,10 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             return !!match;
         }
         if (['metcon_structured', 'warmup', 'accessory', 'skill'].includes(block.type)) {
-            if (!block.format) return false;
+            console.log('Validating block:', block.type, block.config);
+            if (!block.format) { console.log('Missing format'); return false; }
             const movements = block.config.movements as any[] || [];
+            console.log('Movements:', movements);
             if (movements.length > 0) {
                 for (const m of movements) {
                     let name = '';
@@ -216,8 +218,9 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                         if (!match) return false;
                     }
                 }
+                return true;
             }
-            return true;
+            return false; // Require at least one movement
         }
         return true; // Other types like free_text (if content exists) or defaults
     };

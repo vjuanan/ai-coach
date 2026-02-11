@@ -1,5 +1,5 @@
 'use client';
-// Force rebuild: 2026-02-11T09:05:00
+// Force rebuild: 2026-02-11T12:00:00
 console.log("BLOCK BUILDER PANEL LOADING - CHECK VERSION");
 
 
@@ -202,7 +202,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                         <div className={`w-9 h-9 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm ${option.color}`}>
                                             <Icon size={18} />
                                         </div>
-                                        <div className="text-left flex-1 pr-6">
+                                        <div className="text-left flex-1 pr-12">
                                             <p className="font-semibold text-sm text-cv-text-primary">{option.label}</p>
                                             <p className="text-[10px] text-cv-text-tertiary">{option.description}</p>
                                         </div>
@@ -222,8 +222,8 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                 <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/30 dark:bg-cv-bg-tertiary/10">
                     {/* Added Blocks List - Horizontal Horizontal Scrolling */}
                     {currentDay && (
-                        <div className="flex-shrink-0 px-3 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary relative z-20">
-                            <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-2 pl-1 no-scrollbar" style={{ isolation: 'isolate' }}>
+                        <div className="flex-shrink-0 px-3 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary relative z-20 flex items-center gap-3">
+                            <div className="flex-1 flex items-center gap-3 overflow-x-auto pb-2 pt-2 pl-1 no-scrollbar" style={{ isolation: 'isolate' }}>
                                 {currentDay.blocks.length > 0 ? (
                                     [...currentDay.blocks]
                                         .sort((a, b) => a.order_index - b.order_index)
@@ -291,67 +291,67 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                         No hay bloques
                                     </div>
                                 )}
+                            </div>
 
-                                {/* Header Quick Add Button */}
-                                <div className="relative flex-shrink-0 ml-1 z-40">
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setShowQuickAdd(!showQuickAdd);
-                                        }}
-                                        className={`
-                                            w-10 h-10 rounded-full border border-dashed border-slate-300 dark:border-slate-600 
-                                            flex items-center justify-center text-slate-400 hover:text-cv-accent hover:border-cv-accent 
-                                            hover:bg-cv-accent/5 transition-all duration-200
-                                            ${showQuickAdd ? 'bg-cv-accent/10 border-cv-accent text-cv-accent ring-2 ring-cv-accent/20' : ''}
-                                        `}
-                                        title="Añadir bloque"
-                                    >
-                                        <Plus size={20} />
-                                    </button>
+                            {/* Header Quick Add Button - Outside scroll container */}
+                            <div className="relative flex-shrink-0 ml-1 z-40">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowQuickAdd(!showQuickAdd);
+                                    }}
+                                    className={`
+                                        w-10 h-10 rounded-full border border-dashed border-slate-300 dark:border-slate-600 
+                                        flex items-center justify-center text-slate-400 hover:text-cv-accent hover:border-cv-accent 
+                                        hover:bg-cv-accent/5 transition-all duration-200
+                                        ${showQuickAdd ? 'bg-cv-accent/10 border-cv-accent text-cv-accent ring-2 ring-cv-accent/20' : ''}
+                                    `}
+                                    title="Añadir bloque"
+                                >
+                                    <Plus size={20} />
+                                </button>
 
-                                    {/* Quick Add Dropdown */}
-                                    {showQuickAdd && (
-                                        <>
-                                            <div
-                                                className="fixed inset-0 z-[60]"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setShowQuickAdd(false);
-                                                }}
-                                            />
-                                            <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 p-1.5 z-[70] animate-in fade-in zoom-in-95 duration-200">
-                                                <div className="text-[10px] font-bold uppercase tracking-wider text-cv-text-tertiary mb-1 px-2 py-1">
-                                                    Añadir nuevo...
-                                                </div>
-                                                <div className="space-y-0.5">
-                                                    {blockTypeOptions.map((option) => {
-                                                        const Icon = option.icon;
-                                                        return (
-                                                            <button
-                                                                key={option.type}
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleAddBlock(option.type);
-                                                                    setShowQuickAdd(false);
-                                                                }}
-                                                                className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left group"
-                                                            >
-                                                                <div className={`w-7 h-7 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center ${option.color} group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors`}>
-                                                                    <Icon size={14} />
-                                                                </div>
-                                                                <div>
-                                                                    <p className="text-xs font-semibold text-cv-text-primary">{option.label}</p>
-                                                                    <p className="text-[10px] text-cv-text-tertiary line-clamp-1">{option.description}</p>
-                                                                </div>
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
+                                {/* Quick Add Dropdown */}
+                                {showQuickAdd && (
+                                    <>
+                                        <div
+                                            className="fixed inset-0 z-[60]"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setShowQuickAdd(false);
+                                            }}
+                                        />
+                                        <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 p-1.5 z-[70] animate-in fade-in zoom-in-95 duration-200">
+                                            <div className="text-[10px] font-bold uppercase tracking-wider text-cv-text-tertiary mb-1 px-2 py-1">
+                                                Añadir nuevo...
                                             </div>
-                                        </>
-                                    )}
-                                </div>
+                                            <div className="space-y-0.5">
+                                                {blockTypeOptions.map((option) => {
+                                                    const Icon = option.icon;
+                                                    return (
+                                                        <button
+                                                            key={option.type}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleAddBlock(option.type);
+                                                                setShowQuickAdd(false);
+                                                            }}
+                                                            className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left group"
+                                                        >
+                                                            <div className={`w-7 h-7 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center ${option.color} group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors`}>
+                                                                <Icon size={14} />
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-xs font-semibold text-cv-text-primary">{option.label}</p>
+                                                                <p className="text-[10px] text-cv-text-tertiary line-clamp-1">{option.description}</p>
+                                                            </div>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     )}

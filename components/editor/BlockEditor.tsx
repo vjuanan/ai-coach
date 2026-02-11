@@ -291,9 +291,11 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                         if (!match) return false; // Found an invalid movement
                     }
                 }
+                return true;
             }
 
-            return true;
+            // Require at least one movement
+            return false;
         }
 
         // Default fallback
