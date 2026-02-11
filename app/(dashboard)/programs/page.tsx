@@ -26,6 +26,7 @@ import {
 import { ProgramsGrid } from './ProgramsGrid';
 import { ProgramsTable } from './ProgramsTable';
 import { ProgramAssignmentModal } from '@/components/programs/ProgramAssignmentModal';
+import { ProgramCardExporter } from '@/components/export/ProgramCardExporter';
 
 interface Program {
     id: string;
@@ -392,10 +393,11 @@ export default function ProgramsPage() {
                     isOpen={!!programToAssign}
                     onClose={() => setProgramToAssign(null)}
                     programId={programToAssign.id}
-                    currentClientId={programToAssign.client?.id || null}
+                    currentClientId={programToAssign.client ? programToAssign.client.id : null}
                     onAssignSuccess={handleAssignmentSuccess}
                 />
             )}
         </>
     );
 }
+// force deploy
