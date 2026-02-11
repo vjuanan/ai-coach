@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { Trophy, Edit2, Save, X, Loader2, Timer, Activity } from 'lucide-react';
-import { updateAthleteProfile } from '@/lib/actions';
+// import { updateAthleteProfile } from '@/lib/actions'; // Unused, using fetch now
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Modal } from '@/components/ui/Modal';
 
 interface OneRmStats {
     snatch?: number | null;
@@ -57,17 +58,17 @@ function TimeInput({ value, onChange, placeholder }: { value: number | null, onC
     };
 
     return (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
             <div className="relative flex-1">
                 <input
                     type="number"
                     value={mins}
                     onChange={(e) => handleChange(e.target.value, secs.toString())}
                     placeholder="Min"
-                    className="cv-input text-sm pr-6 text-center"
+                    className="cv-input text-lg py-2 pr-8 text-center bg-cv-bg-secondary w-full"
                     min={0}
                 />
-                <span className="absolute right-2 top-1.5 text-xs text-cv-text-tertiary">m</span>
+                <span className="absolute right-3 top-3 text-xs text-cv-text-tertiary">m</span>
             </div>
             <span className="text-cv-text-tertiary font-bold">:</span>
             <div className="relative flex-1">
@@ -76,11 +77,11 @@ function TimeInput({ value, onChange, placeholder }: { value: number | null, onC
                     value={secs === 0 && !mins ? '' : secs}
                     onChange={(e) => handleChange(mins.toString(), e.target.value)}
                     placeholder="Seg"
-                    className="cv-input text-sm pr-6 text-center"
+                    className="cv-input text-lg py-2 pr-8 text-center bg-cv-bg-secondary w-full"
                     min={0}
                     max={59}
                 />
-                <span className="absolute right-2 top-1.5 text-xs text-cv-text-tertiary">s</span>
+                <span className="absolute right-3 top-3 text-xs text-cv-text-tertiary">s</span>
             </div>
         </div>
     );
@@ -145,8 +146,8 @@ export function BenchmarksEditor({ athleteId, initialStats, franTime, run1km, ru
         setIsEditing(false);
     };
 
-    if (!isEditing) {
-        return (
+    return (
+        <>
             <div className="cv-card">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold text-cv-text-primary flex items-center gap-2">
@@ -155,14 +156,14 @@ export function BenchmarksEditor({ athleteId, initialStats, franTime, run1km, ru
                     </h3>
                     <button
                         onClick={() => setIsEditing(true)}
-                        className="cv-btn-ghost p-1.5"
+                        className="cv-btn-ghost p-1.5 hover:bg-cv-bg-secondary rounded-lg transition-colors"
                         title="Editar Marcajes"
                     >
                         <Edit2 size={14} />
                     </button>
                 </div>
 
-                {/* 1RM Grid */}
+                {/* 1RM Grid (Read Only) */}
                 <div className="grid grid-cols-4 gap-3">
                     {RM_FIELDS.map(({ key, label }) => (
                         <div key={key} className="p-2 rounded-lg bg-cv-bg-tertiary border border-cv-border">
@@ -175,7 +176,7 @@ export function BenchmarksEditor({ athleteId, initialStats, franTime, run1km, ru
                     ))}
                 </div>
 
-                {/* Time-based benchmarks */}
+                {/* Time-based benchmarks (Read Only) */}
                 {(times.franTime || times.run1km || times.run5km) && (
                     <div className="mt-4 space-y-2">
                         {times.franTime && (
@@ -208,78 +209,106 @@ export function BenchmarksEditor({ athleteId, initialStats, franTime, run1km, ru
                     </div>
                 )}
             </div>
-        );
-    }
 
-    // EDIT MODE
-    return (
-        <div className="cv-card border-cv-accent/50">
-            <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-cv-text-primary flex items-center gap-2">
-                    <Trophy size={18} className="text-cv-accent" />
-                    Editar Marcajes (1RM)
-                </h3>
-                <div className="flex gap-1">
-                    <button onClick={handleCancel} className="cv-btn-ghost p-1.5" title="Cancelar">
-                        <X size={14} />
-                    </button>
-                    <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="cv-btn-primary py-1 px-2 text-xs"
-                    >
-                        {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                        Guardar
-                    </button>
-                </div>
-            </div>
+            {/* EDIT MODAL */}
+            {isEditing && (
+                <Modal
+                    isOpen={isEditing}
+                    onClose={handleCancel}
+                    title="Editar Marcajes y Tiempos"
+                    description="Actualiza los records personales (PR) del atleta. Utiliza el espacio completo para mayor comodidad."
+                    maxWidth="max-w-4xl"
+                >
+                    <div className="space-y-8">
+                        {/* Section 1: Weightlifting */}
+                        <div>
+                            <h4 className="flex items-center gap-2 text-sm font-bold text-cv-text-primary mb-4 uppercase tracking-wider">
+                                <Trophy size={16} className="text-cv-accent" />
+                                Levantamientos (1RM)
+                            </h4>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {RM_FIELDS.map(({ key, label }) => (
+                                    <div key={key} className="bg-cv-bg-tertiary/50 p-4 rounded-xl border border-white/5 hover:border-cv-accent/40 transition-colors">
+                                        <label className="block text-xs font-bold text-cv-text-secondary uppercase mb-2">
+                                            {label}
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                value={stats[key] ?? ''}
+                                                onChange={(e) => setStats(prev => ({
+                                                    ...prev,
+                                                    [key]: e.target.value ? parseInt(e.target.value) : null
+                                                }))}
+                                                placeholder="0"
+                                                className="cv-input w-full text-xl font-bold bg-cv-bg-secondary py-3 text-center"
+                                            />
+                                            <span className="absolute right-3 top-4 text-xs font-bold text-cv-text-tertiary pointer-events-none">
+                                                KG
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
 
-            {/* 1RM Inputs */}
-            <div className="grid grid-cols-4 gap-2">
-                {RM_FIELDS.map(({ key, label }) => (
-                    <div key={key}>
-                        <label className="block text-2xs text-cv-text-tertiary uppercase font-bold mb-1 truncate" title={label}>{label}</label>
-                        <input
-                            type="number"
-                            value={stats[key] ?? ''}
-                            onChange={(e) => setStats(prev => ({
-                                ...prev,
-                                [key]: e.target.value ? parseInt(e.target.value) : null
-                            }))}
-                            placeholder="kg"
-                            className="cv-input text-sm w-full"
-                        />
-                    </div>
-                ))}
-            </div>
+                        {/* Section 2: Metabolic Conditioning */}
+                        <div className="pt-6 border-t border-white/10">
+                            <h4 className="flex items-center gap-2 text-sm font-bold text-cv-text-primary mb-4 uppercase tracking-wider">
+                                <Timer size={16} className="text-blue-400" />
+                                Tiempos de Referencia
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="bg-cv-bg-tertiary/50 p-4 rounded-xl border border-white/5">
+                                    <label className="block text-xs font-bold text-cv-text-secondary uppercase mb-2 text-center">
+                                        Fran (21-15-9)
+                                    </label>
+                                    <TimeInput
+                                        value={times.franTime}
+                                        onChange={(val) => setTimes(prev => ({ ...prev, franTime: val }))}
+                                    />
+                                </div>
+                                <div className="bg-cv-bg-tertiary/50 p-4 rounded-xl border border-white/5">
+                                    <label className="block text-xs font-bold text-cv-text-secondary uppercase mb-2 text-center">
+                                        1KM Run
+                                    </label>
+                                    <TimeInput
+                                        value={times.run1km}
+                                        onChange={(val) => setTimes(prev => ({ ...prev, run1km: val }))}
+                                    />
+                                </div>
+                                <div className="bg-cv-bg-tertiary/50 p-4 rounded-xl border border-white/5">
+                                    <label className="block text-xs font-bold text-cv-text-secondary uppercase mb-2 text-center">
+                                        5KM Run
+                                    </label>
+                                    <TimeInput
+                                        value={times.run5km}
+                                        onChange={(val) => setTimes(prev => ({ ...prev, run5km: val }))}
+                                    />
+                                </div>
+                            </div>
+                        </div>
 
-            {/* Time inputs */}
-            <div className="mt-4 pt-3 border-t border-cv-border">
-                <label className="block text-xs font-semibold text-cv-text-secondary mb-2">Tiempos</label>
-                <div className="grid grid-cols-1 gap-3">
-                    <div className="grid grid-cols-[80px_1fr] gap-2 items-center">
-                        <label className="text-2xs text-cv-text-tertiary uppercase font-bold text-right">Fran</label>
-                        <TimeInput
-                            value={times.franTime}
-                            onChange={(val) => setTimes(prev => ({ ...prev, franTime: val }))}
-                        />
+                        {/* Footer Actions */}
+                        <div className="flex items-center justify-end gap-3 pt-6 border-t border-white/10">
+                            <button
+                                onClick={handleCancel}
+                                className="px-4 py-2 text-sm font-medium text-cv-text-secondary hover:text-white transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                disabled={isSaving}
+                                className="cv-btn-primary py-2 px-6 flex items-center gap-2"
+                            >
+                                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                                Guardar Cambios
+                            </button>
+                        </div>
                     </div>
-                    <div className="grid grid-cols-[80px_1fr] gap-2 items-center">
-                        <label className="text-2xs text-cv-text-tertiary uppercase font-bold text-right">1KM Run</label>
-                        <TimeInput
-                            value={times.run1km}
-                            onChange={(val) => setTimes(prev => ({ ...prev, run1km: val }))}
-                        />
-                    </div>
-                    <div className="grid grid-cols-[80px_1fr] gap-2 items-center">
-                        <label className="text-2xs text-cv-text-tertiary uppercase font-bold text-right">5KM Run</label>
-                        <TimeInput
-                            value={times.run5km}
-                            onChange={(val) => setTimes(prev => ({ ...prev, run5km: val }))}
-                        />
-                    </div>
-                </div>
-            </div>
-        </div>
+                </Modal>
+            )}
+        </>
     );
 }
