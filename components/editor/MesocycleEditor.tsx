@@ -184,6 +184,11 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
     const [showExport, setShowExport] = useState(false);
     const [showStrategy, setShowStrategy] = useState(false);
 
+    // Invalid Blocks Modal State
+    const [showInvalidBlocksModal, setShowInvalidBlocksModal] = useState(false);
+    const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+    const [invalidBlocksCount, setInvalidBlocksCount] = useState(0);
+
     // Get current state for export
     const currentMesocycle = mesocycles.find(m => m.week_number === selectedWeek);
     const globalFocus = (programAttributes?.global_focus as string) || null;
@@ -203,10 +208,8 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             return !!match;
         }
         if (['metcon_structured', 'warmup', 'accessory', 'skill'].includes(block.type)) {
-            console.log('Validating block:', block.type, block.config);
-            if (!block.format) { console.log('Missing format'); return false; }
+            if (!block.format) return false;
             const movements = block.config.movements as any[] || [];
-            console.log('Movements:', movements);
             if (movements.length > 0) {
                 for (const m of movements) {
                     let name = '';

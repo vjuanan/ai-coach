@@ -143,11 +143,25 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                 }
 
                 return (
-                    <div className="text-sm min-h-[1.25rem]">
-                        {sets && reps ? `${sets} x ${reps}` : ''}
-                        {percentage && <span className="text-cv-accent ml-1">@ {percentage}</span>}
-                        {calculatedWeight !== null && (
-                            <span className="text-cv-text-tertiary ml-1 text-xs">({calculatedWeight} kg)</span>
+                    <div className="flex flex-col gap-0.5 min-h-[1.25rem]">
+                        <div className="text-sm font-medium flex items-center flex-wrap gap-1">
+                            <span>{sets} × {reps}</span>
+                            {percentage && (
+                                <span className="text-cv-accent bg-cv-accent/5 px-1 rounded">
+                                    @ {percentage}% del RM
+                                </span>
+                            )}
+                            {calculatedWeight !== null && (
+                                <span className="text-cv-text-secondary font-normal text-xs bg-slate-100 dark:bg-slate-800 px-1 rounded">
+                                    {calculatedWeight} kg
+                                </span>
+                            )}
+                        </div>
+                        {config.rest && (
+                            <div className="text-xs text-cv-text-tertiary flex items-center gap-1">
+                                <span className="opacity-70">Descanso:</span>
+                                <span>{config.rest as string}</span>
+                            </div>
                         )}
                     </div>
                 );
@@ -260,8 +274,12 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                                     </div>
                                 )}
                                 {block.progression_id && (
-                                    <div title="Progresión vinculada">
-                                        <Link size={10} className="text-cv-accent" />
+                                    <div
+                                        className="flex items-center gap-1 bg-indigo-50 dark:bg-indigo-900/20 px-1.5 py-0.5 rounded text-[10px] font-medium text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/30"
+                                        title="Parte de una progresión"
+                                    >
+                                        <Link size={10} className="stroke-[2.5]" />
+                                        <span>Progresión</span>
                                     </div>
                                 )}
                             </div>
