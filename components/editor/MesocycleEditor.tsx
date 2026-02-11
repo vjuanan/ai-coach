@@ -201,58 +201,86 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
     };
 
     // Handle Save & Exit with Validation
-    const handleSaveAndExit = useCallback(async () => {
-        // Validate all blocks in the CURRENT day being edited (blockBuilderDayId)
-        if (blockBuilderDayId) {
-            // Find the day
-            const currentMeso = mesocycles.find(m => m.days.some(d => d.id === blockBuilderDayId));
-            const day = currentMeso?.days.find(d => d.id === blockBuilderDayId);
+    // Generic Validation Helper
+    const validateAndProceed = useCallback((actionCallback: () => void) => {
+        // If not in block builder or no day selected, just proceed
+        if (!blockBuilderDayId) {
+            actionCallback();
+            return;
+        }
 
-            if (day) {
-                const invalidBlocks = day.blocks.filter(b => !validateBlockContent(b));
-
-                if (invalidBlocks.length > 0) {
-                    // Show alert/modal
-                    const confirmDelete = window.confirm(
-                        `Hay ${invalidBlocks.length} bloque(s) con ejercicios no válidos o vacíos.\n\n` +
-                        `No se pueden guardar bloques incompletos. ¿Deseas eliminar los bloques inválidos y salir?\n\n` +
-                        `Cancelar: Para corregirlos manualmente.\n` +
-                        `Aceptar: Eliminar bloques inválidos y salir.`
-                    );
-
-                    if (confirmDelete) {
-                        // User chose to delete invalid blocks and exit
-                        // We iterate and delete. 
-                        // Note: State updates might be async/batched, but since we are exiting, it might be fine.
-                        // Ideally we should wait for deletion or use a bulk delete action if available.
-                        // Given we don't have bulk delete, we call deleteBlock for each.
-                        // We reverse iterate to avoid index issues if any, though IDs are unique.
-                        for (const b of invalidBlocks) {
-                            deleteBlock(b.id);
-                        }
-
-                        // Small delay to ensure state updates if needed, though forceSave normally grabs current state from store refs if implemented that way.
-                        // However, useAutoSave often uses the wrapper state. 
-                        // Since we are exiting, the exitBlockBuilder will happen. 
-                        // We might need to ensure the store is updated before forceSave calls.
-                        // Actually, if we delete, we should probably just exit without saving invalid state if possible, 
-                        // OR save the *cleaned* state. 
-                        // Calling deleteBlock updates the store immediately (usually).
-                        // So forceSave() after this should capture the deletion.
-
-                    } else {
-                        // User canceled, stay in editor
-                        return;
-                    }
-                }
+        // Find the day across ALL mesocycles (to be safe, though usually current)
+        let dayFound: any = null;
+        for (const m of mesocycles) {
+            const d = m.days.find(day => day.id === blockBuilderDayId);
+            if (d) {
+                dayFound = d;
+                break;
             }
         }
 
-        if (hasUnsavedChanges) {
-            await forceSave();
+        if (dayFound) {
+            // Check for invalid blocks
+            const invalidBlocks = dayFound.blocks.filter((b: any) => !validateBlockContent(b));
+
+            if (invalidBlocks.length > 0) {
+                // Show alert/modal
+                const confirmDelete = window.confirm(
+                    `ADVERTENCIA: Hay ${invalidBlocks.length} bloque(s) incompleto(s) o inválido(s).\n\n` +
+                    `• Ejercicios vacíos o no existentes no se guardarán.\n` +
+                    `• Debes corregirlos o eliminarlos para continuar.\n\n` +
+                    `¿Deseas ELIMINAR estos bloques y continuar?`
+                );
+
+                if (confirmDelete) {
+                    // User chose to delete.
+                    // Delete each invalid block
+                    invalidBlocks.forEach((b: any) => {
+                        deleteBlock(b.id);
+                    });
+
+                    // Proceed with the action (e.g., exit, switch week)
+                    // We wrap in timeout to allow state update to propagate if needed (though store is usually sync for local)
+                    setTimeout(() => {
+                        actionCallback();
+                    }, 50);
+                } else {
+                    // User canceled, stay here
+                    return;
+                }
+            } else {
+                // All valid
+                actionCallback();
+            }
+        } else {
+            // Day not found (weird), proceed
+            actionCallback();
         }
-        exitBlockBuilder();
-    }, [hasUnsavedChanges, forceSave, exitBlockBuilder, blockBuilderDayId, mesocycles, validateBlockContent, deleteBlock]);
+    }, [blockBuilderDayId, mesocycles, validateBlockContent, deleteBlock]);
+
+    // Handle Save & Exit (Button & Back Arrow)
+    const handleSaveAndExit = useCallback(async () => {
+        validateAndProceed(async () => {
+            if (hasUnsavedChanges) {
+                await forceSave();
+            }
+            exitBlockBuilder();
+        });
+    }, [validateAndProceed, hasUnsavedChanges, forceSave, exitBlockBuilder]);
+
+    // Handle Week Change
+    const handleWeekChange = (week: number) => {
+        if (blockBuilderMode) {
+            validateAndProceed(() => selectWeek(week));
+        } else {
+            selectWeek(week);
+        }
+    };
+
+    // Handle Day Switching (Sidebar)
+    const handleDaySwitch = (dayId: string) => {
+        validateAndProceed(() => enterBlockBuilder(dayId));
+    };
 
     // Handle ESC Navigation & Actions
     useEffect(() => {
@@ -494,7 +522,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                         {[1, 2, 3, 4].map(week => (
                             <button
                                 key={week}
-                                onClick={() => selectWeek(week)}
+                                onClick={() => handleWeekChange(week)}
                                 className={`
                                 px-3 py-1 rounded-md text-xs font-medium transition-all
                                 ${selectedWeek === week
@@ -606,7 +634,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                                 <SingleDayView
                                     mesocycle={currentMesocycle}
                                     dayId={blockBuilderDayId}
-                                    onSelectDay={(dayId: string) => enterBlockBuilder(dayId)}
+                                    onSelectDay={handleDaySwitch}
                                 />
                             )}
                         </div>

@@ -96,7 +96,7 @@ export function WeeklySummaryCard({ mesocycle, programGlobalFocus }: WeeklySumma
                 <div className="bg-white/60 dark:bg-slate-800/40 rounded-lg p-3 border border-slate-100 dark:border-slate-700">
                     <div className="flex items-center gap-2 text-red-500 mb-1">
                         <TrendingUp size={12} />
-                        <span className="text-xs">Velocidad y Potencia</span>
+                        <span className="text-xs">Fuerza</span>
                     </div>
                     <p className="text-xl font-bold text-cv-text-primary">{strengthBlocks}</p>
                 </div>
