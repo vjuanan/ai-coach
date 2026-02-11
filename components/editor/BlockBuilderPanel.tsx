@@ -19,7 +19,7 @@ import {
     Link
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
+import type { BlockType, WorkoutFormat, WorkoutConfig } from '@/lib/supabase/types';
 
 interface BlockBuilderPanelProps {
     dayId: string;
@@ -166,7 +166,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
             };
         }
 
-        addBlock(dayId, type, format, undefined, false, initialConfig);
+        addBlock(dayId, type, format, undefined, false, initialConfig as any);
     };
 
     return (
