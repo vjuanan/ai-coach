@@ -48,6 +48,9 @@ export function ClientsTable({ clients, coaches }: ClientsTableProps) {
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
+    // Filter State
+    const [filterType, setFilterType] = useState<'athlete' | 'gym'>('athlete');
+
     // Multi-select State
     const [selectedClients, setSelectedClients] = useState<Set<string>>(new Set());
     const [isBulkDeleting, setIsBulkDeleting] = useState(false);
@@ -101,12 +104,15 @@ export function ClientsTable({ clients, coaches }: ClientsTableProps) {
         }
     };
 
+    // Filter Clients
+    const filteredClients = clients.filter(client => client.type === filterType);
+
     // Multi-select Handlers
     const toggleSelectAll = () => {
-        if (selectedClients.size === clients.length) {
+        if (selectedClients.size === filteredClients.length && filteredClients.length > 0) {
             setSelectedClients(new Set());
         } else {
-            setSelectedClients(new Set(clients.map(c => c.id)));
+            setSelectedClients(new Set(filteredClients.map(c => c.id)));
         }
     };
 
@@ -175,9 +181,31 @@ export function ClientsTable({ clients, coaches }: ClientsTableProps) {
                 <div className="flex items-center gap-4">
                     <CardTitle className="text-xl font-bold">Listado de Clientes</CardTitle>
                     <span className="text-sm text-cv-text-secondary">
-                        {clients.length} clientes totales
+                        {filteredClients.length} clientes totales
                     </span>
                 </div>
+
+                <div className="flex bg-cv-bg-secondary p-1 rounded-lg border border-cv-border-subtle">
+                    <button
+                        onClick={() => { setFilterType('athlete'); setSelectedClients(new Set()); }}
+                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${filterType === 'athlete'
+                                ? 'bg-cv-bg-primary text-cv-text-primary shadow-sm'
+                                : 'text-cv-text-secondary hover:text-cv-text-primary'
+                            }`}
+                    >
+                        Atletas
+                    </button>
+                    <button
+                        onClick={() => { setFilterType('gym'); setSelectedClients(new Set()); }}
+                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${filterType === 'gym'
+                                ? 'bg-cv-bg-primary text-cv-text-primary shadow-sm'
+                                : 'text-cv-text-secondary hover:text-cv-text-primary'
+                            }`}
+                    >
+                        Gimnasios
+                    </button>
+                </div>
+
                 {selectedClients.size > 0 && (
                     <button
                         onClick={handleBulkDelete}
@@ -207,7 +235,7 @@ export function ClientsTable({ clients, coaches }: ClientsTableProps) {
                                     <input
                                         type="checkbox"
                                         className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
-                                        checked={clients.length > 0 && selectedClients.size === clients.length}
+                                        checked={filteredClients.length > 0 && selectedClients.size === filteredClients.length}
                                         onChange={toggleSelectAll}
                                     />
                                 </TableHead>
@@ -221,14 +249,14 @@ export function ClientsTable({ clients, coaches }: ClientsTableProps) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {clients.length === 0 ? (
+                            {filteredClients.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
-                                        No se encontraron clientes.
+                                        No se encontraron {filterType === 'athlete' ? 'atletas' : 'gimnasios'}.
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                clients.map((client) => (
+                                filteredClients.map((client) => (
                                     <TableRow key={client.id} className={selectedClients.has(client.id) ? 'bg-cv-accent/5' : ''}>
                                         <TableCell className="p-4 text-center">
                                             <input
