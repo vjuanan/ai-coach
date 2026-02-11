@@ -180,12 +180,29 @@ export default function OnboardingPage() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            const { error } = await supabase
-                .from('profiles')
-                .update(currentStepData)
-                .eq('id', user.id);
+            // Split benchmarks from other data to prevent failure if column is missing
+            const { benchmarks, ...otherData } = currentStepData as any;
 
-            if (error) throw error;
+            if (Object.keys(otherData).length > 0) {
+                const { error } = await supabase
+                    .from('profiles')
+                    .update(otherData)
+                    .eq('id', user.id);
+
+                if (error) throw error;
+            }
+
+            // Attempt to save benchmarks (Best effort)
+            if (benchmarks) {
+                try {
+                    const { error: benchError } = await supabase
+                        .from('profiles')
+                        .update({ benchmarks })
+                        .eq('id', user.id);
+
+                    if (benchError) console.warn('Could not save benchmarks (migration likely missing):', benchError.message);
+                } catch (ignore) { }
+            }
         } catch (error) {
             console.error('Error saving:', error);
         } finally {

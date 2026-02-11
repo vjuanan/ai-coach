@@ -6,6 +6,7 @@
     - [x] Hide `currentMethodology.description` for Warmup blocks in `BlockEditor.tsx`
     - [x] Update `useExerciseCache.ts` to support empty queries (show all/recent)
     - [x] Update `SmartExerciseInput.tsx` to trigger search on focus
+    - [x] Fix build error in `lib/store/index.ts` (Restructure and missing methods)
 - [ ] Verify the fix <!-- id: 3 -->
-    - [ ] Push to GitHub
-    - [ ] Verify on Production
+    - [x] Push to GitHub
+    - [ ] Verify on Production (Attempt 3)
