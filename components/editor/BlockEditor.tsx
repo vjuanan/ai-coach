@@ -38,7 +38,7 @@ import {
     ChevronDown,
     ChevronUp,
     AlertCircle,
-    Scale // Added Scale icon
+
 } from 'lucide-react';
 import { TableInputWithPresets } from './TableInputWithPresets';
 import { InputCard } from './InputCard';

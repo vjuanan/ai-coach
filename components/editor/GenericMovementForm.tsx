@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { SmartExerciseInput } from './SmartExerciseInput';
 import { useExerciseCache } from '@/hooks/useExerciseCache';
-import { Trash2, Plus, RotateCcw, Repeat, Activity, Timer, Flame, Clock, FileText, Dumbbell } from 'lucide-react';
+import { Trash2, Plus, RotateCcw, Repeat, Activity, Flame, Clock, FileText } from 'lucide-react';
 import type { TrainingMethodology } from '@/lib/supabase/types';
 import { InputCard } from './InputCard';
 

@@ -51,6 +51,7 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const wasDraggingRef = useRef(false);
+    const { getBenchmark } = useAthleteBenchmarks();
 
     // Setup draggable
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -128,7 +129,6 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
 
                 // Calculate weight for preview
                 let calculatedWeight: number | null = null;
-                const { getBenchmark } = useAthleteBenchmarks();
 
                 if (percentage && (block.name || config.exercise)) {
                     const exerciseName = (config.exercise as string) || block.name || '';
