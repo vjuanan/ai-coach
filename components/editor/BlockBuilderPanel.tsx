@@ -16,7 +16,8 @@ import {
     Check,
     TrendingUp,
     Trash2,
-    Link
+    Link,
+    Plus
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { BlockType, WorkoutFormat, WorkoutConfig } from '@/lib/supabase/types';
@@ -129,6 +130,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
     const { addBlock, selectedBlockId, selectBlock, mesocycles, deleteBlock, toggleBlockProgression } = useEditorStore();
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
+    const [showQuickAdd, setShowQuickAdd] = useState(false);
 
     // Find the current day to show added blocks
     let currentDay = null;
@@ -188,10 +190,10 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                     <button
                                         key={option.type}
                                         onClick={() => handleAddBlock(option.type)}
-                                        className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${option.bgColor} group hover:scale-[1.02] hover:-translate-y-0.5`}
+                                        className={`w-full relative flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${option.bgColor} group hover:scale-[1.01] hover:-translate-y-0.5`}
                                         style={{ '--glow-color': option.glowColor } as React.CSSProperties}
                                         onMouseEnter={(e) => {
-                                            (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 30px -4px ${option.glowColor}`;
+                                            (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px -2px ${option.glowColor}`;
                                         }}
                                         onMouseLeave={(e) => {
                                             (e.currentTarget as HTMLElement).style.boxShadow = 'none';
@@ -204,6 +206,11 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                             <p className="font-semibold text-sm text-cv-text-primary">{option.label}</p>
                                             <p className="text-[10px] text-cv-text-tertiary">{option.description}</p>
                                         </div>
+
+                                        {/* Hover Add Indicator */}
+                                        <div className="absolute top-1/2 -translate-y-1/2 right-3 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-white/50 dark:bg-black/20 p-1.5 rounded-full backdrop-blur-sm scale-90 group-hover:scale-100">
+                                            <Plus size={14} className="text-cv-text-primary" />
+                                        </div>
                                     </button>
                                 );
                             })}
@@ -214,33 +221,34 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                 {/* Right Column - Speed Editor */}
                 <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/30 dark:bg-cv-bg-tertiary/10">
                     {/* Added Blocks List - Horizontal Horizontal Scrolling */}
-                    {currentDay && currentDay.blocks.length > 0 && (
-                        <div className="flex-shrink-0 px-3 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
+                    {currentDay && (
+                        <div className="flex-shrink-0 px-3 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary relative z-20">
                             <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-2 pl-1 no-scrollbar" style={{ isolation: 'isolate' }}>
-                                {[...currentDay.blocks]
-                                    .sort((a, b) => a.order_index - b.order_index)
-                                    .map((block, index) => {
-                                        const isActive = selectedBlockId === block.id;
-                                        const blockOption = blockTypeOptions.find(o => o.type === block.type);
-                                        const Icon = blockOption?.icon || Dumbbell;
+                                {currentDay.blocks.length > 0 ? (
+                                    [...currentDay.blocks]
+                                        .sort((a, b) => a.order_index - b.order_index)
+                                        .map((block, index) => {
+                                            const isActive = selectedBlockId === block.id;
+                                            const blockOption = blockTypeOptions.find(o => o.type === block.type);
+                                            const Icon = blockOption?.icon || Dumbbell;
 
-                                        return (
-                                            <div
-                                                key={block.id}
-                                                onClick={() => selectBlock(block.id)}
-                                                className={`
+                                            return (
+                                                <div
+                                                    key={block.id}
+                                                    onClick={() => selectBlock(block.id)}
+                                                    className={`
                                                     group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left min-w-[150px] cursor-pointer
                                                     ${isActive
-                                                        ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-lg ring-2 ring-cv-accent/40 z-20'
-                                                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-500 hover:z-30'
-                                                    }
+                                                            ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-lg ring-2 ring-cv-accent/40 z-20'
+                                                            : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-500 hover:z-30'
+                                                        }
                                                 `}
-                                                style={!isActive ? { '--hover-shadow': blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)' } as React.CSSProperties : undefined}
-                                            >
-                                                {/* Delete Trash Button - Visible on Hover - Minimalist Style */}
-                                                <button
-                                                    onClick={(e) => handleDeleteBlock(e, block)}
-                                                    className="
+                                                    style={!isActive ? { '--hover-shadow': blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)' } as React.CSSProperties : undefined}
+                                                >
+                                                    {/* Delete Trash Button - Visible on Hover - Minimalist Style */}
+                                                    <button
+                                                        onClick={(e) => handleDeleteBlock(e, block)}
+                                                        className="
                                                         absolute top-1.5 right-1.5 
                                                         w-6 h-6 
                                                         rounded-full 
@@ -250,34 +258,93 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                         transition-all duration-200 
                                                         z-50
                                                     "
-                                                    title="Eliminar bloque"
-                                                >
-                                                    <Trash2 size={13} strokeWidth={2.5} />
-                                                </button>
+                                                        title="Eliminar bloque"
+                                                    >
+                                                        <Trash2 size={13} strokeWidth={2.5} />
+                                                    </button>
 
-                                                <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'
-                                                    }`}>
-                                                    <Icon size={14} />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className={`text-xs font-semibold truncate ${isActive ? 'text-cv-text-primary' : 'text-cv-text-secondary'}`}>
-                                                        {block.name || blockOption?.label || "Sin nombre"}
-                                                    </p>
-                                                    <div className="flex items-center gap-1">
-                                                        <p className="text-[10px] text-cv-text-tertiary truncate">
-                                                            {block.format}
+                                                    <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'
+                                                        }`}>
+                                                        <Icon size={14} />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className={`text-xs font-semibold truncate ${isActive ? 'text-cv-text-primary' : 'text-cv-text-secondary'}`}>
+                                                            {block.name || blockOption?.label || "Sin nombre"}
                                                         </p>
-                                                        {/* Progression Indicator */}
-                                                        {Boolean((block as any).progression_id) && (
-                                                            <div className="w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0 text-cv-accent bg-cv-accent/10">
-                                                                <Link size={8} />
-                                                            </div>
-                                                        )}
+                                                        <div className="flex items-center gap-1">
+                                                            <p className="text-[10px] text-cv-text-tertiary truncate">
+                                                                {block.format}
+                                                            </p>
+                                                            {/* Progression Indicator */}
+                                                            {Boolean((block as any).progression_id) && (
+                                                                <div className="w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0 text-cv-accent bg-cv-accent/10">
+                                                                    <Link size={8} />
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
+                                            );
+                                        })
+                                ) : (
+                                    <div className="text-xs text-cv-text-tertiary italic px-2">
+                                        No hay bloques
+                                    </div>
+                                )}
+
+                                {/* Header Quick Add Button */}
+                                <div className="relative flex-shrink-0 ml-1">
+                                    <button
+                                        onClick={() => setShowQuickAdd(!showQuickAdd)}
+                                        className={`
+                                            w-10 h-10 rounded-full border border-dashed border-slate-300 dark:border-slate-600 
+                                            flex items-center justify-center text-slate-400 hover:text-cv-accent hover:border-cv-accent 
+                                            hover:bg-cv-accent/5 transition-all duration-200
+                                            ${showQuickAdd ? 'bg-cv-accent/10 border-cv-accent text-cv-accent ring-2 ring-cv-accent/20' : ''}
+                                        `}
+                                        title="Añadir bloque"
+                                    >
+                                        <Plus size={20} />
+                                    </button>
+
+                                    {/* Quick Add Dropdown */}
+                                    {showQuickAdd && (
+                                        <>
+                                            <div
+                                                className="fixed inset-0 z-[60]"
+                                                onClick={() => setShowQuickAdd(false)}
+                                            />
+                                            <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 p-1.5 z-[70] animate-in fade-in zoom-in-95 duration-200">
+                                                <div className="text-[10px] font-bold uppercase tracking-wider text-cv-text-tertiary mb-1 px-2 py-1">
+                                                    Añadir nuevo...
+                                                </div>
+                                                <div className="space-y-0.5">
+                                                    {blockTypeOptions.map((option) => {
+                                                        const Icon = option.icon;
+                                                        return (
+                                                            <button
+                                                                key={option.type}
+                                                                onClick={() => {
+                                                                    handleAddBlock(option.type);
+                                                                    setShowQuickAdd(false);
+                                                                }}
+                                                                className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left group"
+                                                            >
+                                                                <div className={`w-7 h-7 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center ${option.color} group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors`}>
+                                                                    <Icon size={14} />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-xs font-semibold text-cv-text-primary">{option.label}</p>
+                                                                    <p className="text-[10px] text-cv-text-tertiary line-clamp-1">{option.description}</p>
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
                                             </div>
-                                        );
-                                    })}
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}

@@ -1348,11 +1348,11 @@ function ProgressionSettings({ blockId, progressionId, showSelector, setShowSele
             {showSelector && (
                 <div className="absolute top-8 right-0 z-50 w-64 p-3 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200">
 
-                    {/* VELOCIDAD Y POTENCIA Section */}
+                    {/* VELOCIDAD Y POTENCIA / FUERZA Section */}
                     <div className="mb-3">
                         <div className="flex items-center gap-2 px-2 py-1.5 mb-2">
                             <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                            <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Velocidad y Potencia</span>
+                            <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">{showDistance ? 'Velocidad y Potencia' : 'Fuerza'}</span>
                             <div className="flex-1 h-px bg-orange-200 dark:bg-orange-900/50"></div>
                         </div>
                         <button

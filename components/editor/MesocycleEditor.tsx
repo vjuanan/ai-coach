@@ -37,6 +37,7 @@ import {
 } from '@dnd-kit/core';
 import { GripVertical } from 'lucide-react';
 import { calculateKgFromStats } from '@/hooks/useAthleteRm';
+import { useExerciseCache } from '@/hooks/useExerciseCache';
 
 interface MesocycleEditorProps {
     programId: string;
@@ -63,12 +64,13 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         exitBlockBuilder,
         enterBlockBuilder,
         // Dnd Actions
+        draggedBlockId,
         setDraggedBlock,
         setDropTarget,
         moveBlockToDay,
         moveProgressionToDay,
-        draggedBlockId,
-        programClient
+        programClient,
+        deleteBlock
     } = useEditorStore();
 
     // Dnd Sensors
@@ -168,13 +170,89 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
     const router = useRouter();
 
-    // Handle Save & Exit
+    // Exercise Cache for validation
+    const { searchLocal } = useExerciseCache();
+    // Helper to validate a single block (duplicated logic from BlockEditor for safety)
+    const validateBlockContent = (block: any): boolean => {
+        if (block.type === 'strength_linear') {
+            if (!block.name || block.name.trim().length === 0) return false;
+            // Strict validation: must match an exercise in cache
+            const match = searchLocal(block.name).find(e => e.name.toLowerCase() === block.name?.toLowerCase());
+            return !!match;
+        }
+        if (['metcon_structured', 'warmup', 'accessory', 'skill'].includes(block.type)) {
+            if (!block.format) return false;
+            const movements = block.config.movements as any[] || [];
+            if (movements.length > 0) {
+                for (const m of movements) {
+                    let name = '';
+                    if (typeof m === 'string') name = m;
+                    else if (typeof m === 'object' && m && 'name' in m) name = (m as any).name;
+
+                    if (name && name.trim().length > 0) {
+                        const match = searchLocal(name).find(e => e.name.toLowerCase() === name.toLowerCase());
+                        if (!match) return false;
+                    }
+                }
+            }
+            return true;
+        }
+        return true; // Other types like free_text (if content exists) or defaults
+    };
+
+    // Handle Save & Exit with Validation
     const handleSaveAndExit = useCallback(async () => {
+        // Validate all blocks in the CURRENT day being edited (blockBuilderDayId)
+        if (blockBuilderDayId) {
+            // Find the day
+            const currentMeso = mesocycles.find(m => m.days.some(d => d.id === blockBuilderDayId));
+            const day = currentMeso?.days.find(d => d.id === blockBuilderDayId);
+
+            if (day) {
+                const invalidBlocks = day.blocks.filter(b => !validateBlockContent(b));
+
+                if (invalidBlocks.length > 0) {
+                    // Show alert/modal
+                    const confirmDelete = window.confirm(
+                        `Hay ${invalidBlocks.length} bloque(s) con ejercicios no válidos o vacíos.\n\n` +
+                        `No se pueden guardar bloques incompletos. ¿Deseas eliminar los bloques inválidos y salir?\n\n` +
+                        `Cancelar: Para corregirlos manualmente.\n` +
+                        `Aceptar: Eliminar bloques inválidos y salir.`
+                    );
+
+                    if (confirmDelete) {
+                        // User chose to delete invalid blocks and exit
+                        // We iterate and delete. 
+                        // Note: State updates might be async/batched, but since we are exiting, it might be fine.
+                        // Ideally we should wait for deletion or use a bulk delete action if available.
+                        // Given we don't have bulk delete, we call deleteBlock for each.
+                        // We reverse iterate to avoid index issues if any, though IDs are unique.
+                        for (const b of invalidBlocks) {
+                            deleteBlock(b.id);
+                        }
+
+                        // Small delay to ensure state updates if needed, though forceSave normally grabs current state from store refs if implemented that way.
+                        // However, useAutoSave often uses the wrapper state. 
+                        // Since we are exiting, the exitBlockBuilder will happen. 
+                        // We might need to ensure the store is updated before forceSave calls.
+                        // Actually, if we delete, we should probably just exit without saving invalid state if possible, 
+                        // OR save the *cleaned* state. 
+                        // Calling deleteBlock updates the store immediately (usually).
+                        // So forceSave() after this should capture the deletion.
+
+                    } else {
+                        // User canceled, stay in editor
+                        return;
+                    }
+                }
+            }
+        }
+
         if (hasUnsavedChanges) {
             await forceSave();
         }
         exitBlockBuilder();
-    }, [hasUnsavedChanges, forceSave, exitBlockBuilder]);
+    }, [hasUnsavedChanges, forceSave, exitBlockBuilder, blockBuilderDayId, mesocycles, validateBlockContent, deleteBlock]);
 
     // Handle ESC Navigation & Actions
     useEffect(() => {

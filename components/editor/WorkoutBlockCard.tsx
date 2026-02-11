@@ -6,6 +6,7 @@ import { useState, useRef } from 'react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
+import { createPortal } from 'react-dom';
 
 interface DraftWorkoutBlock {
     id: string;
@@ -26,7 +27,7 @@ interface WorkoutBlockCardProps {
 
 const blockTypeStyles: Record<string, { color: string; label: string; hoverClass: string }> = {
     warmup: { color: 'modality-warmup', label: 'Calentamiento', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
-    strength_linear: { color: 'modality-strength', label: 'Velocidad y Potencia', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
+    strength_linear: { color: 'modality-strength', label: 'Fuerza', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
     metcon_structured: { color: 'modality-metcon', label: 'MetCon', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
     accessory: { color: 'modality-accessory', label: 'Accesorio', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
     skill: { color: 'modality-skill', label: 'Habilidad', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
@@ -266,8 +267,8 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
             </div>
 
             {/* Custom Alert for Progression Deletion */}
-            {showDeleteAlert && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            {showDeleteAlert && typeof document !== 'undefined' && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <div className="bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl max-w-sm w-full overflow-hidden border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200">
@@ -317,12 +318,13 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Confirmation Dialog for Non-Empty Blocks */}
-            {showConfirmDelete && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            {showConfirmDelete && typeof document !== 'undefined' && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <div className="bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl max-w-sm w-full overflow-hidden border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200">
@@ -358,7 +360,8 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </>
     );

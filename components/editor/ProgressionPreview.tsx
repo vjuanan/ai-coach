@@ -146,7 +146,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                             ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
                             : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
                         }`}>
-                        {progressionVariable === 'percentage' ? 'Velocidad y Potencia' : progressionVariable === 'distance' ? 'Distancia' : 'Volumen'}
+                        {progressionVariable === 'percentage' ? (hasDistance ? 'Velocidad y Potencia' : 'Fuerza') : progressionVariable === 'distance' ? 'Distancia' : 'Volumen'}
                     </span>
                 )}
             </div>
@@ -157,14 +157,68 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                     <thead>
                         <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
                             <th className="px-3 py-2 text-left font-semibold text-cv-text-secondary text-xs uppercase tracking-wider w-32">Semana</th>
-                            <th className={getColumnHeaderStyle('sets')}>Series</th>
-                            <th className={getColumnHeaderStyle('reps')}>Reps</th>
+                            <th className={getColumnHeaderStyle('sets')}>
+                                {progressionVariable === 'sets' ? (
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span>Series</span>
+                                        <span className="text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20">
+                                            Progresión
+                                        </span>
+                                    </div>
+                                ) : 'Series'}
+                            </th>
+                            <th className={getColumnHeaderStyle('reps')}>
+                                {progressionVariable === 'reps' ? (
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span>Reps</span>
+                                        <span className="text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20">
+                                            Progresión
+                                        </span>
+                                    </div>
+                                ) : 'Reps'}
+                            </th>
                             {hasDistance && (
-                                <th className={getColumnHeaderStyle('distance')}>Dist.</th>
+                                <th className={getColumnHeaderStyle('distance')}>
+                                    {progressionVariable === 'distance' ? (
+                                        <div className="flex flex-col items-center gap-1">
+                                            <span>Dist.</span>
+                                            <span className="text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20">
+                                                Progresión
+                                            </span>
+                                        </div>
+                                    ) : 'Dist.'}
+                                </th>
                             )}
-                            <th className={getColumnHeaderStyle('percentage')}>%</th>
-                            <th className={getColumnHeaderStyle('rest')}>Rest</th>
-                            <th className={getColumnHeaderStyle('tempo')}>Tempo</th>
+                            <th className={getColumnHeaderStyle('percentage')}>
+                                {progressionVariable === 'percentage' ? (
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span>%</span>
+                                        <span className="text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20">
+                                            Progresión
+                                        </span>
+                                    </div>
+                                ) : '%'}
+                            </th>
+                            <th className={getColumnHeaderStyle('rest')}>
+                                {progressionVariable === 'rest' ? (
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span>Rest</span>
+                                        <span className="text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20">
+                                            Progresión
+                                        </span>
+                                    </div>
+                                ) : 'Rest'}
+                            </th>
+                            <th className={getColumnHeaderStyle('tempo')}>
+                                {progressionVariable === 'tempo' ? (
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span>Tempo</span>
+                                        <span className="text-[9px] font-extrabold bg-cv-accent/10 text-cv-accent px-1.5 py-0.5 rounded uppercase tracking-wider border border-cv-accent/20">
+                                            Progresión
+                                        </span>
+                                    </div>
+                                ) : 'Tempo'}
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
