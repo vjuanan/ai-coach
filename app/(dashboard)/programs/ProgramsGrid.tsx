@@ -10,6 +10,7 @@ interface ProgramType {
     status: string;
     created_at: string;
     updated_at: string;
+    client: { id: string; name: string; type: 'athlete' | 'gym' } | null;
 }
 
 interface ProgramsGridProps {
@@ -18,7 +19,8 @@ interface ProgramsGridProps {
     isSelectionMode: boolean;
     toggleSelection: (id: string) => void;
     promptDelete: (id: string) => void;
-    onExport: (id: string) => void;
+    onExport: (programId: string) => void;
+    onAssign: (program: ProgramType) => void;
     CARD_GRADIENTS: string[];
     CARD_ICONS: any[];
 }
@@ -30,6 +32,7 @@ export function ProgramsGrid({
     toggleSelection,
     promptDelete,
     onExport,
+    onAssign,
     CARD_GRADIENTS,
     CARD_ICONS
 }: ProgramsGridProps) {
@@ -152,9 +155,27 @@ export function ProgramsGrid({
                                                 >
                                                     <Trash2 size={14} />
                                                 </button>
-                                                <div className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-xs font-medium text-white flex items-center">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        onAssign(program);
+                                                    }}
+                                                    className="px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-xs font-medium text-white flex items-center transition-all duration-200"
+                                                    title="Asignar"
+                                                >
+                                                    {program.client ? (
+                                                        <span className="truncate max-w-[80px]">{program.client.name}</span>
+                                                    ) : (
+                                                        "Asignar"
+                                                    )}
+                                                </button>
+                                                <Link
+                                                    href={`/editor/${program.id}`}
+                                                    className="px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-xs font-medium text-white flex items-center transition-all duration-200"
+                                                >
                                                     Editar →
-                                                </div>
+                                                </Link>
                                             </>
                                         )}
                                     </div>

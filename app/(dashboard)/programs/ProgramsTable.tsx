@@ -16,6 +16,7 @@ interface ProgramType {
     status: string;
     created_at: string;
     updated_at: string;
+    client: { id: string; name: string; type: 'athlete' | 'gym' } | null;
 }
 
 interface ProgramsTableProps {
@@ -26,7 +27,8 @@ interface ProgramsTableProps {
     selectAll: () => void;
     totalFiltered: number;
     promptDelete: (id: string) => void;
-    onExport: (id: string) => void;
+    onExport: (programId: string) => void;
+    onAssign: (program: ProgramType) => void;
     CARD_GRADIENTS: string[];
     CARD_ICONS: any[];
 }
@@ -40,6 +42,7 @@ export function ProgramsTable({
     totalFiltered,
     promptDelete,
     onExport,
+    onAssign,
     CARD_GRADIENTS,
     CARD_ICONS
 }: ProgramsTableProps) {
@@ -70,6 +73,9 @@ export function ProgramsTable({
                             </th>
                             <th className="py-3 px-6 text-xs font-semibold text-cv-text-tertiary uppercase tracking-wider">
                                 Programa
+                            </th>
+                            <th className="py-3 px-6 text-xs font-semibold text-cv-text-tertiary uppercase tracking-wider">
+                                Asignado a
                             </th>
                             <th className="py-3 px-6 text-xs font-semibold text-cv-text-tertiary uppercase tracking-wider">
                                 Estado
@@ -136,6 +142,22 @@ export function ProgramsTable({
                                                 </div>
                                             </div>
                                         </Link>
+                                    </td>
+
+                                    {/* Assigned To */}
+                                    <td className="py-4 px-6">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onAssign(program);
+                                            }}
+                                            className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${program.client
+                                                ? 'bg-cv-accent/10 text-cv-accent hover:bg-cv-accent/20'
+                                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                                }`}
+                                        >
+                                            {program.client ? program.client.name : 'Sin asignar'}
+                                        </button>
                                     </td>
 
                                     {/* Status (Mocked for now as logic wasn't fully visible, defaulting to Active) */}

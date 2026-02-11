@@ -777,144 +777,127 @@ export async function getClientPrograms(clientId: string) {
 
 export async function updateAthleteProfile(clientId: string, data: any) {
     const supabase = createServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    let user = null;
+    try {
+        const authResponse = await supabase.auth.getUser();
+        user = authResponse.data.user;
+    } catch (e) {
+        console.warn('Auth check failed in updateAthleteProfile (continuing with admin key):', e);
+    }
 
-    // Check permissions (Coach of athlete, or the athlete themselves)
-    // For now, we rely on RLS and logic checks.
+    try {
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (!serviceKey) {
+            console.error('[updateAthleteProfile] Missing SUPABASE_SERVICE_ROLE_KEY');
+            throw new Error('Server Config Error: Missing Admin Key');
+        }
 
-    // 1. Try updating PROFILES table first (for self-registered users)
-    // We try to find a profile with this ID.
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', clientId)
-        .single();
+        const adminSupabase = createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            serviceKey
+        );
 
-    if (profile) {
-        // Map the flat data back to profile columns
-        const updates: any = {};
-        if (data.dob !== undefined) updates.birth_date = data.dob;
-        if (data.height !== undefined) updates.height = data.height;
-        if (data.weight !== undefined) updates.weight = data.weight;
-        if (data.goal !== undefined) updates.main_goal = data.goal;
-        if (data.training_place !== undefined) updates.training_place = data.training_place;
-        if (data.equipment !== undefined) updates.equipment_list = Array.isArray(data.equipment) ? data.equipment : (data.equipment ? [data.equipment] : []);
-        if (data.days_per_week !== undefined) updates.days_per_week = data.days_per_week;
-        if (data.minutes_per_session !== undefined) updates.minutes_per_session = data.minutes_per_session;
-        if (data.level !== undefined) updates.experience_level = data.level;
-        if (data.injuries !== undefined) updates.injuries = data.injuries;
-        if (data.preferences !== undefined) updates.training_preferences = data.preferences;
-        if (data.whatsapp !== undefined) updates.whatsapp_number = data.whatsapp;
+        // 1. Prepare Data
+        const profileUpdates: any = {};
+        // Safely map fields
+        const safeFields = ['dob', 'height', 'weight', 'goal', 'training_place', 'days_per_week', 'minutes_per_session', 'level', 'injuries', 'preferences', 'whatsapp'];
+        safeFields.forEach(field => {
+            if (data[field] !== undefined) profileUpdates[field === 'dob' ? 'birth_date' : field === 'goal' ? 'main_goal' : field === 'level' ? 'experience_level' : field === 'whatsapp' ? 'whatsapp_number' : field] = data[field];
+        });
+        if (data.equipment !== undefined) profileUpdates.equipment_list = Array.isArray(data.equipment) ? data.equipment : (data.equipment ? [data.equipment] : []);
 
-        // Construct benchmarks object if any benchmark data is present
-        const benchmarkUpdates: any = {};
-        if (data.oneRmStats !== undefined) benchmarkUpdates.oneRmStats = data.oneRmStats;
-        if (data.franTime !== undefined) benchmarkUpdates.franTime = data.franTime;
-        if (data.run1km !== undefined) benchmarkUpdates.run1km = data.run1km;
-        if (data.run5km !== undefined) benchmarkUpdates.run5km = data.run5km;
+        // Benchmark Updates
+        const limitBenchmarks: any = {};
+        if (data.oneRmStats) limitBenchmarks.oneRmStats = data.oneRmStats;
+        if (data.franTime) limitBenchmarks.franTime = data.franTime;
+        if (data.run1km) limitBenchmarks.run1km = data.run1km;
+        if (data.run5km) limitBenchmarks.run5km = data.run5km;
 
-        if (data.run5km !== undefined) benchmarkUpdates.run5km = data.run5km;
+        console.log('[updateAthleteProfile] Benchmarks to update:', JSON.stringify(limitBenchmarks));
 
-        // 1. Update standard profile columns
-        if (Object.keys(updates).length > 0) {
-            const { error } = await supabase
+        // 2. Update 'profiles' table
+        try {
+            const { data: profile, error: fetchProfileError } = await adminSupabase
                 .from('profiles')
-                .update(updates)
-                .eq('id', clientId);
-
-            if (error) {
-                console.error('Error updating profile:', error);
-                throw new Error('Error al actualizar perfil');
-            }
-        }
-
-        // 2. Attempt to update benchmarks in profiles (Best effort)
-        if (Object.keys(benchmarkUpdates).length > 0) {
-            try {
-                const { data: currentProfile } = await supabase.from('profiles').select('benchmarks').eq('id', clientId).single();
-                const currentBenchmarks = currentProfile?.benchmarks || {};
-                const newBenchmarks = { ...currentBenchmarks, ...benchmarkUpdates };
-
-                const { error: benchmarksError } = await supabase
-                    .from('profiles')
-                    .update({ benchmarks: newBenchmarks } as any)
-                    .eq('id', clientId);
-
-                if (benchmarksError) console.warn('Could not save benchmarks to profiles (migration likely missing):', benchmarksError.message);
-            } catch (ignore) {
-                // Ignore schema errors if migration isn't run
-            }
-        }
-
-        // Benchmark data (oneRmStats, franTime, run1km, run5km) is ALSO stored in
-
-        // Benchmark data (oneRmStats, franTime, run1km, run5km) is ALSO stored in
-        // the clients table's details JSONB explicitly for the training program usage.
-        // Try to find an associated client record, or store in a linked client row.
-        if (data.oneRmStats !== undefined || data.franTime !== undefined || data.run1km !== undefined || data.run5km !== undefined) {
-            // Try to find an existing client record linked to this profile
-            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmYnhmZm51d2tjYm54Znd5dmNjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTUzMzUxMywiZXhwIjoyMDg1MTA5NTEzfQ.waUHxz5lUSELECf4Hk-5r9K3lMfJelroU3kxgDzUYI4';
-
-            const adminSupabase = createSupabaseClient(
-                process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                serviceKey
-            );
-
-            const { data: existingClient } = await adminSupabase
-                .from('clients')
-                .select('id, details')
+                .select('id, benchmarks')
                 .eq('id', clientId)
                 .single();
 
-            if (existingClient) {
-                // Merge benchmark data into existing client details
-                const benchmarkUpdates: any = { ...existingClient.details };
-                if (data.oneRmStats !== undefined) benchmarkUpdates.oneRmStats = data.oneRmStats;
-                if (data.franTime !== undefined) benchmarkUpdates.franTime = data.franTime;
-                if (data.run1km !== undefined) benchmarkUpdates.run1km = data.run1km;
-                if (data.run5km !== undefined) benchmarkUpdates.run5km = data.run5km;
+            if (!fetchProfileError && profile) {
+                if (Object.keys(limitBenchmarks).length > 0) {
+                    const currentBenchmarks = profile.benchmarks || {};
+                    profileUpdates.benchmarks = { ...currentBenchmarks, ...limitBenchmarks };
+                }
 
-                await adminSupabase
-                    .from('clients')
-                    .update({ details: benchmarkUpdates })
-                    .eq('id', clientId);
+                if (Object.keys(profileUpdates).length > 0) {
+                    const { error: profileError } = await adminSupabase
+                        .from('profiles')
+                        .update(profileUpdates)
+                        .eq('id', clientId);
+
+                    if (profileError) {
+                        console.error('[updateAthleteProfile] Error updating profile:', profileError);
+                    } else {
+                        console.log('[updateAthleteProfile] Profile updated successfully');
+                    }
+                }
             }
-            // If no client record exists, benchmarks won't persist for pure profile-only users.
-            // This is acceptable: coaches create athletes via the clients table path.
-        }
-    } else {
-        // 2. Fallback to CLIENTS table (for coach-created athletes)
-        // We update the 'details' JSONB column
-        // First fetch existing details to merge
-        const { data: client, error: fetchError } = await supabase
-            .from('clients')
-            .select('details')
-            .eq('id', clientId)
-            .single();
-
-        if (fetchError || !client) {
-            throw new Error('Cliente no encontrado');
+        } catch (profileErr) {
+            console.error('[updateAthleteProfile] Profile update exception:', profileErr);
         }
 
-        const newDetails = {
-            ...client.details,
-            ...data // Merge new flat fields directly into details JSON
-        };
+        // 3. Update 'clients' table
+        try {
+            const { data: client, error: clientFetchError } = await adminSupabase
+                .from('clients')
+                .select('details')
+                .eq('id', clientId)
+                .single();
 
-        const { error } = await supabase
-            .from('clients')
-            .update({ details: newDetails })
-            .eq('id', clientId);
+            if (clientFetchError || !client) {
+                console.warn('[updateAthleteProfile] Client record not found (might be pure profile)');
+            } else {
+                // Merge new data into details
+                // SANITIZATION: Ensure it's clean JSON
+                const rawDetails = {
+                    ...client.details,
+                    ...data,
+                    ...limitBenchmarks
+                };
+                // JSON round-trip to strip undefineds and ensure validity
+                const newDetails = JSON.parse(JSON.stringify(rawDetails));
 
-        if (error) {
-            console.error('Error updating client details:', error);
-            throw new Error('Error al actualizar cliente');
+                const { error: clientUpdateError } = await adminSupabase
+                    .from('clients')
+                    .update({ details: newDetails })
+                    .eq('id', clientId);
+
+                if (clientUpdateError) {
+                    console.error('[updateAthleteProfile] Error updating client:', clientUpdateError);
+                    throw new Error(`Error actualizando cliente: ${clientUpdateError.message}`);
+                }
+                console.log('[updateAthleteProfile] Client details updated successfully');
+            }
+        } catch (clientErr) {
+            console.error('[updateAthleteProfile] Client update exception:', clientErr);
+            throw clientErr;
         }
+
+        try {
+            revalidatePath(`/athletes/${clientId}`);
+            revalidatePath(`/athlete/dashboard`);
+        } catch (revalErr) {
+            console.error('[updateAthleteProfile] Revalidation error (non-fatal):', revalErr);
+        }
+
+        return { success: true };
+
+    } catch (err: any) {
+        console.error('[updateAthleteProfile] FATAL ERROR:', err);
+        return { success: false, error: err.message || 'Error desconocido' };
     }
-
-    revalidatePath(`/athletes/${clientId}`);
-    revalidatePath(`/athlete/dashboard`);
 }
+
 
 export async function updateGymProfile(gymId: string, data: any) {
     const supabase = createServerClient();

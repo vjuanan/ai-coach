@@ -25,7 +25,7 @@ import {
 } from '@/lib/actions';
 import { ProgramsGrid } from './ProgramsGrid';
 import { ProgramsTable } from './ProgramsTable';
-import { ProgramCardExporter } from '@/components/export/ProgramCardExporter';
+import { ProgramAssignmentModal } from '@/components/programs/ProgramAssignmentModal';
 
 interface Program {
     id: string;
@@ -33,6 +33,7 @@ interface Program {
     status: string;
     created_at: string;
     updated_at: string;
+    client: { id: string; name: string; type: 'athlete' | 'gym' } | null;
 }
 
 interface Client {
@@ -79,7 +80,15 @@ export default function ProgramsPage() {
     const [exportPrograms, setExportPrograms] = useState<Program[]>([]);
     const [isExportOpen, setIsExportOpen] = useState(false);
 
-    useEscapeKey(() => !isDeleting && setProgramToDelete(null), !!programToDelete);
+    // State for Assignment Modal
+    const [programToAssign, setProgramToAssign] = useState<Program | null>(null);
+
+    useEscapeKey(() => {
+        if (!isDeleting && !programToAssign) {
+            setProgramToAssign(null);
+            setProgramToDelete(null);
+        }
+    }, !!programToAssign || !!programToDelete);
 
     const router = useRouter();
 
@@ -194,6 +203,15 @@ export default function ProgramsPage() {
         p.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    function handleAssign(program: Program) {
+        setProgramToAssign(program);
+    }
+
+    async function handleAssignmentSuccess() {
+        await fetchPrograms();
+        setProgramToAssign(null);
+    }
+
     return (
 
         <>
@@ -294,6 +312,7 @@ export default function ProgramsPage() {
                                 toggleSelection={toggleSelection}
                                 promptDelete={promptDelete}
                                 onExport={handleExport}
+                                onAssign={handleAssign}
                                 CARD_GRADIENTS={CARD_GRADIENTS}
                                 CARD_ICONS={CARD_ICONS}
                             />
@@ -307,6 +326,7 @@ export default function ProgramsPage() {
                                 totalFiltered={filteredPrograms.length}
                                 promptDelete={promptDelete}
                                 onExport={handleExport}
+                                onAssign={handleAssign}
                                 CARD_GRADIENTS={CARD_GRADIENTS}
                                 CARD_ICONS={CARD_ICONS}
                             />
@@ -365,6 +385,17 @@ export default function ProgramsPage() {
                 }}
                 programs={exportPrograms}
             />
+
+            {/* Assignment Modal */}
+            {programToAssign && (
+                <ProgramAssignmentModal
+                    isOpen={!!programToAssign}
+                    onClose={() => setProgramToAssign(null)}
+                    programId={programToAssign.id}
+                    currentClientId={programToAssign.client?.id || null}
+                    onAssignSuccess={handleAssignmentSuccess}
+                />
+            )}
         </>
     );
 }

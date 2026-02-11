@@ -9,7 +9,7 @@ import { WeekView } from './WeekView';
 import { SingleDayView } from './SingleDayView';
 import { BlockBuilderPanel } from './BlockBuilderPanel';
 import { MesocycleStrategyForm, type MesocycleStrategy } from './MesocycleStrategyForm';
-import { ProgramAssignmentModal } from './ProgramAssignmentModal';
+import { ProgramAssignmentModal } from '@/components/programs/ProgramAssignmentModal';
 import { useAutoSave, type SaveStatus } from './useAutoSave';
 import {
     Undo,
@@ -86,13 +86,11 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
     });
 
     useEffect(() => {
-        if (programClient) {
-            setAssignmentData({
-                id: programClient.id,
-                name: programClient.name,
-                type: programClient.type as 'athlete' | 'gym'
-            });
-        }
+        setAssignmentData({
+            id: programClient?.id || null,
+            name: programClient?.name || null,
+            type: programClient?.type as 'athlete' | 'gym' || null
+        });
     }, [programClient]);
 
     // Dnd Sensors
