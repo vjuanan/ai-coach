@@ -286,10 +286,11 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     if (typeof m === 'string') name = m;
                     else if (typeof m === 'object' && m && 'name' in m) name = (m as any).name;
 
-                    if (name && name.trim().length > 0) {
-                        const match = searchLocal(name).find(e => e.name.toLowerCase() === name.toLowerCase());
-                        if (!match) return false; // Found an invalid movement
-                    }
+                    // Strictly require non-empty name and valid exercise
+                    if (!name || name.trim().length === 0) return false;
+
+                    const match = searchLocal(name).find(e => e.name.toLowerCase() === name.toLowerCase());
+                    if (!match) return false;
                 }
                 return true;
             }

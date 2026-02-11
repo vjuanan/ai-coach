@@ -133,7 +133,9 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                 if (percentage && (block.name || config.exercise)) {
                     const exerciseName = (config.exercise as string) || block.name || '';
                     const rm = getBenchmark(exerciseName);
-                    const pct = parseInt(percentage.replace('%', ''), 10);
+                    // Ensure percentage is a string before replace
+                    const pctString = String(percentage);
+                    const pct = parseInt(pctString.replace('%', ''), 10);
 
                     if (rm && !isNaN(pct) && pct > 0) {
                         calculatedWeight = Math.round((rm * pct) / 100);
@@ -171,7 +173,8 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
             case 'accessory':
             case 'skill':
                 // Check both 'exercises' (old?) and 'movements' (new generic form)
-                const items = (config.movements as string[]) || (config.exercises as string[]) || [];
+                // Cast to any[] to handle both string[] and object[]
+                const items = (config.movements as any[]) || (config.exercises as string[]) || [];
                 const notes = config.notes as string;
 
                 if (items.length === 0 && !notes) return <div className="min-h-[1.25rem]" />;
@@ -181,7 +184,9 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                         {items.length > 0 ? (
                             <div className="flex flex-col gap-0.5">
                                 {items.slice(0, 2).map((item, i) => (
-                                    <div key={i} className="truncate">• {item}</div>
+                                    <div key={i} className="truncate">
+                                        • {typeof item === 'string' ? item : item.name}
+                                    </div>
                                 ))}
                                 {items.length > 2 && <div className="italic">+ {items.length - 2} más</div>}
                             </div>
