@@ -1,4 +1,4 @@
-import { Calendar, Check, Trash2, Dumbbell, Flame, Target, Zap, Download } from 'lucide-react';
+import { Calendar, Check, Trash2, Dumbbell, Flame, Target, Zap, Download, UserPlus, UserCheck, Pencil } from 'lucide-react';
 import Link from 'next/link';
 // import { Program } from '@/lib/types'; // Removed to fix build error
 
@@ -121,16 +121,16 @@ export function ProgramsGrid({
                             {/* Información de fechas */}
                             <div className="flex items-center gap-2 text-white/80 text-sm mb-4">
                                 <Calendar size={14} />
-                                <span>Creado {createdDate}</span>
+                                <span className="whitespace-nowrap">Creado {createdDate}</span>
                             </div>
 
                             {/* Footer con última actualización */}
                             <div className="pt-4 border-t border-white/20">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs text-white/70">
+                                <div className="flex items-center justify-between gap-4">
+                                    <span className="text-xs text-white/70 whitespace-nowrap">
                                         Actualizado {updatedDate}
                                     </span>
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-2 shrink-0">
                                         {!isSelectionMode && (
                                             <>
                                                 <button
@@ -161,20 +161,20 @@ export function ProgramsGrid({
                                                         e.stopPropagation();
                                                         onAssign(program);
                                                     }}
-                                                    className="px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-xs font-medium text-white flex items-center transition-all duration-200"
-                                                    title="Asignar"
+                                                    className={`w-8 h-8 rounded-full backdrop-blur-sm flex items-center justify-center transition-all duration-200 ${program.client
+                                                        ? 'bg-cv-accent text-white hover:bg-cv-accent/90'
+                                                        : 'bg-white/10 text-white/80 hover:text-white hover:bg-white/20'
+                                                        }`}
+                                                    title={program.client ? `Asignado a: ${program.client.name}` : "Asignar"}
                                                 >
-                                                    {program.client ? (
-                                                        <span className="truncate max-w-[80px]">{program.client.name}</span>
-                                                    ) : (
-                                                        "Asignar"
-                                                    )}
+                                                    {program.client ? <UserCheck size={14} /> : <UserPlus size={14} />}
                                                 </button>
                                                 <Link
                                                     href={`/editor/${program.id}`}
-                                                    className="px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-xs font-medium text-white flex items-center transition-all duration-200"
+                                                    className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/30 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-all duration-200"
+                                                    title="Editar"
                                                 >
-                                                    Editar →
+                                                    <Pencil size={14} />
                                                 </Link>
                                             </>
                                         )}

@@ -219,13 +219,13 @@ export function BenchmarksEditor({ athleteId, initialStats, franTime, run1km, ru
                                                 [key]: e.target.value ? parseInt(e.target.value) : null
                                             }))}
                                             placeholder="-"
-                                            className="w-full bg-transparent text-xl font-bold text-white placeholder-white/20 focus:outline-none text-center"
+                                            className="w-full bg-transparent text-xl font-bold text-cv-text-primary placeholder-cv-text-quaternary focus:outline-none text-center"
                                         />
                                         <span className="absolute right-0 top-1 text-[9px] font-bold text-cv-text-tertiary pointer-events-none">OK</span>
                                     </div>
                                 ) : (
                                     <div className="flex items-end justify-between">
-                                        <span className={`text-lg font-bold ${stats[key] ? 'text-white' : 'text-white/20'}`}>
+                                        <span className={`text-lg font-bold ${stats[key] ? 'text-cv-text-primary' : 'text-cv-text-quaternary'}`}>
                                             {stats[key] || '-'}
                                         </span>
                                         <span className="text-[10px] text-cv-text-tertiary mb-1">kg</span>

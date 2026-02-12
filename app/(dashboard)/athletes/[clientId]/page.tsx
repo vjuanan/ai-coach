@@ -86,6 +86,13 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
                     </div>
                 </div>
 
+                {/* Coach Assignment (Top) */}
+                <CoachAssigner
+                    athleteId={athlete.id}
+                    currentCoachId={athlete.coach_id}
+                    coaches={coaches}
+                />
+
                 {/* Benchmarks Section (Full Width) */}
                 <BenchmarksEditor
                     athleteId={athlete.id}
@@ -99,12 +106,7 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
                     {/* Left Column: Benchmarks & Goals */}
                     <div className="space-y-6">
 
-                        {/* Coach Assignment */}
-                        <CoachAssigner
-                            athleteId={athlete.id}
-                            currentCoachId={athlete.coach_id}
-                            coaches={coaches}
-                        />
+
 
                         {/* Gym Assignment */}
                         <GymAssigner
