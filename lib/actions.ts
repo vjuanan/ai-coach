@@ -140,24 +140,63 @@ export async function getDashboardStats() {
 
 export async function getPrograms() {
     noStore();
-    const supabase = createServerClient();
+    let supabase = createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Use admin client to bypass RLS on clients join (same pattern as getClients)
-    // The user client's RLS policies on 'clients' table can silently null-out the join
-    const fetchClient = process.env.SUPABASE_SERVICE_ROLE_KEY
-        ? createSupabaseClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY
-        )
-        : supabase;
+    // 1. ADMIN BYPASS: Use Service Role Key if available to ensure joined data (clients) works regardless of RLS
+    if (user && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        try {
+            const adminSupabase = createSupabaseClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.SUPABASE_SERVICE_ROLE_KEY
+            );
 
-    // If no user and no service key, we can't fetch
-    if (!user && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        return [];
+            // Get Coach ID (Standard users are filtered by Coach ID)
+            const coachId = await ensureCoach(supabase);
+
+            // Check if Admin Role
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single();
+
+            const isAdmin = profile?.role === 'admin';
+
+            let query = adminSupabase
+                .from('programs')
+                // Explicitly select client fields to avoid ambiguity
+                .select(`*, client:clients(*), coach:coaches(full_name)`)
+                .or('is_template.eq.false,is_template.is.null');
+
+            if (!isAdmin) {
+                query = query.eq('coach_id', coachId);
+            }
+
+            const { data, error } = await query.order('updated_at', { ascending: false });
+
+            if (error) {
+                console.error('getPrograms [Admin Bypass] Error:', error);
+                throw error;
+            }
+
+            return data;
+
+        } catch (error) {
+            console.error('getPrograms: Admin Bypass failed, falling back to standard RLS.', error);
+        }
     }
 
-    const { data, error } = await (fetchClient as any)
+    // 2. FALLBACK / DEMO / NO-KEY: Use standard RLS
+    // DEMO/BYPASS MODE: Use Admin Client if no user (existing logic)
+    if (!user && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        supabase = createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        ) as any;
+    }
+
+    const { data, error } = await supabase
         .from('programs')
         .select(`*, client:clients(*), coach:coaches(full_name)`)
         .or('is_template.eq.false,is_template.is.null')
@@ -550,12 +589,16 @@ export async function deleteProgram(programId: string): Promise<{ success: boole
 }
 
 export async function assignProgram(programId: string, clientId: string | null) {
+    console.log(`assignProgram: Starting assignment. Program: ${programId}, Client: ${clientId}`);
     const supabase = createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) throw new Error('Unauthorized');
+    if (!user) {
+        console.error('assignProgram: Unauthorized (No User)');
+        throw new Error('Unauthorized');
+    }
 
-    // Use Service Role Key to bypass RLS policies for updates if needed
+    // Use Service Role Key to bypass RLS policies for updates
     const dbClient = process.env.SUPABASE_SERVICE_ROLE_KEY
         ? createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
         : supabase;
@@ -569,12 +612,15 @@ export async function assignProgram(programId: string, clientId: string | null) 
 
 
     if (error) {
-        console.error('Error assigning program:', error);
+        console.error('assignProgram: DB Error', error);
         throw new Error(error.message);
     }
 
+    console.log('assignProgram: Success. Updated Record:', data);
+
     revalidatePath(`/editor/${programId}`);
     revalidatePath('/programs');
+    revalidatePath('/'); // Force global revalidate to update profiles if needed
     return { success: true, data };
 }
 
