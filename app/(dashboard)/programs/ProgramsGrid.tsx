@@ -25,6 +25,8 @@ interface ProgramsGridProps {
     CARD_ICONS: any[];
 }
 
+
+
 export function ProgramsGrid({
     programs,
     selectedPrograms,
@@ -101,6 +103,16 @@ export function ProgramsGrid({
                             </button>
                         </div>
 
+                        {/* Assigned User Badge (Apple Style) */}
+                        {program.client && (
+                            <div className="absolute top-4 right-14 z-20 flex items-center gap-1.5 pl-1.5 pr-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-sm transition-all duration-300">
+                                <div className="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center">
+                                    <UserCheck size={12} className="text-white" />
+                                </div>
+                                <span className="text-xs font-semibold text-white tracking-wide shadow-black/20 drop-shadow-sm">{program.client.name}</span>
+                            </div>
+                        )}
+
                         <Link
                             href={isSelectionMode ? '#' : `/editor/${program.id}`}
                             onClick={(e) => isSelectionMode && e.preventDefault()}
@@ -111,14 +123,6 @@ export function ProgramsGrid({
                                 <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white shadow-lg">
                                     <Icon size={28} />
                                 </div>
-                                {program.client && (
-                                    <div className="flex items-center gap-1.5 pl-2 pr-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-sm">
-                                        <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-                                            <UserCheck size={12} className="text-white" />
-                                        </div>
-                                        <span className="text-xs font-medium text-white">{program.client.name}</span>
-                                    </div>
-                                )}
                             </div>
 
                             {/* Título */}
