@@ -19,13 +19,21 @@ export function ProgramAssignmentModal({
     onClose,
     programId,
     currentClientId,
+    initialClientType,
     onAssignSuccess
-}: ProgramAssignmentModalProps) {
+}: ProgramAssignmentModalProps & { initialClientType?: 'athlete' | 'gym' | null }) {
     const [activeTab, setActiveTab] = useState<'athlete' | 'gym'>('athlete');
     const [clients, setClients] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+
+    // Set initial tab based on current assignment
+    useEffect(() => {
+        if (isOpen && initialClientType) {
+            setActiveTab(initialClientType);
+        }
+    }, [isOpen, initialClientType]);
 
     // Load clients when tab changes or modal opens
     useEffect(() => {

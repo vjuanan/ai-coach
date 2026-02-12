@@ -161,13 +161,20 @@ export function ProgramsGrid({
                                                         e.stopPropagation();
                                                         onAssign(program);
                                                     }}
-                                                    className={`w-8 h-8 rounded-full backdrop-blur-sm flex items-center justify-center transition-all duration-200 ${program.client
-                                                        ? 'bg-cv-accent text-white hover:bg-cv-accent/90'
-                                                        : 'bg-white/10 text-white/80 hover:text-white hover:bg-white/20'
+                                                    className={`h-8 rounded-full backdrop-blur-sm flex items-center justify-center transition-all duration-200 px-3 gap-2 ${program.client
+                                                        ? 'bg-cv-accent text-white hover:bg-cv-accent/90 w-auto'
+                                                        : 'bg-white/10 text-white/80 hover:text-white hover:bg-white/20 w-8'
                                                         }`}
-                                                    title={program.client ? `Asignado a: ${program.client.name}` : "Asignar"}
+                                                    title={program.client ? "Reasignar" : "Asignar"}
                                                 >
-                                                    {program.client ? <UserCheck size={14} /> : <UserPlus size={14} />}
+                                                    {program.client ? (
+                                                        <>
+                                                            <UserCheck size={14} className="shrink-0" />
+                                                            <span className="text-xs font-medium truncate max-w-[100px]">{program.client.name}</span>
+                                                        </>
+                                                    ) : (
+                                                        <UserPlus size={14} />
+                                                    )}
                                                 </button>
                                                 <Link
                                                     href={`/editor/${program.id}`}

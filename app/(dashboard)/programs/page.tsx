@@ -394,6 +394,7 @@ export default function ProgramsPage() {
                     onClose={() => setProgramToAssign(null)}
                     programId={programToAssign.id}
                     currentClientId={programToAssign.client ? programToAssign.client.id : null}
+                    initialClientType={programToAssign.client ? programToAssign.client.type : null}
                     onAssignSuccess={handleAssignmentSuccess}
                 />
             )}
