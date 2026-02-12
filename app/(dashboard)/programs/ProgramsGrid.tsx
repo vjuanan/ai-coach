@@ -111,6 +111,14 @@ export function ProgramsGrid({
                                 <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white shadow-lg">
                                     <Icon size={28} />
                                 </div>
+                                {program.client && (
+                                    <div className="flex items-center gap-1.5 pl-2 pr-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-sm">
+                                        <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                                            <UserCheck size={12} className="text-white" />
+                                        </div>
+                                        <span className="text-xs font-medium text-white">{program.client.name}</span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Título */}
@@ -161,17 +169,14 @@ export function ProgramsGrid({
                                                         e.stopPropagation();
                                                         onAssign(program);
                                                     }}
-                                                    className={`h-9 rounded-full backdrop-blur-sm flex items-center justify-center transition-all duration-200 px-3 gap-2 ${program.client
-                                                        ? 'bg-cv-accent text-white hover:bg-cv-accent/90 w-auto'
-                                                        : 'bg-white/20 text-white hover:bg-white/30 w-9'
+                                                    className={`w-9 h-9 rounded-full backdrop-blur-sm flex items-center justify-center transition-all duration-200 ${program.client
+                                                        ? 'bg-cv-accent text-white hover:bg-cv-accent/90 shadow-lg shadow-cv-accent/20'
+                                                        : 'bg-white/20 text-white hover:bg-white/30'
                                                         }`}
-                                                    title={program.client ? "Reasignar" : "Asignar"}
+                                                    title={program.client ? `Reasignar (${program.client.name})` : "Asignar"}
                                                 >
                                                     {program.client ? (
-                                                        <>
-                                                            <UserCheck size={18} className="shrink-0" />
-                                                            <span className="text-xs font-medium truncate max-w-[100px]">{program.client.name}</span>
-                                                        </>
+                                                        <UserCheck size={18} />
                                                     ) : (
                                                         <UserPlus size={18} />
                                                     )}
