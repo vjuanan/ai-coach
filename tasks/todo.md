@@ -16,3 +16,20 @@
 - [x] Deploy changes to production
 - [x] Browser test: assign athlete with benchmarks → KG appears ✅
 - [x] Screenshot verification (75kg and 80kg calculated correctly from 100kg RM)
+
+# Warmup UI Refactor - Task Checklist
+
+## Implementation
+- [x] Shrink "Rondas/Vueltas" input width (max-w-md)
+- [x] Add "SERIES" input to GenericMovementForm
+- [x] Reorganize movement grid to 4 columns (Series, Reps, Intensity, Rest)
+- [x] Move Notes to full-width row below grid
+- [x] Push changes to main
+
+## Verification
+- [ ] Deploy changes to production (wait for propagation)
+- [ ] Browser verification: Login and check Warmup block UI
+- [ ] Capture screenshots of new UI
+- [ ] Confirm "Rondas" input is smaller
+- [ ] Confirm "SERIES" input exists
+- [ ] Confirm 4-column grid layout
