@@ -168,10 +168,10 @@ export function ProgramsTable({
                                     </td>
 
                                     {/* Dates */}
-                                    <td className="py-4 px-6 text-sm text-cv-text-secondary hidden md:table-cell">
+                                    <td className="py-4 px-6 text-sm text-cv-text-secondary hidden md:table-cell whitespace-nowrap">
                                         {formatDate(program.created_at)}
                                     </td>
-                                    <td className="py-4 px-6 text-sm text-cv-text-secondary hidden md:table-cell">
+                                    <td className="py-4 px-6 text-sm text-cv-text-secondary hidden md:table-cell whitespace-nowrap">
                                         {formatDate(program.updated_at)}
                                     </td>
 
