@@ -140,18 +140,24 @@ export async function getDashboardStats() {
 
 export async function getPrograms() {
     noStore();
-    let supabase = createServerClient();
+    const supabase = createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    // DEMO/BYPASS MODE: Use Admin Client if no user
-    if (!user && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        supabase = createSupabaseClient(
+    // Use admin client to bypass RLS on clients join (same pattern as getClients)
+    // The user client's RLS policies on 'clients' table can silently null-out the join
+    const fetchClient = process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? createSupabaseClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.SUPABASE_SERVICE_ROLE_KEY
-        ) as any;
+        )
+        : supabase;
+
+    // If no user and no service key, we can't fetch
+    if (!user && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        return [];
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await (fetchClient as any)
         .from('programs')
         .select(`*, client:clients(*), coach:coaches(full_name)`)
         .or('is_template.eq.false,is_template.is.null')
@@ -1463,13 +1469,13 @@ export async function getFullProgramData(programId: string) {
 
     // 1. Verify Access to the Program (Standard User Client)
     // If this query fails or returns null, the user does NOT have access (RLS on 'programs' working correctly)
-    const { data: program, error: progError } = await supabase
+    const { data: accessCheck, error: progError } = await supabase
         .from('programs')
-        .select('*, client:clients(*), coach:coaches(full_name)')
+        .select('id')
         .eq('id', programId)
         .single();
 
-    if (progError || !program) {
+    if (progError || !accessCheck) {
         console.error('Access Denied or Not Found:', progError);
         return null; // Implicit 403/404
     }
@@ -1486,6 +1492,18 @@ export async function getFullProgramData(programId: string) {
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY
     );
+
+    // Re-fetch program with admin client to get full client join (bypasses RLS on clients table)
+    const { data: program, error: adminProgError } = await adminSupabase
+        .from('programs')
+        .select('*, client:clients(*), coach:coaches(full_name)')
+        .eq('id', programId)
+        .single();
+
+    if (adminProgError || !program) {
+        console.error('Admin fetch failed:', adminProgError);
+        return null;
+    }
 
     const { data: mesocycles, error: mesoError } = await adminSupabase
         .from('mesocycles')
