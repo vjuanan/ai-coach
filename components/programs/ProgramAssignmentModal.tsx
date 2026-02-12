@@ -62,7 +62,9 @@ export function ProgramAssignmentModal({
     const handleAssign = async (clientId: string | null, clientName: string | null) => {
         setIsSaving(true);
         try {
-            await assignProgram(programId, clientId);
+            const result = await assignProgram(programId, clientId);
+            console.log('ProgramAssignmentModal: Result', result);
+
             onAssignSuccess(clientId, clientName, clientId ? activeTab : null);
             toast.success(clientId ? `Asignado a ${clientName}` : 'Asignación eliminada');
             onClose();

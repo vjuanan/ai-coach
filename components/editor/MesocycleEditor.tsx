@@ -92,12 +92,17 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
     });
 
     useEffect(() => {
+        console.log('MesocycleEditor: programClient updated', programClient);
         setAssignmentData({
             id: programClient?.id || null,
             name: programClient?.name || null,
             type: programClient?.type as 'athlete' | 'gym' || null
         });
     }, [programClient]);
+
+    useEffect(() => {
+        console.log('MesocycleEditor: Mode Changed', { blockBuilderMode, dayId: blockBuilderDayId });
+    }, [blockBuilderMode, blockBuilderDayId]);
 
     // Dnd Sensors
     const sensors = useSensors(
