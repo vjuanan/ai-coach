@@ -92,6 +92,7 @@ interface EditorState {
 
     // Actions
     initializeEditor: (programId: string, name: string, coachName: string, client: Client | null, attributes?: Record<string, unknown> | null, stimulusFeatures?: any[]) => void;
+    setProgramClient: (client: Client | null) => void;
     setTrainingMethodologies: (methodologies: TrainingMethodology[]) => void;
     loadMesocycles: (mesocycles: DraftMesocycle[]) => void;
     resetEditor: () => void;
@@ -166,6 +167,8 @@ export const useEditorStore = create<EditorState>()(
                     hasUnsavedChanges: false
                 });
             },
+
+            setProgramClient: (client) => set({ programClient: client }),
 
             setTrainingMethodologies: (methodologies) => set({ trainingMethodologies: methodologies }),
 

@@ -4,6 +4,7 @@
 
 import { useCallback, useState, useMemo, useEffect } from 'react';
 import { useEditorStore } from '@/lib/store';
+import { getClient } from '@/lib/actions';
 import { WeekView } from './WeekView';
 // import { SmartInspector } from './SmartInspector';
 import { SingleDayView } from './SingleDayView';
@@ -74,6 +75,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         moveBlockToDay,
         moveProgressionToDay,
         programClient,
+        setProgramClient,
         deleteBlock
     } = useEditorStore();
 
@@ -763,7 +765,19 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                     onClose={() => setShowAssignmentModal(false)}
                     programId={programId}
                     currentClientId={assignmentData.id}
-                    onAssignSuccess={(id, name, type) => setAssignmentData({ id, name, type })}
+                    onAssignSuccess={async (id, name, type) => {
+                        setAssignmentData({ id, name, type });
+                        if (id) {
+                            try {
+                                const fullClient = await getClient(id);
+                                setProgramClient(fullClient);
+                            } catch (err) {
+                                console.error('Failed to fetch client data for benchmarks:', err);
+                            }
+                        } else {
+                            setProgramClient(null);
+                        }
+                    }}
                 />
 
                 {/* Drag Overlay - Shows a preview of the block being dragged */}

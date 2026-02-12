@@ -1,9 +1,20 @@
-# Task: Fix Save Feedback and UI in 1RM Modal
+# KG Calculation Fix - Task Checklist
 
-- [/] Identify the component for "Editar Marcajes" <!-- id: 0 -->
-- [x] Create Implementation Plan <!-- id: 1 -->
+## Planning
+- [x] Investigate data storage (benchmarks in `clients.details.oneRmStats`)
+- [x] Trace KG calculation pipeline (`WorkoutBlockCard` → `useAthleteBenchmarks` → `getBenchmark`)
+- [x] Add debug logging and deploy to production
+- [x] Confirm root cause: `programClient` stays null in Zustand store
+- [x] Create implementation plan
 
-- [ ] Fix Save Feedback (Toast/Button state) <!-- id: 2 -->
-- [ ] Verify Database Save <!-- id: 3 -->
-- [ ] Improve Modal UI (Remove empty space) <!-- id: 4 -->
-- [ ] Verify changes <!-- id: 5 -->
+## Implementation
+- [ ] Add `setProgramClient` action to Zustand store (`lib/store/index.ts`)
+- [ ] Update `MesocycleEditor.tsx` `onAssignSuccess` to fetch full client and update store
+- [ ] Remove debug logging from `useAthleteBenchmarks.ts`
+
+## Verification
+- [ ] Deploy changes to production
+- [ ] Browser test: assign athlete with benchmarks → verify KG appears
+- [ ] Browser test: reload page → verify KG persists
+- [ ] Screenshot verification
+- [ ] Update lessons.md
