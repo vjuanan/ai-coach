@@ -346,27 +346,7 @@ export const useEditorStore = create<EditorState>()(
                 });
             },
 
-            // Reorder blocks within a day
-            reorderBlocks: (dayId, blockIds) => {
-                const { mesocycles } = get();
 
-                const updatedMesocycles = mesocycles.map(meso => ({
-                    ...meso,
-                    days: meso.days.map(day => {
-                        if (day.id === dayId) {
-                            const reorderedBlocks = blockIds.map((id, idx) => {
-                                const block = day.blocks.find(b => b.id === id);
-                                return block ? { ...block, order_index: idx, isDirty: true } : null;
-                            }).filter(Boolean) as DraftWorkoutBlock[];
-
-                            return { ...day, blocks: reorderedBlocks, isDirty: true };
-                        }
-                        return day;
-                    }),
-                }));
-
-                set({ mesocycles: updatedMesocycles, hasUnsavedChanges: true });
-            },
 
             // Duplicate a block
             duplicateBlock: (blockId, targetDayId) => {
@@ -585,7 +565,54 @@ export const useEditorStore = create<EditorState>()(
                 set({ mesocycles: updatedMesocycles, hasUnsavedChanges: true });
             },
 
-            // Drag & Drop
+            // Reorder Blocks within a day
+            reorderBlocks: (dayId, blockIds) => {
+                const { mesocycles } = get();
+
+                const updatedMesocycles = mesocycles.map(meso => ({
+                    ...meso,
+                    days: meso.days.map(day => {
+                        if (day.id === dayId) {
+                            // Map existing blocks to new order
+                            // We must create a new array based on blockIds order
+
+                            // First, create a map for quick lookup
+                            const blockMap = new Map(day.blocks.map(b => [b.id, b]));
+
+                            // Create new sorted array
+                            const newBlocks = blockIds.map((id, index) => {
+                                const block = blockMap.get(id);
+                                if (block) {
+                                    return {
+                                        ...block,
+                                        order_index: index,
+                                        isDirty: true
+                                    } as DraftWorkoutBlock;
+                                }
+                                return null;
+                            }).filter((b): b is DraftWorkoutBlock => b !== null);
+
+                            // Add any blocks that might have been missed (edge case protection)
+                            const missedBlocks = day.blocks.filter(b => !blockIds.includes(b.id));
+                            if (missedBlocks.length > 0) {
+                                missedBlocks.forEach((b, idx) => {
+                                    newBlocks.push({
+                                        ...b,
+                                        order_index: newBlocks.length + idx,
+                                        isDirty: true
+                                    });
+                                });
+                            }
+
+                            return { ...day, blocks: newBlocks, isDirty: true };
+                        }
+                        return day;
+                    }),
+                    isDirty: true
+                }));
+
+                set({ mesocycles: updatedMesocycles, hasUnsavedChanges: true });
+            },
             setDraggedBlock: (blockId) => set({ draggedBlockId: blockId }),
             setDropTarget: (dayId) => set({ dropTargetDayId: dayId }),
 

@@ -40,6 +40,8 @@ import {
     useSensor,
     useSensors,
     DragOverlay,
+    closestCenter,
+    KeyboardSensor,
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { GripVertical, AlertTriangle } from 'lucide-react';
@@ -103,7 +105,8 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             activationConstraint: {
                 distance: 8,
             },
-        })
+        }),
+        useSensor(KeyboardSensor)
     );
 
     // ... (rest of Dnd handlers remain the same) 
@@ -131,11 +134,13 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             return;
         }
 
-        // Normalize IDs to handle both DayCard (raw ID) and BlockBuilder (builder- prefix)
+        // Normalize IDs
         const normalizeId = (id: string) => id.toString().replace('builder-', '');
 
         const activeId = normalizeId(active.id as string);
         const overId = normalizeId(over.id as string);
+
+        console.log('Drag End:', { activeId, overId, rawActive: active.id, rawOver: over.id });
 
         // Helper to find a block across all mesocycles
         const findBlock = (id: string) => {
@@ -149,15 +154,12 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         };
 
         const source = findBlock(activeId);
-
-        // CASE 1: Reordering within the same day (Source and Target are blocks in same day)
         const target = findBlock(overId); // Check if we dropped ON another block
 
-        if (source && target && source.day.id === target.day.id) {
-            // We are reordering within the same day
-            if (source.block.order_index !== target.block.order_index) {
+        if (source) {
+            // CASE 1: Reordering within the same day
+            if (target && source.day.id === target.day.id) {
                 const dayId = source.day.id;
-                // Get current ordered IDs
                 const currentOrderIds = source.day.blocks
                     .sort((a, b) => a.order_index - b.order_index)
                     .map(b => b.id);
@@ -165,28 +167,28 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                 const oldIndex = currentOrderIds.indexOf(activeId);
                 const newIndex = currentOrderIds.indexOf(overId);
 
-                if (oldIndex !== -1 && newIndex !== -1) {
+                console.log('Reordering:', { dayId, oldIndex, newIndex });
+
+                if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
                     const newOrderIds = arrayMove(currentOrderIds, oldIndex, newIndex);
-                    // Call store action
+                    console.log('New Order:', newOrderIds);
                     useEditorStore.getState().reorderBlocks(dayId, newOrderIds);
                 }
+                setDraggedBlock(null);
+                setDropTarget(null);
+                return;
             }
-            setDraggedBlock(null);
-            setDropTarget(null);
-            return;
-        }
 
+            // CASE 2: Moving to a different Day (Target is a Day ID)
+            let targetDayId: string | null = null;
+            if (over.id.toString().startsWith('day-')) {
+                targetDayId = over.id.toString().replace('day-', '');
+            }
 
-        // CASE 2: Moving to a different Day (Target is a Day ID)
-        let targetDayId: string | null = null;
-        if (over.id.toString().startsWith('day-')) {
-            targetDayId = over.id.toString().replace('day-', '');
-        }
-
-        if (targetDayId && source) {
-            if (source.day.id !== targetDayId) {
-                // Moving block to a different day
-                moveBlockToDay(activeId, targetDayId);
+            if (targetDayId) {
+                if (source.day.id !== targetDayId) {
+                    moveBlockToDay(activeId, targetDayId);
+                }
             }
         }
 

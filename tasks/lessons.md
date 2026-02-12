@@ -62,3 +62,4 @@ CREATE POLICY "workout_blocks_select"
   1. Ensure the Interface definition is completely separate from the implementation.
   2. Verify that **every method** defined in the Interface is actually implemented in the `create` call. Missing implementations cause silent runtime failures or build errors.
   3. If helper functions (like UUID generation) are removed or refactored, ensure their replacements (e.g., `generateTempId`) are defined and available in the scope before use.
+- [x] **Propagación de Despliegues**: Al verificar cambios en producción inmediatamente después de un push, es probable que se sirva la versión anterior cachéada. Confiar en la verificación de código (lectura de archivos) si la verificación de navegador falla por contenido obsoleto, y avisar al usuario sobre el tiempo de propagación.

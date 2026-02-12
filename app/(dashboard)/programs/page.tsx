@@ -209,6 +209,8 @@ export default function ProgramsPage() {
     }
 
     async function handleAssignmentSuccess(clientId: string | null, clientName: string | null, clientType: 'athlete' | 'gym' | null) {
+        console.log('Assignment Success (Optimistic):', { clientId, clientName, clientType, programToAssign });
+
         // Optimistic update: immediately update the programs state locally
         if (programToAssign) {
             setPrograms(prev => prev.map(p => {
@@ -230,7 +232,7 @@ export default function ProgramsPage() {
 
         <>
             <Topbar
-                title="Programas"
+                title="Programas (v2)"
                 actions={
                     <div className="flex items-center gap-3">
                         {/* View Toggle */}
