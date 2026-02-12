@@ -65,7 +65,8 @@ export function GenericMovementForm({ config, onChange, methodology }: GenericMo
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300 border-2 border-red-500 p-2 rounded-xl relative">
+            <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-bl-xl font-mono">DEBUG: V3 - SERIES FIX</div>
             {/* 1. Global Rounds Input - Reduced Width */}
             {showRounds && (
                 <div className="max-w-md"> {/* Limited width */}
