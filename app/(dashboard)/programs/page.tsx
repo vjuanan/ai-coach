@@ -209,36 +209,52 @@ export default function ProgramsPage() {
     }
 
     async function handleAssignmentSuccess(clientId: string | null, clientName: string | null, clientType: 'athlete' | 'gym' | null) {
-        // Optimistic update: immediately update the programs state locally
+        const timestamp = new Date().toISOString();
+        console.log(`[V5] handleAssignmentSuccess triggered at ${timestamp}`);
+        console.log(`[V5] Target Program ID: ${programToAssign?.id}`);
+        console.log(`[V5] New Client: ${clientName} (${clientId})`);
+
+        // Optimistic update
         if (programToAssign) {
-            setPrograms(prev => prev.map(p => {
-                if (p.id === programToAssign.id) {
-                    return {
-                        ...p,
-                        client: clientId ? {
-                            id: clientId,
-                            name: clientName || 'Asignado',
-                            type: clientType || 'athlete'
-                        } : null
-                    };
-                }
-                return p;
-            }));
+            setPrograms(prev => {
+                const updated = prev.map(p => {
+                    if (p.id === programToAssign.id) {
+                        return {
+                            ...p,
+                            client: clientId ? {
+                                id: clientId,
+                                name: clientName || 'Asignado',
+                                type: clientType || 'athlete'
+                            } : null,
+                            updated_at: timestamp // Force visual update on date too
+                        };
+                    }
+                    return p;
+                });
+                console.log(`[V5] State updated. Programs count: ${updated.length}`);
+                return updated;
+            });
         }
         setProgramToAssign(null);
 
-        // V4 FIX: Delay background refresh to prevent race condition (server returning stale data)
-        // overriding our optimistic update immediately.
+        // V4/V5 FIX: Delay background refresh
         setTimeout(() => {
+            console.log('[V5] Executing delayed fetchPrograms...');
             fetchPrograms();
-        }, 2000);
+        }, 3000);
     }
 
-    return (
+    console.log('[V5] Rendering ProgramsPage. Programs:', programs.length);
 
+    return (
         <>
+            {/* V5 DEBUG BANNER */}
+            <div className="bg-red-600 text-white p-2 text-center text-xs font-mono font-bold">
+                VERSION V5 - DEBUG MODE - {new Date().toLocaleTimeString()}
+            </div>
+
             <Topbar
-                title="Programas (v4)"
+                title="Programas (v5)"
                 actions={
                     <div className="flex items-center gap-3">
                         {/* View Toggle */}
