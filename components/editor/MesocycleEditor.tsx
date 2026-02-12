@@ -41,7 +41,8 @@ import {
     useSensors,
     DragOverlay,
 } from '@dnd-kit/core';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, AlertTriangle } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
 import { calculateKgFromStats } from '@/hooks/useAthleteRm';
 import { useExerciseCache } from '@/hooks/useExerciseCache';
 import * as Popover from '@radix-ui/react-popover';
@@ -188,6 +189,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
     const [showInvalidBlocksModal, setShowInvalidBlocksModal] = useState(false);
     const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
     const [invalidBlocksCount, setInvalidBlocksCount] = useState(0);
+    const [invalidBlockIds, setInvalidBlockIds] = useState<string[]>([]);
 
     // Get current state for export
     const currentMesocycle = mesocycles.find(m => m.week_number === selectedWeek);
@@ -253,30 +255,11 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             const invalidBlocks = dayFound.blocks.filter((b: any) => !validateBlockContent(b));
 
             if (invalidBlocks.length > 0) {
-                // Show alert/modal
-                const confirmDelete = window.confirm(
-                    `ADVERTENCIA: Hay ${invalidBlocks.length} bloque(s) incompleto(s) o inválido(s).\n\n` +
-                    `• Ejercicios vacíos o no existentes no se guardarán.\n` +
-                    `• Debes corregirlos o eliminarlos para continuar.\n\n` +
-                    `¿Deseas ELIMINAR estos bloques y continuar?`
-                );
-
-                if (confirmDelete) {
-                    // User chose to delete.
-                    // Delete each invalid block
-                    invalidBlocks.forEach((b: any) => {
-                        deleteBlock(b.id);
-                    });
-
-                    // Proceed with the action (e.g., exit, switch week)
-                    // We wrap in timeout to allow state update to propagate if needed (though store is usually sync for local)
-                    setTimeout(() => {
-                        actionCallback();
-                    }, 50);
-                } else {
-                    // User canceled, stay here
-                    return;
-                }
+                // Show custom modal instead of window.confirm
+                setInvalidBlocksCount(invalidBlocks.length);
+                setInvalidBlockIds(invalidBlocks.map((b: any) => b.id));
+                setPendingAction(() => actionCallback);
+                setShowInvalidBlocksModal(true);
             } else {
                 // All valid
                 actionCallback();
@@ -285,7 +268,31 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             // Day not found (weird), proceed
             actionCallback();
         }
-    }, [blockBuilderDayId, mesocycles, validateBlockContent, deleteBlock]);
+    }, [blockBuilderDayId, mesocycles, validateBlockContent]);
+
+    const handleConfirmDeleteInvalid = useCallback(() => {
+        // Delete each invalid block
+        invalidBlockIds.forEach((id) => {
+            deleteBlock(id);
+        });
+
+        setShowInvalidBlocksModal(false);
+        setInvalidBlockIds([]);
+
+        // Execute the pending action
+        if (pendingAction) {
+            setTimeout(() => {
+                pendingAction();
+                setPendingAction(null);
+            }, 50);
+        }
+    }, [invalidBlockIds, deleteBlock, pendingAction]);
+
+    const handleCancelDeleteInvalid = useCallback(() => {
+        setShowInvalidBlocksModal(false);
+        setInvalidBlockIds([]);
+        setPendingAction(null);
+    }, []);
 
     // Handle Save & Exit (Button & Back Arrow)
     const handleSaveAndExit = useCallback(async () => {
@@ -796,6 +803,51 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                         </div>
                     ) : null}
                 </DragOverlay>
+
+                {/* Invalid Blocks Warning Modal */}
+                <Modal
+                    isOpen={showInvalidBlocksModal}
+                    onClose={handleCancelDeleteInvalid}
+                    title={
+                        <div className="flex items-center gap-2 text-amber-500">
+                            <AlertTriangle size={24} />
+                            <span>Advertencia</span>
+                        </div>
+                    }
+                    description="Se han detectado bloques incompletos."
+                >
+                    <div className="space-y-4">
+                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
+                            <h4 className="text-amber-500 font-medium mb-2">
+                                Hay <span className="font-bold">{invalidBlocksCount}</span> bloque(s) incompleto(s) o inválido(s).
+                            </h4>
+                            <ul className="list-disc list-inside text-sm text-gray-300 space-y-1">
+                                <li>Los ejercicios vacíos o no existentes no se pueden guardar.</li>
+                                <li>Debes corregirlos o eliminarlos para poder continuar.</li>
+                            </ul>
+                        </div>
+
+                        <p className="text-gray-400 text-sm">
+                            ¿Deseas <span className="text-red-400 font-medium">eliminar</span> estos bloques automáticamente y continuar?
+                        </p>
+
+                        <div className="flex items-center justify-end gap-3 mt-6">
+                            <button
+                                onClick={handleCancelDeleteInvalid}
+                                className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleConfirmDeleteInvalid}
+                                className="px-4 py-2 rounded-lg text-sm font-medium bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20 transition-all flex items-center gap-2"
+                            >
+                                <div className="w-1.5 h-1.5 rounded-full bg-white/50" />
+                                Eliminar y Continuar
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
             </div>
         </DndContext>
     );
