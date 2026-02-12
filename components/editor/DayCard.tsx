@@ -6,6 +6,7 @@ import { Plus, Moon, MoreHorizontal, Sun, Target, Trash2 } from 'lucide-react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 import * as Popover from '@radix-ui/react-popover';
 import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 interface DraftWorkoutBlock {
     id: string;
@@ -320,12 +321,17 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
 
             {/* Workout Blocks - Cards within Card style */}
             <div className="flex-1 space-y-3 mb-8 overflow-y-auto p-4 -m-4">
-                {day.blocks
-                    .sort((a, b) => a.order_index - b.order_index)
-                    .map(block => (
-                        <WorkoutBlockCard key={block.id} block={block} />
-                    ))
-                }
+                <SortableContext
+                    items={day.blocks.sort((a, b) => a.order_index - b.order_index).map(b => b.id)}
+                    strategy={verticalListSortingStrategy}
+                >
+                    {day.blocks
+                        .sort((a, b) => a.order_index - b.order_index)
+                        .map(block => (
+                            <WorkoutBlockCard key={block.id} block={block} />
+                        ))
+                    }
+                </SortableContext>
 
                 {/* Empty State - Clickable to open Block Builder */}
                 {day.blocks.length === 0 && (

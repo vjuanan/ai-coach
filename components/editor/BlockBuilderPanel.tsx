@@ -21,6 +21,26 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { BlockType, WorkoutFormat, WorkoutConfig } from '@/lib/supabase/types';
+import { SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// Sortable Item Wrapper for Horizontal List
+function SortableBuilderItem({ id, children, isActive }: { id: string; children: React.ReactNode; isActive: boolean }) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+        zIndex: isDragging ? 999 : 'auto',
+    };
+
+    return (
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+            {children}
+        </div>
+    );
+}
 
 interface BlockBuilderPanelProps {
     dayId: string;
@@ -224,75 +244,84 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                     {currentDay && (
                         <div className="flex-shrink-0 px-3 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary relative z-20 flex items-center gap-3">
                             <div className="flex-1 flex items-center gap-3 overflow-x-auto pb-2 pt-2 pl-1 no-scrollbar" style={{ isolation: 'isolate' }}>
-                                {currentDay.blocks.length > 0 ? (
-                                    [...currentDay.blocks]
-                                        .sort((a, b) => a.order_index - b.order_index)
-                                        .map((block, index) => {
-                                            const isActive = selectedBlockId === block.id;
-                                            const blockOption = blockTypeOptions.find(o => o.type === block.type);
-                                            const Icon = blockOption?.icon || Dumbbell;
+                                <SortableContext
+                                    items={currentDay.blocks.sort((a, b) => a.order_index - b.order_index).map(b => `builder-${b.id}`)}
+                                    strategy={horizontalListSortingStrategy}
+                                >
+                                    {currentDay.blocks.length > 0 ? (
+                                        [...currentDay.blocks]
+                                            .sort((a, b) => a.order_index - b.order_index)
+                                            .map((block, index) => {
+                                                const isActive = selectedBlockId === block.id;
+                                                const blockOption = blockTypeOptions.find(o => o.type === block.type);
+                                                const Icon = blockOption?.icon || Dumbbell;
 
-                                            return (
-                                                <div
-                                                    key={block.id}
-                                                    onClick={() => selectBlock(block.id)}
-                                                    className={`
-                                                    group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left min-w-[150px] cursor-pointer
-                                                    ${isActive
-                                                            ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-lg ring-2 ring-cv-accent/40 z-20'
-                                                            : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-500 hover:z-30'
-                                                        }
-                                                `}
-                                                    style={!isActive ? { '--hover-shadow': blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)' } as React.CSSProperties : undefined}
-                                                >
-                                                    {/* Delete Trash Button - Visible on Hover - Minimalist Style */}
-                                                    <button
-                                                        onClick={(e) => handleDeleteBlock(e, block)}
-                                                        className="
-                                                        absolute top-1.5 right-1.5 
-                                                        w-6 h-6 
-                                                        rounded-full 
-                                                        text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
-                                                        flex items-center justify-center 
-                                                        opacity-0 group-hover:opacity-100 
-                                                        transition-all duration-200 
-                                                        z-50
-                                                    "
-                                                        title="Eliminar bloque"
-                                                    >
-                                                        <Trash2 size={13} strokeWidth={2.5} />
-                                                    </button>
+                                                return (
+                                                    <SortableBuilderItem key={block.id} id={`builder-${block.id}`} isActive={isActive}>
+                                                        <div
+                                                            onClick={(e) => {
+                                                                // Prevent click if we were dragging (handled by dnd-kit mostly, but good practice)
+                                                                selectBlock(block.id);
+                                                            }}
+                                                            className={`
+                                                            group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left min-w-[150px] cursor-pointer
+                                                            ${isActive
+                                                                    ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-lg ring-2 ring-cv-accent/40 z-20'
+                                                                    : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-500 hover:z-30'
+                                                                }
+                                                            `}
+                                                            style={!isActive ? { '--hover-shadow': blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)' } as React.CSSProperties : undefined}
+                                                        >
+                                                            {/* Delete Trash Button - Visible on Hover - Minimalist Style */}
+                                                            <button
+                                                                onClick={(e) => handleDeleteBlock(e, block)}
+                                                                className="
+                                                                absolute top-1.5 right-1.5 
+                                                                w-6 h-6 
+                                                                rounded-full 
+                                                                text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
+                                                                flex items-center justify-center 
+                                                                opacity-0 group-hover:opacity-100 
+                                                                transition-all duration-200 
+                                                                z-50
+                                                                "
+                                                                title="Eliminar bloque"
+                                                                onPointerDown={(e) => e.stopPropagation()} // Prevent drag start on delete button
+                                                            >
+                                                                <Trash2 size={13} strokeWidth={2.5} />
+                                                            </button>
 
-                                                    <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'
-                                                        }`}>
-                                                        <Icon size={14} />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className={`text-xs font-semibold truncate ${isActive ? 'text-cv-text-primary' : 'text-cv-text-secondary'}`}>
-                                                            {block.name || blockOption?.label || "Sin nombre"}
-                                                        </p>
-                                                        <div className="flex items-center gap-1">
-                                                            <p className="text-[10px] text-cv-text-tertiary truncate">
-                                                                {block.format}
-                                                            </p>
-                                                            {/* Progression Indicator */}
-                                                            {Boolean((block as any).progression_id) && (
-                                                                <div className="w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0 text-cv-accent bg-cv-accent/10">
-                                                                    <Link size={8} />
+                                                            <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'
+                                                                }`}>
+                                                                <Icon size={14} />
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className={`text-xs font-semibold truncate ${isActive ? 'text-cv-text-primary' : 'text-cv-text-secondary'}`}>
+                                                                    {block.name || blockOption?.label || "Sin nombre"}
+                                                                </p>
+                                                                <div className="flex items-center gap-1">
+                                                                    <p className="text-[10px] text-cv-text-tertiary truncate">
+                                                                        {block.format}
+                                                                    </p>
+                                                                    {/* Progression Indicator */}
+                                                                    {Boolean((block as any).progression_id) && (
+                                                                        <div className="w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0 text-cv-accent bg-cv-accent/10">
+                                                                            <Link size={8} />
+                                                                        </div>
+                                                                    )}
                                                                 </div>
-                                                            )}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })
-                                ) : (
-                                    <div className="text-xs text-cv-text-tertiary italic px-2">
-                                        No hay bloques
-                                    </div>
-                                )}
+                                                    </SortableBuilderItem>
+                                                );
+                                            })
+                                    ) : (
+                                        <div className="text-xs text-cv-text-tertiary italic px-2">
+                                            No hay bloques
+                                        </div>
+                                    )}
+                                </SortableContext>
                             </div>
-
                             {/* Header Quick Add Button - Outside scroll container */}
                             <div className="relative flex-shrink-0 ml-1 z-40">
                                 <button

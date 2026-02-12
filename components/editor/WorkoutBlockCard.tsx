@@ -4,7 +4,7 @@ import { useEditorStore } from '@/lib/store';
 import { GripVertical, Copy, Trash2, ChevronDown, TrendingUp, Check, X, Link } from 'lucide-react';
 import { useState, useRef } from 'react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
-import { useDraggable } from '@dnd-kit/core';
+import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { createPortal } from 'react-dom';
 import { useAthleteBenchmarks } from '@/hooks/useAthleteBenchmarks'; // New Hook
@@ -53,8 +53,8 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
     const wasDraggingRef = useRef(false);
     const { getBenchmark } = useAthleteBenchmarks();
 
-    // Setup draggable
-    const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    // Setup sortable
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: block.id,
     });
 
@@ -63,9 +63,10 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
         wasDraggingRef.current = true;
     }
 
-    const style = transform ? {
-        transform: CSS.Translate.toString(transform),
-    } : undefined;
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
 
     const isSelected = selectedBlockId === block.id;
     const blockStyle = blockTypeStyles[block.type] || blockTypeStyles.free_text;

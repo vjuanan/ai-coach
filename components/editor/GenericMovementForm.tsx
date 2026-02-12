@@ -15,6 +15,7 @@ interface GenericMovementFormProps {
 
 interface MovementObject {
     name: string;
+    sets?: string | number; // Added sets
     reps?: string | number;
     weight?: string;
     distance?: string;
@@ -65,16 +66,16 @@ export function GenericMovementForm({ config, onChange, methodology }: GenericMo
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-            {/* 1. Global Rounds Input */}
+            {/* 1. Global Rounds Input - Reduced Width */}
             {showRounds && (
-                <div className="flex flex-col gap-2">
+                <div className="max-w-md"> {/* Limited width */}
                     <InputCard
-                        label="Rondas / Vueltas"
+                        label="RONDAS / VUELTAS"
                         value={rounds}
                         onChange={(val) => onChange('rounds', val)}
                         type="text"
                         icon={RotateCcw}
-                        placeholder="Ej: 3, 4, 5-10-15"
+                        placeholder="Ej: 3, 4, 5"
                         presets={[3, 4, 5]}
                     />
                 </div>
@@ -143,7 +144,6 @@ function MovementCard({ index, movement, onChange, onRemove }: MovementCardProps
 
     // Attributes
     const showDistance = exerciseMatch?.tracking_parameters?.distance;
-    // const showTime = exerciseMatch?.tracking_parameters?.time;
 
     return (
         <div className={`rounded-xl border transition-all duration-200 overflow-hidden
@@ -180,9 +180,21 @@ function MovementCard({ index, movement, onChange, onRemove }: MovementCardProps
 
             {/* Inputs Grid - Only if Valid */}
             {isValid && (
-                <div className="p-3 bg-white dark:bg-cv-bg-secondary">
+                <div className="p-3 bg-white dark:bg-cv-bg-secondary space-y-3">
+                    {/* Metrics Grid (4 columns) */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {/* 1. Reps / Distance */}
+                        {/* 1. Series (Sets) - NEW */}
+                        <InputCard
+                            label="SERIES"
+                            value={movement.sets as string}
+                            onChange={(val) => onChange({ sets: val })}
+                            type="number-text"
+                            icon={RotateCcw} // Reusing same icon, or could use Layers/Clone
+                            presets={[2, 3, 4]}
+                            placeholder="3"
+                        />
+
+                        {/* 2. Reps / Distance */}
                         {showDistance ? (
                             <InputCard
                                 label="DISTANCIA"
@@ -206,12 +218,12 @@ function MovementCard({ index, movement, onChange, onRemove }: MovementCardProps
                             />
                         )}
 
-                        {/* 2. Intensity / RPE / Weight */}
+                        {/* 3. Intensity / RPE / Weight */}
                         <InputCard
                             label="INTENSIDAD / RPE"
                             value={(movement.rpe || movement.weight) as string}
                             onChange={(val) => {
-                                // Simple heuristic: if number < 11, assume RPE. If contains 'kg' or big number, weight.
+                                // Simple heuristic: if number < 11, assume RPE.
                                 if (typeof val === 'number' && val <= 10) onChange({ rpe: val, weight: undefined });
                                 else onChange({ weight: val ? String(val) : undefined, rpe: undefined });
                             }}
@@ -221,9 +233,9 @@ function MovementCard({ index, movement, onChange, onRemove }: MovementCardProps
                             placeholder="RPE 8"
                         />
 
-                        {/* 3. Rest */}
+                        {/* 4. Rest */}
                         <InputCard
-                            label="DESCANSO / TRANSICION"
+                            label="DESCANSO"
                             value={movement.rest as string}
                             onChange={(val) => onChange({ rest: val })}
                             type="text"
@@ -231,21 +243,21 @@ function MovementCard({ index, movement, onChange, onRemove }: MovementCardProps
                             presets={['0:00', '0:30', '1:00']}
                             placeholder="-"
                         />
+                    </div>
 
-                        {/* 4. Notes */}
-                        <div className="bg-slate-50 dark:bg-cv-bg-tertiary/30 rounded-xl border border-slate-100 dark:border-slate-800 p-2 flex flex-col group focus-within:ring-1 ring-cv-accent/50 transition-all">
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <FileText size={12} className="text-cv-text-tertiary" />
-                                <span className="text-[9px] uppercase font-bold text-cv-text-tertiary">Notas</span>
-                            </div>
-                            <textarea
-                                value={movement.notes || movement.description || ''}
-                                onChange={(e) => onChange({ notes: e.target.value, description: e.target.value })}
-                                placeholder="Notas técnicas..."
-                                className="w-full h-full bg-transparent border-none p-0 text-xs text-cv-text-primary placeholder:text-slate-300 focus:ring-0 resize-none"
-                            />
+                    {/* Notes (Full Width) */}
+                    <div className="bg-slate-50 dark:bg-cv-bg-tertiary/30 rounded-xl border border-slate-100 dark:border-slate-800 p-2 flex flex-col group focus-within:ring-1 ring-cv-accent/50 transition-all">
+                        <div className="flex items-center gap-1.5 mb-1">
+                            <FileText size={12} className="text-cv-text-tertiary" />
+                            <span className="text-[9px] uppercase font-bold text-cv-text-tertiary">Notas</span>
                         </div>
-
+                        <textarea
+                            value={movement.notes || movement.description || ''}
+                            onChange={(e) => onChange({ notes: e.target.value, description: e.target.value })}
+                            placeholder="Notas técnicas..."
+                            className="w-full min-h-[40px] bg-transparent border-none p-0 text-xs text-cv-text-primary placeholder:text-slate-300 focus:ring-0 resize-none"
+                            rows={1}
+                        />
                     </div>
                 </div>
             )}

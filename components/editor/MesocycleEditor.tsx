@@ -41,6 +41,7 @@ import {
     useSensors,
     DragOverlay,
 } from '@dnd-kit/core';
+import { arrayMove } from '@dnd-kit/sortable';
 import { GripVertical, AlertTriangle } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { calculateKgFromStats } from '@/hooks/useAthleteRm';
@@ -130,30 +131,62 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             return;
         }
 
-        const blockId = active.id as string;
-        const overId = over.id as string;
+        // Normalize IDs to handle both DayCard (raw ID) and BlockBuilder (builder- prefix)
+        const normalizeId = (id: string) => id.toString().replace('builder-', '');
 
-        if (overId.startsWith('day-')) {
-            const targetDayId = overId.replace('day-', '');
+        const activeId = normalizeId(active.id as string);
+        const overId = normalizeId(over.id as string);
 
-            // Find current mesocycle (or search all if necessary)
-            // Ideally we find the source block to know where it comes from
-            let sourceBlock: any = null;
-
-            // Search in current mesocycle first
-            const currentMeso = mesocycles.find(m => m.week_number === selectedWeek);
-            if (currentMeso) {
-                for (const day of currentMeso.days) {
-                    const found = day.blocks.find(b => b.id === blockId);
-                    if (found) { sourceBlock = found; break; }
+        // Helper to find a block across all mesocycles
+        const findBlock = (id: string) => {
+            for (const meso of mesocycles) {
+                for (const day of meso.days) {
+                    const block = day.blocks.find(b => b.id === id);
+                    if (block) return { block, day, meso };
                 }
             }
+            return null;
+        };
 
-            if (sourceBlock) {
-                if (sourceBlock.day_id !== targetDayId) {
-                    // Always move individual block - progressions are independent per week
-                    moveBlockToDay(blockId, targetDayId);
+        const source = findBlock(activeId);
+
+        // CASE 1: Reordering within the same day (Source and Target are blocks in same day)
+        const target = findBlock(overId); // Check if we dropped ON another block
+
+        if (source && target && source.day.id === target.day.id) {
+            // We are reordering within the same day
+            if (source.block.order_index !== target.block.order_index) {
+                const dayId = source.day.id;
+                // Get current ordered IDs
+                const currentOrderIds = source.day.blocks
+                    .sort((a, b) => a.order_index - b.order_index)
+                    .map(b => b.id);
+
+                const oldIndex = currentOrderIds.indexOf(activeId);
+                const newIndex = currentOrderIds.indexOf(overId);
+
+                if (oldIndex !== -1 && newIndex !== -1) {
+                    const newOrderIds = arrayMove(currentOrderIds, oldIndex, newIndex);
+                    // Call store action
+                    useEditorStore.getState().reorderBlocks(dayId, newOrderIds);
                 }
+            }
+            setDraggedBlock(null);
+            setDropTarget(null);
+            return;
+        }
+
+
+        // CASE 2: Moving to a different Day (Target is a Day ID)
+        let targetDayId: string | null = null;
+        if (over.id.toString().startsWith('day-')) {
+            targetDayId = over.id.toString().replace('day-', '');
+        }
+
+        if (targetDayId && source) {
+            if (source.day.id !== targetDayId) {
+                // Moving block to a different day
+                moveBlockToDay(activeId, targetDayId);
             }
         }
 
