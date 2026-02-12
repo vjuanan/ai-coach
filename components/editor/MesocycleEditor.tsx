@@ -103,7 +103,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8,
+                distance: 15, // Increased to prevent accidental clicks
             },
         }),
         useSensor(KeyboardSensor)
@@ -157,7 +157,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         const target = findBlock(overId); // Check if we dropped ON another block
 
         if (source) {
-            // CASE 1: Reordering within the same day
+            // CASE 1: Reordering within the same day (Dropped on another block)
             if (target && source.day.id === target.day.id) {
                 const dayId = source.day.id;
                 const currentOrderIds = source.day.blocks
@@ -167,11 +167,8 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                 const oldIndex = currentOrderIds.indexOf(activeId);
                 const newIndex = currentOrderIds.indexOf(overId);
 
-                console.log('Reordering:', { dayId, oldIndex, newIndex });
-
                 if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
                     const newOrderIds = arrayMove(currentOrderIds, oldIndex, newIndex);
-                    console.log('New Order:', newOrderIds);
                     useEditorStore.getState().reorderBlocks(dayId, newOrderIds);
                 }
                 setDraggedBlock(null);
@@ -179,14 +176,35 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                 return;
             }
 
-            // CASE 2: Moving to a different Day (Target is a Day ID)
+            // CASE 2: Dropped on a Day Container (could be same day or different day)
             let targetDayId: string | null = null;
             if (over.id.toString().startsWith('day-')) {
                 targetDayId = over.id.toString().replace('day-', '');
             }
 
             if (targetDayId) {
-                if (source.day.id !== targetDayId) {
+                if (source.day.id === targetDayId) {
+                    // Dropped on the SAME day container -> Move to end? 
+                    // Or better: do nothing if we want strictly sortable behavior.
+                    // But if user drags to empty space in day, we should probably append to end.
+                    // Let's rely on SortableContext to handle the "gap" and if dropped on container, 
+                    // it implies we moved it out of the sortable list? No.
+                    // If we drop on the container, it usually means we dragged "past" the last item.
+
+                    const currentOrderIds = source.day.blocks
+                        .sort((a, b) => a.order_index - b.order_index)
+                        .map(b => b.id);
+
+                    const oldIndex = currentOrderIds.indexOf(activeId);
+                    const newIndex = currentOrderIds.length - 1; // Move to end
+
+                    if (oldIndex !== -1 && oldIndex !== newIndex) {
+                        const newOrderIds = arrayMove(currentOrderIds, oldIndex, newIndex);
+                        useEditorStore.getState().reorderBlocks(targetDayId, newOrderIds);
+                    }
+
+                } else {
+                    // Moving block to a DIFFERENT day
                     moveBlockToDay(activeId, targetDayId);
                 }
             }
@@ -586,50 +604,48 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                         </div>
 
                         {/* Assignment Badge */}
-                        {!blockBuilderMode && (
-                            <>
-                                <div className="w-px h-5 bg-cv-border mx-2" />
-                                {assignmentData.id ? (
-                                    <Popover.Root>
-                                        <Popover.Trigger asChild>
-                                            <button className="flex items-center gap-2 px-2 py-1 rounded-md bg-cv-accent/5 hover:bg-cv-accent/10 text-xs text-cv-accent font-medium transition-colors">
-                                                {assignmentData.type === 'athlete' ? <User size={12} /> : <Building size={12} />}
-                                                <span>{assignmentData.name}</span>
-                                                <ChevronDown size={12} />
+                        <>
+                            <div className="w-px h-5 bg-cv-border mx-2" />
+                            {assignmentData.id ? (
+                                <Popover.Root>
+                                    <Popover.Trigger asChild>
+                                        <button className="flex items-center gap-2 px-2 py-1 rounded-md bg-cv-accent/5 hover:bg-cv-accent/10 text-xs text-cv-accent font-medium transition-colors">
+                                            {assignmentData.type === 'athlete' ? <User size={12} /> : <Building size={12} />}
+                                            <span>{assignmentData.name}</span>
+                                            <ChevronDown size={12} />
+                                        </button>
+                                    </Popover.Trigger>
+                                    <Popover.Portal>
+                                        <Popover.Content className="z-50 w-48 bg-white dark:bg-[#1a1b1e] rounded-lg shadow-xl border border-gray-200 dark:border-gray-800 p-1 animate-in fade-in zoom-in-95 duration-200" sideOffset={5}>
+                                            <button
+                                                onClick={() => setShowAssignmentModal(true)}
+                                                className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors text-left"
+                                            >
+                                                <Users size={12} />
+                                                Editar asignación
                                             </button>
-                                        </Popover.Trigger>
-                                        <Popover.Portal>
-                                            <Popover.Content className="z-50 w-48 bg-white dark:bg-[#1a1b1e] rounded-lg shadow-xl border border-gray-200 dark:border-gray-800 p-1 animate-in fade-in zoom-in-95 duration-200" sideOffset={5}>
-                                                <button
-                                                    onClick={() => setShowAssignmentModal(true)}
-                                                    className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors text-left"
-                                                >
-                                                    <Users size={12} />
-                                                    Editar asignación
-                                                </button>
-                                                <Link
-                                                    href={assignmentData.type === 'athlete' ? `/athletes/${assignmentData.id}` : `/gyms/${assignmentData.id}`}
-                                                    target='_blank'
-                                                    className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors text-left"
-                                                >
-                                                    <User size={12} />
-                                                    Ver perfil
-                                                </Link>
-                                                <Popover.Arrow className="fill-white dark:fill-[#1a1b1e]" />
-                                            </Popover.Content>
-                                        </Popover.Portal>
-                                    </Popover.Root>
-                                ) : (
-                                    <button
-                                        onClick={() => setShowAssignmentModal(true)}
-                                        className="flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-                                    >
-                                        <Users size={12} />
-                                        <span>Asignar</span>
-                                    </button>
-                                )}
-                            </>
-                        )}
+                                            <Link
+                                                href={assignmentData.type === 'athlete' ? `/athletes/${assignmentData.id}` : `/gyms/${assignmentData.id}`}
+                                                target='_blank'
+                                                className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors text-left"
+                                            >
+                                                <User size={12} />
+                                                Ver perfil
+                                            </Link>
+                                            <Popover.Arrow className="fill-white dark:fill-[#1a1b1e]" />
+                                        </Popover.Content>
+                                    </Popover.Portal>
+                                </Popover.Root>
+                            ) : (
+                                <button
+                                    onClick={() => setShowAssignmentModal(true)}
+                                    className="flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                                >
+                                    <Users size={12} />
+                                    <span>Asignar</span>
+                                </button>
+                            )}
+                        </>
 
 
                     </div>
@@ -826,9 +842,9 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                 <DragOverlay dropAnimation={{
                     duration: 200,
                     easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
-                }}>
+                }} style={{ zIndex: 1000 }}>
                     {draggedBlockData ? (
-                        <div className="bg-white dark:bg-cv-bg-secondary rounded-lg shadow-xl border-2 border-cv-accent p-3 opacity-95 max-w-[200px] z-50 pointer-events-none">
+                        <div className="bg-white dark:bg-cv-bg-secondary rounded-lg shadow-xl border-2 border-cv-accent p-3 opacity-95 max-w-[200px] z-[1000] pointer-events-none">
                             <div className="flex items-center gap-2">
                                 <GripVertical size={14} className="text-cv-accent" />
                                 <span className="text-sm font-medium text-cv-text-primary truncate">
