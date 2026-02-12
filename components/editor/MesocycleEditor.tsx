@@ -111,6 +111,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
     // ... (rest of Dnd handlers remain the same) 
     const handleDragStart = (event: DragStartEvent) => {
+        console.error('DEBUG: DragStart', event.active.id);
         const blockId = event.active.id as string;
         setDraggedBlock(blockId);
     };
@@ -156,19 +157,32 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         const source = findBlock(activeId);
         const target = findBlock(overId); // Check if we dropped ON another block
 
+        console.error('DEBUG: DragEnd Analysis', {
+            activeId,
+            overId,
+            sourceFound: !!source,
+            targetFound: !!target,
+            sourceDayId: source?.day.id,
+            targetDayId: target?.day.id,
+            sameDay: source && target && source.day.id === target.day.id
+        });
+
         if (source) {
             // CASE 1: Reordering within the same day (Dropped on another block)
             if (target && source.day.id === target.day.id) {
                 const dayId = source.day.id;
-                const currentOrderIds = source.day.blocks
+                const currentOrderIds = [...source.day.blocks]
                     .sort((a, b) => a.order_index - b.order_index)
                     .map(b => b.id);
 
                 const oldIndex = currentOrderIds.indexOf(activeId);
                 const newIndex = currentOrderIds.indexOf(overId);
 
+                console.error('DEBUG: Reorder Attempt', { dayId, oldIndex, newIndex, currentOrderIds });
+
                 if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
                     const newOrderIds = arrayMove(currentOrderIds, oldIndex, newIndex);
+                    console.error('DEBUG: New Order Generated', newOrderIds);
                     useEditorStore.getState().reorderBlocks(dayId, newOrderIds);
                 }
                 setDraggedBlock(null);
@@ -191,7 +205,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                     // it implies we moved it out of the sortable list? No.
                     // If we drop on the container, it usually means we dragged "past" the last item.
 
-                    const currentOrderIds = source.day.blocks
+                    const currentOrderIds = [...source.day.blocks]
                         .sort((a, b) => a.order_index - b.order_index)
                         .map(b => b.id);
 

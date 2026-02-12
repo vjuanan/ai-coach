@@ -27,9 +27,9 @@
 - [x] Push changes to main
 
 ## Verification
-- [ ] Deploy changes to production (wait for propagation)
-- [ ] Browser verification: Login and check Warmup block UI
-- [ ] Capture screenshots of new UI
-- [ ] Confirm "Rondas" input is smaller
-- [ ] Confirm "SERIES" input exists
-- [ ] Confirm 4-column grid layout
+- [x] Deploy changes to production (pushed to main, build verified)
+- [/] Browser verification: Login and check Warmup block UI (Waiting for propagation)
+- [x] Capture screenshots of current state (Old UI still visible)
+- [_] Confirm "Rondas" input is smaller (Pending deployment)
+- [_] Confirm "SERIES" input exists (Pending deployment)
+- [_] Confirm 4-column grid layout (Pending deployment)

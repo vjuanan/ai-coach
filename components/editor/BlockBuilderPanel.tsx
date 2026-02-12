@@ -245,7 +245,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                         <div className="flex-shrink-0 px-3 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary relative z-20 flex items-center gap-3">
                             <div className="flex-1 flex items-center gap-3 overflow-x-auto pb-2 pt-2 pl-1 no-scrollbar" style={{ isolation: 'isolate' }}>
                                 <SortableContext
-                                    items={currentDay.blocks.sort((a, b) => a.order_index - b.order_index).map(b => `builder-${b.id}`)}
+                                    items={[...currentDay.blocks].sort((a, b) => a.order_index - b.order_index).map(b => `builder-${b.id}`)}
                                     strategy={horizontalListSortingStrategy}
                                 >
                                     {currentDay.blocks.length > 0 ? (

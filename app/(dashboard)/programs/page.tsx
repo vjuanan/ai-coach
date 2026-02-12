@@ -226,15 +226,19 @@ export default function ProgramsPage() {
             }));
         }
         setProgramToAssign(null);
-        // Background refresh to sync with server
-        fetchPrograms();
+
+        // V4 FIX: Delay background refresh to prevent race condition (server returning stale data)
+        // overriding our optimistic update immediately.
+        setTimeout(() => {
+            fetchPrograms();
+        }, 2000);
     }
 
     return (
 
         <>
             <Topbar
-                title="Programas (v3)"
+                title="Programas (v4)"
                 actions={
                     <div className="flex items-center gap-3">
                         {/* View Toggle */}

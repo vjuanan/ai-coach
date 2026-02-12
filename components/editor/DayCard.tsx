@@ -322,15 +322,14 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
             {/* Workout Blocks - Cards within Card style */}
             <div className="flex-1 space-y-3 mb-8 overflow-y-auto p-4 -m-4">
                 <SortableContext
-                    items={day.blocks.sort((a, b) => a.order_index - b.order_index).map(b => b.id)}
+                    items={[...day.blocks].sort((a, b) => a.order_index - b.order_index).map(b => b.id)}
                     strategy={verticalListSortingStrategy}
                 >
-                    {day.blocks
+                    {[...day.blocks]
                         .sort((a, b) => a.order_index - b.order_index)
                         .map(block => (
                             <WorkoutBlockCard key={block.id} block={block} />
-                        ))
-                    }
+                        ))}
                 </SortableContext>
 
                 {/* Empty State - Clickable to open Block Builder */}
