@@ -208,9 +208,22 @@ export default function ProgramsPage() {
         setProgramToAssign(program);
     }
 
-    async function handleAssignmentSuccess() {
-        await fetchPrograms();
+    async function handleAssignmentSuccess(clientId: string | null, clientName: string | null, clientType: 'athlete' | 'gym' | null) {
+        // Optimistic update: immediately update the programs state locally
+        if (programToAssign) {
+            setPrograms(prev => prev.map(p => {
+                if (p.id === programToAssign.id) {
+                    return {
+                        ...p,
+                        client: clientId ? { id: clientId, name: clientName || '', type: clientType || 'athlete' } : null
+                    };
+                }
+                return p;
+            }));
+        }
         setProgramToAssign(null);
+        // Background refresh to sync with server
+        fetchPrograms();
     }
 
     return (
