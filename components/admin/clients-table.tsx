@@ -59,14 +59,14 @@ export function ClientsTable({ clients, coaches }: ClientsTableProps) {
         switch (status) {
             case 'current':
             case 'paid':
-                return 'bg-green-100 text-green-800 hover:bg-green-200';
+                return 'bg-emerald-50 text-emerald-700 border-emerald-100';
             case 'overdue':
             case 'unpaid':
-                return 'bg-red-100 text-red-800 hover:bg-red-200';
+                return 'bg-rose-50 text-rose-700 border-rose-100';
             case 'pending':
-                return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+                return 'bg-amber-50 text-amber-700 border-amber-100';
             default:
-                return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+                return 'bg-slate-50 text-slate-700 border-slate-100';
         }
     };
 
@@ -176,19 +176,20 @@ export function ClientsTable({ clients, coaches }: ClientsTableProps) {
     }
 
     return (
-        <Card className="w-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-cv-border-subtle bg-cv-bg-tertiary/20">
-                <div className="flex bg-cv-bg-secondary p-1 rounded-lg border border-cv-border-subtle">
+        <div className="w-full space-y-4">
+            <div className="flex items-center justify-between">
+                {/* Segmented Control Switch */}
+                <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200/50 w-fit">
                     <button
                         onClick={() => { setFilterType('athlete'); setSelectedClients(new Set()); }}
                         className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${filterType === 'athlete'
-                            ? 'bg-cv-bg-primary text-cv-text-primary shadow-sm'
-                            : 'text-cv-text-secondary hover:text-cv-text-primary'
+                            ? 'bg-white text-slate-900 shadow-sm ring-1 ring-black/5'
+                            : 'text-slate-500 hover:text-slate-700'
                             }`}
                     >
                         Atletas
                         {filterType === 'athlete' && (
-                            <span className="bg-cv-accent/10 text-cv-accent px-1.5 rounded-md text-xs">
+                            <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded textxs font-semibold ml-1">
                                 {filteredClients.length}
                             </span>
                         )}
@@ -196,134 +197,135 @@ export function ClientsTable({ clients, coaches }: ClientsTableProps) {
                     <button
                         onClick={() => { setFilterType('gym'); setSelectedClients(new Set()); }}
                         className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${filterType === 'gym'
-                            ? 'bg-cv-bg-primary text-cv-text-primary shadow-sm'
-                            : 'text-cv-text-secondary hover:text-cv-text-primary'
+                            ? 'bg-white text-slate-900 shadow-sm ring-1 ring-black/5'
+                            : 'text-slate-500 hover:text-slate-700'
                             }`}
                     >
                         Gimnasios
                         {filterType === 'gym' && (
-                            <span className="bg-cv-accent/10 text-cv-accent px-1.5 rounded-md text-xs">
+                            <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-xs font-semibold ml-1">
                                 {filteredClients.length}
                             </span>
                         )}
                     </button>
                 </div>
 
-                <div className="flex items-center gap-2">
-                    {selectedClients.size > 0 && (
-                        <button
-                            onClick={handleBulkDelete}
-                            disabled={isBulkDeleting}
-                            className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors animate-in fade-in"
-                        >
-                            {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
-                            Eliminar ({selectedClients.size})
-                        </button>
-                    )}
-                </div>
-            </CardHeader>
+                {selectedClients.size > 0 && (
+                    <button
+                        onClick={handleBulkDelete}
+                        disabled={isBulkDeleting}
+                        className="bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors animate-in fade-in"
+                    >
+                        {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                        Eliminar ({selectedClients.size})
+                    </button>
+                )}
+            </div>
 
             {message && (
-                <div className={`mx-6 mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${message.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
+                <div className={`p-3 rounded-lg flex items-center gap-2 text-sm border ${message.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                    : 'bg-rose-50 text-rose-700 border-rose-100'
                     }`}>
                     {message.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
                     {message.text}
                 </div>
             )}
 
-            <CardContent>
-                <div className="rounded-md border">
-                    <Table>
-                        <TableHeader>
+            <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+                <Table>
+                    <TableHeader className="bg-slate-50 border-b border-slate-100">
+                        <TableRow className="hover:bg-transparent border-none">
+                            <TableHead className="w-12 text-center py-4">
+                                <input
+                                    type="checkbox"
+                                    className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                                    checked={filteredClients.length > 0 && selectedClients.size === filteredClients.length}
+                                    onChange={toggleSelectAll}
+                                />
+                            </TableHead>
+                            <TableHead className="font-semibold text-slate-500 uppercase text-xs tracking-wider py-4">Nombre</TableHead>
+                            <TableHead className="font-semibold text-slate-500 uppercase text-xs tracking-wider py-4">Tipo</TableHead>
+                            <TableHead className="font-semibold text-slate-500 uppercase text-xs tracking-wider py-4">Coach Asignado</TableHead>
+                            <TableHead className="font-semibold text-slate-500 uppercase text-xs tracking-wider py-4">Inicio Servicio</TableHead>
+                            <TableHead className="font-semibold text-slate-500 uppercase text-xs tracking-wider py-4">Vencimiento</TableHead>
+                            <TableHead className="font-semibold text-slate-500 uppercase text-xs tracking-wider py-4">Estado Pago</TableHead>
+                            <TableHead className="text-right font-semibold text-slate-500 uppercase text-xs tracking-wider py-4 pr-6">Acciones</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {filteredClients.length === 0 ? (
                             <TableRow>
-                                <TableHead className="w-12 text-center">
-                                    <input
-                                        type="checkbox"
-                                        className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
-                                        checked={filteredClients.length > 0 && selectedClients.size === filteredClients.length}
-                                        onChange={toggleSelectAll}
-                                    />
-                                </TableHead>
-                                <TableHead>Nombre</TableHead>
-                                <TableHead>Tipo</TableHead>
-                                <TableHead>Coach Asignado</TableHead>
-                                <TableHead>Inicio Servicio</TableHead>
-                                <TableHead>Vencimiento</TableHead>
-                                <TableHead>Estado Pago</TableHead>
-                                <TableHead className="text-right">Acciones</TableHead>
+                                <TableCell colSpan={8} className="text-center py-12 text-slate-500">
+                                    No se encontraron {filterType === 'athlete' ? 'atletas' : 'gimnasios'}.
+                                </TableCell>
                             </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredClients.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
-                                        No se encontraron {filterType === 'athlete' ? 'atletas' : 'gimnasios'}.
+                        ) : (
+                            filteredClients.map((client) => (
+                                <TableRow key={client.id} className={`group transition-colors border-b border-slate-100 last:border-0 hover:bg-slate-50/50 ${selectedClients.has(client.id) ? 'bg-slate-50' : ''}`}>
+                                    <TableCell className="p-4 text-center">
+                                        <input
+                                            type="checkbox"
+                                            className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                                            checked={selectedClients.has(client.id)}
+                                            onChange={() => toggleSelectClient(client.id)}
+                                        />
+                                    </TableCell>
+                                    <TableCell className="font-medium text-slate-900">{client.name}</TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className={`font-normal ${client.type === 'athlete'
+                                            ? 'border-blue-100 bg-blue-50 text-blue-700'
+                                            : 'border-purple-100 bg-purple-50 text-purple-700'}`}>
+                                            {client.type === 'athlete' ? 'Atleta' : 'Box'}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <select
+                                                /* NOTE: This select styling is kept simple for now, but uses softer colors */
+                                                value={client.coach_id}
+                                                onChange={(e) => handleCoachChange(client.id, e.target.value)}
+                                                disabled={updatingId === client.id}
+                                                className="w-full px-2 py-1.5 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 disabled:opacity-50 transition-all cursor-pointer hover:border-slate-300"
+                                            >
+                                                {coaches.map((coach) => (
+                                                    <option key={coach.id} value={coach.id}>
+                                                        {coach.business_name || coach.full_name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {updatingId === client.id && (
+                                                <Loader2 className="h-4 w-4 animate-spin text-slate-500" />
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-slate-600">{formatDate(client.service_start_date)}</TableCell>
+                                    <TableCell className="text-slate-600">{formatDate(client.service_end_date)}</TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className={`font-normal border ${getStatusColor(client.payment_status)}`}>
+                                            {getStatusLabel(client.payment_status)}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right pr-6">
+                                        <button
+                                            onClick={() => handleDeleteClient(client.id)}
+                                            disabled={updatingId === client.id}
+                                            className="p-2 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                            title="Eliminar Cliente"
+                                        >
+                                            {updatingId === client.id ? (
+                                                <Loader2 size={16} className="animate-spin" />
+                                            ) : (
+                                                <Trash2 size={16} />
+                                            )}
+                                        </button>
                                     </TableCell>
                                 </TableRow>
-                            ) : (
-                                filteredClients.map((client) => (
-                                    <TableRow key={client.id} className={selectedClients.has(client.id) ? 'bg-cv-accent/5' : ''}>
-                                        <TableCell className="p-4 text-center">
-                                            <input
-                                                type="checkbox"
-                                                className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
-                                                checked={selectedClients.has(client.id)}
-                                                onChange={() => toggleSelectClient(client.id)}
-                                            />
-                                        </TableCell>
-                                        <TableCell className="font-medium">{client.name}</TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline" className={client.type === 'athlete' ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-purple-200 bg-purple-50 text-purple-700'}>
-                                                {client.type === 'athlete' ? 'Atleta' : 'Box'}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                <select
-                                                    value={client.coach_id}
-                                                    onChange={(e) => handleCoachChange(client.id, e.target.value)}
-                                                    disabled={updatingId === client.id}
-                                                    className="w-full px-2 py-1 text-sm rounded-md border border-cv-border bg-cv-bg-secondary text-cv-text-primary focus:outline-none focus:ring-1 focus:ring-cv-accent disabled:opacity-50"
-                                                >
-                                                    {coaches.map((coach) => (
-                                                        <option key={coach.id} value={coach.id}>
-                                                            {coach.business_name || coach.full_name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                                {updatingId === client.id && (
-                                                    <Loader2 className="h-4 w-4 animate-spin text-cv-accent" />
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>{formatDate(client.service_start_date)}</TableCell>
-                                        <TableCell>{formatDate(client.service_end_date)}</TableCell>
-                                        <TableCell>
-                                            <Badge className={getStatusColor(client.payment_status)}>
-                                                {getStatusLabel(client.payment_status)}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <button
-                                                onClick={() => handleDeleteClient(client.id)}
-                                                disabled={updatingId === client.id}
-                                                className="p-2 hover:bg-red-500/10 rounded-lg text-cv-text-tertiary hover:text-red-500 transition-colors"
-                                                title="Eliminar Cliente"
-                                            >
-                                                {updatingId === client.id ? (
-                                                    <Loader2 size={16} className="animate-spin" />
-                                                ) : (
-                                                    <Trash2 size={16} />
-                                                )}
-                                            </button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-            </CardContent>
-        </Card>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+        </div>
     );
 }
