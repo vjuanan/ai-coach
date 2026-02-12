@@ -1553,10 +1553,11 @@ export async function getFullProgramData(programId: string) {
     }
 
     // 2. Fetch Deep Hierarchy (Admin Client)
-    // Since we verified the user can see the program, we now fetch the contents with full privileges
-    // to ensure no blocks are filtered out by complex/broken RLS policies on child tables.
+    // Since we verified the user can see the program via standard RLS check above, we now fetch the contents with full privileges
+    // to ensure no blocks or client details are filtered out by complex/broken RLS policies.
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
         console.error('CRITICAL: Missing SUPABASE_SERVICE_ROLE_KEY');
+        // Fallback to standard client if key missing, though likely will fail join if RLS is issue
         return null;
     }
 
@@ -1568,7 +1569,7 @@ export async function getFullProgramData(programId: string) {
     // Re-fetch program with admin client to get full client join (bypasses RLS on clients table)
     const { data: program, error: adminProgError } = await adminSupabase
         .from('programs')
-        .select('*, client:clients(*), coach:coaches(full_name)')
+        .select(`*, client:clients(*), coach:coaches(full_name)`)
         .eq('id', programId)
         .single();
 

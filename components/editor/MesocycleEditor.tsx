@@ -92,17 +92,12 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
     });
 
     useEffect(() => {
-        console.log('MesocycleEditor: programClient updated', programClient);
         setAssignmentData({
             id: programClient?.id || null,
             name: programClient?.name || null,
             type: programClient?.type as 'athlete' | 'gym' || null
         });
     }, [programClient]);
-
-    useEffect(() => {
-        console.log('MesocycleEditor: Mode Changed', { blockBuilderMode, dayId: blockBuilderDayId });
-    }, [blockBuilderMode, blockBuilderDayId]);
 
     // Dnd Sensors
     const sensors = useSensors(
@@ -116,7 +111,6 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
     // ... (rest of Dnd handlers remain the same) 
     const handleDragStart = (event: DragStartEvent) => {
-        console.error('DEBUG: DragStart', event.active.id);
         const blockId = event.active.id as string;
         setDraggedBlock(blockId);
     };
@@ -146,7 +140,6 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         const activeId = normalizeId(active.id as string);
         const overId = normalizeId(over.id as string);
 
-        console.log('Drag End:', { activeId, overId, rawActive: active.id, rawOver: over.id });
 
         // Helper to find a block across all mesocycles
         const findBlock = (id: string) => {
@@ -162,15 +155,6 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         const source = findBlock(activeId);
         const target = findBlock(overId); // Check if we dropped ON another block
 
-        console.error('DEBUG: DragEnd Analysis', {
-            activeId,
-            overId,
-            sourceFound: !!source,
-            targetFound: !!target,
-            sourceDayId: source?.day.id,
-            targetDayId: target?.day.id,
-            sameDay: source && target && source.day.id === target.day.id
-        });
 
         if (source) {
             // CASE 1: Reordering within the same day (Dropped on another block)
@@ -183,11 +167,9 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                 const oldIndex = currentOrderIds.indexOf(activeId);
                 const newIndex = currentOrderIds.indexOf(overId);
 
-                console.error('DEBUG: Reorder Attempt', { dayId, oldIndex, newIndex, currentOrderIds });
 
                 if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
                     const newOrderIds = arrayMove(currentOrderIds, oldIndex, newIndex);
-                    console.error('DEBUG: New Order Generated', newOrderIds);
                     useEditorStore.getState().reorderBlocks(dayId, newOrderIds);
                 }
                 setDraggedBlock(null);
