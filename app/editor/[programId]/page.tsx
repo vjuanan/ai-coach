@@ -44,11 +44,14 @@ export default function EditorPage() {
 
                 const coachName = (programData.program.coach as any)?.full_name || 'Coach';
 
+                const rawClient = programData.program.client;
+                const normalizedClient = Array.isArray(rawClient) ? rawClient[0] : rawClient;
+
                 initializeEditor(
                     programData.program.id,
                     programData.program.name,
                     coachName,
-                    programData.program.client,
+                    normalizedClient,
                     programData.program.attributes,
                     stimulusFeatures || []
                 );

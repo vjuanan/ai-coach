@@ -193,26 +193,26 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     // Category grouping for better display
     // NOTE: 'strength' (Classic) is excluded because it's its own block type, not a methodology
     // Category grouping with STRICT filtering based on block type
+    // Category grouping with STRICT filtering based on block type
     const categoryOrder = ['metcon', 'hiit', 'strength', 'conditioning', 'finisher'];
 
     // Define allowed categories for each block type
     const allowedCategories: Record<string, string[]> = {
         'finisher': ['finisher'],
-        'metcon_structured': ['metcon', 'hiit'], // Metcon can have HIIT too? Usually yes.
+        'metcon_structured': ['metcon', 'hiit'],
         'conditioning': ['conditioning'],
-        'strength_linear': ['strength'], // Classic
-        // Warmup currently allows everything, but user wants it to be a section. 
-        // For now, if type is 'warmup', maybe allow all or specific? User said "Calentamiento puede ser cualquier tipo".
-        // But if we are strict:
+        'strength_linear': ['strength'],
         'warmup': ['strength', 'metcon', 'conditioning', 'hiit'],
-        'skill': ['strength'], // Skill usually uses standard sets/reps? Or maybe free text. 
-        'accessory': ['strength'], // Accessory is usually strength-like
+        'skill': ['strength'],
+        'accessory': ['strength'],
     };
 
     const groupedMethodologies = categoryOrder.reduce((acc, cat) => {
-        // Only include this category if it is allowed for the current block type
-        // console.log('Filtering:', { blockType: block?.type, category: cat, allowed: allowedCategories[block?.type || ''] });
-        if (!block?.type || (allowedCategories[block.type] && allowedCategories[block.type].includes(cat))) {
+        const blockType = block?.type || 'undefined';
+        const allowed = allowedCategories[blockType];
+        const isAllowed = !block?.type || (allowed && allowed.includes(cat));
+
+        if (isAllowed) {
             const methods = trainingMethodologies.filter(m => m.category === cat);
             if (methods.length > 0) {
                 acc[cat] = methods;
@@ -243,17 +243,6 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     let currentDay = null;
     let currentDayIndex = -1;
     let totalDays = 0;
-
-    // DEBUG UI
-
-    const debugInfo = (
-        <div className="fixed top-20 right-4 bg-black/80 text-white p-2 rounded z-[9999] text-xs font-mono">
-            <p>Block ID: {blockId}</p>
-            <p>Type: &quot;{block?.type}&quot;</p>
-            <p>Allowed: {JSON.stringify(allowedCategories[block?.type || ''])}</p>
-        </div>
-    );
-
 
     for (const meso of mesocycles) {
         const dayIndex = meso.days.findIndex(d => d.id === dayId);
@@ -346,12 +335,6 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
 
     return (
         <div className="flex flex-col h-full bg-white dark:bg-cv-bg-secondary relative">
-            <div className="fixed top-20 right-4 bg-red-600 text-white p-4 rounded z-[9999] text-xs font-mono shadow-2xl border-4 border-white">
-                <p>DEBUGGER</p>
-                <p>Block ID: {blockId}</p>
-                <p>Block Type: &quot;{block?.type}&quot;</p>
-                <p>Allowed: {JSON.stringify(allowedCategories[block?.type || ''])}</p>
-            </div>
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-4 space-y-5">
 

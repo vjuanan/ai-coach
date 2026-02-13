@@ -59,15 +59,7 @@ const blockTypeOptions: {
     glowColor: string;
     icon: React.ElementType;
 }[] = [
-        {
-            type: 'warmup',
-            label: 'Calentamiento',
-            description: 'Preparación y movilidad',
-            color: 'text-emerald-600 dark:text-emerald-400',
-            bgColor: 'bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50',
-            glowColor: 'rgba(34, 197, 94, 0.7)',
-            icon: Flame
-        },
+
         {
             type: 'strength_linear',
             label: 'Classic',
@@ -158,7 +150,7 @@ export const isBlockEmpty = (block: { type: string; format: string | null; confi
 };
 
 export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanelProps) {
-    const { addBlock, selectedBlockId, selectBlock, mesocycles, deleteBlock, toggleBlockProgression } = useEditorStore();
+    const { addBlock, selectedBlockId, selectBlock, mesocycles, deleteBlock, toggleBlockProgression, blockBuilderSection } = useEditorStore();
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
     const [showQuickAdd, setShowQuickAdd] = useState(false);
@@ -199,7 +191,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
             };
         }
 
-        addBlock(dayId, type, format, undefined, false, initialConfig as any);
+        addBlock(dayId, type, format, undefined, false, initialConfig as any, blockBuilderSection || 'main');
     };
 
     return (

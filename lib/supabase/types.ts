@@ -182,6 +182,7 @@ export interface WorkoutBlock {
     format: WorkoutFormat | null;
     name: string | null;
     config: WorkoutConfig;
+    section?: 'warmup' | 'main' | 'cooldown';
     created_at: string;
     updated_at: string;
 }

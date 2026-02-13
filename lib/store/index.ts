@@ -32,6 +32,7 @@ export interface DraftWorkoutBlock {
     config: WorkoutConfig;
     isDirty?: boolean;
     progression_id?: string | null; // Added for progression system
+    section?: 'warmup' | 'main' | 'cooldown';
 }
 
 export interface DraftDay {
@@ -89,6 +90,7 @@ interface EditorState {
     // Block Builder Mode (for split-screen editing)
     blockBuilderMode: boolean;
     blockBuilderDayId: string | null;
+    blockBuilderSection: 'warmup' | 'main' | null;
 
     // Actions
     initializeEditor: (programId: string, name: string, coachName: string, client: Client | null, attributes?: Record<string, unknown> | null, stimulusFeatures?: any[]) => void;
@@ -103,7 +105,7 @@ interface EditorState {
     selectBlock: (blockId: string | null) => void;
 
     // Block operations
-    addBlock: (dayId: string, type: BlockType, format?: WorkoutFormat, name?: string, isProgression?: boolean, initialConfig?: WorkoutConfig) => void;
+    addBlock: (dayId: string, type: BlockType, format?: WorkoutFormat, name?: string, isProgression?: boolean, initialConfig?: WorkoutConfig, section?: 'warmup' | 'main' | 'cooldown') => void;
     updateBlock: (blockId: string, updates: Partial<DraftWorkoutBlock>) => void;
     deleteBlock: (blockId: string) => void;
     deleteProgression: (progressionId: string) => void; // New action
@@ -120,7 +122,7 @@ interface EditorState {
     updateMesocycle: (weekNumber: number, updates: Partial<DraftMesocycle>) => void;
     setDraggedBlock: (blockId: string | null) => void;
     setDropTarget: (dayId: string | null) => void;
-    enterBlockBuilder: (dayId: string) => void;
+    enterBlockBuilder: (dayId: string, section?: 'warmup' | 'main') => void;
     exitBlockBuilder: () => void;
     selectNextBlock: () => void;
     selectPrevBlock: () => void;
@@ -156,6 +158,7 @@ export const useEditorStore = create<EditorState>()(
             dropTargetDayId: null,
             blockBuilderMode: false,
             blockBuilderDayId: null,
+            blockBuilderSection: null,
 
             // Actions
             initializeEditor: (programId, name, coachName, client, attributes, stimulusFeatures) => {
@@ -190,7 +193,7 @@ export const useEditorStore = create<EditorState>()(
             selectWeek: (week) => set({ selectedWeek: week }),
             selectDay: (dayId) => set({ selectedDayId: dayId }),
             selectBlock: (blockId) => set({ selectedBlockId: blockId }),
-            addBlock: (dayId, type, format, name, isProgression = false, initialConfig) => {
+            addBlock: (dayId, type, format, name, isProgression = false, initialConfig, section = 'main') => {
                 const { mesocycles } = get();
                 const tempId = generateTempId();
 
@@ -229,7 +232,8 @@ export const useEditorStore = create<EditorState>()(
                     name: name || null,
                     config,
                     isDirty: true,
-                    progression_id: progressionId
+                    progression_id: progressionId,
+                    section
                 };
 
                 let updatedMesocycles = [...mesocycles];
@@ -242,6 +246,11 @@ export const useEditorStore = create<EditorState>()(
                             if (day.day_number === targetDayNumber) {
                                 const weekSpecificTempId = generateTempId();
                                 const newOrderIndex = day.blocks.length;
+                                // Wait, should we filter by section to determine order index?
+                                // If we have mixed sections, order_index should be global within the day OR per section?
+                                // Supabase schema says order_index is INTEGER. Usually per day.
+                                // If we render them split, we might need to be careful about order.
+                                // But for now, just append to end of day.
                                 return {
                                     ...day,
                                     blocks: [...day.blocks, {
@@ -384,7 +393,8 @@ export const useEditorStore = create<EditorState>()(
                                 day_id: finalTargetDayId,
                                 order_index: day.blocks.length,
                                 isDirty: true,
-                                progression_id: null // Reset progression on copy
+                                progression_id: null, // Reset progression on copy
+                                section: sourceBlock!.section // Copy the section
                             };
                             return { ...day, blocks: [...day.blocks, newBlock], isDirty: true };
                         }
@@ -619,11 +629,12 @@ export const useEditorStore = create<EditorState>()(
             setDropTarget: (dayId) => set({ dropTargetDayId: dayId }),
 
             // Block Builder Mode
-            enterBlockBuilder: (dayId) => set({
+            enterBlockBuilder: (dayId, section = 'main') => set({
                 blockBuilderMode: true,
                 blockBuilderDayId: dayId,
                 selectedDayId: dayId,
-                selectedBlockId: null
+                selectedBlockId: null,
+                blockBuilderSection: section
             }),
             exitBlockBuilder: () => {
                 const { blockBuilderDayId } = get();
@@ -631,7 +642,8 @@ export const useEditorStore = create<EditorState>()(
                 // 1. Immediate UI update - Close the builder first for speed
                 set({
                     blockBuilderMode: false,
-                    blockBuilderDayId: null
+                    blockBuilderDayId: null,
+                    blockBuilderSection: null
                 });
 
                 // If no day was being edited, we are done

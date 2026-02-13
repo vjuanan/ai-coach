@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useEditorStore } from '@/lib/store';
 import { WorkoutBlockCard } from './WorkoutBlockCard';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
-import { Plus, Moon, MoreHorizontal, Sun, Target, Trash2, Copy } from 'lucide-react';
+import { Plus, Moon, MoreHorizontal, Sun, Target, Trash2, Copy, Flame, Dumbbell } from 'lucide-react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 import * as Popover from '@radix-ui/react-popover';
 import { useDroppable } from '@dnd-kit/core';
@@ -21,6 +21,7 @@ interface DraftWorkoutBlock {
     config: Record<string, unknown>;
     isDirty?: boolean;
     progression_id?: string | null;
+    section?: 'warmup' | 'main' | 'cooldown';
 }
 
 interface DraftDay {
@@ -179,6 +180,17 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
     }
 
     // TRAINING DAY CARD - Full redesign
+    const warmupBlocks = day.blocks.filter(b => b.section === 'warmup' || b.type === 'warmup');
+    const mainBlocks = day.blocks.filter(b => (b.section !== 'warmup' && b.type !== 'warmup') || b.section === 'main');
+
+    // Create a merged list of IDs for SortableContext to manage all potential drag targets
+    // Warning: Visual split + Single SortableContext works for reordering, 
+    // but dragging between sections won't update the section property automatically without store changes.
+    // For now, this provides the structure.
+    const allBlockIds = [...warmupBlocks, ...mainBlocks]
+        .sort((a, b) => a.order_index - b.order_index)
+        .map(b => b.id);
+
     return (
         <div
             ref={setNodeRef}
@@ -341,7 +353,6 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                 onClose={() => setShowCopyConfirm(false)}
                 onConfirm={async () => {
                     setIsCopying(true);
-                    // Simulate a small delay for better UX or await potential async in future
                     await new Promise(resolve => setTimeout(resolve, 500));
                     copyDayToFutureWeeks(day.id);
                     setIsCopying(false);
@@ -355,48 +366,105 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                 isLoading={isCopying}
             />
 
-            {/* Workout Blocks - Cards within Card style */}
-            <div className="flex-1 space-y-3 mb-8 overflow-y-auto p-4 -m-4">
-                <SortableContext
-                    items={[...day.blocks].sort((a, b) => a.order_index - b.order_index).map(b => b.id)}
-                    strategy={verticalListSortingStrategy}
-                >
-                    {[...day.blocks]
-                        .sort((a, b) => a.order_index - b.order_index)
-                        .map(block => (
-                            <WorkoutBlockCard key={block.id} block={block} />
-                        ))}
-                </SortableContext>
+            {/* Split Content with Single SortableContext */}
+            <div className="flex-1 overflow-y-auto -m-4 p-4 space-y-6">
+                <SortableContext items={allBlockIds} strategy={verticalListSortingStrategy}>
 
-                {/* Empty State - Clickable to open Block Builder */}
-                {day.blocks.length === 0 && (
-                    <div
-                        className={`
-                            h-32 border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-cv-text-tertiary cursor-pointer transition-colors
-                            ${isDropTarget && isDragging
-                                ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/20'
-                                : 'bg-slate-50 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-cv-accent/50'
-                            }
-                        `}
-                        onClick={handleOpenBlockBuilder}
-                    >
-                        <Plus size={20} className="mb-2 opacity-40" />
-                        <p className="text-sm">Aún no hay bloques</p>
-                        <p className="text-xs opacity-60 mt-1">Click para añadir</p>
+                    {/* WARM UP SECTION */}
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between px-1">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 opacity-90">
+                                <Flame size={12} />
+                                Calentamiento
+                            </h4>
+                            <div className="h-px bg-emerald-100 dark:bg-emerald-900/30 flex-1 ml-3" />
+                        </div>
+
+                        {warmupBlocks.length > 0 ? (
+                            <div className="space-y-3">
+                                {[...warmupBlocks].sort((a, b) => a.order_index - b.order_index).map(block => (
+                                    <WorkoutBlockCard key={block.id} block={block} />
+                                ))}
+                            </div>
+                        ) : (
+                            <div
+                                className="h-16 border border-dashed border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/30 dark:bg-emerald-900/10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    enterBlockBuilder(day.id, 'warmup');
+                                }}
+                            >
+                                <span className="text-xs text-emerald-600/60 dark:text-emerald-400/60 font-medium flex items-center gap-1">
+                                    <Plus size={12} /> Añadir Calentamiento
+                                </span>
+                            </div>
+                        )}
+
+                        {warmupBlocks.length > 0 && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    enterBlockBuilder(day.id, 'warmup');
+                                }}
+                                className="w-full py-1.5 text-xs text-emerald-600/70 dark:text-emerald-400/70 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors flex items-center justify-center gap-1"
+                            >
+                                <Plus size={12} /> Añadir bloque
+                            </button>
+                        )}
                     </div>
-                )}
-            </div>
 
-            {/* Add Block Button - Opens Block Builder Mode */}
-            <div className="flex-shrink-0 group/add">
-                <button
-                    className="w-full py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-cv-text-secondary group-hover/add:text-cv-accent group-hover/add:border-cv-accent group-hover/add:bg-cv-accent/5 group-hover/add:shadow-[0_0_20px_rgba(var(--color-cv-accent-rgb),0.15)] group-hover/add:scale-[1.01] transition-all duration-300 flex items-center justify-center gap-2 font-medium"
-                    onClick={handleOpenBlockBuilder}
-                >
-                    <Plus size={16} className="group-hover/add:stroke-[2.5] transition-all" />
-                    <span className="text-sm">Añadir Bloque</span>
-                </button>
+                    {/* MAIN WORKOUT SECTION */}
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between px-1">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-cv-text-tertiary flex items-center gap-1.5">
+                                <Dumbbell size={12} />
+                                Entrenamiento
+                            </h4>
+                            <div className="h-px bg-slate-100 dark:bg-slate-700/50 flex-1 ml-3" />
+                        </div>
+
+                        {mainBlocks.length > 0 ? (
+                            <div className="space-y-3">
+                                {[...mainBlocks].sort((a, b) => a.order_index - b.order_index).map(block => (
+                                    <WorkoutBlockCard key={block.id} block={block} />
+                                ))}
+                            </div>
+                        ) : (
+                            <div
+                                className={`
+                                    h-24 border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-cv-text-tertiary cursor-pointer transition-colors
+                                    ${isDropTarget && isDragging
+                                        ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/20'
+                                        : 'bg-slate-50 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-cv-accent/50'
+                                    }
+                                `}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    enterBlockBuilder(day.id, 'main');
+                                }}
+                            >
+                                <Plus size={20} className="mb-2 opacity-40" />
+                                <p className="text-sm">Bloques principales</p>
+                            </div>
+                        )}
+
+                        {mainBlocks.length > 0 && (
+                            <button
+                                className="w-full py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-cv-text-secondary hover:text-cv-accent hover:border-cv-accent hover:bg-cv-accent/5 transition-all duration-300 flex items-center justify-center gap-2 font-medium group/add"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    enterBlockBuilder(day.id, 'main');
+                                }}
+                            >
+                                <Plus size={16} className="group-hover/add:stroke-[2.5] transition-all" />
+                                <span className="text-sm">Añadir Bloque</span>
+                            </button>
+                        )}
+                    </div>
+
+                </SortableContext>
             </div>
         </div>
     );
 }
+
