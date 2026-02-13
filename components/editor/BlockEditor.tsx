@@ -249,7 +249,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     const debugInfo = (
         <div className="fixed top-20 right-4 bg-black/80 text-white p-2 rounded z-[9999] text-xs font-mono">
             <p>Block ID: {blockId}</p>
-            <p>Type: "{block?.type}"</p>
+            <p>Type: &quot;{block?.type}&quot;</p>
             <p>Allowed: {JSON.stringify(allowedCategories[block?.type || ''])}</p>
         </div>
     );
@@ -349,7 +349,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
             <div className="fixed top-20 right-4 bg-red-600 text-white p-4 rounded z-[9999] text-xs font-mono shadow-2xl border-4 border-white">
                 <p>DEBUGGER</p>
                 <p>Block ID: {blockId}</p>
-                <p>Block Type: "{block?.type}"</p>
+                <p>Block Type: &quot;{block?.type}&quot;</p>
                 <p>Allowed: {JSON.stringify(allowedCategories[block?.type || ''])}</p>
             </div>
             {/* Content */}
