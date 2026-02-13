@@ -17,7 +17,8 @@ import {
     TrendingUp,
     Trash2,
     Link,
-    Plus
+    Plus,
+    Target
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { BlockType, WorkoutFormat, WorkoutConfig } from '@/lib/supabase/types';
@@ -112,6 +113,15 @@ const blockTypeOptions: {
             glowColor: 'rgba(100, 116, 139, 0.5)',
             icon: FileText
         },
+        {
+            type: 'finisher',
+            label: 'Finisher',
+            description: 'Dropsets, Rest-Pause, etc',
+            color: 'text-rose-600 dark:text-rose-400',
+            bgColor: 'bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50',
+            glowColor: 'rgba(225, 29, 72, 0.7)',
+            icon: Target
+        },
     ];
 
 // Check if a block is empty (no meaningful content)
@@ -129,7 +139,8 @@ export const isBlockEmpty = (block: { type: string; format: string | null; confi
             return !content || (typeof content === 'string' && content.trim() === '');
         case 'warmup':
         case 'accessory':
-        case 'skill': {
+        case 'skill':
+        case 'finisher': {
             // Check 'movements' (new standard) and 'exercises' (legacy)
             const movements = config.movements as unknown[] || [];
             const exercises = config.exercises as unknown[] || [];

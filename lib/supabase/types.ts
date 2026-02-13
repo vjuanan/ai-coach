@@ -2,7 +2,7 @@
 // These match the Supabase schema
 
 export type ClientType = 'athlete' | 'gym';
-export type BlockType = 'strength_linear' | 'metcon_structured' | 'warmup' | 'accessory' | 'skill' | 'free_text';
+export type BlockType = 'strength_linear' | 'metcon_structured' | 'warmup' | 'accessory' | 'skill' | 'free_text' | 'finisher';
 export type WorkoutFormat = 'AMRAP' | 'EMOM' | 'RFT' | 'Chipper' | 'Ladder' | 'Tabata' | 'Not For Time' | 'For Time' | 'STANDARD';
 export type ExerciseCategory = 'Weightlifting' | 'Gymnastics' | 'Monostructural' | 'Functional Bodybuilding';
 
@@ -227,7 +227,7 @@ export interface TrainingMethodology {
     code: string;
     name: string;
     description: string;
-    category: 'metcon' | 'strength' | 'hiit' | 'conditioning';
+    category: 'metcon' | 'strength' | 'hiit' | 'conditioning' | 'finisher';
     form_config: {
         fields: TrainingMethodologyFormField[];
     };

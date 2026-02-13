@@ -34,3 +34,14 @@
 - [x] Confirm "SERIES" input exists ✅
 - [x] Confirm 4-column grid layout ✅
 - [x] Confirm "Notas" below grid ✅
+
+# Fix Athlete Registration Sync - Task Checklist
+
+## Investigation
+- [x] Analyze user registration flow and Supabase triggers
+- [x] Identify why new athletes are not synced to athletes table (Missing client record creation)
+
+## Implementation
+- [x] Fix the synchronization logic (Migration to allow NULL coach_id and trigger update)
+- [x] Verify fix with new user registration ✅
+

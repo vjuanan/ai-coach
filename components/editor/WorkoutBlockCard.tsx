@@ -33,6 +33,7 @@ const blockTypeStyles: Record<string, { color: string; label: string; hoverClass
     accessory: { color: 'modality-accessory', label: 'Accesorio', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
     skill: { color: 'modality-skill', label: 'Habilidad', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
     free_text: { color: 'border-l-4 border-l-gray-500', label: 'Notas', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
+    finisher: { color: 'border-l-4 border-l-rose-500', label: 'Finisher', hoverClass: 'hover:border-rose-300 dark:hover:border-rose-500 hover:shadow-md hover:-translate-y-0.5' },
 };
 
 const formatLabels: Record<string, string> = {
@@ -94,6 +95,7 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
             case 'warmup':
             case 'accessory':
             case 'skill':
+            case 'finisher':
                 const exercises = config.exercises as unknown[] || [];
                 const notes = config.notes as string;
                 return exercises.length === 0 && (!notes || notes.trim() === '');
@@ -204,22 +206,27 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                 }
 
                 return (
-                    <div className="min-h-[1.25rem]">
-                        <div className="flex items-center gap-1.5 flex-wrap">
+                    <div className="flex flex-col gap-2 min-h-[1.25rem]">
+                        <div className="flex items-center gap-2 flex-wrap">
                             {format && (
-                                <span className="cv-badge-accent">{formatLabels[format] || format}</span>
+                                <span className="cv-badge-accent text-[10px] px-1.5 py-0.5 leading-none tracking-wide">{formatLabels[format] || format}</span>
                             )}
                             {metaText && (
-                                <span className="text-2xs text-cv-text-tertiary font-medium">{metaText}</span>
+                                <span className="text-xs text-cv-text-secondary font-semibold">{metaText}</span>
                             )}
                         </div>
                         {exerciseList.length > 0 && (
-                            <div className="mt-1 space-y-0.5">
+                            <div className="flex flex-col gap-1 pl-0.5">
                                 {exerciseList.map((ex, i) => (
-                                    <div key={i} className="text-xs text-cv-text-tertiary truncate flex items-baseline gap-1">
-                                        <span className="opacity-50">•</span>
-                                        {ex.reps && <span className="font-medium text-cv-text-secondary">{ex.reps}</span>}
-                                        <span>{ex.name}</span>
+                                    <div key={i} className="text-xs grid grid-cols-[min-content_1fr] items-baseline gap-2">
+                                        {ex.reps && (
+                                            <span className="font-bold text-cv-text-primary whitespace-nowrap text-right min-w-[2ch]">
+                                                {ex.reps}
+                                            </span>
+                                        )}
+                                        <span className={`text-cv-text-secondary truncate ${!ex.reps && 'col-span-2'}`}>
+                                            {ex.name}
+                                        </span>
                                     </div>
                                 ))}
                             </div>
@@ -231,6 +238,7 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
             case 'warmup':
             case 'accessory':
             case 'skill':
+            case 'finisher':
                 // Check both 'exercises' (old?) and 'movements' (new generic form)
                 // Cast to any[] to handle both string[] and object[]
                 const items = (config.movements as any[]) || (config.exercises as string[]) || [];

@@ -38,6 +38,7 @@ import {
     ChevronDown,
     ChevronUp,
     AlertCircle,
+    Target
 
 } from 'lucide-react';
 import { TableInputWithPresets } from './TableInputWithPresets';
@@ -67,7 +68,7 @@ interface BlockEditorProps {
 const iconMap: Record<string, LucideIcon> = {
     Clock, Timer, Flame, Zap, Dumbbell, Activity, TrendingUp, TrendingDown,
     Heart, Layers, RefreshCw, Skull, ListOrdered, Puzzle, Repeat,
-    Repeat2: Repeat, HelpCircle
+    Repeat2: Repeat, HelpCircle, Target
 };
 
 export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps) {
@@ -191,7 +192,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
 
     // Category grouping for better display
     // NOTE: 'strength' (Classic) is excluded because it's its own block type, not a methodology
-    const categoryOrder = ['metcon', 'hiit', 'conditioning'];
+    const categoryOrder = ['metcon', 'hiit', 'strength', 'conditioning', 'finisher'];
     const groupedMethodologies = categoryOrder.reduce((acc, cat) => {
         acc[cat] = trainingMethodologies.filter(m => m.category === cat);
         return acc;
@@ -201,14 +202,16 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         metcon: 'MetCon',
         hiit: 'HIIT',
         strength: 'Classic',
-        conditioning: 'Acondicionamiento'
+        conditioning: 'Acondicionamiento',
+        finisher: 'Finishers'
     };
 
     const categoryIcons: Record<string, LucideIcon> = {
         metcon: Zap,
         hiit: Timer,
         strength: Dumbbell,
-        conditioning: Heart
+        conditioning: Heart,
+        finisher: Target
     };
 
     // Navigation info - find current block position
@@ -242,7 +245,8 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         metcon_structured: 'MetCon',
         accessory: 'Accesorio',
         skill: 'Habilidad',
-        free_text: 'Texto Libre'
+        free_text: 'Texto Libre',
+        finisher: 'Finisher'
     };
 
     // Validation Logic - Simplified: just need a name (or content for free_text)
@@ -266,7 +270,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
 
         // For structured blocks (Metcon, Warmup, etc), require a methodology (format) AND valid movements
         // The block name is optional/hidden for these types.
-        if (['metcon_structured', 'warmup', 'accessory', 'skill'].includes(block.type)) {
+        if (['metcon_structured', 'warmup', 'accessory', 'skill', 'finisher'].includes(block.type)) {
             if (!block.format) return false;
 
             // Validate Movements
@@ -311,7 +315,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
             <div className="flex-1 overflow-y-auto p-4 space-y-5">
 
                 {/* 1. METHODOLOGY SELECTOR (For Structured types) - NOW FIRST */}
-                {(block.type === 'metcon_structured' || block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill') && (
+                {(block.type === 'metcon_structured' || block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill' || block.type === 'finisher') && (
                     <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="flex items-center justify-between mb-2">
                             <label className="block text-sm font-medium text-cv-text-secondary">
@@ -507,8 +511,8 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             />
                         )}
 
-                        {/* Fallback to GenericMovementForm for Warmup/Accessory/Skill with methodology */}
-                        {['warmup', 'accessory', 'skill'].includes(block.type) && !['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper', 'Tabata'].includes(currentMethodology.code) && (
+                        {/* Fallback to GenericMovementForm for Warmup/Accessory/Skill/Finisher with methodology */}
+                        {['warmup', 'accessory', 'skill', 'finisher'].includes(block.type) && !['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper', 'Tabata'].includes(currentMethodology.code) && (
                             <GenericMovementForm
                                 key={blockId}
                                 config={config}
@@ -518,7 +522,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                         )}
 
                         {/* Fallback to Dynamic Form for others (Metcon) */}
-                        {!['warmup', 'accessory', 'skill'].includes(block.type) && !['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper', 'Tabata'].includes(currentMethodology.code) && (
+                        {!['warmup', 'accessory', 'skill', 'finisher'].includes(block.type) && !['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper', 'Tabata'].includes(currentMethodology.code) && (
                             <DynamicMethodologyForm
                                 key={blockId}
                                 methodology={currentMethodology}
@@ -541,7 +545,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             <FreeTextForm key={blockId} config={config} onChange={handleConfigChange} />
                         )}
 
-                        {(block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill') && !currentMethodology && (
+                        {(block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill' || block.type === 'finisher') && !currentMethodology && (
                             <GenericMovementForm key={blockId} config={config} onChange={handleConfigChange} methodology={currentMethodology} />
                         )}
                     </>
@@ -742,7 +746,7 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
         );
     }
 
-    if (field.type === 'number' || (field.label && field.label.includes('%')) || field.key === 'percentage') {
+    if (field.type === 'number') {
         const displayValue = typeof value === 'string'
             ? parseInt(value.replace('%', ''))
             : value;
