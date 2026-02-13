@@ -60,31 +60,204 @@ interface ExportPreviewProps {
     weekDateRanges?: { weekNumber: number; startDate: string; endDate: string; }[];
 }
 
-// -- CONSTANTS & STYLES (Light Theme) --
-const EXPORT_COLORS = {
-    bgPrimary: '#FAFAF8', // Cream/Off-white background
-    textPrimary: '#2D2926', // Almost black
-    textSecondary: '#5C5550', // Dark gray
-    accent: '#9D174D', // Deep Pink/Berry (Pink-700/800 range)
-    accentLight: '#FCE7F3', // Light Pink background
-    bgWarmup: '#FFF9F5',
-    bgFinisher: '#FFF5EE',
-    border: '#E5E7EB',
+// -- THEME DEFINITIONS --
+interface ExportTheme {
+    id: string;
+    label: string;
+    colors: {
+        bgPrimary: string;
+        textPrimary: string;
+        textSecondary: string;
+        accent: string;       // Primary brand color
+        accentLight: string;  // Backgrounds for boxes
+        border: string;
+
+        // Specific Sections
+        headerTagBg: string;
+        weekBannerBg: string;
+        weekBannerText: string;
+
+        dayHeaderBg: string;
+        dayHeaderText: string;
+
+        activationBg: string;
+        activationTitle: string;
+        activationBorder: string;
+        activationText: string;
+
+        finisherBg: string;
+        finisherTitle: string;
+        finisherBorder: string;
+        finisherText: string;
+
+        exerciseNumber: string;
+        progressionBorder: string;
+        progressionBg: string;
+        progressionText: string;
+    };
+}
+
+const THEMES: Record<string, ExportTheme> = {
+    pinky: {
+        id: 'pinky',
+        label: 'Pinky (Original)',
+        colors: {
+            bgPrimary: '#FAFAF8',
+            textPrimary: '#2D2926',
+            textSecondary: '#5C5550',
+            accent: '#9D174D',
+            accentLight: '#FCE7F3',
+            border: '#E5E7EB',
+            headerTagBg: '#831843',
+            weekBannerBg: '#4A044E',
+            weekBannerText: '#FFFFFF',
+            dayHeaderBg: '#9D174D',
+            dayHeaderText: '#FFFFFF',
+            activationBg: '#FDF2F8',
+            activationTitle: '#DB2777',
+            activationBorder: '#FBCFE8',
+            activationText: '#5C5550',
+            finisherBg: '#FFF1F2',
+            finisherTitle: '#BE123C',
+            finisherBorder: '#E11D48',
+            finisherText: '#5C5550',
+            exerciseNumber: '#9D174D',
+            progressionBorder: '#9D174D',
+            progressionBg: '#FFF0F5',
+            progressionText: '#2D2926',
+        }
+    },
+    dark: {
+        id: 'dark',
+        label: 'Dark Mode',
+        colors: {
+            bgPrimary: '#18181B', // Zinc 900
+            textPrimary: '#F4F4F5', // Zinc 100
+            textSecondary: '#A1A1AA', // Zinc 400
+            accent: '#3B82F6', // Blue 500
+            accentLight: '#1E293B', // Slate 800
+            border: '#27272A', // Zinc 800
+            headerTagBg: '#1E40AF', // Blue 800
+            weekBannerBg: '#1E3A8A', // Blue 900
+            weekBannerText: '#EFF6FF',
+            dayHeaderBg: '#2563EB', // Blue 600
+            dayHeaderText: '#FFFFFF',
+            activationBg: '#0F172A', // Slate 900
+            activationTitle: '#60A5FA', // Blue 400
+            activationBorder: '#1E293B', // Slate 800
+            activationText: '#94A3B8', // Slate 400
+            finisherBg: '#271A1A', // Dark Red/Brown
+            finisherTitle: '#F87171', // Red 400
+            finisherBorder: '#7F1D1D', // Red 900
+            finisherText: '#9CA3AF',
+            exerciseNumber: '#3B82F6',
+            progressionBorder: '#3B82F6',
+            progressionBg: '#1E293B',
+            progressionText: '#E2E8F0',
+        }
+    },
+    white: {
+        id: 'white',
+        label: 'Minimalist White',
+        colors: {
+            bgPrimary: '#FFFFFF',
+            textPrimary: '#000000',
+            textSecondary: '#4B5563',
+            accent: '#000000',
+            accentLight: '#F3F4F6',
+            border: '#E5E7EB',
+            headerTagBg: '#000000',
+            weekBannerBg: '#000000',
+            weekBannerText: '#FFFFFF',
+            dayHeaderBg: '#000000',
+            dayHeaderText: '#FFFFFF',
+            activationBg: '#FFFFFF',
+            activationTitle: '#000000',
+            activationBorder: '#D1D5DB', // Gray 300
+            activationText: '#374151',
+            finisherBg: '#FFFFFF',
+            finisherTitle: '#000000',
+            finisherBorder: '#000000',
+            finisherText: '#374151',
+            exerciseNumber: '#000000',
+            progressionBorder: '#000000',
+            progressionBg: '#F9FAFB', // Gray 50
+            progressionText: '#000000',
+        }
+    },
+    crazy: {
+        id: 'crazy',
+        label: 'Crazy (Cyberpunk)',
+        colors: {
+            bgPrimary: '#0F0524', // Deep Purple
+            textPrimary: '#E0E0E0',
+            textSecondary: '#A0A0C0',
+            accent: '#39FF14', // Neon Green
+            accentLight: '#2D1B4E',
+            border: '#39FF14',
+            headerTagBg: '#FF00FF', // Magenta
+            weekBannerBg: '#00F3FF', // Cyan
+            weekBannerText: '#000000',
+            dayHeaderBg: '#FF00FF', // Magenta
+            dayHeaderText: '#FFFFFF',
+            activationBg: '#1A0B2E',
+            activationTitle: '#00F3FF', // Cyan
+            activationBorder: '#00F3FF',
+            activationText: '#D1D1E9',
+            finisherBg: '#2E0B1A',
+            finisherTitle: '#FF00FF',
+            finisherBorder: '#FF00FF',
+            finisherText: '#E9D1D1',
+            exerciseNumber: '#39FF14',
+            progressionBorder: '#39FF14',
+            progressionBg: 'rgba(57, 255, 20, 0.1)',
+            progressionText: '#39FF14',
+        }
+    },
+    hard: {
+        id: 'hard',
+        label: 'Hard (Old School)',
+        colors: {
+            bgPrimary: '#1C1917', // Stone 900
+            textPrimary: '#E7E5E4', // Stone 200
+            textSecondary: '#A8A29E', // Stone 400
+            accent: '#DC2626', // Red 600
+            accentLight: '#292524', // Stone 800
+            border: '#44403C', // Stone 700
+            headerTagBg: '#7F1D1D', // Red 900
+            weekBannerBg: '#7F1D1D',
+            weekBannerText: '#FECACA', // Red 200
+            dayHeaderBg: '#DC2626',
+            dayHeaderText: '#FFFFFF',
+            activationBg: '#292524',
+            activationTitle: '#A8A29E',
+            activationBorder: '#57534E',
+            activationText: '#D6D3D1',
+            finisherBg: '#000000',
+            finisherTitle: '#DC2626',
+            finisherBorder: '#DC2626',
+            finisherText: '#A8A29E',
+            exerciseNumber: '#DC2626',
+            progressionBorder: '#DC2626',
+            progressionBg: '#292524',
+            progressionText: '#E7E5E4',
+        }
+    }
 };
 
-const BLOCK_STYLE: Record<string, { color: string; emoji: string; label: string }> = {
-    strength_linear: { color: '#ef4444', emoji: '🔴', label: 'Fuerza' },
-    metcon_structured: { color: '#f97316', emoji: '🔥', label: 'MetCon' },
-    warmup: { color: '#22c55e', emoji: '✨', label: 'Activación' },
-    accessory: { color: '#3b82f6', emoji: '🔹', label: 'Accesorio' },
-    skill: { color: '#3b82f6', emoji: '🔹', label: 'Skill' },
-    finisher: { color: '#ef4444', emoji: '🔥', label: 'Finisher' },
-    free_text: { color: '#6b7280', emoji: '📝', label: 'Notas' },
-    mobility: { color: '#8b5cf6', emoji: '🧘', label: 'Movilidad' },
+const BLOCK_STYLE: Record<string, { emoji: string; label: string }> = {
+    strength_linear: { emoji: '🔴', label: 'Fuerza' },
+    metcon_structured: { emoji: '🔥', label: 'MetCon' },
+    warmup: { emoji: '✨', label: 'Activación' },
+    accessory: { emoji: '🔹', label: 'Accesorio' },
+    skill: { emoji: '🔹', label: 'Skill' },
+    finisher: { emoji: '🔥', label: 'Finisher' },
+    free_text: { emoji: '📝', label: 'Notas' },
+    mobility: { emoji: '🧘', label: 'Movilidad' },
 };
 
 function getBlockStyle(type: string) {
-    return BLOCK_STYLE[type] || { color: '#6b7280', emoji: '▪️', label: 'Bloque' };
+    return BLOCK_STYLE[type] || { emoji: '▪️', label: 'Bloque' };
 }
 
 // -- MAIN COMPONENT --
@@ -102,6 +275,10 @@ export function ExportPreview({
     const exportRef = useRef<HTMLDivElement>(null);
     const [isExporting, setIsExporting] = useState(false);
     const [exportFormat, setExportFormat] = useState<'png' | 'pdf'>('png');
+    const [currentThemeId, setCurrentThemeId] = useState<string>('pinky');
+
+    // Get current theme object, fallback to pinky safely
+    const theme = THEMES[currentThemeId] || THEMES.pinky;
 
     // Handle escape key
     useEffect(() => {
@@ -124,7 +301,7 @@ export function ExportPreview({
             await document.fonts.ready;
 
             const canvas = await html2canvas(exportRef.current, {
-                backgroundColor: EXPORT_COLORS.bgPrimary,
+                backgroundColor: theme.colors.bgPrimary,
                 scale: 2,
                 useCORS: true,
                 logging: false,
@@ -133,7 +310,7 @@ export function ExportPreview({
 
             if (exportFormat === 'png') {
                 const link = document.createElement('a');
-                link.download = `${clientInfo.name}-${programName.replace(/\s+/g, '_')}.png`;
+                link.download = `${clientInfo.name}-${programName.replace(/\s+/g, '_')}-${theme.id}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             } else {
@@ -148,7 +325,7 @@ export function ExportPreview({
                 });
 
                 pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-                pdf.save(`${clientInfo.name}-${programName.replace(/\s+/g, '_')}.pdf`);
+                pdf.save(`${clientInfo.name}-${programName.replace(/\s+/g, '_')}-${theme.id}.pdf`);
             }
         } catch (error) {
             console.error('Export failed:', error);
@@ -200,7 +377,7 @@ export function ExportPreview({
                     <span style={{
                         fontSize: '20px',
                         fontWeight: '800',
-                        color: EXPORT_COLORS.accent,
+                        color: theme.colors.exerciseNumber,
                         marginRight: '8px',
                         width: '35px',
                         textAlign: 'right'
@@ -210,7 +387,7 @@ export function ExportPreview({
                     <h4 style={{
                         fontSize: '18px',
                         fontWeight: '700',
-                        color: EXPORT_COLORS.textPrimary,
+                        color: theme.colors.textPrimary,
                         margin: 0,
                         marginRight: '8px',
                         fontFamily: 'Inter, system-ui, sans-serif'
@@ -227,7 +404,7 @@ export function ExportPreview({
                             display: 'flex',
                             alignItems: 'flex-start',
                             marginBottom: '6px',
-                            color: EXPORT_COLORS.textSecondary
+                            color: theme.colors.textSecondary
                         }}>
                             <span style={{ marginRight: '6px', fontSize: '14px' }}>💡</span>
                             <span style={{ fontStyle: 'italic', fontSize: '14px', lineHeight: '1.4' }}>
@@ -237,29 +414,29 @@ export function ExportPreview({
                     )}
 
                     <div style={{
-                        borderLeft: `3px solid ${EXPORT_COLORS.accent}`,
+                        borderLeft: `3px solid ${theme.colors.progressionBorder}`,
                         paddingLeft: '12px',
-                        backgroundColor: '#FFF0F5',
+                        backgroundColor: theme.colors.progressionBg,
                         padding: '8px 12px',
                         borderRadius: '0 4px 4px 0',
                         marginTop: '4px'
                     }}>
                         {progression ? (
-                            <div style={{ fontSize: '13px', lineHeight: '1.6', color: EXPORT_COLORS.textPrimary }}>
+                            <div style={{ fontSize: '13px', lineHeight: '1.6', color: theme.colors.progressionText }}>
                                 {progression.progression.map((val, idx) => {
                                     if (val === '-' || !val) return null;
                                     return (
                                         <span key={idx} style={{ display: 'inline-block', marginRight: '12px' }}>
-                                            <span style={{ fontWeight: '700', color: EXPORT_COLORS.textPrimary }}>Sem {idx + 1}:</span> {val}
+                                            <span style={{ fontWeight: '700', color: theme.colors.progressionText }}>Sem {idx + 1}:</span> {val}
                                             {idx < progression.progression.length - 1 && (
-                                                <span style={{ margin: '0 4px', color: '#9CA3AF' }}>→</span>
+                                                <span style={{ margin: '0 4px', opacity: 0.5 }}>→</span>
                                             )}
                                         </span>
                                     );
                                 })}
                             </div>
                         ) : (
-                            <div style={{ fontSize: '13px', lineHeight: '1.5', color: EXPORT_COLORS.textPrimary }}>
+                            <div style={{ fontSize: '13px', lineHeight: '1.5', color: theme.colors.progressionText }}>
                                 {block.content.map((line, i) => (
                                     <div key={i}>{line}</div>
                                 ))}
@@ -285,7 +462,23 @@ export function ExportPreview({
                     <h2 className="text-lg font-semibold text-gray-900">Vista Previa del Export</h2>
 
                     <div className="flex items-center gap-3">
-                        {/* Custom Select for format */}
+                        {/* Theme Select */}
+                        <div className="relative">
+                            <select
+                                value={currentThemeId}
+                                onChange={(e) => setCurrentThemeId(e.target.value)}
+                                className="h-9 w-[140px] rounded-md border border-gray-200 bg-white px-3 py-1 text-sm shadow-sm focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500 cursor-pointer appearance-none"
+                            >
+                                {Object.values(THEMES).map(t => (
+                                    <option key={t.id} value={t.id}>{t.label}</option>
+                                ))}
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                <ImageIcon size={14} />
+                            </div>
+                        </div>
+
+                        {/* Format Select */}
                         <div className="relative">
                             <select
                                 value={exportFormat}
@@ -325,11 +518,11 @@ export function ExportPreview({
                         style={{
                             width: '800px',
                             minHeight: '1123px',
-                            backgroundColor: EXPORT_COLORS.bgPrimary,
+                            backgroundColor: theme.colors.bgPrimary,
                             padding: '40px',
                             boxSizing: 'border-box',
                             fontFamily: 'Inter, system-ui, sans-serif',
-                            color: EXPORT_COLORS.textPrimary,
+                            color: theme.colors.textPrimary,
                             position: 'relative'
                         }}
                     >
@@ -338,8 +531,8 @@ export function ExportPreview({
                             {weekDateRanges && (
                                 <div style={{
                                     display: 'inline-block',
-                                    backgroundColor: '#4A044E', // Plum
-                                    color: 'white',
+                                    backgroundColor: theme.colors.weekBannerBg,
+                                    color: theme.colors.weekBannerText,
                                     padding: '6px 16px',
                                     borderRadius: '8px',
                                     fontSize: '12px',
@@ -358,7 +551,7 @@ export function ExportPreview({
                             <h2 style={{
                                 fontFamily: 'cursive',
                                 fontSize: '28px',
-                                color: EXPORT_COLORS.accent,
+                                color: theme.colors.accent,
                                 marginBottom: '4px',
                                 fontStyle: 'italic'
                             }}>
@@ -370,13 +563,13 @@ export function ExportPreview({
                                 textTransform: 'uppercase',
                                 lineHeight: '1.1',
                                 marginBottom: '16px',
-                                color: '#1F2937'
+                                color: theme.colors.textPrimary
                             }}>
                                 Plan de Entrenamiento
                             </h1>
                             <div style={{
                                 display: 'inline-block',
-                                backgroundColor: '#831843', // Pink-900
+                                backgroundColor: theme.colors.headerTagBg,
                                 color: 'white',
                                 padding: '6px 16px',
                                 borderRadius: '20px',
@@ -392,14 +585,14 @@ export function ExportPreview({
                         {/* 2. Mission Statement */}
                         {mission && (
                             <div style={{
-                                backgroundColor: EXPORT_COLORS.accentLight,
+                                backgroundColor: theme.colors.accentLight,
                                 padding: '20px 24px',
                                 borderRadius: '12px',
                                 marginBottom: '40px',
-                                borderLeft: `6px solid ${EXPORT_COLORS.accent}`
+                                borderLeft: `6px solid ${theme.colors.accent}`
                             }}>
                                 <h3 style={{
-                                    color: EXPORT_COLORS.accent,
+                                    color: theme.colors.accent,
                                     fontSize: '18px',
                                     fontWeight: '800',
                                     marginBottom: '8px'
@@ -409,7 +602,7 @@ export function ExportPreview({
                                 <p style={{
                                     fontSize: '14px',
                                     lineHeight: '1.6',
-                                    color: EXPORT_COLORS.textSecondary
+                                    color: theme.colors.textSecondary
                                 }}>
                                     {mission.includes(':') ? mission.split(':').slice(1).join(':').trim() : mission}
                                 </p>
@@ -425,15 +618,15 @@ export function ExportPreview({
                                 <div key={dayIdx} style={{ marginBottom: '50px', breakInside: 'avoid' }}>
                                     {/* Link Day Header */}
                                     <div style={{
-                                        backgroundColor: '#9D174D',
-                                        color: 'white',
+                                        backgroundColor: theme.colors.dayHeaderBg,
+                                        color: theme.colors.dayHeaderText,
                                         padding: '10px 20px',
                                         borderRadius: '8px',
                                         marginBottom: '24px',
                                         fontSize: '18px',
                                         fontWeight: '800',
                                         fontStyle: 'italic',
-                                        boxShadow: '0 4px 6px -1px rgba(157, 23, 77, 0.3)'
+                                        boxShadow: `0 4px 6px -1px ${theme.colors.accent}40`
                                     }}>
                                         {day.name}: {day.blocks[0]?.name?.split('(')[0] || 'Entrenamiento'}
                                     </div>
@@ -442,13 +635,13 @@ export function ExportPreview({
                                     {activation.length > 0 && (
                                         <div style={{
                                             marginBottom: '24px',
-                                            backgroundColor: '#FDF2F8',
+                                            backgroundColor: theme.colors.activationBg,
                                             padding: '16px',
                                             borderRadius: '8px',
-                                            border: '1px dashed #FBCFE8'
+                                            border: `1px dashed ${theme.colors.activationBorder}`
                                         }}>
                                             <h4 style={{
-                                                color: '#DB2777',
+                                                color: theme.colors.activationTitle,
                                                 fontWeight: '800',
                                                 textTransform: 'uppercase',
                                                 fontSize: '13px',
@@ -459,9 +652,9 @@ export function ExportPreview({
                                             </h4>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                                 {activation.map((block, i) => (
-                                                    <div key={i} style={{ display: 'flex', alignItems: 'baseline', fontSize: '14px', color: EXPORT_COLORS.textSecondary }}>
-                                                        <span style={{ color: '#DB2777', marginRight: '8px', fontSize: '10px' }}>●</span>
-                                                        <span style={{ fontWeight: '600', color: EXPORT_COLORS.textPrimary, marginRight: '6px' }}>{block.name}</span>
+                                                    <div key={i} style={{ display: 'flex', alignItems: 'baseline', fontSize: '14px', color: theme.colors.activationText }}>
+                                                        <span style={{ color: theme.colors.activationTitle, marginRight: '8px', fontSize: '10px' }}>●</span>
+                                                        <span style={{ fontWeight: '600', color: theme.colors.textPrimary, marginRight: '6px' }}>{block.name}</span>
                                                         {block.content && block.content.length > 0 && (
                                                             <span style={{ fontStyle: 'italic', fontSize: '13px' }}>
                                                                 — {block.content.join(', ')}
@@ -483,12 +676,12 @@ export function ExportPreview({
                                         <div style={{
                                             marginTop: '24px',
                                             padding: '16px',
-                                            backgroundColor: '#FFF1F2',
-                                            borderLeft: '4px solid #E11D48',
+                                            backgroundColor: theme.colors.finisherBg,
+                                            borderLeft: `4px solid ${theme.colors.finisherBorder}`,
                                             borderRadius: '0 8px 8px 0'
                                         }}>
                                             <h4 style={{
-                                                color: '#BE123C',
+                                                color: theme.colors.finisherTitle,
                                                 fontSize: '16px',
                                                 fontWeight: '800',
                                                 marginBottom: '10px',
@@ -498,16 +691,16 @@ export function ExportPreview({
                                             </h4>
                                             {finisher.map((block, i) => (
                                                 <div key={i} style={{ marginBottom: '12px' }}>
-                                                    <div style={{ fontWeight: '700', color: EXPORT_COLORS.textPrimary }}>
+                                                    <div style={{ fontWeight: '700', color: theme.colors.textPrimary }}>
                                                         {block.name}
                                                     </div>
-                                                    <div style={{ fontSize: '13px', color: EXPORT_COLORS.textSecondary }}>
+                                                    <div style={{ fontSize: '13px', color: theme.colors.finisherText }}>
                                                         {block.content.map((line, l) => (
                                                             <div key={l}>{line}</div>
                                                         ))}
                                                     </div>
                                                     {block.cue && (
-                                                        <div style={{ fontSize: '12px', fontStyle: 'italic', color: '#9CA3AF', marginTop: '2px' }}>
+                                                        <div style={{ fontSize: '12px', fontStyle: 'italic', color: theme.colors.textSecondary, marginTop: '2px' }}>
                                                             💡 {block.cue}
                                                         </div>
                                                     )}
@@ -522,11 +715,11 @@ export function ExportPreview({
                         {/* Footer */}
                         <div style={{
                             marginTop: '60px',
-                            borderTop: `2px solid ${EXPORT_COLORS.border}`,
+                            borderTop: `2px solid ${theme.colors.border}`,
                             paddingTop: '20px',
                             display: 'flex',
                             justifyContent: 'space-between',
-                            color: EXPORT_COLORS.textSecondary,
+                            color: theme.colors.textSecondary,
                             fontSize: '11px',
                             fontWeight: '500'
                         }}>
