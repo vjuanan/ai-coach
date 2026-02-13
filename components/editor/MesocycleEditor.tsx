@@ -438,7 +438,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                         blocks: d.blocks.map(b => ({
                             type: b.type,
                             name: b.name || b.type,
-                            content: convertConfigToText(b.type, b.config, b.name, oneRmStats),
+                            content: convertConfigToText(b.type, b.config, b.name, oneRmStats, true), // Exclude notes from content
                             section: b.section || 'main',
                             cue: (b.config as any)?.notes || '',
                             format: (b.config as any)?.format || (b.config as any)?.methodology || null,
@@ -451,6 +451,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
     const monthlyStrategy = useMemo(() => {
         const firstMeso = mesocycles.find(m => m.week_number === 1);
         const firstAttrs = (firstMeso?.attributes || {}) as Record<string, unknown>;
+        const oneRmStats = (programClient?.details as any)?.oneRmStats;
 
         const progressionMap = new Map<string, { values: string[], variable?: string }>();
         mesocycles
@@ -474,12 +475,32 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                                 const sets = config.sets as number || 0;
                                 const reps = config.reps as number || 0;
                                 const weight = config.weight as string || '';
+                                const rpe = config.rpe as string || '';
 
-                                if (progressionVar === 'percentage') value = percentage || '-';
-                                else if (progressionVar === 'sets') value = sets ? `${sets} series` : '-';
-                                else if (progressionVar === 'reps') value = reps ? `${reps} reps` : '-';
-                                else if (progressionVar === 'distance') value = (config.distance as string) || '-';
-                                else value = percentage || `${sets}x${reps}`; // Default fallback
+                                // Calculate KG if possible
+                                let kgText = '';
+                                if (percentage && block.name && oneRmStats) {
+                                    const pctValue = parseFloat(percentage);
+                                    if (!isNaN(pctValue)) {
+                                        const kg = calculateKgFromStats(oneRmStats, block.name, pctValue);
+                                        if (kg) kgText = `(${kg}kg)`;
+                                    }
+                                } else if (weight) {
+                                    kgText = `(${weight})`;
+                                }
+
+                                // Format: 3x10 (75kg) or 3x10 @ 75%
+                                const volume = (sets && (reps || config.distance)) ? `${sets}x${reps || config.distance}` : '';
+                                const intensity = percentage ? `${percentage}%` : '';
+
+                                const parts = [];
+                                if (volume) parts.push(volume);
+                                if (kgText) parts.push(kgText);
+                                else if (intensity) parts.push(`@ ${intensity}`);
+                                if (rpe) parts.push(`@ RPE ${rpe}`);
+
+                                value = parts.join(' ') || '-';
+
                             } else if (block.type === 'metcon_structured') {
                                 // For metcons, maybe show time cap, rounds, or just "Check"
                                 value = (config.time_cap as string) || (config.rounds as string) || 'Active';
@@ -526,7 +547,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             objectives: Array.from(new Set(objectives)).slice(0, 4),
             progressions,
         };
-    }, [mesocycles, programName]);
+    }, [mesocycles, programName, programClient]);
 
     // Build week date ranges from programAttributes
     const weekDateRanges = useMemo(() => {
@@ -936,7 +957,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 }
 
 // Helper to format block config for preview
-function convertConfigToText(type: string, config: any, blockName?: string | null, oneRmStats?: any): string[] {
+function convertConfigToText(type: string, config: any, blockName?: string | null, oneRmStats?: any, excludeNotes: boolean = false): string[] {
     if (type === 'strength_linear') {
         // If distance is present, use it instead of reps or alongside
         const mainMetric = config.distance ? config.distance : config.reps;
@@ -944,8 +965,11 @@ function convertConfigToText(type: string, config: any, blockName?: string | nul
         // Calculate KG if percentage and stats match
         let kgBadge = '';
         if (config.percentage && blockName && oneRmStats) {
-            const kg = calculateKgFromStats(oneRmStats, blockName, config.percentage);
-            if (kg) kgBadge = `(≈${kg}kg)`;
+            const pctValue = parseFloat(config.percentage);
+            if (!isNaN(pctValue)) {
+                const kg = calculateKgFromStats(oneRmStats, blockName, pctValue);
+                if (kg) kgBadge = `(≈${kg}kg)`;
+            }
         }
 
         const parts = [
@@ -955,7 +979,7 @@ function convertConfigToText(type: string, config: any, blockName?: string | nul
         ].filter(Boolean).join('  '); // Double space for better separation
 
         const lines = [parts];
-        if (config.notes) lines.push(config.notes);
+        if (config.notes && !excludeNotes) lines.push(config.notes);
 
         return lines.filter(Boolean);
     }
@@ -975,7 +999,7 @@ function convertConfigToText(type: string, config: any, blockName?: string | nul
             lines.push(...config.content.split('\n'));
         }
 
-        if (config.notes) lines.push(config.notes);
+        if (config.notes && !excludeNotes) lines.push(config.notes);
 
         return lines;
     }
@@ -983,7 +1007,7 @@ function convertConfigToText(type: string, config: any, blockName?: string | nul
     // Generic handlers for other types
     if (config.movements && Array.isArray(config.movements)) {
         const lines = [...config.movements];
-        if (config.notes) lines.push(config.notes);
+        if (config.notes && !excludeNotes) lines.push(config.notes);
         return lines;
     }
 
@@ -991,5 +1015,5 @@ function convertConfigToText(type: string, config: any, blockName?: string | nul
         return config.content.split('\n');
     }
 
-    return [config.notes || ''];
+    return !excludeNotes ? [config.notes || ''] : [];
 }
