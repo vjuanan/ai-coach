@@ -129,6 +129,8 @@ interface EditorState {
     moveBlockToDay: (blockId: string, targetDayId: string) => void;
     moveProgressionToDay: (progressionId: string, targetDayNumber: number) => void;
     markAsClean: () => void;
+    copyDayToFutureWeeks: (dayId: string) => void;
+    copyWeekToFutureWeeks: (mesocycleId: string) => void;
 }
 
 export const useEditorStore = create<EditorState>()(
@@ -800,6 +802,132 @@ export const useEditorStore = create<EditorState>()(
                         return;
                     }
                 }
+            },
+
+            // Copy Day to Future Weeks
+            copyDayToFutureWeeks: (dayId) => {
+                const { mesocycles } = get();
+
+                // 1. Find source day and mesocycle
+                let sourceDay: DraftDay | null = null;
+                let sourceMesoIndex = -1;
+
+                for (let i = 0; i < mesocycles.length; i++) {
+                    const day = mesocycles[i].days.find(d => d.id === dayId);
+                    if (day) {
+                        sourceDay = day;
+                        sourceMesoIndex = i;
+                        break;
+                    }
+                }
+
+                if (!sourceDay || sourceMesoIndex === -1) return;
+
+                const dayNumberToMatch = sourceDay.day_number;
+
+                // 2. Iterate through FUTURE mesocycles
+                const updatedMesocycles = mesocycles.map((meso, index) => {
+                    // Skip past or current mesocycles
+                    if (index <= sourceMesoIndex) return meso;
+
+                    // Find matching day in this future mesocycle
+                    return {
+                        ...meso,
+                        days: meso.days.map(day => {
+                            if (day.day_number === dayNumberToMatch) {
+                                // 3. Replace content
+                                // Clone blocks with new IDs
+                                const newBlocks = sourceDay!.blocks.map(block => {
+                                    const tempId = generateTempId();
+                                    return {
+                                        ...block,
+                                        id: tempId,
+                                        tempId,
+                                        day_id: day.id, // Update day_id
+                                        isDirty: true,
+                                        progression_id: null // Reset progression to avoid unintended linking? Or keep? 
+                                        // Requirement: "copy block... so the block is copied". 
+                                        // If we keep progression_id, they will be linked. 
+                                        // Usually "copy to future" implies creating a base.
+                                        // Let's reset progression_id to be safe and avoid massive accidental linking.
+                                    };
+                                });
+
+                                return {
+                                    ...day,
+                                    blocks: newBlocks,
+                                    isDirty: true
+                                };
+                            }
+                            return day;
+                        }),
+                        isDirty: true
+                    };
+                });
+
+                set({ mesocycles: updatedMesocycles, hasUnsavedChanges: true });
+            },
+
+            // Copy Week to Future Weeks
+            copyWeekToFutureWeeks: (mesocycleId) => {
+                const { mesocycles } = get();
+
+                // 1. Find source mesocycle
+                const sourceMesoIndex = mesocycles.findIndex(m => m.id === mesocycleId);
+                if (sourceMesoIndex === -1) return;
+
+                const sourceMeso = mesocycles[sourceMesoIndex];
+
+                // 2. Iterate through FUTURE mesocycles
+                const updatedMesocycles = mesocycles.map((meso, index) => {
+                    // Skip past or current mesocycles
+                    if (index <= sourceMesoIndex) return meso;
+
+                    // 3. Replace content for EACH day
+                    const updatedDays = meso.days.map(targetDay => {
+                        // Find corresponding source day
+                        const sourceDay = sourceMeso.days.find(sd => sd.day_number === targetDay.day_number);
+
+                        if (sourceDay) {
+                            // Clone blocks
+                            const newBlocks = sourceDay.blocks.map(block => {
+                                const tempId = generateTempId();
+                                return {
+                                    ...block,
+                                    id: tempId,
+                                    tempId,
+                                    day_id: targetDay.id,
+                                    isDirty: true,
+                                    progression_id: null
+                                };
+                            });
+
+                            return {
+                                ...targetDay,
+                                blocks: newBlocks,
+                                isDirty: true,
+                                // Optionally copy notes/focus/rest status? 
+                                // User said "Copy block...". Usually implies structure.
+                                // Let's copy is_rest_day status and notes too for a true "Weekly Copy".
+                                is_rest_day: sourceDay.is_rest_day,
+                                notes: sourceDay.notes,
+                                stimulus_id: sourceDay.stimulus_id
+                            };
+                        }
+                        return targetDay;
+                    });
+
+                    return {
+                        ...meso,
+                        days: updatedDays,
+                        // Copy focus/attributes too?
+                        focus: sourceMeso.focus,
+                        attributes: sourceMeso.attributes,
+                        isDirty: true
+                    };
+                });
+
+                set({ mesocycles: updatedMesocycles, hasUnsavedChanges: true });
             },
 
             moveBlockToDay: (blockId, targetDayId) => {

@@ -2,7 +2,7 @@
 
 import { useEditorStore } from '@/lib/store';
 import { WorkoutBlockCard } from './WorkoutBlockCard';
-import { Plus, Moon, MoreHorizontal, Sun, Target, Trash2 } from 'lucide-react';
+import { Plus, Moon, MoreHorizontal, Sun, Target, Trash2, Copy } from 'lucide-react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 import * as Popover from '@radix-ui/react-popover';
 import { useDroppable } from '@dnd-kit/core';
@@ -52,7 +52,7 @@ const blockTypeOptions: { type: BlockType; label: string; color: string }[] = [
 ];
 
 export function DayCard({ day, dayName, compact = false, isActiveInBuilder = false, hideHeader = false }: DayCardProps) {
-    const { addBlock, toggleRestDay, selectDay, selectBlock, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures, clearDay, enterBlockBuilder, blockBuilderMode, draggedBlockId } = useEditorStore();
+    const { addBlock, toggleRestDay, selectDay, selectBlock, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures, clearDay, enterBlockBuilder, blockBuilderMode, draggedBlockId, copyDayToFutureWeeks } = useEditorStore();
 
     // Setup droppable
     const { isOver, setNodeRef } = useDroppable({
@@ -299,6 +299,18 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                                         >
                                             <Trash2 size={14} />
                                             <span>Limpiar contenido</span>
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (confirm('¿Estás seguro? Esto reemplazará el contenido de este día en todas las semanas futuras.')) {
+                                                    copyDayToFutureWeeks(day.id);
+                                                }
+                                            }}
+                                            className="w-full text-left px-2 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-cv-text-secondary flex items-center gap-2 transition-colors"
+                                        >
+                                            <Copy size={14} />
+                                            <span>Copiar al resto de semanas</span>
                                         </button>
                                         <button
                                             onClick={(e) => {

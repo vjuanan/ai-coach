@@ -1,7 +1,9 @@
 'use client';
 
-import { Target, TrendingUp, Dumbbell, Clock, Crosshair } from 'lucide-react';
+import { Target, TrendingUp, Dumbbell, Clock, Crosshair, MoreHorizontal, Copy } from 'lucide-react';
 import type { DraftMesocycle } from '@/lib/store';
+import { useEditorStore } from '@/lib/store';
+import * as Popover from '@radix-ui/react-popover';
 
 interface WeeklySummaryCardProps {
     mesocycle: {
@@ -20,6 +22,7 @@ interface WeeklySummaryCardProps {
 }
 
 export function WeeklySummaryCard({ mesocycle, programGlobalFocus }: WeeklySummaryCardProps) {
+    const { copyWeekToFutureWeeks } = useEditorStore();
     // Calculate weekly stats
     const totalBlocks = mesocycle.days.reduce((acc, day) => acc + day.blocks.length, 0);
     const trainingDays = mesocycle.days.filter(d => d.blocks.length > 0).length;
@@ -75,6 +78,42 @@ export function WeeklySummaryCard({ mesocycle, programGlobalFocus }: WeeklySumma
                         </div>
                     </div>
                 </div>
+
+                {/* More Options Menu */}
+                <Popover.Root>
+                    <Popover.Trigger asChild>
+                        <button
+                            className="cv-btn-ghost p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 hover:scale-110 hover:shadow-sm"
+                            title="Más opciones"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <MoreHorizontal size={16} />
+                        </button>
+                    </Popover.Trigger>
+                    <Popover.Portal>
+                        <Popover.Content
+                            className="min-w-[220px] bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-1 z-50 animate-in fade-in zoom-in-95 duration-200"
+                            sideOffset={5}
+                            align="end"
+                        >
+                            <div className="space-y-0.5">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (confirm('¿Estás seguro? Esto reemplazará el contenido de TODA la semana en las semanas futuras.')) {
+                                            copyWeekToFutureWeeks(mesocycle.id);
+                                        }
+                                    }}
+                                    className="w-full text-left px-2 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-cv-text-secondary flex items-center gap-2 transition-colors"
+                                >
+                                    <Copy size={14} />
+                                    <span>Copiar semana a futuras</span>
+                                </button>
+                            </div>
+                            <Popover.Arrow className="fill-white dark:fill-slate-900 border-t border-l border-slate-200 dark:border-slate-700" />
+                        </Popover.Content>
+                    </Popover.Portal>
+                </Popover.Root>
             </div>
 
             {/* Stats Grid */}
@@ -110,26 +149,30 @@ export function WeeklySummaryCard({ mesocycle, programGlobalFocus }: WeeklySumma
             </div>
 
             {/* Focus/Notes */}
-            {(considerations) && (
-                <div className="flex-1 bg-white/60 dark:bg-slate-800/40 rounded-lg p-3 border border-slate-100 dark:border-slate-700">
-                    {considerations && (
-                        <div>
-                            <span className="text-xs font-medium text-cv-text-tertiary">Notas:</span>
-                            <p className="text-xs text-cv-text-secondary mt-0.5 line-clamp-3">{considerations}</p>
-                        </div>
-                    )}
-                </div>
-            )}
+            {
+                (considerations) && (
+                    <div className="flex-1 bg-white/60 dark:bg-slate-800/40 rounded-lg p-3 border border-slate-100 dark:border-slate-700">
+                        {considerations && (
+                            <div>
+                                <span className="text-xs font-medium text-cv-text-tertiary">Notas:</span>
+                                <p className="text-xs text-cv-text-secondary mt-0.5 line-clamp-3">{considerations}</p>
+                            </div>
+                        )}
+                    </div>
+                )
+            }
 
             {/* Empty state if no focus */}
-            {!focus && !considerations && !programGlobalFocus && (
-                <div className="flex-1 flex items-center justify-center text-cv-text-tertiary">
-                    <p className="text-xs text-center">
-                        Usa &quot;Estrategia&quot; para añadir<br />notas de enfoque semanal
-                    </p>
-                </div>
-            )}
-        </div>
+            {
+                !focus && !considerations && !programGlobalFocus && (
+                    <div className="flex-1 flex items-center justify-center text-cv-text-tertiary">
+                        <p className="text-xs text-center">
+                            Usa &quot;Estrategia&quot; para añadir<br />notas de enfoque semanal
+                        </p>
+                    </div>
+                )
+            }
+        </div >
     );
 }
 

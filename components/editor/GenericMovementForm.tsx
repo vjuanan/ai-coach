@@ -41,7 +41,17 @@ const parseMovements = (data: unknown[]): MovementObject[] => {
 };
 
 export function GenericMovementForm({ config, onChange, methodology }: GenericMovementFormProps) {
-    const showRounds = true;
+    // Logic for displaying inputs based on methodology
+    const isMetconLike = methodology?.category === 'metcon' || methodology?.category === 'hiit' || methodology?.format === 'circuit';
+    const isStrengthLike = methodology?.category === 'strength' || methodology?.category === 'hypertrophy' || methodology?.category === 'power' || methodology?.format === 'standard';
+
+    // Strict display rules:
+    // - Rounds: Only for Metcon/HIIT/Circuit
+    // - Sets: Only for Strength/Standard
+    // - If no methodology selected (undefined), show NEITHER (forces user to select one)
+    const showRounds = isMetconLike;
+    const showSets = isStrengthLike;
+
     const movements = parseMovements((config.movements as unknown[]) || []);
     const rounds = (config.rounds as string) || '';
 
@@ -66,7 +76,7 @@ export function GenericMovementForm({ config, onChange, methodology }: GenericMo
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-            {/* 1. Global Rounds Input - Reduced Width */}
+            {/* 1. Global Rounds Input - Only if methodology supports it */}
             {showRounds && (
                 <div className="max-w-md"> {/* Limited width */}
                     <InputCard
@@ -100,6 +110,7 @@ export function GenericMovementForm({ config, onChange, methodology }: GenericMo
                             movement={movement}
                             onChange={(updates) => updateMovement(index, updates)}
                             onRemove={() => removeMovement(index)}
+                            showSets={showSets}
                         />
                     ))}
 
@@ -133,9 +144,10 @@ interface MovementCardProps {
     movement: MovementObject;
     onChange: (updates: Partial<MovementObject>) => void;
     onRemove: () => void;
+    showSets: boolean;
 }
 
-function MovementCard({ index, movement, onChange, onRemove }: MovementCardProps) {
+function MovementCard({ index, movement, onChange, onRemove, showSets }: MovementCardProps) {
     const { searchLocal } = useExerciseCache();
 
     // Check validity
@@ -183,16 +195,18 @@ function MovementCard({ index, movement, onChange, onRemove }: MovementCardProps
                 <div className="p-3 bg-white dark:bg-cv-bg-secondary space-y-3">
                     {/* Metrics Grid (4 columns) */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {/* 1. Series (Sets) - NEW */}
-                        <InputCard
-                            label="SERIES"
-                            value={movement.sets as string}
-                            onChange={(val) => onChange({ sets: val })}
-                            type="number-text"
-                            icon={RotateCcw} // Reusing same icon, or could use Layers/Clone
-                            presets={[2, 3, 4]}
-                            placeholder="3"
-                        />
+                        {/* 1. Series (Sets) - CONDITIONALLY SHOWN */}
+                        {showSets && (
+                            <InputCard
+                                label="SERIES"
+                                value={movement.sets as string}
+                                onChange={(val) => onChange({ sets: val })}
+                                type="number-text"
+                                icon={RotateCcw} // Reusing same icon, or could use Layers/Clone
+                                presets={[2, 3, 4]}
+                                placeholder="3"
+                            />
+                        )}
 
                         {/* 2. Reps / Distance */}
                         {showDistance ? (
