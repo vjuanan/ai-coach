@@ -685,7 +685,7 @@ export async function getClients(type: 'athlete' | 'gym') {
             // Admin sees ALL clients, coaches see only their own
             let clientsQuery = adminSupabase
                 .from('clients')
-                .select('*')
+                .select('*, coach:coaches(full_name, business_name)')
                 .eq('type', type);
 
             if (!isAdmin) {

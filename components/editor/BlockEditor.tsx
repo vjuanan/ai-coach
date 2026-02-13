@@ -198,6 +198,13 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         return acc;
     }, {} as Record<string, TrainingMethodology[]>);
 
+    // DEBUG: Check why strength might be missing
+    // console.log('BlockEditor Debug:', {
+    //    totalMethodologies: trainingMethodologies.length,
+    //    categoriesFound: Object.keys(groupedMethodologies),
+    //    strengthItems: groupedMethodologies['strength']?.length
+    // });
+
     const categoryLabels: Record<string, string> = {
         metcon: 'MetCon',
         hiit: 'HIIT',

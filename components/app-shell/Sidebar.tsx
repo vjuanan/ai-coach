@@ -32,7 +32,6 @@ const navItems: NavItem[] = [
     { label: 'Programas', href: '/programs', icon: <FileText size={20} /> },
     { label: 'Plantillas', href: '/templates', icon: <FileText size={20} /> }, // Keep same icon or differentiate?
     { label: 'Conocimiento', href: '/knowledge', icon: <BookOpen size={20} /> },
-    { label: 'Clientes', href: '/admin/clients', icon: <Briefcase size={20} /> },
     { label: 'Usuarios', href: '/admin/users', icon: <Shield size={20} /> },
 ];
 
