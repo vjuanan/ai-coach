@@ -4,6 +4,8 @@ import { Target, TrendingUp, Dumbbell, Clock, Crosshair, MoreHorizontal, Copy } 
 import type { DraftMesocycle } from '@/lib/store';
 import { useEditorStore } from '@/lib/store';
 import * as Popover from '@radix-ui/react-popover';
+import { useState } from 'react';
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 
 interface WeeklySummaryCardProps {
     mesocycle: {
@@ -23,6 +25,9 @@ interface WeeklySummaryCardProps {
 
 export function WeeklySummaryCard({ mesocycle, programGlobalFocus }: WeeklySummaryCardProps) {
     const { copyWeekToFutureWeeks } = useEditorStore();
+    const [showCopyConfirm, setShowCopyConfirm] = useState(false);
+    const [isCopying, setIsCopying] = useState(false);
+
     // Calculate weekly stats
     const totalBlocks = mesocycle.days.reduce((acc, day) => acc + day.blocks.length, 0);
     const trainingDays = mesocycle.days.filter(d => d.blocks.length > 0).length;
@@ -100,9 +105,7 @@ export function WeeklySummaryCard({ mesocycle, programGlobalFocus }: WeeklySumma
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        if (confirm('¿Estás seguro? Esto reemplazará el contenido de TODA la semana en las semanas futuras.')) {
-                                            copyWeekToFutureWeeks(mesocycle.id);
-                                        }
+                                        setShowCopyConfirm(true);
                                     }}
                                     className="w-full text-left px-2 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-cv-text-secondary flex items-center gap-2 transition-colors"
                                 >
@@ -115,6 +118,24 @@ export function WeeklySummaryCard({ mesocycle, programGlobalFocus }: WeeklySumma
                     </Popover.Portal>
                 </Popover.Root>
             </div>
+
+            <ConfirmationModal
+                isOpen={showCopyConfirm}
+                onClose={() => setShowCopyConfirm(false)}
+                onConfirm={async () => {
+                    setIsCopying(true);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    copyWeekToFutureWeeks(mesocycle.id);
+                    setIsCopying(false);
+                    setShowCopyConfirm(false);
+                }}
+                title="¿Copiar semana completa?"
+                description="Se reemplazará TODO el contenido (bloques, notas, descansos) de las semanas futuras con la estructura de esta semana."
+                confirmText="Sí, reemplazar todo"
+                cancelText="Cancelar"
+                variant="danger"
+                isLoading={isCopying}
+            />
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-3 mb-3">

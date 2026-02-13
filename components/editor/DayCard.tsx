@@ -304,9 +304,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (confirm('¿Estás seguro? Esto reemplazará el contenido de este día en todas las semanas futuras.')) {
-                                                    copyDayToFutureWeeks(day.id);
-                                                }
+                                                setShowCopyConfirm(true);
                                             }}
                                             className="w-full text-left px-2 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-cv-text-secondary flex items-center gap-2 transition-colors"
                                         >
@@ -331,6 +329,25 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                     </div>
                 </div>
             )}
+
+            <ConfirmationModal
+                isOpen={showCopyConfirm}
+                onClose={() => setShowCopyConfirm(false)}
+                onConfirm={async () => {
+                    setIsCopying(true);
+                    // Simulate a small delay for better UX or await potential async in future
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    copyDayToFutureWeeks(day.id);
+                    setIsCopying(false);
+                    setShowCopyConfirm(false);
+                }}
+                title="¿Copiar día a semanas futuras?"
+                description="Esta acción sobrescribirá el contenido de este día en todas las semanas posteriores del mesociclo. Los bloques existentes serán reemplazados."
+                confirmText="Sí, copiar bloques"
+                cancelText="Cancelar"
+                variant="warning"
+                isLoading={isCopying}
+            />
 
             {/* Workout Blocks - Cards within Card style */}
             <div className="flex-1 space-y-3 mb-8 overflow-y-auto p-4 -m-4">

@@ -44,4 +44,5 @@
 ## Implementation
 - [x] Fix the synchronization logic (Migration to allow NULL coach_id and trigger update)
 - [x] Verify fix with new user registration ✅
+- [x] Backfill missing client records for existing users (Fixed 'Antonella Barone') ✅
 
