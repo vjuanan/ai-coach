@@ -42,9 +42,9 @@ const parseMovements = (data: unknown[]): MovementObject[] => {
 
 export function GenericMovementForm({ config, onChange, methodology }: GenericMovementFormProps) {
     // Logic for displaying inputs based on methodology
-    // Force git update: 3
+    // Force git update: 4
     const isMetconLike = methodology?.category === 'metcon' || methodology?.category === 'hiit';
-    const isStrengthLike = methodology?.category === 'strength' || methodology?.category === 'hypertrophy' || methodology?.category === 'power';
+    const isStrengthLike = methodology?.category === 'strength';
     const isStandard = methodology?.code === 'STANDARD';
 
     // Strict display rules:
