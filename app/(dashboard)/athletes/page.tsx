@@ -272,562 +272,563 @@ export default function AthletesPage() {
             setBulkDeleteMessage({ text: 'Error crítico en eliminación masiva', type: 'error' });
         } finally {
         }
+    }
 
-        const getStatusColor = (status?: string) => {
-            switch (status) {
-                case 'current':
-                case 'paid':
-                    return 'bg-emerald-50 text-emerald-700 border-emerald-100';
-                case 'overdue':
-                case 'unpaid':
-                    return 'bg-rose-50 text-rose-700 border-rose-100';
-                case 'pending':
-                    return 'bg-amber-50 text-amber-700 border-amber-100';
-                default:
-                    return 'bg-slate-50 text-slate-700 border-slate-100';
-            }
-        };
+    const getStatusColor = (status?: string) => {
+        switch (status) {
+            case 'current':
+            case 'paid':
+                return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+            case 'overdue':
+            case 'unpaid':
+                return 'bg-rose-50 text-rose-700 border-rose-100';
+            case 'pending':
+                return 'bg-amber-50 text-amber-700 border-amber-100';
+            default:
+                return 'bg-slate-50 text-slate-700 border-slate-100';
+        }
+    };
 
-        const getStatusLabel = (status?: string) => {
-            switch (status) {
-                case 'current': return 'Al Día';
-                case 'paid': return 'Pagado';
-                case 'overdue': return 'Vencido';
-                case 'unpaid': return 'Impago';
-                case 'pending': return 'Pendiente';
-                default: return 'Desconocido';
-            }
-        };
+    const getStatusLabel = (status?: string) => {
+        switch (status) {
+            case 'current': return 'Al Día';
+            case 'paid': return 'Pagado';
+            case 'overdue': return 'Vencido';
+            case 'unpaid': return 'Impago';
+            case 'pending': return 'Pendiente';
+            default: return 'Desconocido';
+        }
+    };
 
-        const formatDate = (dateString?: string) => {
-            if (!dateString) return '-';
-            return format(new Date(dateString), 'dd MMM yyyy', { locale: es });
-        };
+    const formatDate = (dateString?: string) => {
+        if (!dateString) return '-';
+        return format(new Date(dateString), 'dd MMM yyyy', { locale: es });
+    };
 
-        const handleCoachChange = async (clientId: string, newCoachId: string) => {
-            setUpdatingId(clientId);
-            try {
-                await assignClientToCoach(clientId, newCoachId);
-                await fetchAthletes(); // Refresh to show updated data
-            } catch (error) {
-                console.error('Error assigning coach:', error);
-                alert('Error al asignar coach');
-            } finally {
-                setUpdatingId(null);
-            }
-        };
+    const handleCoachChange = async (clientId: string, newCoachId: string) => {
+        setUpdatingId(clientId);
+        try {
+            await assignClientToCoach(clientId, newCoachId);
+            await fetchAthletes(); // Refresh to show updated data
+        } catch (error) {
+            console.error('Error assigning coach:', error);
+            alert('Error al asignar coach');
+        } finally {
+            setUpdatingId(null);
+        }
+    };
 
-        return (
+    return (
 
-            <>
-                <Topbar
-                    title="Atletas"
-                    actions={
-                        <>
-                            {selectedAthletes.size > 0 && (
-                                <button
-                                    onClick={handleBulkDelete}
-                                    disabled={isBulkDeleting}
-                                    className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors mr-2"
-                                >
-                                    {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
-                                    Eliminar ({selectedAthletes.size})
-                                </button>
-                            )}
-                            <div className="bg-slate-100 px-3 py-1.5 rounded-md flex items-center gap-2">
-                                <User className="text-cv-text-secondary" size={16} />
-                                <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredAthletes.length}</span>
-                            </div>
+        <>
+            <Topbar
+                title="Atletas"
+                actions={
+                    <>
+                        {selectedAthletes.size > 0 && (
+                            <button
+                                onClick={handleBulkDelete}
+                                disabled={isBulkDeleting}
+                                className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors mr-2"
+                            >
+                                {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                                Eliminar ({selectedAthletes.size})
+                            </button>
+                        )}
+                        <div className="bg-slate-100 px-3 py-1.5 rounded-md flex items-center gap-2">
+                            <User className="text-cv-text-secondary" size={16} />
+                            <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredAthletes.length}</span>
+                        </div>
+                        <button
+                            onClick={() => setShowAddModal(true)}
+                            className="cv-btn-primary flex items-center justify-center w-10 h-10 p-0"
+                            title="Añadir Atleta"
+                        >
+                            <Plus size={20} />
+                        </button>
+                    </>
+                }
+            />
+            <div className="w-full px-6">
+                {/* Search removed - using global Topbar search */}
+
+                {bulkDeleteMessage && (
+                    <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${bulkDeleteMessage.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
+                        }`}>
+                        {bulkDeleteMessage.type === 'success' ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
+                        {bulkDeleteMessage.text}
+                    </div>
+                )}
+
+                {/* Content */}
+                <div className="bg-cv-bg-secondary rounded-xl overflow-hidden shadow-sm border border-cv-border-subtle">
+                    {isLoading ? (
+                        <div className="flex items-center justify-center py-12">
+                            <Loader2 className="animate-spin text-cv-accent" size={32} />
+                        </div>
+                    ) : filteredAthletes.length === 0 ? (
+                        <div className="text-center py-12">
+                            <User size={48} className="mx-auto text-cv-text-tertiary mb-4" />
+                            <p className="text-cv-text-secondary">No hay atletas aún</p>
                             <button
                                 onClick={() => setShowAddModal(true)}
-                                className="cv-btn-primary flex items-center justify-center w-10 h-10 p-0"
-                                title="Añadir Atleta"
+                                className="cv-btn-primary mt-4"
                             >
-                                <Plus size={20} />
+                                <Plus size={18} />
+                                Añade tu primer atleta
                             </button>
-                        </>
-                    }
-                />
-                <div className="w-full px-6">
-                    {/* Search removed - using global Topbar search */}
-
-                    {bulkDeleteMessage && (
-                        <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${bulkDeleteMessage.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
-                            }`}>
-                            {bulkDeleteMessage.type === 'success' ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
-                            {bulkDeleteMessage.text}
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-cv-bg-tertiary border-b border-cv-border-subtle">
+                                        <th className="p-4 w-10">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
+                                                checked={filteredAthletes.length > 0 && selectedAthletes.size === filteredAthletes.length}
+                                                onChange={toggleSelectAll}
+                                            />
+                                        </th>
+                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Atleta</th>
+                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Coach Asignado</th>
+                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Nivel</th>
+                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Objetivo</th>
+                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Servicio</th>
+                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Estado Pago</th>
+                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-cv-border-subtle">
+                                    {filteredAthletes
+                                        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                                        .map((athlete) => (
+                                            <tr
+                                                key={athlete.id}
+                                                className={`hover:bg-cv-bg-tertiary/50 transition-colors group cursor-pointer ${selectedAthletes.has(athlete.id) ? 'bg-cv-accent/5' : ''}`}
+                                                onClick={() => router.push(`/athletes/${athlete.id}`)}
+                                            >
+                                                <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                                                    <input
+                                                        type="checkbox"
+                                                        className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
+                                                        checked={selectedAthletes.has(athlete.id)}
+                                                        onChange={() => toggleSelectAthlete(athlete.id)}
+                                                    />
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-cv-accent-muted flex items-center justify-center text-cv-accent font-bold text-lg shrink-0">
+                                                            {athlete.name.charAt(0).toUpperCase()}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <span className="font-medium text-cv-text-primary block truncate">{athlete.name}</span>
+                                                            <div className="flex items-center gap-1 text-xs text-cv-text-tertiary">
+                                                                <Mail size={12} />
+                                                                <span className="truncate">{athlete.email || 'Sin correo'}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                                                    <div className="flex items-center gap-2">
+                                                        <select
+                                                            value={athlete.coach_id || ''}
+                                                            onChange={(e) => handleCoachChange(athlete.id, e.target.value)}
+                                                            disabled={updatingId === athlete.id}
+                                                            className="w-full max-w-[150px] px-2 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 disabled:opacity-50 transition-all cursor-pointer hover:border-slate-300"
+                                                        >
+                                                            <option value="" disabled>Seleccionar Coach</option>
+                                                            {coaches.map((coach) => (
+                                                                <option key={coach.id} value={coach.id}>
+                                                                    {coach.business_name || coach.full_name}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        {updatingId === athlete.id && (
+                                                            <Loader2 className="h-4 w-4 animate-spin text-slate-500" />
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4">
+                                                    {athlete.details?.level ? (
+                                                        <span className={`text-xs px-2 py-1 rounded-full border border-current opacity-80 font-medium ${athlete.details.level === 'Elite' ? 'text-purple-400 bg-purple-400/10' :
+                                                            athlete.details.level === 'RX' ? 'text-cv-accent bg-cv-accent/10' :
+                                                                athlete.details.level === 'Scaled' ? 'text-blue-400 bg-blue-400/10' :
+                                                                    'text-cv-text-tertiary bg-cv-bg-tertiary'
+                                                            }`}>
+                                                            {athlete.details.level}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-cv-text-tertiary text-xs">-</span>
+                                                    )}
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className="max-w-[200px] text-sm text-cv-text-secondary truncate" title={athlete.details?.goal}>
+                                                        {athlete.details?.goal || <span className="text-cv-text-tertiary italic">Sin objetivo</span>}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className="flex gap-3 text-xs text-cv-text-secondary">
+                                                        {athlete.details?.height && (
+                                                            <div title="Altura">
+                                                                <span className="font-medium text-cv-text-primary">{athlete.details.height}</span> cm
+                                                            </div>
+                                                        )}
+                                                        {athlete.details?.weight && (
+                                                            <div title="Peso">
+                                                                <span className="font-medium text-cv-text-primary">{athlete.details.weight}</span> kg
+                                                            </div>
+                                                        )}
+                                                        {!athlete.details?.height && !athlete.details?.weight && (
+                                                            <span className="text-cv-text-tertiary">-</span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className="flex flex-col gap-1 text-xs text-cv-text-secondary">
+                                                        <span title="Inicio Servicio">
+                                                            <span className="font-medium">Inicio:</span> {formatDate(athlete.service_start_date)}
+                                                        </span>
+                                                        <span title="Fin Servicio">
+                                                            <span className="font-medium">Fin:</span> {formatDate(athlete.service_end_date)}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4">
+                                                    <Badge variant="outline" className={`font-normal border ${getStatusColor(athlete.payment_status)}`}>
+                                                        {getStatusLabel(athlete.payment_status)}
+                                                    </Badge>
+                                                </td>
+                                                <td className="p-4 text-right">
+                                                    <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                                                        {/* View Button - stops propagation effectively by being a Link/Button? Using router push on row, need stopPropagation on buttons */}
+                                                        <Link
+                                                            href={`/athletes/${athlete.id}`}
+                                                            className="p-2 hover:bg-cv-bg-elevated rounded-lg text-cv-text-tertiary hover:text-cv-text-primary transition-colors"
+                                                            title="Ver Perfil"
+                                                        >
+                                                            <User size={18} />
+                                                        </Link>
+                                                        <button
+                                                            onClick={(e) => promptDelete(e, athlete.id)}
+                                                            className="p-2 hover:bg-red-500/10 rounded-lg text-cv-text-tertiary hover:text-red-500 transition-colors"
+                                                            title="Eliminar Atleta"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
+                </div>
 
-                    {/* Content */}
-                    <div className="bg-cv-bg-secondary rounded-xl overflow-hidden shadow-sm border border-cv-border-subtle">
-                        {isLoading ? (
-                            <div className="flex items-center justify-center py-12">
-                                <Loader2 className="animate-spin text-cv-accent" size={32} />
-                            </div>
-                        ) : filteredAthletes.length === 0 ? (
-                            <div className="text-center py-12">
-                                <User size={48} className="mx-auto text-cv-text-tertiary mb-4" />
-                                <p className="text-cv-text-secondary">No hay atletas aún</p>
-                                <button
-                                    onClick={() => setShowAddModal(true)}
-                                    className="cv-btn-primary mt-4"
-                                >
-                                    <Plus size={18} />
-                                    Añade tu primer atleta
+                {/* Add Modal */}
+                {showAddModal && (
+                    <>
+                        <div className="cv-overlay" onClick={() => setShowAddModal(false)} />
+                        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-cv-bg-secondary border border-cv-border rounded-lg p-6 z-50 max-h-[90vh] overflow-y-auto">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold text-cv-text-primary">Nuevo Atleta / Cliente</h2>
+                                <button onClick={() => setShowAddModal(false)} className="cv-btn-ghost p-1">
+                                    <X size={18} />
                                 </button>
                             </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr className="bg-cv-bg-tertiary border-b border-cv-border-subtle">
-                                            <th className="p-4 w-10">
-                                                <input
-                                                    type="checkbox"
-                                                    className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
-                                                    checked={filteredAthletes.length > 0 && selectedAthletes.size === filteredAthletes.length}
-                                                    onChange={toggleSelectAll}
-                                                />
-                                            </th>
-                                            <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Atleta</th>
-                                            <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Coach Asignado</th>
-                                            <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Nivel</th>
-                                            <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Objetivo</th>
-                                            <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Servicio</th>
-                                            <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Estado Pago</th>
-                                            <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold text-right">Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-cv-border-subtle">
-                                        {filteredAthletes
-                                            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                                            .map((athlete) => (
-                                                <tr
-                                                    key={athlete.id}
-                                                    className={`hover:bg-cv-bg-tertiary/50 transition-colors group cursor-pointer ${selectedAthletes.has(athlete.id) ? 'bg-cv-accent/5' : ''}`}
-                                                    onClick={() => router.push(`/athletes/${athlete.id}`)}
-                                                >
-                                                    <td className="p-4" onClick={(e) => e.stopPropagation()}>
-                                                        <input
-                                                            type="checkbox"
-                                                            className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
-                                                            checked={selectedAthletes.has(athlete.id)}
-                                                            onChange={() => toggleSelectAthlete(athlete.id)}
-                                                        />
-                                                    </td>
-                                                    <td className="p-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-full bg-cv-accent-muted flex items-center justify-center text-cv-accent font-bold text-lg shrink-0">
-                                                                {athlete.name.charAt(0).toUpperCase()}
-                                                            </div>
-                                                            <div className="min-w-0">
-                                                                <span className="font-medium text-cv-text-primary block truncate">{athlete.name}</span>
-                                                                <div className="flex items-center gap-1 text-xs text-cv-text-tertiary">
-                                                                    <Mail size={12} />
-                                                                    <span className="truncate">{athlete.email || 'Sin correo'}</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-4" onClick={(e) => e.stopPropagation()}>
-                                                        <div className="flex items-center gap-2">
-                                                            <select
-                                                                value={athlete.coach_id || ''}
-                                                                onChange={(e) => handleCoachChange(athlete.id, e.target.value)}
-                                                                disabled={updatingId === athlete.id}
-                                                                className="w-full max-w-[150px] px-2 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 disabled:opacity-50 transition-all cursor-pointer hover:border-slate-300"
-                                                            >
-                                                                <option value="" disabled>Seleccionar Coach</option>
-                                                                {coaches.map((coach) => (
-                                                                    <option key={coach.id} value={coach.id}>
-                                                                        {coach.business_name || coach.full_name}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                            {updatingId === athlete.id && (
-                                                                <Loader2 className="h-4 w-4 animate-spin text-slate-500" />
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-4">
-                                                        {athlete.details?.level ? (
-                                                            <span className={`text-xs px-2 py-1 rounded-full border border-current opacity-80 font-medium ${athlete.details.level === 'Elite' ? 'text-purple-400 bg-purple-400/10' :
-                                                                athlete.details.level === 'RX' ? 'text-cv-accent bg-cv-accent/10' :
-                                                                    athlete.details.level === 'Scaled' ? 'text-blue-400 bg-blue-400/10' :
-                                                                        'text-cv-text-tertiary bg-cv-bg-tertiary'
-                                                                }`}>
-                                                                {athlete.details.level}
-                                                            </span>
-                                                        ) : (
-                                                            <span className="text-cv-text-tertiary text-xs">-</span>
-                                                        )}
-                                                    </td>
-                                                    <td className="p-4">
-                                                        <div className="max-w-[200px] text-sm text-cv-text-secondary truncate" title={athlete.details?.goal}>
-                                                            {athlete.details?.goal || <span className="text-cv-text-tertiary italic">Sin objetivo</span>}
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-4">
-                                                        <div className="flex gap-3 text-xs text-cv-text-secondary">
-                                                            {athlete.details?.height && (
-                                                                <div title="Altura">
-                                                                    <span className="font-medium text-cv-text-primary">{athlete.details.height}</span> cm
-                                                                </div>
-                                                            )}
-                                                            {athlete.details?.weight && (
-                                                                <div title="Peso">
-                                                                    <span className="font-medium text-cv-text-primary">{athlete.details.weight}</span> kg
-                                                                </div>
-                                                            )}
-                                                            {!athlete.details?.height && !athlete.details?.weight && (
-                                                                <span className="text-cv-text-tertiary">-</span>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-4">
-                                                        <div className="flex flex-col gap-1 text-xs text-cv-text-secondary">
-                                                            <span title="Inicio Servicio">
-                                                                <span className="font-medium">Inicio:</span> {formatDate(athlete.service_start_date)}
-                                                            </span>
-                                                            <span title="Fin Servicio">
-                                                                <span className="font-medium">Fin:</span> {formatDate(athlete.service_end_date)}
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-4">
-                                                        <Badge variant="outline" className={`font-normal border ${getStatusColor(athlete.payment_status)}`}>
-                                                            {getStatusLabel(athlete.payment_status)}
-                                                        </Badge>
-                                                    </td>
-                                                    <td className="p-4 text-right">
-                                                        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                                                            {/* View Button - stops propagation effectively by being a Link/Button? Using router push on row, need stopPropagation on buttons */}
-                                                            <Link
-                                                                href={`/athletes/${athlete.id}`}
-                                                                className="p-2 hover:bg-cv-bg-elevated rounded-lg text-cv-text-tertiary hover:text-cv-text-primary transition-colors"
-                                                                title="Ver Perfil"
-                                                            >
-                                                                <User size={18} />
-                                                            </Link>
-                                                            <button
-                                                                onClick={(e) => promptDelete(e, athlete.id)}
-                                                                className="p-2 hover:bg-red-500/10 rounded-lg text-cv-text-tertiary hover:text-red-500 transition-colors"
-                                                                title="Eliminar Atleta"
-                                                            >
-                                                                <Trash2 size={18} />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
 
-                    {/* Add Modal */}
-                    {showAddModal && (
-                        <>
-                            <div className="cv-overlay" onClick={() => setShowAddModal(false)} />
-                            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-cv-bg-secondary border border-cv-border rounded-lg p-6 z-50 max-h-[90vh] overflow-y-auto">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h2 className="text-xl font-semibold text-cv-text-primary">Nuevo Atleta / Cliente</h2>
-                                    <button onClick={() => setShowAddModal(false)} className="cv-btn-ghost p-1">
-                                        <X size={18} />
-                                    </button>
-                                </div>
-
-                                <div className="space-y-4">
-                                    {/* Type Toggle */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">Tipo</label>
-                                        <div className="flex gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => setFormData(prev => ({ ...prev, type: 'athlete' }))}
-                                                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${formData.type === 'athlete' ? 'bg-cv-accent text-slate-900' : 'bg-cv-bg-tertiary text-cv-text-secondary'}`}
-                                            >
-                                                Atleta Individual
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setFormData(prev => ({ ...prev, type: 'gym' }))}
-                                                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${formData.type === 'gym' ? 'bg-cv-accent text-slate-900' : 'bg-cv-bg-tertiary text-cv-text-secondary'}`}
-                                            >
-                                                Gimnasio / Box
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Name */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">Nombre *</label>
-                                        <input
-                                            type="text"
-                                            value={formData.name}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                            placeholder="John Doe"
-                                            className="cv-input"
-                                            autoFocus
-                                        />
-                                    </div>
-
-                                    {/* Email */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">Correo</label>
-                                        <input
-                                            type="email"
-                                            value={formData.email}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                                            placeholder="john@example.com"
-                                            className="cv-input"
-                                        />
-                                    </div>
-
-                                    {/* Physical Profile Section */}
-                                    <div className="border-t border-cv-border pt-4 mt-4">
-                                        <label className="block text-sm font-medium text-cv-text-primary mb-3">Perfil Físico</label>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div>
-                                                <label className="block text-xs text-cv-text-tertiary mb-1">Fecha Nac.</label>
-                                                <input
-                                                    type="date"
-                                                    value={formData.dob}
-                                                    onChange={(e) => setFormData(prev => ({ ...prev, dob: e.target.value }))}
-                                                    className="cv-input"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs text-cv-text-tertiary mb-1">Género</label>
-                                                <select
-                                                    value={formData.gender}
-                                                    onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value as any }))}
-                                                    className="cv-input"
-                                                >
-                                                    <option value="male">Masculino</option>
-                                                    <option value="female">Femenino</option>
-                                                    <option value="other">Otro</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs text-cv-text-tertiary mb-1">Altura (cm)</label>
-                                                <input
-                                                    type="number"
-                                                    value={formData.height}
-                                                    onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))}
-                                                    placeholder="175"
-                                                    className="cv-input"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs text-cv-text-tertiary mb-1">Peso (kg)</label>
-                                                <input
-                                                    type="number"
-                                                    value={formData.weight}
-                                                    onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))}
-                                                    placeholder="75"
-                                                    className="cv-input"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Level Dropdown */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">Nivel</label>
-                                        <select
-                                            value={formData.level}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, level: e.target.value }))}
-                                            className="cv-input"
+                            <div className="space-y-4">
+                                {/* Type Toggle */}
+                                <div>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Tipo</label>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, type: 'athlete' }))}
+                                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${formData.type === 'athlete' ? 'bg-cv-accent text-slate-900' : 'bg-cv-bg-tertiary text-cv-text-secondary'}`}
                                         >
-                                            <option value="Scaled">Scaled</option>
-                                            <option value="RX">RX</option>
-                                            <option value="Elite">Elite</option>
-                                            <option value="Master">Master</option>
-                                        </select>
+                                            Atleta Individual
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, type: 'gym' }))}
+                                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${formData.type === 'gym' ? 'bg-cv-accent text-slate-900' : 'bg-cv-bg-tertiary text-cv-text-secondary'}`}
+                                        >
+                                            Gimnasio / Box
+                                        </button>
                                     </div>
+                                </div>
 
-                                    {/* Goal */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">Objetivo Principal</label>
-                                        <input
-                                            type="text"
-                                            value={formData.goal}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, goal: e.target.value }))}
-                                            placeholder="Ej: Competition Prep, Strength Bias..."
-                                            className="cv-input"
-                                        />
-                                    </div>
+                                {/* Name */}
+                                <div>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Nombre *</label>
+                                    <input
+                                        type="text"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                        placeholder="John Doe"
+                                        className="cv-input"
+                                        autoFocus
+                                    />
+                                </div>
 
-                                    {/* Injuries/Notes */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">Lesiones / Limitaciones</label>
-                                        <textarea
-                                            value={formData.injuries}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, injuries: e.target.value }))}
-                                            placeholder="Ej: Shoulder impingement, bajo movilidad de tobillo..."
-                                            rows={2}
-                                            className="cv-input resize-none"
-                                        />
-                                    </div>
+                                {/* Email */}
+                                <div>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Correo</label>
+                                    <input
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                                        placeholder="john@example.com"
+                                        className="cv-input"
+                                    />
+                                </div>
 
-                                    {/* Benchmarks Section */}
-                                    <div className="border-t border-cv-border pt-4 mt-4">
-                                        <label className="block text-sm font-medium text-cv-text-primary mb-3">Benchmarks (1RM en kg)</label>
-                                        <div className="grid grid-cols-3 gap-2">
+                                {/* Physical Profile Section */}
+                                <div className="border-t border-cv-border pt-4 mt-4">
+                                    <label className="block text-sm font-medium text-cv-text-primary mb-3">Perfil Físico</label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-xs text-cv-text-tertiary mb-1">Fecha Nac.</label>
                                             <input
-                                                type="number"
-                                                value={formData.snatch}
-                                                onChange={(e) => setFormData(prev => ({ ...prev, snatch: e.target.value }))}
-                                                placeholder="Snatch"
-                                                className="cv-input text-sm"
-                                            />
-                                            <input
-                                                type="number"
-                                                value={formData.cnj}
-                                                onChange={(e) => setFormData(prev => ({ ...prev, cnj: e.target.value }))}
-                                                placeholder="C&J"
-                                                className="cv-input text-sm"
-                                            />
-                                            <input
-                                                type="number"
-                                                value={formData.backSquat}
-                                                onChange={(e) => setFormData(prev => ({ ...prev, backSquat: e.target.value }))}
-                                                placeholder="Back Squat"
-                                                className="cv-input text-sm"
-                                            />
-                                            <input
-                                                type="number"
-                                                value={formData.frontSquat}
-                                                onChange={(e) => setFormData(prev => ({ ...prev, frontSquat: e.target.value }))}
-                                                placeholder="Front Squat"
-                                                className="cv-input text-sm"
-                                            />
-                                            <input
-                                                type="number"
-                                                value={formData.deadlift}
-                                                onChange={(e) => setFormData(prev => ({ ...prev, deadlift: e.target.value }))}
-                                                placeholder="Deadlift"
-                                                className="cv-input text-sm"
-                                            />
-                                            <input
-                                                type="number"
-                                                value={formData.cleanPull}
-                                                onChange={(e) => setFormData(prev => ({ ...prev, cleanPull: e.target.value }))}
-                                                placeholder="Clean Pull"
-                                                className="cv-input text-sm"
-                                            />
-                                            <input
-                                                type="number"
-                                                value={formData.strictPress}
-                                                onChange={(e) => setFormData(prev => ({ ...prev, strictPress: e.target.value }))}
-                                                placeholder="Strict Press"
-                                                className="cv-input text-sm"
-                                            />
-                                            <input
-                                                type="number"
-                                                value={formData.benchPress}
-                                                onChange={(e) => setFormData(prev => ({ ...prev, benchPress: e.target.value }))}
-                                                placeholder="Bench Press"
-                                                className="cv-input text-sm"
+                                                type="date"
+                                                value={formData.dob}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, dob: e.target.value }))}
+                                                className="cv-input"
                                             />
                                         </div>
-                                        <label className="block text-sm font-medium text-cv-text-primary mt-4 mb-3">Tiempos</label>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            <div>
-                                                <label className="block text-xs text-cv-text-tertiary mb-1">Fran (seg)</label>
-                                                <input
-                                                    type="number"
-                                                    value={formData.franTime}
-                                                    onChange={(e) => setFormData(prev => ({ ...prev, franTime: e.target.value }))}
-                                                    placeholder="180"
-                                                    className="cv-input text-sm"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs text-cv-text-tertiary mb-1">1KM (seg)</label>
-                                                <input
-                                                    type="number"
-                                                    value={formData.run1km}
-                                                    onChange={(e) => setFormData(prev => ({ ...prev, run1km: e.target.value }))}
-                                                    placeholder="240"
-                                                    className="cv-input text-sm"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs text-cv-text-tertiary mb-1">5KM (seg)</label>
-                                                <input
-                                                    type="number"
-                                                    value={formData.run5km}
-                                                    onChange={(e) => setFormData(prev => ({ ...prev, run5km: e.target.value }))}
-                                                    placeholder="1500"
-                                                    className="cv-input text-sm"
-                                                />
-                                            </div>
+                                        <div>
+                                            <label className="block text-xs text-cv-text-tertiary mb-1">Género</label>
+                                            <select
+                                                value={formData.gender}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value as any }))}
+                                                className="cv-input"
+                                            >
+                                                <option value="male">Masculino</option>
+                                                <option value="female">Femenino</option>
+                                                <option value="other">Otro</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-cv-text-tertiary mb-1">Altura (cm)</label>
+                                            <input
+                                                type="number"
+                                                value={formData.height}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))}
+                                                placeholder="175"
+                                                className="cv-input"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-cv-text-tertiary mb-1">Peso (kg)</label>
+                                            <input
+                                                type="number"
+                                                value={formData.weight}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))}
+                                                placeholder="75"
+                                                className="cv-input"
+                                            />
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Actions */}
-                                <div className="flex gap-3 mt-6">
+                                {/* Level Dropdown */}
+                                <div>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Nivel</label>
+                                    <select
+                                        value={formData.level}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, level: e.target.value }))}
+                                        className="cv-input"
+                                    >
+                                        <option value="Scaled">Scaled</option>
+                                        <option value="RX">RX</option>
+                                        <option value="Elite">Elite</option>
+                                        <option value="Master">Master</option>
+                                    </select>
+                                </div>
+
+                                {/* Goal */}
+                                <div>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Objetivo Principal</label>
+                                    <input
+                                        type="text"
+                                        value={formData.goal}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, goal: e.target.value }))}
+                                        placeholder="Ej: Competition Prep, Strength Bias..."
+                                        className="cv-input"
+                                    />
+                                </div>
+
+                                {/* Injuries/Notes */}
+                                <div>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">Lesiones / Limitaciones</label>
+                                    <textarea
+                                        value={formData.injuries}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, injuries: e.target.value }))}
+                                        placeholder="Ej: Shoulder impingement, bajo movilidad de tobillo..."
+                                        rows={2}
+                                        className="cv-input resize-none"
+                                    />
+                                </div>
+
+                                {/* Benchmarks Section */}
+                                <div className="border-t border-cv-border pt-4 mt-4">
+                                    <label className="block text-sm font-medium text-cv-text-primary mb-3">Benchmarks (1RM en kg)</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <input
+                                            type="number"
+                                            value={formData.snatch}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, snatch: e.target.value }))}
+                                            placeholder="Snatch"
+                                            className="cv-input text-sm"
+                                        />
+                                        <input
+                                            type="number"
+                                            value={formData.cnj}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, cnj: e.target.value }))}
+                                            placeholder="C&J"
+                                            className="cv-input text-sm"
+                                        />
+                                        <input
+                                            type="number"
+                                            value={formData.backSquat}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, backSquat: e.target.value }))}
+                                            placeholder="Back Squat"
+                                            className="cv-input text-sm"
+                                        />
+                                        <input
+                                            type="number"
+                                            value={formData.frontSquat}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, frontSquat: e.target.value }))}
+                                            placeholder="Front Squat"
+                                            className="cv-input text-sm"
+                                        />
+                                        <input
+                                            type="number"
+                                            value={formData.deadlift}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, deadlift: e.target.value }))}
+                                            placeholder="Deadlift"
+                                            className="cv-input text-sm"
+                                        />
+                                        <input
+                                            type="number"
+                                            value={formData.cleanPull}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, cleanPull: e.target.value }))}
+                                            placeholder="Clean Pull"
+                                            className="cv-input text-sm"
+                                        />
+                                        <input
+                                            type="number"
+                                            value={formData.strictPress}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, strictPress: e.target.value }))}
+                                            placeholder="Strict Press"
+                                            className="cv-input text-sm"
+                                        />
+                                        <input
+                                            type="number"
+                                            value={formData.benchPress}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, benchPress: e.target.value }))}
+                                            placeholder="Bench Press"
+                                            className="cv-input text-sm"
+                                        />
+                                    </div>
+                                    <label className="block text-sm font-medium text-cv-text-primary mt-4 mb-3">Tiempos</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <div>
+                                            <label className="block text-xs text-cv-text-tertiary mb-1">Fran (seg)</label>
+                                            <input
+                                                type="number"
+                                                value={formData.franTime}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, franTime: e.target.value }))}
+                                                placeholder="180"
+                                                className="cv-input text-sm"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-cv-text-tertiary mb-1">1KM (seg)</label>
+                                            <input
+                                                type="number"
+                                                value={formData.run1km}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, run1km: e.target.value }))}
+                                                placeholder="240"
+                                                className="cv-input text-sm"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-cv-text-tertiary mb-1">5KM (seg)</label>
+                                            <input
+                                                type="number"
+                                                value={formData.run5km}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, run5km: e.target.value }))}
+                                                placeholder="1500"
+                                                className="cv-input text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex gap-3 mt-6">
+                                <button
+                                    onClick={() => { resetForm(); setShowAddModal(false); }}
+                                    className="cv-btn-secondary flex-1"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={addAthlete}
+                                    disabled={!formData.name.trim() || isAdding}
+                                    className="cv-btn-primary flex-1"
+                                >
+                                    {isAdding ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                                    Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                {/* Delete Confirmation Modal */}
+                {athleteToDelete && (
+                    <>
+                        <div className="cv-overlay" onClick={() => !isDeleting && setAthleteToDelete(null)} />
+                        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-cv-bg-secondary border border-cv-border rounded-xl p-6 z-50 shadow-cv-lg">
+                            <div className="flex flex-col items-center text-center space-y-4">
+                                <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-500">
+                                    <AlertTriangle size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-cv-text-primary">¿Eliminar atleta?</h3>
+                                    <p className="text-sm text-cv-text-secondary mt-1">
+                                        Se eliminará al atleta y todo su historial de asignaciones.
+                                    </p>
+                                </div>
+                                <div className="flex gap-3 w-full mt-2">
                                     <button
-                                        onClick={() => { resetForm(); setShowAddModal(false); }}
+                                        onClick={() => setAthleteToDelete(null)}
+                                        disabled={isDeleting}
                                         className="cv-btn-secondary flex-1"
                                     >
                                         Cancelar
                                     </button>
                                     <button
-                                        onClick={addAthlete}
-                                        disabled={!formData.name.trim() || isAdding}
-                                        className="cv-btn-primary flex-1"
+                                        onClick={confirmDelete}
+                                        disabled={isDeleting}
+                                        className="cv-btn bg-red-500 hover:bg-red-600 text-white flex-1 transition-colors"
                                     >
-                                        {isAdding ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-                                        Guardar
+                                        {isDeleting ? <Loader2 size={16} className="animate-spin" /> : 'Sí, Eliminar'}
                                     </button>
                                 </div>
                             </div>
-                        </>
-                    )}
+                        </div>
+                    </>
+                )}
+            </div>
 
-                    {/* Delete Confirmation Modal */}
-                    {athleteToDelete && (
-                        <>
-                            <div className="cv-overlay" onClick={() => !isDeleting && setAthleteToDelete(null)} />
-                            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-cv-bg-secondary border border-cv-border rounded-xl p-6 z-50 shadow-cv-lg">
-                                <div className="flex flex-col items-center text-center space-y-4">
-                                    <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-500">
-                                        <AlertTriangle size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-bold text-cv-text-primary">¿Eliminar atleta?</h3>
-                                        <p className="text-sm text-cv-text-secondary mt-1">
-                                            Se eliminará al atleta y todo su historial de asignaciones.
-                                        </p>
-                                    </div>
-                                    <div className="flex gap-3 w-full mt-2">
-                                        <button
-                                            onClick={() => setAthleteToDelete(null)}
-                                            disabled={isDeleting}
-                                            className="cv-btn-secondary flex-1"
-                                        >
-                                            Cancelar
-                                        </button>
-                                        <button
-                                            onClick={confirmDelete}
-                                            disabled={isDeleting}
-                                            className="cv-btn bg-red-500 hover:bg-red-600 text-white flex-1 transition-colors"
-                                        >
-                                            {isDeleting ? <Loader2 size={16} className="animate-spin" /> : 'Sí, Eliminar'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </>
-                    )}
-                </div>
-
-            </>
-        );
-    }
+        </>
+    );
+}

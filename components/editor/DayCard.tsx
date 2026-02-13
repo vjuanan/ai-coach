@@ -51,7 +51,7 @@ const blockTypeOptions: { type: BlockType; label: string; color: string }[] = [
     { type: 'accessory', label: 'Accesorio', color: 'bg-purple-500' },
     { type: 'skill', label: 'Habilidad', color: 'bg-blue-500' },
     { type: 'free_text', label: 'Texto Libre', color: 'bg-gray-500' },
-    { type: 'finisher', label: 'Finisher', color: 'bg-rose-500' },
+    { type: 'finisher', label: 'Finisher', color: 'bg-amber-500' },
 ];
 
 export function DayCard({ day, dayName, compact = false, isActiveInBuilder = false, hideHeader = false }: DayCardProps) {

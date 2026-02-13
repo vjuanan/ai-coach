@@ -117,9 +117,9 @@ const blockTypeOptions: {
             type: 'finisher',
             label: 'Finisher',
             description: 'Dropsets, Rest-Pause, etc',
-            color: 'text-rose-600 dark:text-rose-400',
-            bgColor: 'bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50',
-            glowColor: 'rgba(225, 29, 72, 0.7)',
+            color: 'text-amber-600 dark:text-amber-400',
+            bgColor: 'bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50',
+            glowColor: 'rgba(217, 119, 6, 0.7)',
             icon: Target
         },
     ];

@@ -192,9 +192,32 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
 
     // Category grouping for better display
     // NOTE: 'strength' (Classic) is excluded because it's its own block type, not a methodology
+    // Category grouping with STRICT filtering based on block type
     const categoryOrder = ['metcon', 'hiit', 'strength', 'conditioning', 'finisher'];
+
+    // Define allowed categories for each block type
+    const allowedCategories: Record<string, string[]> = {
+        'finisher': ['finisher'],
+        'metcon_structured': ['metcon', 'hiit'], // Metcon can have HIIT too? Usually yes.
+        'conditioning': ['conditioning'],
+        'strength_linear': ['strength'], // Classic
+        // Warmup currently allows everything, but user wants it to be a section. 
+        // For now, if type is 'warmup', maybe allow all or specific? User said "Calentamiento puede ser cualquier tipo".
+        // But if we are strict:
+        'warmup': ['strength', 'metcon', 'conditioning', 'hiit'],
+        'skill': ['strength'], // Skill usually uses standard sets/reps? Or maybe free text. 
+        'accessory': ['strength'], // Accessory is usually strength-like
+    };
+
     const groupedMethodologies = categoryOrder.reduce((acc, cat) => {
-        acc[cat] = trainingMethodologies.filter(m => m.category === cat);
+        // Only include this category if it is allowed for the current block type
+        // console.log('Filtering:', { blockType: block?.type, category: cat, allowed: allowedCategories[block?.type || ''] });
+        if (!block?.type || (allowedCategories[block.type] && allowedCategories[block.type].includes(cat))) {
+            const methods = trainingMethodologies.filter(m => m.category === cat);
+            if (methods.length > 0) {
+                acc[cat] = methods;
+            }
+        }
         return acc;
     }, {} as Record<string, TrainingMethodology[]>);
 
@@ -215,10 +238,22 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     };
 
     // Navigation info - find current block position
+    // Navigation info - find current block position
     const dayId = blockBuilderDayId || selectedDayId;
     let currentDay = null;
     let currentDayIndex = -1;
     let totalDays = 0;
+
+    // DEBUG UI
+
+    const debugInfo = (
+        <div className="fixed top-20 right-4 bg-black/80 text-white p-2 rounded z-[9999] text-xs font-mono">
+            <p>Block ID: {blockId}</p>
+            <p>Type: "{block?.type}"</p>
+            <p>Allowed: {JSON.stringify(allowedCategories[block?.type || ''])}</p>
+        </div>
+    );
+
 
     for (const meso of mesocycles) {
         const dayIndex = meso.days.findIndex(d => d.id === dayId);
@@ -310,7 +345,13 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     const isValid = validateBlock();
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-cv-bg-secondary">
+        <div className="flex flex-col h-full bg-white dark:bg-cv-bg-secondary relative">
+            <div className="fixed top-20 right-4 bg-red-600 text-white p-4 rounded z-[9999] text-xs font-mono shadow-2xl border-4 border-white">
+                <p>DEBUGGER</p>
+                <p>Block ID: {blockId}</p>
+                <p>Block Type: "{block?.type}"</p>
+                <p>Allowed: {JSON.stringify(allowedCategories[block?.type || ''])}</p>
+            </div>
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-4 space-y-5">
 
@@ -333,84 +374,89 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             />
                         </div>
 
-                        {loading ? (
-                            <div className="flex items-center justify-center py-4">
-                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-cv-accent"></div>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {/* Categories Tabs - Horizontal Row */}
-                                <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-                                    {categoryOrder.map(category => {
-                                        const items = groupedMethodologies[category] || [];
-                                        if (items.length === 0) return null;
+                        {
+                            loading ? (
+                                <div className="flex items-center justify-center py-4">
+                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-cv-accent"></div>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {/* Categories Tabs - Horizontal Row */}
+                                    <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                                        {categoryOrder.map(category => {
+                                            const items = groupedMethodologies[category] || [];
+                                            if (items.length === 0) return null;
 
-                                        const isExpanded = expandedCategory === category;
-                                        const hasSelectedItem = items.some(m => m.code === block?.format);
-                                        const CategoryIcon = categoryIcons[category] || Dumbbell;
+                                            const isExpanded = expandedCategory === category;
+                                            const hasSelectedItem = items.some(m => m.code === block?.format);
+                                            const CategoryIcon = categoryIcons[category] || Dumbbell;
 
-                                        return (
-                                            <button
-                                                key={category}
-                                                onClick={() => setExpandedCategory(category)}
-                                                className={`
+                                            return (
+                                                <button
+                                                    key={category}
+                                                    onClick={() => setExpandedCategory(category)}
+                                                    className={`
                                                     flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border
                                                     ${isExpanded
-                                                        ? 'bg-cv-accent text-white border-cv-accent shadow-md scale-105'
-                                                        : hasSelectedItem
-                                                            ? 'bg-cv-accent/10 text-cv-accent border-cv-accent/30 hover:bg-cv-accent/20 hover:shadow-sm hover:scale-105'
-                                                            : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-cv-accent/50 hover:text-cv-accent hover:shadow-sm hover:scale-105'
-                                                    }
+                                                            ? 'bg-cv-accent text-white border-cv-accent shadow-md scale-105'
+                                                            : hasSelectedItem
+                                                                ? 'bg-cv-accent/10 text-cv-accent border-cv-accent/30 hover:bg-cv-accent/20 hover:shadow-sm hover:scale-105'
+                                                                : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-cv-accent/50 hover:text-cv-accent hover:shadow-sm hover:scale-105'
+                                                        }
                                                 `}
-                                            >
-                                                <CategoryIcon size={14} />
-                                                <span>{categoryLabels[category]}</span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
+                                                >
+                                                    <CategoryIcon size={14} />
+                                                    <span>{categoryLabels[category]}</span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
 
-                                {/* Active Category Options */}
-                                {expandedCategory && (groupedMethodologies[expandedCategory]?.length ?? 0) > 0 && (
-                                    <div className="bg-slate-50 dark:bg-cv-bg-tertiary/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-1 duration-200">
-                                        <div className="flex flex-wrap gap-2">
-                                            {(groupedMethodologies[expandedCategory] || []).map(m => {
-                                                const IconComponent = iconMap[m.icon] || Dumbbell;
-                                                const isSelected = block?.format === m.code;
+                                    {/* Active Category Options */}
+                                    {expandedCategory && (groupedMethodologies[expandedCategory]?.length ?? 0) > 0 && (
+                                        <div className="bg-slate-50 dark:bg-cv-bg-tertiary/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-1 duration-200">
+                                            <div className="flex flex-wrap gap-2">
+                                                {(groupedMethodologies[expandedCategory] || []).map(m => {
+                                                    const IconComponent = iconMap[m.icon] || Dumbbell;
+                                                    const isSelected = block?.format === m.code;
 
-                                                return (
-                                                    <button
-                                                        key={m.code}
-                                                        onClick={() => handleFormatChange(m.code)}
-                                                        title={m.description}
-                                                        className={`
+                                                    return (
+                                                        <button
+                                                            key={m.code}
+                                                            onClick={() => handleFormatChange(m.code)}
+                                                            title={m.description}
+                                                            className={`
                                                             px-3 py-2 rounded-lg text-xs font-medium transition-all
                                                             flex items-center gap-2 border flex-1 min-w-[120px] justify-center
                                                             ${isSelected
-                                                                ? 'bg-white dark:bg-cv-bg-primary text-cv-accent border-cv-accent shadow-md ring-1 ring-cv-accent/20 scale-[1.02]'
-                                                                : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary hover:text-cv-accent hover:bg-slate-50 dark:hover:bg-cv-bg-primary border-slate-200 dark:border-slate-700 hover:border-cv-accent/30 hover:shadow-sm hover:-translate-y-0.5'
-                                                            }
+                                                                    ? 'bg-white dark:bg-cv-bg-primary text-cv-accent border-cv-accent shadow-md ring-1 ring-cv-accent/20 scale-[1.02]'
+                                                                    : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary hover:text-cv-accent hover:bg-slate-50 dark:hover:bg-cv-bg-primary border-slate-200 dark:border-slate-700 hover:border-cv-accent/30 hover:shadow-sm hover:-translate-y-0.5'
+                                                                }
                                                         `}
-                                                    >
-                                                        <IconComponent size={14} />
-                                                        {m.name}
-                                                    </button>
-                                                );
-                                            })}
+                                                        >
+                                                            <IconComponent size={14} />
+                                                            {m.name}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                                    )}
+                                </div>
+                            )
+                        }
 
                         {/* Methodology Description */}
-                        {currentMethodology && block.type !== 'warmup' && (
-                            <p className="mt-2 text-xs text-cv-text-tertiary italic">
-                                {currentMethodology.description}
-                            </p>
-                        )}
-                    </div>
-                )}
+                        {
+                            currentMethodology && block.type !== 'warmup' && (
+                                <p className="mt-2 text-xs text-cv-text-tertiary italic">
+                                    {currentMethodology.description}
+                                </p>
+                            )
+                        }
+                    </div >
+                )
+                }
 
                 {/* 2. BLOCK NAME / EXERCISE INPUT */}
                 {/* Logic: 
@@ -421,158 +467,171 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                       Let's make it a simple "Nombre del Bloque (Opcional)" input for MetCons.
                 */}
                 {/* 2. BLOCK NAME / EXERCISE INPUT (ONLY FOR STRENGTH) */}
-                {block.type === 'strength_linear' && (
-                    <div>
-                        <div className="flex items-center justify-between mb-2">
-                            <label className="block text-sm font-medium text-cv-text-secondary">
-                                Ejercicio Principal
-                            </label>
+                {
+                    block.type === 'strength_linear' && (
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-sm font-medium text-cv-text-secondary">
+                                    Ejercicio Principal
+                                </label>
 
-                            {/* Progression Toggle - Here for Strength blocks */}
-                            <ProgressionSettings
-                                blockId={blockId}
-                                progressionId={block.progression_id}
-                                showSelector={showProgressionSelector}
-                                setShowSelector={setShowProgressionSelector}
-                                onToggle={toggleBlockProgression}
-                                showDistance={(() => {
-                                    const ex = block.name ? searchLocal(block.name).find(e => e.name === block.name) : null;
-                                    return ex?.tracking_parameters?.distance === true;
-                                })()}
+                                {/* Progression Toggle - Here for Strength blocks */}
+                                <ProgressionSettings
+                                    blockId={blockId}
+                                    progressionId={block.progression_id}
+                                    showSelector={showProgressionSelector}
+                                    setShowSelector={setShowProgressionSelector}
+                                    onToggle={toggleBlockProgression}
+                                    showDistance={(() => {
+                                        const ex = block.name ? searchLocal(block.name).find(e => e.name === block.name) : null;
+                                        return ex?.tracking_parameters?.distance === true;
+                                    })()}
+                                />
+                            </div>
+
+                            <SmartExerciseInput
+                                value={block.name || ''}
+                                onChange={(val) => updateBlock(blockId, { name: val || null })}
+                                placeholder="Buscar ejercicio en la biblioteca..."
+                                className="cv-input"
+                                inputRef={firstInputRef}
                             />
+
+                            {/* Validation Warning */}
+                            {block.name && block.name.trim().length > 0 && !searchLocal(block.name).find(e => e.name.toLowerCase() === block.name?.toLowerCase()) && (
+                                <p className="text-xs text-amber-500 mt-2 flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
+                                    <AlertCircle size={12} />
+                                    <span>Selecciona un ejercicio válido de la lista para continuar</span>
+                                </p>
+                            )}
                         </div>
-
-                        <SmartExerciseInput
-                            value={block.name || ''}
-                            onChange={(val) => updateBlock(blockId, { name: val || null })}
-                            placeholder="Buscar ejercicio en la biblioteca..."
-                            className="cv-input"
-                            inputRef={firstInputRef}
-                        />
-
-                        {/* Validation Warning */}
-                        {block.name && block.name.trim().length > 0 && !searchLocal(block.name).find(e => e.name.toLowerCase() === block.name?.toLowerCase()) && (
-                            <p className="text-xs text-amber-500 mt-2 flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
-                                <AlertCircle size={12} />
-                                <span>Selecciona un ejercicio válido de la lista para continuar</span>
-                            </p>
-                        )}
-                    </div>
-                )}
+                    )
+                }
 
                 {/* 3. SPECIALIZED EDITORS */}
-                {currentMethodology && (
-                    <div className="animate-in fade-in duration-300">
-                        {/* EMOM Editor */}
-                        {currentMethodology.code === 'EMOM' && (
-                            <EmomEditor
-                                key={blockId}
-                                config={config}
-                                onChange={handleConfigChange}
-                            />
-                        )}
+                {
+                    currentMethodology && (
+                        <div className="animate-in fade-in duration-300">
+                            {/* EMOM Editor */}
+                            {currentMethodology.code === 'EMOM' && (
+                                <EmomEditor
+                                    key={blockId}
+                                    config={config}
+                                    onChange={handleConfigChange}
+                                />
+                            )}
 
-                        {/* AMRAP Editor */}
-                        {currentMethodology.code === 'AMRAP' && (
-                            <CircuitEditor
-                                key={blockId}
-                                mode="AMRAP"
-                                config={config}
-                                onChange={handleConfigChange}
-                            />
-                        )}
+                            {/* AMRAP Editor */}
+                            {currentMethodology.code === 'AMRAP' && (
+                                <CircuitEditor
+                                    key={blockId}
+                                    mode="AMRAP"
+                                    config={config}
+                                    onChange={handleConfigChange}
+                                    onBatchChange={handleBatchConfigChange}
+                                />
+                            )}
 
-                        {/* RFT / Rounds For Time */}
-                        {(currentMethodology.code === 'RFT' || currentMethodology.code === 'For Time') && (
-                            <CircuitEditor
-                                key={blockId}
-                                mode="RFT"
-                                config={config}
-                                onChange={handleConfigChange}
-                            />
-                        )}
+                            {/* RFT / Rounds For Time */}
+                            {(currentMethodology.code === 'RFT' || currentMethodology.code === 'For Time') && (
+                                <CircuitEditor
+                                    key={blockId}
+                                    mode="RFT"
+                                    config={config}
+                                    onChange={handleConfigChange}
+                                    onBatchChange={handleBatchConfigChange}
+                                />
+                            )}
 
-                        {/* Chipper */}
-                        {currentMethodology.code === 'Chipper' && (
-                            <CircuitEditor
-                                key={blockId}
-                                mode="CHIPPER"
-                                config={config}
-                                onChange={handleConfigChange}
-                            />
-                        )}
+                            {/* Chipper */}
+                            {currentMethodology.code === 'Chipper' && (
+                                <CircuitEditor
+                                    key={blockId}
+                                    mode="CHIPPER"
+                                    config={config}
+                                    onChange={handleConfigChange}
+                                    onBatchChange={handleBatchConfigChange}
+                                />
+                            )}
 
-                        {/* Tabata */}
-                        {currentMethodology.code === 'Tabata' && (
-                            <TabataEditor
-                                key={blockId}
-                                config={config}
-                                onChange={handleConfigChange}
-                            />
-                        )}
+                            {/* Tabata */}
+                            {currentMethodology.code === 'Tabata' && (
+                                <TabataEditor
+                                    key={blockId}
+                                    config={config}
+                                    onChange={handleConfigChange}
+                                />
+                            )}
 
-                        {/* Fallback to GenericMovementForm for Warmup/Accessory/Skill/Finisher with methodology */}
-                        {['warmup', 'accessory', 'skill', 'finisher'].includes(block.type) && !['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper', 'Tabata'].includes(currentMethodology.code) && (
-                            <GenericMovementForm
-                                key={blockId}
-                                config={config}
-                                onChange={handleConfigChange}
-                                methodology={currentMethodology}
-                            />
-                        )}
+                            {/* Fallback to GenericMovementForm for Warmup/Accessory/Skill/Finisher with methodology */}
+                            {['warmup', 'accessory', 'skill', 'finisher'].includes(block.type) && !['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper', 'Tabata'].includes(currentMethodology.code) && (
+                                <GenericMovementForm
+                                    key={blockId}
+                                    config={config}
+                                    onChange={handleConfigChange}
+                                    methodology={currentMethodology}
+                                />
+                            )}
 
-                        {/* Fallback to Dynamic Form for others (Metcon) */}
-                        {!['warmup', 'accessory', 'skill', 'finisher'].includes(block.type) && !['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper', 'Tabata'].includes(currentMethodology.code) && (
-                            <DynamicMethodologyForm
-                                key={blockId}
-                                methodology={currentMethodology}
-                                config={config}
-                                onChange={handleConfigChange}
-                                onBatchChange={handleBatchConfigChange}
-                            />
-                        )}
-                    </div>
-                )}
+                            {/* Fallback to Dynamic Form for others (Metcon) */}
+                            {!['warmup', 'accessory', 'skill', 'finisher'].includes(block.type) && !['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper', 'Tabata'].includes(currentMethodology.code) && (
+                                <DynamicMethodologyForm
+                                    key={blockId}
+                                    methodology={currentMethodology}
+                                    config={config}
+                                    onChange={handleConfigChange}
+                                    onBatchChange={handleBatchConfigChange}
+                                />
+                            )}
+                        </div>
+                    )
+                }
 
                 {/* 4. FALLBACK FORMS (No Methodology) */}
-                {!currentMethodology && (
-                    <>
-                        {block.type === 'strength_linear' && (
-                            <StrengthForm key={blockId} config={config} onChange={handleConfigChange} onBatchChange={handleBatchConfigChange} blockName={block.name} />
-                        )}
+                {
+                    !currentMethodology && (
+                        <>
+                            {block.type === 'strength_linear' && (
+                                <StrengthForm key={blockId} config={config} onChange={handleConfigChange} onBatchChange={handleBatchConfigChange} blockName={block.name} />
+                            )}
 
-                        {block.type === 'free_text' && (
-                            <FreeTextForm key={blockId} config={config} onChange={handleConfigChange} />
-                        )}
+                            {block.type === 'free_text' && (
+                                <FreeTextForm key={blockId} config={config} onChange={handleConfigChange} />
+                            )}
 
-                        {(block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill' || block.type === 'finisher') && !currentMethodology && (
-                            <GenericMovementForm key={blockId} config={config} onChange={handleConfigChange} methodology={currentMethodology} />
-                        )}
-                    </>
-                )}
+                            {(block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill' || block.type === 'finisher') && !currentMethodology && (
+                                <GenericMovementForm key={blockId} config={config} onChange={handleConfigChange} methodology={currentMethodology} />
+                            )}
+                        </>
+                    )
+                }
 
                 {/* 5. NOTES (Visible for all except Strength, which has it inline) */}
-                {block.type !== 'strength_linear' && (
-                    <div>
-                        <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                            Notas
-                        </label>
-                        <textarea
-                            value={(config.notes as string) || ''}
-                            onChange={(e) => handleConfigChange('notes', e.target.value)}
-                            placeholder="Focus on quality, tempo, etc."
-                            className="cv-input min-h-[60px] resize-none"
-                        />
-                    </div>
-                )}
+                {
+                    block.type !== 'strength_linear' && (
+                        <div>
+                            <label className="block text-sm font-medium text-cv-text-secondary mb-2">
+                                Notas
+                            </label>
+                            <textarea
+                                value={(config.notes as string) || ''}
+                                onChange={(e) => handleConfigChange('notes', e.target.value)}
+                                placeholder="Focus on quality, tempo, etc."
+                                className="cv-input min-h-[60px] resize-none"
+                            />
+                        </div>
+                    )
+                }
 
                 {/* 5.5. PROGRESSION PREVIEW - Show all weeks when progression is active */}
-                {block.progression_id && (
-                    <ProgressionPreview
-                        currentBlockId={blockId}
-                        progressionId={block.progression_id}
-                    />
-                )}
+                {
+                    block.progression_id && (
+                        <ProgressionPreview
+                            currentBlockId={blockId}
+                            progressionId={block.progression_id}
+                        />
+                    )
+                }
 
                 {/* 6. DELETE BUTTON */}
                 {/* 6. BOTTOM ACTIONS (DELETE + LISTO) */}
@@ -604,8 +663,8 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     </button>
                 </div>
 
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
 

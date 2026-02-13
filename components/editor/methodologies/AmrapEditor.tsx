@@ -14,10 +14,11 @@ interface CircuitItem {
 interface CircuitEditorProps {
     config: Partial<AMRAPConfig & RFTConfig>;
     onChange: (key: string, value: unknown) => void;
+    onBatchChange?: (updates: Record<string, unknown>) => void;
     mode: 'AMRAP' | 'RFT' | 'CHIPPER'; // CHIPPER acts like RFT usually but linear
 }
 
-export function CircuitEditor({ config, onChange, mode }: CircuitEditorProps) {
+export function CircuitEditor({ config, onChange, onBatchChange, mode }: CircuitEditorProps) {
     // Local state for circuit items
     const [items, setItems] = useState<CircuitItem[]>(() => {
         const savedItems = (config as any).items;
@@ -37,8 +38,15 @@ export function CircuitEditor({ config, onChange, mode }: CircuitEditorProps) {
     });
 
     useEffect(() => {
-        onChange('items', items);
-        onChange('movements', items.map(i => i.exercise));
+        if (onBatchChange) {
+            onBatchChange({
+                items: items,
+                movements: items.map(i => i.exercise)
+            });
+        } else {
+            onChange('items', items);
+            onChange('movements', items.map(i => i.exercise));
+        }
     }, [items]);
 
     const addItem = () => {

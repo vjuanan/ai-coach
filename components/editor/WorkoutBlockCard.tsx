@@ -33,7 +33,7 @@ const blockTypeStyles: Record<string, { color: string; label: string; hoverClass
     accessory: { color: 'modality-accessory', label: 'Accesorio', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
     skill: { color: 'modality-skill', label: 'Habilidad', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
     free_text: { color: 'border-l-4 border-l-gray-500', label: 'Notas', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
-    finisher: { color: 'border-l-4 border-l-rose-500', label: 'Finisher', hoverClass: 'hover:border-rose-300 dark:hover:border-rose-500 hover:shadow-md hover:-translate-y-0.5' },
+    finisher: { color: 'border-l-4 border-l-amber-500', label: 'Finisher', hoverClass: 'hover:border-amber-300 dark:hover:border-amber-500 hover:shadow-md hover:-translate-y-0.5' },
 };
 
 const formatLabels: Record<string, string> = {

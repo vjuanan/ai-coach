@@ -78,7 +78,7 @@ const getBlockColor = (type: string): string => {
         case 'metcon_structured': return '#f97316';
         case 'warmup': return '#22c55e';
         case 'skill': return '#3b82f6';
-        case 'finisher': return '#e11d48';
+        case 'finisher': return '#f59e0b';
         default: return '#6b7280';
     }
 };
