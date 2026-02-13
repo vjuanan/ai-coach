@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { useEditorStore } from '@/lib/store';
 import { WorkoutBlockCard } from './WorkoutBlockCard';
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 import { Plus, Moon, MoreHorizontal, Sun, Target, Trash2, Copy } from 'lucide-react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
 import * as Popover from '@radix-ui/react-popover';
@@ -54,6 +56,10 @@ const blockTypeOptions: { type: BlockType; label: string; color: string }[] = [
 
 export function DayCard({ day, dayName, compact = false, isActiveInBuilder = false, hideHeader = false }: DayCardProps) {
     const { addBlock, toggleRestDay, selectDay, selectBlock, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures, clearDay, enterBlockBuilder, blockBuilderMode, draggedBlockId, copyDayToFutureWeeks } = useEditorStore();
+
+    // UI State for Copy Confirmation
+    const [showCopyConfirm, setShowCopyConfirm] = useState(false);
+    const [isCopying, setIsCopying] = useState(false);
 
     // Setup droppable
     const { isOver, setNodeRef } = useDroppable({
