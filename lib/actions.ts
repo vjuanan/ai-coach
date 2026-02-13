@@ -180,19 +180,7 @@ export async function getPrograms() {
                 throw error;
             }
 
-            // Log Verification Program details
-            if (data) {
-                const sample = data.find(p => p.name.includes('Verification'));
-                if (sample) {
-                    console.log('getPrograms [Admin Bypass] Found Verification Program:', {
-                        id: sample.id,
-                        name: sample.name,
-                        client_id: sample.client_id,
-                        client_has_data: !!sample.client,
-                        client_data: sample.client
-                    });
-                }
-            }
+
 
             return data;
 
@@ -603,14 +591,10 @@ export async function deleteProgram(programId: string): Promise<{ success: boole
 }
 
 export async function assignProgram(programId: string, clientId: string | null) {
-    console.log(`assignProgram: Starting assignment. Program: ${programId}, Client: ${clientId}`);
     const supabase = createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
-        console.error('assignProgram: Unauthorized (No User)');
-        throw new Error('Unauthorized');
-    }
+    if (!user) throw new Error('Unauthorized');
 
     // Use Service Role Key to bypass RLS policies for updates
     const dbClient = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -624,30 +608,13 @@ export async function assignProgram(programId: string, clientId: string | null) 
         .select()
         .single();
 
-
-    if (error) {
-        console.error('assignProgram: DB Error', error);
-        throw new Error(error.message);
-    }
-
-    console.log('assignProgram: Success. Check DB for ID:', programId);
-    console.log('assignProgram: Updated Data:', data);
+    if (error) throw new Error(error.message);
 
     revalidatePath(`/editor/${programId}`);
     revalidatePath('/programs');
     revalidatePath('/');
 
-    // Return debug info
-    return {
-        success: true,
-        data,
-        debug: {
-            programId,
-            clientId,
-            usingAdmin: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-            timestamp: new Date().toISOString()
-        }
-    };
+    return { success: true, data };
 }
 
 export async function deletePrograms(programIds: string[]): Promise<{ success: boolean; error?: string }> {
