@@ -42,15 +42,17 @@ const parseMovements = (data: unknown[]): MovementObject[] => {
 
 export function GenericMovementForm({ config, onChange, methodology }: GenericMovementFormProps) {
     // Logic for displaying inputs based on methodology
-    const isMetconLike = methodology?.category === 'metcon' || methodology?.category === 'hiit' || methodology?.format === 'circuit';
-    const isStrengthLike = methodology?.category === 'strength' || methodology?.category === 'hypertrophy' || methodology?.category === 'power' || methodology?.format === 'standard';
+    // Force git update: 3
+    const isMetconLike = methodology?.category === 'metcon' || methodology?.category === 'hiit';
+    const isStrengthLike = methodology?.category === 'strength' || methodology?.category === 'hypertrophy' || methodology?.category === 'power';
+    const isStandard = methodology?.code === 'STANDARD';
 
     // Strict display rules:
-    // - Rounds: Only for Metcon/HIIT/Circuit
+    // - Rounds: Only for Metcon/HIIT, but NEVER for STANDARD
     // - Sets: Only for Strength/Standard
-    // - If no methodology selected (undefined), show NEITHER (forces user to select one)
-    const showRounds = isMetconLike;
-    const showSets = isStrengthLike;
+    // - If no methodology selected (undefined), show NEITHER
+    const showRounds = isMetconLike && !isStandard;
+    const showSets = isStrengthLike || isStandard;
 
     const movements = parseMovements((config.movements as unknown[]) || []);
     const rounds = (config.rounds as string) || '';
