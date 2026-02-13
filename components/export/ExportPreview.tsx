@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { X, Download, Image, FileText, Loader2, Calendar, Target, TrendingUp, Dumbbell } from 'lucide-react';
+import { X, Download, Image, FileText, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface MesocycleStrategy {
@@ -17,6 +17,9 @@ interface WorkoutBlock {
     type: string;
     name: string;
     content: string[];
+    section?: string;
+    cue?: string;
+    format?: string | null;
 }
 
 interface DayData {
@@ -37,6 +40,12 @@ interface MonthlyProgression {
     notes?: string;
 }
 
+interface WeekDateRange {
+    weekNumber: number;
+    startDate: string;
+    endDate: string;
+}
+
 interface ExportPreviewProps {
     isOpen: boolean;
     onClose: () => void;
@@ -54,35 +63,65 @@ interface ExportPreviewProps {
     };
     weeks: WeekData[];
     strategy?: MesocycleStrategy;
+    mission?: string;
+    weekDateRanges?: WeekDateRange[];
 }
 
-// Color palette for export - hardcoded to ensure html2canvas compatibility
-const EXPORT_COLORS = {
-    bgPrimary: '#1f2937',
-    bgSecondary: '#111827',
-    bgTertiary: '#374151',
-    textPrimary: '#ffffff',
-    textSecondary: '#d1d5db',
-    textTertiary: '#9ca3af',
-    textMuted: '#6b7280',
-    accent: '#f97316',
-    accentGreen: '#22c55e',
-    border: '#374151',
-    borderLight: '#4b5563',
+// ─── Light Theme Palette ─────────────────────────────────────────────
+const C = {
+    bgPage: '#FAFAF8',
+    bgCard: '#FFFFFF',
+    bgWarm: '#F5F0EB',
+    bgAccentBanner: '#8B1A4A',
+    bgAccentBannerLight: '#A83262',
+    bgMission: '#FFF8F0',
+    bgActivacion: '#FFF9F5',
+    bgExercise: '#FFFFFF',
+    bgProgression: '#F8F5F2',
+    bgSuperSerie: '#F3EDE7',
+    bgFinisher: '#FFF5EE',
+    textDark: '#2D2926',
+    textMedium: '#5C5550',
+    textLight: '#8A8580',
+    textMuted: '#B0ABA6',
+    accent: '#8B1A4A',
+    accentLight: '#A83262',
+    accentSoft: '#C94D7A',
+    gold: '#D4A853',
+    green: '#5B8C3E',
+    orange: '#D4763A',
+    blue: '#4A7FB5',
+    red: '#C94444',
+    border: '#E5E0DA',
+    borderLight: '#EDE8E3',
 };
 
-// Block type to color mapping
-const getBlockColor = (type: string): string => {
-    switch (type) {
-        case 'strength_linear': return '#ef4444';
-        case 'metcon_structured': return '#f97316';
-        case 'warmup': return '#22c55e';
-        case 'skill': return '#3b82f6';
-        case 'finisher': return '#f59e0b';
-        default: return '#6b7280';
+// ─── Block type color + emoji ────────────────────────────────────────
+const BLOCK_STYLE: Record<string, { color: string; emoji: string; label: string }> = {
+    strength_linear: { color: C.orange, emoji: '🟠', label: 'Fuerza' },
+    metcon_structured: { color: C.red, emoji: '🔥', label: 'MetCon' },
+    warmup: { color: C.green, emoji: '✨', label: 'Activación' },
+    accessory: { color: C.blue, emoji: '◆', label: 'Accesorio' },
+    skill: { color: C.blue, emoji: '◆', label: 'Skill' },
+    finisher: { color: C.orange, emoji: '🔥', label: 'Finisher' },
+    free_text: { color: C.textLight, emoji: '📝', label: 'Notas' },
+};
+
+const getBlockStyle = (type: string) => BLOCK_STYLE[type] || BLOCK_STYLE.free_text;
+
+// ─── Helper: format date to short Spanish ────────────────────────────
+function formatDateShort(dateStr: string): string {
+    try {
+        const d = new Date(dateStr + 'T00:00:00');
+        const day = String(d.getDate()).padStart(2, '0');
+        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        return `${day} ${months[d.getMonth()]}`;
+    } catch {
+        return dateStr;
     }
-};
+}
 
+// ─── Component ───────────────────────────────────────────────────────
 export function ExportPreview({
     isOpen,
     onClose,
@@ -92,38 +131,32 @@ export function ExportPreview({
     monthlyStrategy,
     weeks,
     strategy,
+    mission,
+    weekDateRanges,
 }: ExportPreviewProps) {
     const exportRef = useRef<HTMLDivElement>(null);
     const [isExporting, setIsExporting] = useState(false);
     const [exportFormat, setExportFormat] = useState<'png' | 'pdf'>('png');
 
-    // Handle ESC key to close modal
     useEffect(() => {
         if (!isOpen) return;
-
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                onClose();
-            }
+            if (e.key === 'Escape') onClose();
         };
-
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, [isOpen, onClose]);
 
     const handleExport = async () => {
         if (!exportRef.current) return;
-
         setIsExporting(true);
-
         try {
             const canvas = await html2canvas(exportRef.current, {
-                backgroundColor: EXPORT_COLORS.bgPrimary,
+                backgroundColor: C.bgPage,
                 scale: 2,
                 useCORS: true,
                 logging: false,
             });
-
             if (exportFormat === 'png') {
                 const link = document.createElement('a');
                 link.download = `${clientInfo.name}-${programName}.png`;
@@ -145,6 +178,334 @@ export function ExportPreview({
             setIsExporting(false);
         }
     };
+
+    // ─── Build a progression lookup: exercise name → per-week values ─
+    const progressionMap = new Map<string, string[]>();
+    if (monthlyStrategy?.progressions) {
+        for (const p of monthlyStrategy.progressions) {
+            progressionMap.set(p.name, p.progression);
+        }
+    }
+
+    // ─── Group blocks by section within a day ────────────────────────
+    function groupBlocksBySection(blocks: WorkoutBlock[]) {
+        const warmup: WorkoutBlock[] = [];
+        const main: WorkoutBlock[] = [];
+        const finishers: WorkoutBlock[] = [];
+
+        for (const b of blocks) {
+            if (b.section === 'warmup' || b.type === 'warmup') {
+                warmup.push(b);
+            } else if (b.type === 'finisher' || (b.type === 'metcon_structured' && b.section === 'cooldown')) {
+                finishers.push(b);
+            } else {
+                main.push(b);
+            }
+        }
+        return { warmup, main, finishers };
+    }
+
+    // ─── Build exercise numbering (1, 2, 3A, 3B, etc) ───────────────
+    function buildNumberedExercises(mainBlocks: WorkoutBlock[]) {
+        const result: { label: string; block: WorkoutBlock; isSuperSet: boolean; superSetLabel?: string }[] = [];
+        let counter = 1;
+        let i = 0;
+
+        while (i < mainBlocks.length) {
+            const block = mainBlocks[i];
+
+            // Detect super-set: if block name starts with pattern like "3A." or block has accessory type paired
+            // For now, use a simpler approach: consecutive accessory blocks form a super-set
+            // Better approach: detect blocks that share the same "group" (we'll use consecutive accessory blocks)
+
+            if (block.type === 'accessory' || block.type === 'skill') {
+                // Check if next block is also accessory → super-set
+                const superSetBlocks: WorkoutBlock[] = [block];
+                let j = i + 1;
+                while (j < mainBlocks.length && (mainBlocks[j].type === 'accessory' || mainBlocks[j].type === 'skill')) {
+                    superSetBlocks.push(mainBlocks[j]);
+                    j++;
+                }
+
+                if (superSetBlocks.length > 1) {
+                    // It's a super-set
+                    const letters = 'ABCDEFGH';
+                    for (let k = 0; k < superSetBlocks.length; k++) {
+                        result.push({
+                            label: `${counter}${letters[k] || String.fromCharCode(65 + k)}`,
+                            block: superSetBlocks[k],
+                            isSuperSet: true,
+                            superSetLabel: k === 0 ? `SUPER SERIE ${letters[0]}` : undefined,
+                        });
+                    }
+                    counter++;
+                    i = j;
+                } else {
+                    result.push({ label: `${counter}`, block, isSuperSet: false });
+                    counter++;
+                    i++;
+                }
+            } else {
+                result.push({ label: `${counter}`, block, isSuperSet: false });
+                counter++;
+                i++;
+            }
+        }
+        return result;
+    }
+
+    // ─── Render a single exercise block ──────────────────────────────
+    function renderExercise(
+        label: string,
+        block: WorkoutBlock,
+        progression: string[] | undefined
+    ) {
+        const style = getBlockStyle(block.type);
+
+        return (
+            <div key={`${label}-${block.name}`} style={{
+                marginBottom: '20px',
+                paddingLeft: '8px',
+            }}>
+                {/* Exercise header: number + name + emoji */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: '10px',
+                    marginBottom: '4px',
+                }}>
+                    <span style={{
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        color: C.accent,
+                        minWidth: '24px',
+                    }}>
+                        {label}.
+                    </span>
+                    <span style={{
+                        fontSize: '18px',
+                        fontWeight: 'bold',
+                        color: C.textDark,
+                        fontFamily: 'system-ui, -apple-system, sans-serif',
+                    }}>
+                        {block.name}
+                    </span>
+                    <span style={{ fontSize: '14px' }}>{style.emoji}</span>
+                </div>
+
+                {/* Cue (coaching note) */}
+                {block.cue && (
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '6px',
+                        marginLeft: '34px',
+                        marginBottom: '8px',
+                    }}>
+                        <span style={{ fontSize: '12px', marginTop: '1px' }}>💡</span>
+                        <span style={{
+                            fontStyle: 'italic',
+                            fontSize: '13px',
+                            color: C.textMedium,
+                            lineHeight: 1.4,
+                        }}>
+                            {block.cue}
+                        </span>
+                    </div>
+                )}
+
+                {/* Progression inline or content */}
+                {progression && progression.length > 0 ? (
+                    <div style={{
+                        marginLeft: '34px',
+                        padding: '8px 12px',
+                        backgroundColor: C.bgProgression,
+                        borderLeft: `3px solid ${style.color}`,
+                        borderRadius: '0 6px 6px 0',
+                        fontSize: '13px',
+                        color: C.textMedium,
+                        lineHeight: 1.6,
+                    }}>
+                        {progression.map((val, idx) => (
+                            <span key={idx}>
+                                <span style={{ fontWeight: '600', color: C.textDark }}>
+                                    Sem {idx + 1}:
+                                </span>{' '}
+                                <span>{val}</span>
+                                {idx < progression.length - 1 && (
+                                    <span style={{ color: C.textMuted, margin: '0 6px' }}>→</span>
+                                )}
+                            </span>
+                        ))}
+                    </div>
+                ) : (
+                    /* Regular content (non-progression) */
+                    block.content.length > 0 && (
+                        <div style={{
+                            marginLeft: '34px',
+                            padding: '8px 12px',
+                            backgroundColor: C.bgProgression,
+                            borderLeft: `3px solid ${style.color}`,
+                            borderRadius: '0 6px 6px 0',
+                        }}>
+                            {block.content.filter(l => l.trim()).map((line, idx) => (
+                                <p key={idx} style={{
+                                    fontSize: '13px',
+                                    lineHeight: 1.5,
+                                    color: idx === 0 ? C.textDark : C.textMedium,
+                                    fontWeight: idx === 0 ? '600' : 'normal',
+                                    margin: '2px 0',
+                                }}>
+                                    {line}
+                                </p>
+                            ))}
+                        </div>
+                    )
+                )}
+            </div>
+        );
+    }
+
+    // ─── Render warmup section ───────────────────────────────────────
+    function renderWarmupSection(warmupBlocks: WorkoutBlock[]) {
+        if (warmupBlocks.length === 0) return null;
+
+        // Collect all movements from warmup blocks
+        const movements: string[] = [];
+        for (const b of warmupBlocks) {
+            if (b.format) {
+                // Add format header (e.g., "3 VUELTAS")
+            }
+            for (const line of b.content) {
+                if (line.trim()) movements.push(line);
+            }
+        }
+
+        // Try extract round info from first block
+        const firstBlock = warmupBlocks[0];
+        const roundInfo = firstBlock.content.find(c => c.toLowerCase().includes('round') || c.toLowerCase().includes('vuelta'));
+
+        return (
+            <div style={{
+                backgroundColor: C.bgActivacion,
+                borderRadius: '8px',
+                padding: '16px',
+                marginBottom: '20px',
+                border: `1px solid ${C.borderLight}`,
+            }}>
+                <div style={{
+                    fontSize: '13px',
+                    fontWeight: 'bold',
+                    color: C.accent,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    marginBottom: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                }}>
+                    <span>✨</span>
+                    ACTIVACIÓN {firstBlock.format ? `(${firstBlock.format})` : ''}
+                </div>
+                {movements.map((m, idx) => (
+                    <div key={idx} style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '8px',
+                        fontSize: '14px',
+                        color: C.textDark,
+                        marginBottom: '4px',
+                        paddingLeft: '4px',
+                    }}>
+                        <span style={{ color: C.accent, marginTop: '2px', fontSize: '8px' }}>●</span>
+                        <span>{m}</span>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
+    // ─── Render finisher section ─────────────────────────────────────
+    function renderFinisherSection(finisherBlocks: WorkoutBlock[]) {
+        if (finisherBlocks.length === 0) return null;
+
+        return (
+            <div style={{ marginTop: '24px' }}>
+                {finisherBlocks.map((block, idx) => {
+                    const formatStr = block.format ? ` ${block.format}` : '';
+                    return (
+                        <div key={idx}>
+                            <div style={{
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                color: C.orange,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                marginBottom: '10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                            }}>
+                                <span>🔥</span>
+                                {block.name || 'FINISHER'}{formatStr ? ` · ${formatStr}` : ''}
+                            </div>
+                            <div style={{
+                                padding: '10px 14px',
+                                backgroundColor: C.bgFinisher,
+                                borderLeft: `3px solid ${C.orange}`,
+                                borderRadius: '0 6px 6px 0',
+                            }}>
+                                {block.content.filter(l => l.trim()).map((line, lineIdx) => (
+                                    <p key={lineIdx} style={{
+                                        fontSize: '13px',
+                                        lineHeight: 1.5,
+                                        color: lineIdx === 0 ? C.textDark : C.textMedium,
+                                        fontWeight: lineIdx === 0 ? '600' : 'normal',
+                                        margin: '2px 0',
+                                    }}>
+                                        {line}
+                                    </p>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    }
+
+    // ─── Render super-set header ─────────────────────────────────────
+    function renderSuperSetHeader(label: string) {
+        return (
+            <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '4px 12px',
+                backgroundColor: C.bgSuperSerie,
+                borderRadius: '4px',
+                marginBottom: '12px',
+                marginLeft: '8px',
+                border: `1px solid ${C.border}`,
+            }}>
+                <span style={{
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    color: C.textMedium,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                }}>
+                    SUPER SERIE
+                </span>
+                <span style={{
+                    fontSize: '11px',
+                    color: C.textLight,
+                }}>
+                    (Pausa ◆ al final)
+                </span>
+            </div>
+        );
+    }
 
     return (
         <AnimatePresence>
@@ -188,17 +549,8 @@ export function ExportPreview({
                                     </button>
                                 </div>
 
-                                {/* Export Button */}
-                                <button
-                                    onClick={handleExport}
-                                    disabled={isExporting}
-                                    className="cv-btn-primary"
-                                >
-                                    {isExporting ? (
-                                        <Loader2 size={16} className="animate-spin" />
-                                    ) : (
-                                        <Download size={16} />
-                                    )}
+                                <button onClick={handleExport} disabled={isExporting} className="cv-btn-primary">
+                                    {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
                                     {isExporting ? 'Exportando...' : 'Exportar'}
                                 </button>
 
@@ -209,582 +561,324 @@ export function ExportPreview({
                         </div>
 
                         {/* Scrollable Preview Area */}
-                        <div className="flex-1 overflow-auto p-4 md:p-6">
-                            {/* EXPORT CONTENT - Using INLINE STYLES for html2canvas compatibility */}
+                        <div className="flex-1 overflow-auto p-4 md:p-6" style={{ backgroundColor: '#e8e4de' }}>
+                            {/* ══════════════════════════════════════════════
+                                EXPORT CONTENT — INLINE STYLES for html2canvas
+                               ══════════════════════════════════════════════ */}
                             <div
                                 ref={exportRef}
                                 style={{
-                                    backgroundColor: EXPORT_COLORS.bgPrimary,
-                                    borderRadius: '12px',
+                                    backgroundColor: C.bgPage,
+                                    borderRadius: '16px',
                                     overflow: 'hidden',
-                                    maxWidth: '700px',
+                                    maxWidth: '500px',
                                     margin: '0 auto',
-                                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                                    fontFamily: "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
+                                    boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
                                 }}
                             >
-                                {/* HEADER - Client & Program Info */}
-                                <div style={{
-                                    padding: '24px',
-                                    borderBottom: `1px solid ${EXPORT_COLORS.border}`,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '16px',
-                                }}>
-                                    {clientInfo.logo ? (
-                                        <img
-                                            src={clientInfo.logo}
-                                            alt={clientInfo.name}
-                                            style={{
-                                                width: '56px',
-                                                height: '56px',
-                                                borderRadius: '12px',
-                                                objectFit: 'cover',
-                                            }}
-                                        />
-                                    ) : (
+                                {/* ── WEEK DATES BANNER ─────────────────── */}
+                                {weekDateRanges && weekDateRanges.length > 0 && (
+                                    <div style={{
+                                        backgroundColor: C.bgAccentBanner,
+                                        padding: '12px 20px',
+                                        textAlign: 'center',
+                                    }}>
                                         <div style={{
-                                            width: '56px',
-                                            height: '56px',
-                                            borderRadius: '12px',
-                                            background: `linear-gradient(135deg, ${EXPORT_COLORS.accent}, #ea580c)`,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            color: EXPORT_COLORS.textPrimary,
-                                            fontWeight: 'bold',
-                                            fontSize: '20px',
+                                            fontSize: '11px',
+                                            color: '#FFFFFF',
+                                            fontWeight: '600',
+                                            lineHeight: 1.8,
+                                            letterSpacing: '0.02em',
                                         }}>
-                                            {clientInfo.name.charAt(0)}
+                                            {weekDateRanges.map((w, i) => (
+                                                <div key={i}>
+                                                    <span style={{ fontWeight: 'bold' }}>SEM {w.weekNumber}:</span>{' '}
+                                                    {formatDateShort(w.startDate)} - {formatDateShort(w.endDate)}
+                                                </div>
+                                            ))}
                                         </div>
-                                    )}
-                                    <div style={{ flex: 1 }}>
-                                        <h1 style={{
-                                            fontSize: '24px',
-                                            fontWeight: 'bold',
-                                            color: EXPORT_COLORS.textPrimary,
-                                            margin: 0,
-                                            lineHeight: 1.2,
-                                        }}>
-                                            {clientInfo.name}
-                                        </h1>
-                                        <p style={{
-                                            color: EXPORT_COLORS.textTertiary,
-                                            margin: 0,
-                                            fontSize: '14px',
-                                            lineHeight: 1.2,
-                                            marginTop: '4px',
-                                        }}>
-                                            {programName}
-                                        </p>
                                     </div>
-                                    {monthlyStrategy?.duration && (
-                                        <div style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '8px',
-                                            padding: '6px 12px',
-                                            backgroundColor: `${EXPORT_COLORS.bgSecondary}80`,
-                                            borderRadius: '8px',
-                                            border: `1px solid ${EXPORT_COLORS.border}50`,
+                                )}
+
+                                {/* ── HERO HEADER ──────────────────────── */}
+                                <div style={{
+                                    padding: '32px 24px 24px',
+                                    textAlign: 'center',
+                                    background: `linear-gradient(180deg, ${C.bgWarm} 0%, ${C.bgPage} 100%)`,
+                                }}>
+                                    {/* "Para [Name]" */}
+                                    <p style={{
+                                        fontSize: '20px',
+                                        color: C.accent,
+                                        margin: '0 0 4px 0',
+                                        fontStyle: 'italic',
+                                        fontWeight: '500',
+                                    }}>
+                                        Para {clientInfo.name} ❤️
+                                    </p>
+
+                                    {/* Program Title */}
+                                    <h1 style={{
+                                        fontSize: '28px',
+                                        fontWeight: '900',
+                                        color: C.textDark,
+                                        margin: '8px 0 6px',
+                                        lineHeight: 1.2,
+                                    }}>
+                                        Plan de Entrenamiento
+                                    </h1>
+
+                                    {/* Program Name as subtitle */}
+                                    <p style={{
+                                        fontSize: '13px',
+                                        color: C.textLight,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.15em',
+                                        margin: '0 0 4px',
+                                        fontWeight: '600',
+                                    }}>
+                                        {programName}
+                                    </p>
+
+                                    {/* Focus tags */}
+                                    {monthlyStrategy?.focus && (
+                                        <p style={{
+                                            fontSize: '11px',
+                                            color: C.textMuted,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.2em',
+                                            margin: '8px 0 0',
                                         }}>
-                                            <Calendar size={16} color={EXPORT_COLORS.accent} />
-                                            <span style={{
-                                                fontSize: '14px',
-                                                color: EXPORT_COLORS.textSecondary,
-                                                lineHeight: 1,
-                                                display: 'block',
-                                                marginTop: '2px', // Slight optical adjustment for vertical centering
-                                            }}>
-                                                {monthlyStrategy.duration}
-                                            </span>
-                                        </div>
+                                            {monthlyStrategy.focus}
+                                        </p>
                                     )}
                                 </div>
 
-                                {/* MONTHLY OVERVIEW */}
-                                {monthlyStrategy && (
+                                {/* ── MISSION SECTION ──────────────────── */}
+                                {mission && (
                                     <div style={{
-                                        padding: '24px',
-                                        borderBottom: `1px solid ${EXPORT_COLORS.border}`,
-                                        background: `linear-gradient(180deg, ${EXPORT_COLORS.bgSecondary}50, transparent)`,
+                                        margin: '0 20px 20px',
+                                        padding: '16px 18px',
+                                        backgroundColor: C.bgMission,
+                                        borderRadius: '10px',
+                                        border: `1px solid ${C.borderLight}`,
                                     }}>
-                                        {/* Main Focus */}
-                                        {monthlyStrategy.focus && (
-                                            <div style={{
-                                                display: 'flex',
-                                                gap: '12px',
-                                                marginBottom: '24px',
-                                            }}>
-                                                <Target size={18} color={EXPORT_COLORS.accent} style={{ flexShrink: 0, marginTop: '4px' }} />
-                                                <div>
-                                                    <h2 style={{
-                                                        fontSize: '14px',
-                                                        fontWeight: '600',
-                                                        color: EXPORT_COLORS.accent,
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.05em',
-                                                        margin: '0 0 4px 0',
-                                                    }}>
-                                                        Foco del Mesociclo
-                                                    </h2>
-                                                    <p style={{
-                                                        color: EXPORT_COLORS.textSecondary,
-                                                        fontSize: '16px',
-                                                        lineHeight: 1.6,
-                                                        margin: 0,
-                                                    }}>
-                                                        {monthlyStrategy.focus}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Progressions */}
-                                        {monthlyStrategy.progressions && monthlyStrategy.progressions.length > 0 && (
-                                            <div style={{
-                                                display: 'flex',
-                                                gap: '12px',
-                                                marginBottom: '24px',
-                                            }}>
-                                                <TrendingUp size={18} color={EXPORT_COLORS.accentGreen} style={{ flexShrink: 0, marginTop: '4px' }} />
-                                                <div style={{ flex: 1, minWidth: 0 }}>
-                                                    <h2 style={{
-                                                        fontSize: '14px',
-                                                        fontWeight: '600',
-                                                        color: EXPORT_COLORS.accentGreen,
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.05em',
-                                                        margin: '0 0 12px 0',
-                                                    }}>
-                                                        Progresiones
-                                                    </h2>
-                                                    <div style={{
-                                                        backgroundColor: `${EXPORT_COLORS.bgTertiary}40`,
-                                                        borderRadius: '12px',
-                                                        padding: '16px',
-                                                        border: `1px solid ${EXPORT_COLORS.border}`,
-                                                    }}>
-                                                        {/* Header Row */}
-                                                        <div style={{
-                                                            display: 'grid',
-                                                            gridTemplateColumns: '2fr repeat(4, 1fr)',
-                                                            gap: '8px',
-                                                            textAlign: 'center',
-                                                            marginBottom: '8px',
-                                                        }}>
-                                                            <div style={{
-                                                                textAlign: 'left',
-                                                                color: EXPORT_COLORS.textMuted,
-                                                                fontSize: '11px',
-                                                                textTransform: 'uppercase',
-                                                                letterSpacing: '0.05em',
-                                                            }}>
-                                                                Ejercicio
-                                                            </div>
-                                                            {['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'].map((sem, i) => (
-                                                                <div key={i} style={{
-                                                                    color: EXPORT_COLORS.textMuted,
-                                                                    fontSize: '11px',
-                                                                    textTransform: 'uppercase',
-                                                                    letterSpacing: '0.05em',
-                                                                }}>
-                                                                    {sem}
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                        {/* Progression Rows */}
-                                                        {monthlyStrategy.progressions.map((prog, idx) => (
-                                                            <div key={idx} style={{
-                                                                display: 'grid',
-                                                                gridTemplateColumns: '2fr repeat(4, 1fr)',
-                                                                gap: '8px',
-                                                                alignItems: 'center',
-                                                                padding: '8px 0',
-                                                                borderTop: idx > 0 ? `1px solid ${EXPORT_COLORS.border}50` : 'none',
-                                                            }}>
-                                                                <div style={{ textAlign: 'left' }}>
-                                                                    <span style={{
-                                                                        color: EXPORT_COLORS.textPrimary,
-                                                                        fontWeight: '500',
-                                                                        fontSize: '14px',
-                                                                    }}>
-                                                                        {prog.name}
-                                                                    </span>
-                                                                    {prog.notes && (
-                                                                        <p style={{
-                                                                            color: EXPORT_COLORS.textMuted,
-                                                                            fontSize: '11px',
-                                                                            margin: '2px 0 0 0',
-                                                                        }}>
-                                                                            {prog.notes}
-                                                                        </p>
-                                                                    )}
-                                                                    {prog.variable && (
-                                                                        <div style={{
-                                                                            marginTop: '4px',
-                                                                            display: 'inline-flex',
-                                                                            alignItems: 'center',
-                                                                            gap: '4px',
-                                                                            padding: '2px 6px',
-                                                                            borderRadius: '4px',
-                                                                            backgroundColor: (prog.variable === 'sets' || prog.variable === 'reps')
-                                                                                ? `${EXPORT_COLORS.accentGreen}20`
-                                                                                : `${EXPORT_COLORS.accent}20`,
-                                                                            border: `1px solid ${(prog.variable === 'sets' || prog.variable === 'reps')
-                                                                                ? `${EXPORT_COLORS.accentGreen}40`
-                                                                                : `${EXPORT_COLORS.accent}40`
-                                                                                }`
-                                                                        }}>
-                                                                            <span style={{
-                                                                                fontSize: '9px',
-                                                                                fontWeight: 'bold',
-                                                                                color: (prog.variable === 'sets' || prog.variable === 'reps')
-                                                                                    ? EXPORT_COLORS.accentGreen
-                                                                                    : EXPORT_COLORS.accent,
-                                                                                textTransform: 'uppercase',
-                                                                                letterSpacing: '0.05em',
-                                                                            }}>
-                                                                                {(prog.variable === 'sets' || prog.variable === 'reps') ? 'VOLUMEN' : 'FUERZA'}
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                                {prog.progression.map((value, weekIdx) => (
-                                                                    <div key={weekIdx} style={{ textAlign: 'center' }}>
-                                                                        <span style={{
-                                                                            fontFamily: 'monospace',
-                                                                            fontSize: '13px',
-                                                                            color: weekIdx === prog.progression.length - 1 ? EXPORT_COLORS.accentGreen : EXPORT_COLORS.textSecondary,
-                                                                            fontWeight: weekIdx === prog.progression.length - 1 ? 'bold' : 'normal',
-                                                                        }}>
-                                                                            {value}
-                                                                        </span>
-                                                                    </div>
-                                                                ))}
-                                                                {/* Fill empty cells */}
-                                                                {Array.from({ length: 4 - prog.progression.length }).map((_, i) => (
-                                                                    <div key={`empty-${i}`} style={{
-                                                                        textAlign: 'center',
-                                                                        color: EXPORT_COLORS.textMuted,
-                                                                    }}>
-                                                                        -
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Objectives */}
-                                        {monthlyStrategy.objectives && monthlyStrategy.objectives.length > 0 && (
-                                            <div style={{
-                                                display: 'flex',
-                                                gap: '12px',
-                                            }}>
-                                                <div style={{ width: '18px', flexShrink: 0 }} />
-                                                <div>
-                                                    <p style={{
-                                                        fontSize: '11px',
-                                                        color: EXPORT_COLORS.textMuted,
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.05em',
-                                                        margin: '0 0 8px 0',
-                                                    }}>
-                                                        Objetivos del Ciclo
-                                                    </p>
-                                                    <ul style={{
-                                                        margin: 0,
-                                                        padding: 0,
-                                                        listStyle: 'none',
-                                                    }}>
-                                                        {monthlyStrategy.objectives.map((obj, idx) => (
-                                                            <li key={idx} style={{
-                                                                display: 'flex',
-                                                                alignItems: 'flex-start',
-                                                                gap: '8px',
-                                                                fontSize: '14px',
-                                                                color: EXPORT_COLORS.textSecondary,
-                                                                marginBottom: '4px',
-                                                            }}>
-                                                                <span style={{ color: EXPORT_COLORS.accent, marginTop: '4px' }}>•</span>
-                                                                {obj}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Strategy section (backwards compatibility) */}
-                                {!monthlyStrategy && strategy && (strategy.focus || strategy.considerations) && (
-                                    <div style={{
-                                        padding: '24px',
-                                        borderBottom: `1px solid ${EXPORT_COLORS.border}`,
-                                    }}>
-                                        {strategy.focus && (
-                                            <>
-                                                <div style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '8px',
-                                                    marginBottom: '8px',
-                                                }}>
-                                                    <div style={{
-                                                        width: '4px',
-                                                        height: '16px',
-                                                        borderRadius: '2px',
-                                                        backgroundColor: EXPORT_COLORS.accent,
-                                                    }} />
-                                                    <span style={{
-                                                        fontSize: '12px',
-                                                        fontWeight: '600',
-                                                        color: EXPORT_COLORS.accent,
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.05em',
-                                                    }}>
-                                                        Enfoque
-                                                    </span>
-                                                </div>
-                                                <p style={{
-                                                    color: EXPORT_COLORS.textSecondary,
-                                                    fontSize: '14px',
-                                                    marginBottom: '12px',
-                                                }}>
-                                                    {strategy.focus}
-                                                </p>
-                                            </>
-                                        )}
-                                        {strategy.considerations && (
-                                            <div style={{
-                                                backgroundColor: `${EXPORT_COLORS.bgTertiary}50`,
-                                                borderRadius: '8px',
-                                                padding: '12px',
-                                                marginTop: '8px',
-                                            }}>
-                                                <p style={{
-                                                    fontSize: '11px',
-                                                    color: EXPORT_COLORS.textTertiary,
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.05em',
-                                                    marginBottom: '4px',
-                                                }}>
-                                                    Consideraciones del Coach
-                                                </p>
-                                                <p style={{
-                                                    color: EXPORT_COLORS.textSecondary,
-                                                    fontSize: '14px',
-                                                    whiteSpace: 'pre-line',
-                                                    margin: 0,
-                                                }}>
-                                                    {strategy.considerations}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* WEEKLY BREAKDOWN */}
-                                {weeks && weeks.length > 0 && (
-                                    <div style={{ padding: '24px' }}>
-                                        <div style={{
+                                        <h3 style={{
+                                            fontSize: '16px',
+                                            fontWeight: 'bold',
+                                            color: C.accent,
+                                            margin: '0 0 8px',
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: '8px',
-                                            marginBottom: '16px',
+                                            borderBottom: `2px solid ${C.accent}`,
+                                            paddingBottom: '6px',
                                         }}>
-                                            <Dumbbell size={18} color={EXPORT_COLORS.accent} />
-                                            <h2 style={{
-                                                fontSize: '14px',
-                                                fontWeight: '600',
-                                                color: EXPORT_COLORS.accent,
-                                                textTransform: 'uppercase',
-                                                letterSpacing: '0.05em',
-                                                margin: 0,
-                                                lineHeight: 1,
-                                                marginTop: '2px', // Optical alignment with icon
+                                            🎯 Misión: {programName}
+                                        </h3>
+                                        <p style={{
+                                            fontSize: '14px',
+                                            lineHeight: 1.7,
+                                            color: C.textMedium,
+                                            margin: 0,
+                                            whiteSpace: 'pre-line',
+                                        }}>
+                                            {mission}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* ── PROGRESSIONS TABLE ───────────────── */}
+                                {monthlyStrategy?.progressions && monthlyStrategy.progressions.length > 0 && (
+                                    <div style={{
+                                        margin: '0 20px 20px',
+                                        padding: '16px',
+                                        backgroundColor: C.bgCard,
+                                        borderRadius: '10px',
+                                        border: `1px solid ${C.border}`,
+                                    }}>
+                                        <h3 style={{
+                                            fontSize: '13px',
+                                            fontWeight: 'bold',
+                                            color: C.green,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.08em',
+                                            margin: '0 0 12px',
+                                        }}>
+                                            📈 Progresiones del Ciclo
+                                        </h3>
+                                        <div style={{
+                                            backgroundColor: C.bgProgression,
+                                            borderRadius: '8px',
+                                            padding: '12px',
+                                        }}>
+                                            {/* Header */}
+                                            <div style={{
+                                                display: 'grid',
+                                                gridTemplateColumns: '2fr repeat(4, 1fr)',
+                                                gap: '6px',
+                                                textAlign: 'center',
+                                                marginBottom: '6px',
                                             }}>
-                                                Detalle Semanal
-                                            </h2>
-                                        </div>
-
-                                        {weeks.map((week, weekIdx) => (
-                                            <div key={weekIdx} style={{ marginBottom: weekIdx < weeks.length - 1 ? '32px' : 0 }}>
-                                                {/* Week Header */}
-                                                <div style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'space-between',
-                                                    borderBottom: `1px solid ${EXPORT_COLORS.borderLight}`,
-                                                    paddingBottom: '8px',
-                                                    marginBottom: '16px',
-                                                }}>
-                                                    <h3 style={{
-                                                        color: EXPORT_COLORS.textPrimary,
-                                                        fontSize: '18px',
-                                                        fontWeight: 'bold',
-                                                        margin: 0,
-                                                    }}>
-                                                        Semana {week.weekNumber}
-                                                    </h3>
-                                                    {week.focus && (
-                                                        <span style={{
-                                                            fontSize: '12px',
-                                                            color: EXPORT_COLORS.textSecondary,
-                                                            backgroundColor: `${EXPORT_COLORS.bgSecondary}20`,
-                                                            padding: '4px 8px',
-                                                            borderRadius: '4px',
-                                                            border: `1px solid ${EXPORT_COLORS.border}50`,
-                                                            lineHeight: 1,
-                                                            display: 'block',
-                                                        }}>
-                                                            {week.focus}
-                                                        </span>
-                                                    )}
+                                                <div style={{ textAlign: 'left', fontSize: '10px', color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600' }}>
+                                                    Ejercicio
                                                 </div>
-
-                                                {/* Days Grid */}
-                                                <div style={{
+                                                {['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'].map((s, i) => (
+                                                    <div key={i} style={{ fontSize: '10px', color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600' }}>
+                                                        {s}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            {/* Rows */}
+                                            {monthlyStrategy.progressions.map((prog, idx) => (
+                                                <div key={idx} style={{
                                                     display: 'grid',
-                                                    gridTemplateColumns: 'repeat(2, 1fr)',
-                                                    gap: '16px',
+                                                    gridTemplateColumns: '2fr repeat(4, 1fr)',
+                                                    gap: '6px',
+                                                    alignItems: 'center',
+                                                    padding: '6px 0',
+                                                    borderTop: idx > 0 ? `1px solid ${C.borderLight}` : 'none',
                                                 }}>
-                                                    {week.days && week.days.map((day, dayIdx) => (
-                                                        <div key={dayIdx} style={{
-                                                            backgroundColor: `${EXPORT_COLORS.bgSecondary}20`,
-                                                            borderRadius: '12px',
-                                                            border: `1px solid ${EXPORT_COLORS.border}50`,
-                                                            overflow: 'hidden',
-                                                        }}>
-                                                            {/* Day Header */}
-                                                            <div style={{
-                                                                padding: '8px 16px',
-                                                                backgroundColor: `${EXPORT_COLORS.bgSecondary}20`,
-                                                                borderBottom: `1px solid ${EXPORT_COLORS.border}50`,
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'space-between',
+                                                    <div style={{ textAlign: 'left' }}>
+                                                        <span style={{ fontSize: '13px', fontWeight: '500', color: C.textDark }}>
+                                                            {prog.name}
+                                                        </span>
+                                                        {prog.variable && (
+                                                            <span style={{
+                                                                display: 'inline-block',
+                                                                marginLeft: '6px',
+                                                                fontSize: '9px',
+                                                                fontWeight: 'bold',
+                                                                color: (prog.variable === 'sets' || prog.variable === 'reps') ? C.green : C.accent,
+                                                                textTransform: 'uppercase',
+                                                                padding: '1px 4px',
+                                                                borderRadius: '3px',
+                                                                backgroundColor: (prog.variable === 'sets' || prog.variable === 'reps') ? `${C.green}15` : `${C.accent}15`,
                                                             }}>
-                                                                <h4 style={{
-                                                                    color: EXPORT_COLORS.textSecondary,
-                                                                    fontWeight: '600',
-                                                                    fontSize: '12px',
-                                                                    textTransform: 'uppercase',
-                                                                    letterSpacing: '0.05em',
-                                                                    margin: 0,
-                                                                    lineHeight: 1,
-                                                                }}>
-                                                                    {day.name}
-                                                                </h4>
-                                                                <div style={{
-                                                                    width: '6px',
-                                                                    height: '6px',
-                                                                    borderRadius: '50%',
-                                                                    backgroundColor: EXPORT_COLORS.textMuted,
-                                                                }} />
-                                                            </div>
-
-                                                            {/* Day Content */}
-                                                            <div style={{ padding: '16px' }}>
-                                                                {day.blocks.length > 0 ? (
-                                                                    day.blocks.map((block, blockIdx) => (
-                                                                        <div key={blockIdx} style={{
-                                                                            display: 'flex',
-                                                                            gap: '12px',
-                                                                            marginBottom: blockIdx < day.blocks.length - 1 ? '16px' : 0,
-                                                                        }}>
-                                                                            {/* Vertical line */}
-                                                                            <div style={{
-                                                                                width: '4px',
-                                                                                borderRadius: '2px',
-                                                                                backgroundColor: `${getBlockColor(block.type)}cc`,
-                                                                                minHeight: '40px',
-                                                                                flexShrink: 0,
-                                                                            }} />
-                                                                            {/* Block content */}
-                                                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                                                                <div style={{ marginBottom: '4px' }}>
-                                                                                    <span style={{
-                                                                                        fontSize: '14px',
-                                                                                        fontWeight: '500',
-                                                                                        color: EXPORT_COLORS.textPrimary,
-                                                                                        display: 'block',
-                                                                                    }}>
-                                                                                        {block.name}
-                                                                                    </span>
-                                                                                </div>
-                                                                                <div>
-                                                                                    {block.content.map((line, lineIdx) => (
-                                                                                        <p key={lineIdx} style={{
-                                                                                            fontFamily: 'monospace',
-                                                                                            fontSize: '12px',
-                                                                                            lineHeight: 1.5,
-                                                                                            color: lineIdx === 0 ? EXPORT_COLORS.textSecondary : EXPORT_COLORS.textMuted,
-                                                                                            fontWeight: lineIdx === 0 ? '600' : 'normal',
-                                                                                            margin: '2px 0',
-                                                                                        }}>
-                                                                                            {line}
-                                                                                        </p>
-                                                                                    ))}
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    ))
-                                                                ) : (
-                                                                    <p style={{
-                                                                        color: EXPORT_COLORS.textMuted,
-                                                                        fontSize: '12px',
-                                                                        fontStyle: 'italic',
-                                                                        padding: '8px 0',
-                                                                        textAlign: 'center',
-                                                                    }}>
-                                                                        Descanso
-                                                                    </p>
-                                                                )}
-                                                            </div>
+                                                                {(prog.variable === 'sets' || prog.variable === 'reps') ? 'VOL' : '%'}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {prog.progression.map((val, wIdx) => (
+                                                        <div key={wIdx} style={{ textAlign: 'center' }}>
+                                                            <span style={{
+                                                                fontFamily: 'monospace',
+                                                                fontSize: '12px',
+                                                                color: wIdx === prog.progression.length - 1 ? C.accent : C.textMedium,
+                                                                fontWeight: wIdx === prog.progression.length - 1 ? 'bold' : 'normal',
+                                                            }}>
+                                                                {val}
+                                                            </span>
                                                         </div>
                                                     ))}
+                                                    {Array.from({ length: Math.max(0, 4 - prog.progression.length) }).map((_, i) => (
+                                                        <div key={`e-${i}`} style={{ textAlign: 'center', color: C.textMuted }}>—</div>
+                                                    ))}
                                                 </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ── WEEKLY DETAIL ─── ALL WEEKS TOGETHER ───── */}
+                                {weeks && weeks.length > 0 && (
+                                    <div style={{ padding: '0 20px 20px' }}>
+                                        {weeks.map((week, weekIdx) => (
+                                            <div key={weekIdx} style={{ marginBottom: '16px' }}>
+                                                {/* We render each DAY in each week */}
+                                                {week.days && week.days.map((day, dayIdx) => {
+                                                    const { warmup, main, finishers } = groupBlocksBySection(day.blocks);
+                                                    const numberedMain = buildNumberedExercises(main);
+
+                                                    // Only show day header + content for the first week
+                                                    // (subsequent weeks' data goes into the progression inline)
+                                                    // BUT if we don't have progressions, we show all weeks
+                                                    if (weekIdx > 0 && progressionMap.size > 0) return null;
+
+                                                    return (
+                                                        <div key={`${weekIdx}-${dayIdx}`} style={{ marginBottom: '24px' }}>
+                                                            {/* Day Header */}
+                                                            <div style={{
+                                                                backgroundColor: C.bgAccentBannerLight,
+                                                                padding: '10px 18px',
+                                                                borderRadius: '8px',
+                                                                marginBottom: '16px',
+                                                            }}>
+                                                                <h3 style={{
+                                                                    fontSize: '18px',
+                                                                    fontWeight: 'bold',
+                                                                    fontStyle: 'italic',
+                                                                    color: '#FFFFFF',
+                                                                    margin: 0,
+                                                                }}>
+                                                                    {day.name}: {week.focus || programName}
+                                                                </h3>
+                                                            </div>
+
+                                                            {/* Warmup / Activación */}
+                                                            {renderWarmupSection(warmup)}
+
+                                                            {/* Main exercises */}
+                                                            {numberedMain.length > 0 && (
+                                                                <div>
+                                                                    {numberedMain.map((item, mIdx) => {
+                                                                        const prog = progressionMap.get(item.block.name);
+                                                                        return (
+                                                                            <div key={mIdx}>
+                                                                                {item.superSetLabel && renderSuperSetHeader(item.superSetLabel)}
+                                                                                {renderExercise(item.label, item.block, prog)}
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            )}
+
+                                                            {/* Finishers */}
+                                                            {renderFinisherSection(finishers)}
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         ))}
                                     </div>
                                 )}
 
-                                {/* FOOTER - Coach Signature */}
+                                {/* ── FOOTER ───────────────────────────── */}
                                 <div style={{
-                                    padding: '16px 24px',
-                                    borderTop: `1px solid ${EXPORT_COLORS.border}`,
-                                    backgroundColor: `${EXPORT_COLORS.bgSecondary}50`,
+                                    padding: '14px 24px',
+                                    borderTop: `1px solid ${C.border}`,
+                                    backgroundColor: C.bgWarm,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
                                 }}>
                                     <p style={{
-                                        color: EXPORT_COLORS.textMuted,
+                                        color: C.textLight,
                                         fontSize: '11px',
                                         textTransform: 'uppercase',
                                         letterSpacing: '0.1em',
                                         margin: 0,
+                                        fontWeight: '500',
                                     }}>
                                         Programado por {coachName}
                                     </p>
                                     <p style={{
-                                        color: EXPORT_COLORS.textMuted,
+                                        color: C.textLight,
                                         fontSize: '11px',
                                         fontFamily: 'monospace',
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '6px',
                                         margin: 0,
+                                        fontWeight: '600',
                                     }}>
                                         <span style={{
                                             width: '6px',
                                             height: '6px',
-                                            backgroundColor: EXPORT_COLORS.accent,
+                                            backgroundColor: C.accent,
                                             borderRadius: '50%',
+                                            display: 'inline-block',
                                         }} />
                                         AI COACH
                                     </p>

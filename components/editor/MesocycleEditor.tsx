@@ -438,7 +438,10 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                         blocks: d.blocks.map(b => ({
                             type: b.type,
                             name: b.name || b.type,
-                            content: convertConfigToText(b.type, b.config, b.name, oneRmStats)
+                            content: convertConfigToText(b.type, b.config, b.name, oneRmStats),
+                            section: b.section || 'main',
+                            cue: (b.config as any)?.notes || '',
+                            format: (b.config as any)?.format || (b.config as any)?.methodology || null,
                         }))
                     }))
             }));
@@ -524,6 +527,31 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             progressions,
         };
     }, [mesocycles, programName]);
+
+    // Build week date ranges from programAttributes
+    const weekDateRanges = useMemo(() => {
+        const startDateStr = (programAttributes as any)?.start_date;
+        if (!startDateStr) return undefined;
+        try {
+            const start = new Date(startDateStr + 'T00:00:00');
+            if (isNaN(start.getTime())) return undefined;
+            return mesocycles
+                .sort((a, b) => a.week_number - b.week_number)
+                .map(meso => {
+                    const weekStart = new Date(start);
+                    weekStart.setDate(weekStart.getDate() + (meso.week_number - 1) * 7);
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekEnd.getDate() + 6);
+                    return {
+                        weekNumber: meso.week_number,
+                        startDate: weekStart.toISOString().split('T')[0],
+                        endDate: weekEnd.toISOString().split('T')[0],
+                    };
+                });
+        } catch {
+            return undefined;
+        }
+    }, [mesocycles, programAttributes]);
 
     const exportStrategy = currentStrategy;
 
@@ -817,6 +845,8 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                     monthlyStrategy={monthlyStrategy}
                     weeks={exportWeeks}
                     strategy={exportStrategy}
+                    mission={globalFocus || undefined}
+                    weekDateRanges={weekDateRanges}
                 />
 
                 <ProgramAssignmentModal
