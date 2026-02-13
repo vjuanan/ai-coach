@@ -117,7 +117,7 @@ export function GenericMovementForm({ config, onChange, methodology }: GenericMo
                     ))}
 
                     {/* Add Movement Input */}
-                    <div className="p-4 rounded-xl border border-dashed border-cv-border bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                    <div className="max-w-md p-4 rounded-xl border border-dashed border-cv-border bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                         <div className="flex items-center gap-3">
                             <Plus size={18} className="text-slate-400" />
                             <div className="flex-1">
@@ -126,7 +126,7 @@ export function GenericMovementForm({ config, onChange, methodology }: GenericMo
                                     onChange={() => { }}
                                     onSelect={(ex) => addMovement(ex.name)}
                                     placeholder="Añadir ejercicio..."
-                                    className="bg-transparent border-none p-0 text-sm font-medium text-cv-text-primary placeholder:text-slate-400 focus:ring-0 w-full"
+                                    className="bg-transparent border-none p-0 text-sm font-medium text-cv-text-primary placeholder:text-slate-400 focus:ring-0 focus:outline-none w-full"
                                 />
                             </div>
                         </div>
@@ -177,7 +177,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets }: Movemen
                         value={movement.name}
                         onChange={(val) => onChange({ name: val })}
                         placeholder="Buscar ejercicio..."
-                        className={`w-full bg-transparent ${isValid ? 'font-bold text-cv-text-primary text-base' : 'font-medium text-cv-text-secondary placeholder:text-slate-400'}`}
+                        className={`w-full bg-transparent focus:outline-none focus:ring-0 border-none ${isValid ? 'font-bold text-cv-text-primary text-base' : 'font-medium text-cv-text-secondary placeholder:text-slate-400'}`}
                     />
                     {!isValid && movement.name && (
                         <p className="text-[10px] text-amber-500 mt-1">Selecciona de la lista</p>

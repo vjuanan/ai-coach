@@ -92,22 +92,22 @@ export function ExerciseCreationModal({ isOpen, onClose, initialName = '', onSuc
             description="Añade un ejercicio a la biblioteca global."
             maxWidth="max-w-2xl"
         >
-            <form onSubmit={handleSubmit} className="space-y-4 text-cv-text-primary">
+            <form onSubmit={handleSubmit} className="space-y-6">
                 {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-lg text-sm">
+                    <div className="bg-red-50 text-red-600 border border-red-100 p-3 rounded-lg text-sm">
                         {error}
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Name */}
-                    <div className="col-span-2">
-                        <label className="block text-sm font-medium text-cv-text-secondary mb-1">Nombre</label>
+                    <div className="col-span-1 md:col-span-2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nombre</label>
                         <input
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="cv-input w-full"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-gray-400"
                             placeholder="Ej: Push Press"
                             autoFocus
                         />
@@ -115,130 +115,141 @@ export function ExerciseCreationModal({ isOpen, onClose, initialName = '', onSuc
 
                     {/* Category */}
                     <div>
-                        <label className="block text-sm font-medium text-cv-text-secondary mb-1">Categoría</label>
-                        <select
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value as ExerciseCategory)}
-                            className="cv-input w-full"
-                        >
-                            {CATEGORIES.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </select>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Categoría</label>
+                        <div className="relative">
+                            <select
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value as ExerciseCategory)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all appearance-none bg-white"
+                            >
+                                {CATEGORIES.map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Subcategory */}
                     <div>
-                        <label className="block text-sm font-medium text-cv-text-secondary mb-1">Subcategoría (Opcional)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Subcategoría (Opcional)</label>
                         <input
                             type="text"
                             value={subcategory}
                             onChange={(e) => setSubcategory(e.target.value)}
-                            className="cv-input w-full"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-gray-400"
                             placeholder="Ej: Overhead, Squat..."
                         />
                     </div>
 
                     {/* Equipment */}
-                    <div className="col-span-2">
-                        <label className="block text-sm font-medium text-cv-text-secondary mb-1">Equipamiento</label>
+                    <div className="col-span-1 md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Equipamiento</label>
                         <div className="flex gap-2 mb-2">
                             <input
                                 type="text"
                                 value={equipmentInput}
                                 onChange={(e) => setEquipmentInput(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddArrayItem(equipmentInput, equipment, setEquipment, setEquipmentInput))}
-                                className="cv-input flex-1"
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-gray-400"
                                 placeholder="Ej: Barbell, Dumbbell (Enter para añadir)"
                             />
                             <button
                                 type="button"
                                 onClick={() => handleAddArrayItem(equipmentInput, equipment, setEquipment, setEquipmentInput)}
-                                className="bg-cv-bg-elevated border border-cv-border p-2 rounded-lg hover:bg-cv-bg-tertiary"
+                                className="bg-gray-100 hover:bg-gray-200 border border-gray-200 p-2 rounded-lg text-gray-600 transition-colors"
                             >
                                 <Plus size={20} />
                             </button>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            {equipment.map((item, idx) => (
-                                <span key={idx} className="bg-cv-bg-tertiary px-2 py-1 rounded-md text-xs flex items-center gap-1">
-                                    {item}
-                                    <button type="button" onClick={() => handleRemoveArrayItem(idx, equipment, setEquipment)} className="hover:text-red-400">
-                                        <X size={12} />
-                                    </button>
-                                </span>
-                            ))}
-                        </div>
+                        {equipment.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {equipment.map((item, idx) => (
+                                    <span key={idx} className="bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-full text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                                        {item}
+                                        <button type="button" onClick={() => handleRemoveArrayItem(idx, equipment, setEquipment)} className="hover:text-red-500 text-gray-400 transition-colors">
+                                            <X size={14} />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Modality Suitability */}
-                    <div className="col-span-2">
-                        <label className="block text-sm font-medium text-cv-text-secondary mb-1">Modalidades (Suitability)</label>
+                    <div className="col-span-1 md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Modalidades (Suitability)</label>
                         <div className="flex gap-2 mb-2">
                             <input
                                 type="text"
                                 value={modalityInput}
                                 onChange={(e) => setModalityInput(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddArrayItem(modalityInput, modalitySuitability, setModalitySuitability, setModalityInput))}
-                                className="cv-input flex-1"
-                                placeholder="Ej: Strength, Metcon, hypertrophy (Enter para añadir)"
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-gray-400"
+                                placeholder="Ej: Strength, Metcon, hypertrophy"
                             />
                             <button
                                 type="button"
                                 onClick={() => handleAddArrayItem(modalityInput, modalitySuitability, setModalitySuitability, setModalityInput)}
-                                className="bg-cv-bg-elevated border border-cv-border p-2 rounded-lg hover:bg-cv-bg-tertiary"
+                                className="bg-gray-100 hover:bg-gray-200 border border-gray-200 p-2 rounded-lg text-gray-600 transition-colors"
                             >
                                 <Plus size={20} />
                             </button>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            {modalitySuitability.map((item, idx) => (
-                                <span key={idx} className="bg-cv-bg-tertiary px-2 py-1 rounded-md text-xs flex items-center gap-1">
-                                    {item}
-                                    <button type="button" onClick={() => handleRemoveArrayItem(idx, modalitySuitability, setModalitySuitability)} className="hover:text-red-400">
-                                        <X size={12} />
-                                    </button>
-                                </span>
-                            ))}
-                        </div>
+                        {modalitySuitability.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {modalitySuitability.map((item, idx) => (
+                                    <span key={idx} className="bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-full text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                                        {item}
+                                        <button type="button" onClick={() => handleRemoveArrayItem(idx, modalitySuitability, setModalitySuitability)} className="hover:text-red-500 text-gray-400 transition-colors">
+                                            <X size={14} />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Video URL */}
-                    <div className="col-span-2">
-                        <label className="block text-sm font-medium text-cv-text-secondary mb-1">URL Video (Youtube/Vimeo)</label>
+                    <div className="col-span-1 md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">URL Video (Youtube/Vimeo)</label>
                         <input
                             type="url"
                             value={videoUrl}
                             onChange={(e) => setVideoUrl(e.target.value)}
-                            className="cv-input w-full"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-gray-400"
                             placeholder="https://..."
                         />
                     </div>
 
                     {/* Description */}
-                    <div className="col-span-2">
-                        <label className="block text-sm font-medium text-cv-text-secondary mb-1">Descripción / Notas</label>
+                    <div className="col-span-1 md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Descripción / Notas</label>
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            className="cv-input w-full min-h-[80px]"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all min-h-[100px] placeholder:text-gray-400"
                             placeholder="Instrucciones técnicas..."
                         />
                     </div>
                 </div>
 
-                <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-white/5">
+                <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-gray-100 sticky bottom-0 bg-white pb-2 sm:static sm:pb-0">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-cv-text-secondary hover:text-cv-text-primary transition-colors"
+                        className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors hover:bg-gray-50 rounded-lg"
                     >
                         Cancelar
                     </button>
                     <button
                         type="submit"
                         disabled={loading}
-                        className="px-4 py-2 bg-cv-accent text-white rounded-lg text-sm font-medium hover:bg-cv-accent/90 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                     >
                         {loading && <Loader2 size={16} className="animate-spin" />}
                         Guardar Ejercicio
