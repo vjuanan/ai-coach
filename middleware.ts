@@ -2,6 +2,14 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Timeout helper to prevent middleware from hanging indefinitely
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+    return Promise.race([
+        promise,
+        new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+    ]);
+}
+
 export async function middleware(request: NextRequest) {
     // 1. Define Paths & Check Public
     // We check this FIRST to avoid expensive Supabase initialization on static assets/API
@@ -64,8 +72,13 @@ export async function middleware(request: NextRequest) {
         }
     )
 
-    // Only fetch user for protected routes
-    const { data: { user } } = await supabase.auth.getUser()
+    // Only fetch user for protected routes - with timeout protection (8s max)
+    const authResult = await withTimeout(
+        supabase.auth.getUser(),
+        8000,
+        { data: { user: null }, error: new Error('Auth timeout') } as any
+    );
+    const user = authResult.data?.user;
 
     // 2. Define Context
     const isAuthPage = path.startsWith('/login') || path.startsWith('/auth');
@@ -108,13 +121,20 @@ export async function middleware(request: NextRequest) {
             }
         }
 
-        // If no valid cached role or status, fetch from DB
+        // If no valid cached role or status, fetch from DB - with timeout protection (5s max)
         if (!role) {
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('role, onboarding_completed')
-                .eq('id', user.id)
-                .single();
+            const profileResult = await withTimeout(
+                Promise.resolve(
+                    supabase
+                        .from('profiles')
+                        .select('role, onboarding_completed')
+                        .eq('id', user.id)
+                        .single()
+                ),
+                5000,
+                { data: null, error: new Error('Profile fetch timeout') } as any
+            );
+            const profile = profileResult.data;
 
             role = profile?.role;
             onboardingCompleted = profile?.onboarding_completed ?? false;
@@ -139,6 +159,11 @@ export async function middleware(request: NextRequest) {
                     value: cookieValue,
                 });
             }
+        }
+
+        // If role couldn't be determined (timeout or error), allow through (page-level auth will catch)
+        if (!role) {
+            return response;
         }
 
         // SCENARIO A: Not Completed Onboarding -> Force Onboarding
