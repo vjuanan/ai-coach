@@ -167,22 +167,66 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                     </div>
                 );
 
-            case 'metcon_structured':
+            case 'metcon_structured': {
                 const format = block.format;
+                const items = (config as any).items as { exercise: string; reps: string }[] || [];
+                const slots = (config as any).slots as { label: string; movement: string; reps: string }[] || [];
                 const movements = config.movements as string[] || [];
+                const minutes = (config as any).minutes as number;
+                const rounds = (config as any).rounds as number;
+                const timeCap = (config as any).timeCap as number;
+                const workSeconds = (config as any).workSeconds as number;
+                const restSeconds = (config as any).restSeconds as number;
+
+                // Build exercise list based on format
+                const exerciseList: { name: string; reps: string }[] = [];
+                if (items.length > 0) {
+                    items.forEach(it => { if (it.exercise) exerciseList.push({ name: it.exercise, reps: it.reps }); });
+                } else if (slots.length > 0) {
+                    slots.forEach(s => { if (s.movement) exerciseList.push({ name: s.movement, reps: s.reps }); });
+                } else if (movements.length > 0) {
+                    movements.forEach(m => exerciseList.push({ name: m, reps: '' }));
+                }
+
+                // Build meta line based on format
+                let metaText = '';
+                if (format === 'AMRAP' && minutes) {
+                    metaText = `${minutes} min`;
+                } else if (format === 'EMOM' && minutes) {
+                    const interval = (config as any).interval as number;
+                    metaText = `${minutes} min` + (interval && interval > 1 ? ` / c/${interval} min` : '');
+                } else if ((format === 'RFT' || format === 'For Time') && rounds) {
+                    metaText = `${rounds} rondas` + (timeCap ? ` · TC ${timeCap}'` : '');
+                } else if (format === 'Chipper') {
+                    metaText = timeCap ? `TC ${timeCap}'` : '';
+                } else if (format === 'Tabata') {
+                    metaText = `${rounds || 8}R · ${workSeconds || 20}s/${restSeconds || 10}s`;
+                }
+
                 return (
                     <div className="min-h-[1.25rem]">
-                        {format && (
-                            <span className="cv-badge-accent mb-1">{formatLabels[format] || format}</span>
-                        )}
-                        {movements.length > 0 && (
-                            <div className="text-xs text-cv-text-tertiary mt-1 truncate">
-                                {movements.slice(0, 2).join(', ')}
-                                {movements.length > 2 && ` +${movements.length - 2} más`}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                            {format && (
+                                <span className="cv-badge-accent">{formatLabels[format] || format}</span>
+                            )}
+                            {metaText && (
+                                <span className="text-2xs text-cv-text-tertiary font-medium">{metaText}</span>
+                            )}
+                        </div>
+                        {exerciseList.length > 0 && (
+                            <div className="mt-1 space-y-0.5">
+                                {exerciseList.map((ex, i) => (
+                                    <div key={i} className="text-xs text-cv-text-tertiary truncate flex items-baseline gap-1">
+                                        <span className="opacity-50">•</span>
+                                        {ex.reps && <span className="font-medium text-cv-text-secondary">{ex.reps}</span>}
+                                        <span>{ex.name}</span>
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </div>
                 );
+            }
 
             case 'warmup':
             case 'accessory':
@@ -266,14 +310,7 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                                 <span className="text-2xs uppercase tracking-wider text-cv-text-tertiary font-medium">
                                     {block.name || blockStyle.label}
                                 </span>
-                                {/* Green Tick for Completed Blocks */}
-                                {Boolean(config.is_completed) && (
-                                    <div title="Bloque completado">
-                                        <div className="w-3 h-3 rounded-full bg-emerald-500 flex items-center justify-center">
-                                            <Check size={8} className="text-white stroke-[3]" />
-                                        </div>
-                                    </div>
-                                )}
+
                                 {block.progression_id && (
                                     <div
                                         className="flex items-center gap-1 bg-indigo-50 dark:bg-indigo-900/20 px-1.5 py-0.5 rounded text-[10px] font-medium text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/30"
