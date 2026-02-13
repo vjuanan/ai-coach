@@ -158,29 +158,10 @@ export default function ProgramsPage() {
     }
 
     async function confirmDelete() {
-        // If we have a single program to delete (via trash icon)
-        if (programToDelete && !isSelectionMode) {
-            setIsDeleting(true);
-            try {
-                const result = await deleteProgram(programToDelete);
-                if (!result.success) {
-                    console.error('Delete failed:', result.error);
-                    alert(`Error al eliminar el programa: ${result.error}`);
-                } else {
-                    await fetchPrograms();
-                }
-            } catch (error: any) {
-                console.error('Delete unexpected error', error);
-                alert(`Error al eliminar el programa: ${error.message || 'Error de red'}`);
-            } finally {
-                setIsDeleting(false);
-                setProgramToDelete(null);
-            }
-            return;
-        }
+        const isBulk = programToDelete === 'BULK';
 
-        // Bulk delete
-        if (isSelectionMode) {
+        // Bulk delete (via selection toolbar)
+        if (isBulk && selectedPrograms.size > 0) {
             setIsDeleting(true);
             try {
                 const result = await deletePrograms(Array.from(selectedPrograms));
@@ -196,6 +177,28 @@ export default function ProgramsPage() {
                 alert(`Error al eliminar los programas: ${error.message || 'Error de red'}`);
             } finally {
                 setIsDeleting(false);
+                setProgramToDelete(null);
+            }
+            return;
+        }
+
+        // Single program delete (via trash icon on card)
+        if (programToDelete && !isBulk) {
+            setIsDeleting(true);
+            try {
+                const result = await deleteProgram(programToDelete);
+                if (!result.success) {
+                    console.error('Delete failed:', result.error);
+                    alert(`Error al eliminar el programa: ${result.error}`);
+                } else {
+                    await fetchPrograms();
+                }
+            } catch (error: any) {
+                console.error('Delete unexpected error', error);
+                alert(`Error al eliminar el programa: ${error.message || 'Error de red'}`);
+            } finally {
+                setIsDeleting(false);
+                setProgramToDelete(null);
             }
         }
     }
