@@ -1,4 +1,5 @@
 'use client';
+// Refactored to light theme
 
 import { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
