@@ -2,7 +2,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { Download, Loader2, X, FileText, ImageIcon } from 'lucide-react';
+import { Download, Loader2, X, FileText, ImageIcon, Dumbbell, Flame, Zap, Target, Calendar } from 'lucide-react';
 
 // -- DATA INTERFACES --
 interface MesocycleStrategy {
@@ -245,20 +245,17 @@ const THEMES: Record<string, ExportTheme> = {
     }
 };
 
-const BLOCK_STYLE: Record<string, { emoji: string; label: string }> = {
-    strength_linear: { emoji: '🔴', label: 'Fuerza' },
-    metcon_structured: { emoji: '🔥', label: 'MetCon' },
-    warmup: { emoji: '✨', label: 'Activación' },
-    accessory: { emoji: '🔹', label: 'Accesorio' },
-    skill: { emoji: '🔹', label: 'Skill' },
-    finisher: { emoji: '🔥', label: 'Finisher' },
-    free_text: { emoji: '📝', label: 'Notas' },
-    mobility: { emoji: '🧘', label: 'Movilidad' },
+// -- ICON MAPPING --
+const BLOCK_ICONS: Record<string, any> = {
+    strength_linear: Dumbbell,
+    metcon_structured: Flame,
+    warmup: Zap,
+    accessory: Target,
+    skill: Target,
+    finisher: Flame,
+    free_text: FileText,
+    mobility: ImageIcon,
 };
-
-function getBlockStyle(type: string) {
-    return BLOCK_STYLE[type] || { emoji: '▪️', label: 'Bloque' };
-}
 
 // -- MAIN COMPONENT --
 export function ExportPreview({
@@ -373,79 +370,109 @@ export function ExportPreview({
 
     // -- COMPONENT RENDERERS --
     const renderExercise = (block: WorkoutBlock, index: number, isSuperSet: boolean = false, superSetLetter: string = '') => {
-        const style = getBlockStyle(block.type);
+        // dynamic icon determination
+        const IconComponent = BLOCK_ICONS[block.type] || Dumbbell;
         const progression = getProgressionForBlock(block.name || '');
         const numberDisplay = isSuperSet ? `${index}${superSetLetter}.` : `${index}.`;
 
         return (
-            <div key={`${index}-${block.name}`} style={{ marginBottom: '24px', breakInside: 'avoid' }}>
+            <div key={`${index}-${block.name}`} style={{ marginBottom: '32px', breakInside: 'avoid' }}>
                 {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
                     <span style={{
-                        fontSize: '20px',
+                        fontSize: '24px',
                         fontWeight: '800',
                         color: theme.colors.exerciseNumber,
-                        marginRight: '8px',
-                        width: '35px',
-                        textAlign: 'right'
+                        marginRight: '12px',
+                        width: '40px',
+                        textAlign: 'right',
+                        fontFamily: 'SF Pro Display, -apple-system, system-ui, sans-serif'
                     }}>
                         {numberDisplay}
                     </span>
                     <h4 style={{
-                        fontSize: '18px',
+                        fontSize: '20px',
                         fontWeight: '700',
                         color: theme.colors.textPrimary,
                         margin: 0,
-                        marginRight: '8px',
-                        fontFamily: 'Inter, system-ui, sans-serif'
+                        marginRight: '12px',
+                        fontFamily: 'SF Pro Display, -apple-system, system-ui, sans-serif',
+                        letterSpacing: '-0.02em'
                     }}>
                         {block.name || 'Bloque'}
                     </h4>
-                    <span style={{ fontSize: '16px' }}>{style.emoji}</span>
+
+                    {/* Icon Badge */}
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: theme.colors.accentLight,
+                        borderRadius: '6px',
+                        padding: '4px',
+                        color: theme.colors.accent
+                    }}>
+                        <IconComponent size={16} strokeWidth={2.5} />
+                    </div>
                 </div>
 
                 {/* Content */}
-                <div style={{ paddingLeft: '50px' }}>
+                <div style={{ paddingLeft: '52px' }}>
                     {block.cue && (
                         <div style={{
                             display: 'flex',
-                            alignItems: 'flex-start',
-                            marginBottom: '6px',
-                            color: theme.colors.textSecondary
+                            alignItems: 'center',
+                            marginBottom: '8px',
+                            color: theme.colors.textSecondary,
+                            fontSize: '13px',
+                            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace'
                         }}>
-                            <span style={{ marginRight: '6px', fontSize: '14px' }}>💡</span>
-                            <span style={{ fontStyle: 'italic', fontSize: '14px', lineHeight: '1.4' }}>
+                            <span style={{ marginRight: '6px' }}>💡</span>
+                            <span style={{ fontStyle: 'italic', lineHeight: '1.4' }}>
                                 {block.cue}
                             </span>
                         </div>
                     )}
 
                     <div style={{
-                        borderLeft: `3px solid ${theme.colors.progressionBorder}`,
-                        paddingLeft: '12px',
                         backgroundColor: theme.colors.progressionBg,
-                        padding: '8px 12px',
-                        borderRadius: '0 4px 4px 0',
-                        marginTop: '4px'
+                        // Removing the borderLeft to make it cleaner - "Apple Style" card look
+                        borderRadius: '12px',
+                        padding: '16px',
+                        marginTop: '8px',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
                     }}>
                         {progression ? (
-                            <div style={{ fontSize: '13px', lineHeight: '1.6', color: theme.colors.progressionText }}>
-                                {progression.progression.map((val, idx) => {
-                                    if (val === '-' || !val) return null;
-                                    return (
-                                        <span key={idx} style={{ display: 'inline-block', marginRight: '12px' }}>
-                                            <span style={{ fontWeight: '700', color: theme.colors.progressionText }}>Sem {idx + 1}:</span> {val}
-                                            {idx < progression.progression.length - 1 && (
-                                                <span style={{ margin: '0 4px', opacity: 0.5 }}>→</span>
-                                            )}
-                                        </span>
-                                    );
-                                })}
+                            <div style={{ fontSize: '14px', lineHeight: '1.6', color: theme.colors.progressionText, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px 16px' }}>
+                                    {progression.progression.map((val, idx) => {
+                                        if (val === '-' || !val) return null;
+                                        return (
+                                            <div key={idx} style={{ display: 'flex', alignItems: 'center' }}>
+                                                <span style={{
+                                                    fontWeight: '600',
+                                                    color: theme.colors.textSecondary,
+                                                    fontSize: '11px',
+                                                    textTransform: 'uppercase',
+                                                    marginRight: '6px',
+                                                    letterSpacing: '0.5px'
+                                                }}>
+                                                    SEM {idx + 1}
+                                                </span>
+                                                <span style={{ fontWeight: '500', color: theme.colors.textPrimary }}>
+                                                    {val}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         ) : (
-                            <div style={{ fontSize: '13px', lineHeight: '1.5', color: theme.colors.progressionText }}>
+                            <div style={{ fontSize: '14px', lineHeight: '1.6', color: theme.colors.progressionText, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>
                                 {block.content.map((line, i) => (
-                                    <div key={i}>{line}</div>
+                                    <div key={i} style={{ marginBottom: i < block.content.length - 1 ? '4px' : 0 }}>
+                                        {line}
+                                    </div>
                                 ))}
                             </div>
                         )}
@@ -639,8 +666,8 @@ export function ExportPreview({
                                         display: 'flex',
                                         alignItems: 'center'
                                     }}>
-                                        <span style={{ marginRight: '10px', opacity: 0.8 }}>📅</span>
-                                        {day.name}: {day.blocks[0]?.name?.split('(')[0] || 'Entrenamiento'}
+                                        <span style={{ marginRight: '10px', opacity: 0.8, display: 'flex' }}><Calendar size={24} /></span>
+                                        {day.name}
                                     </div>
 
                                     {/* Activation */}
