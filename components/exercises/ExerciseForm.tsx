@@ -85,32 +85,39 @@ export function ExerciseForm({ exercise, onClose, onSuccess }: ExerciseFormProps
             {/* Basic Info */}
             <div className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Nombre del Ejercicio <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nombre del Ejercicio <span className="text-red-500">*</span></label>
                     <input
                         {...register('name', { required: 'El nombre es obligatorio' })}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400"
                         placeholder="Ej: Back Squat"
                     />
                     {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message as string}</p>}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Categoría</label>
-                        <select
-                            {...register('category')}
-                            className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                        >
-                            {CATEGORIES.map(cat => (
-                                <option key={cat.value} value={cat.value}>{cat.label}</option>
-                            ))}
-                        </select>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Categoría</label>
+                        <div className="relative">
+                            <select
+                                {...register('category')}
+                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none"
+                            >
+                                {CATEGORIES.map(cat => (
+                                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                ))}
+                            </select>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Subcategoría (Opcional)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Subcategoría (Opcional)</label>
                         <input
                             {...register('subcategory')}
-                            className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400"
                             placeholder="Ej: Lower Body Push"
                         />
                     </div>
@@ -120,7 +127,7 @@ export function ExerciseForm({ exercise, onClose, onSuccess }: ExerciseFormProps
             {/* Chips Selection */}
             <div className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Equipamiento</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Equipamiento</label>
                     <div className="flex flex-wrap gap-2">
                         {EQUIPMENT_OPTIONS.map(item => (
                             <button
@@ -128,8 +135,8 @@ export function ExerciseForm({ exercise, onClose, onSuccess }: ExerciseFormProps
                                 type="button"
                                 onClick={() => toggleSelection('equipment', item)}
                                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedEquipment.includes(item)
-                                        ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25'
-                                        : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200'
                                     }`}
                             >
                                 {item}
@@ -139,7 +146,7 @@ export function ExerciseForm({ exercise, onClose, onSuccess }: ExerciseFormProps
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Apto para</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Apto para</label>
                     <div className="flex flex-wrap gap-2">
                         {MODALITIES.map(item => (
                             <button
@@ -147,8 +154,8 @@ export function ExerciseForm({ exercise, onClose, onSuccess }: ExerciseFormProps
                                 type="button"
                                 onClick={() => toggleSelection('modality_suitability', item)}
                                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedModalities.includes(item)
-                                        ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/25'
-                                        : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                                    ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200'
                                     }`}
                             >
                                 {item}
@@ -161,38 +168,38 @@ export function ExerciseForm({ exercise, onClose, onSuccess }: ExerciseFormProps
             {/* Media & Desc */}
             <div className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">URL de Video</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">URL de Video</label>
                     <input
                         {...register('video_url')}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400"
                         placeholder="https://youtube.com/..."
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Descripción / Notas</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Descripción / Notas</label>
                     <textarea
                         {...register('description')}
                         rows={3}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none placeholder:text-gray-400"
                         placeholder="Instrucciones clave, puntos de rendimiento..."
                     />
                 </div>
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 sticky bottom-0 bg-white pb-2 md:static md:pb-0 z-10">
                 <button
                     type="button"
                     onClick={onClose}
-                    className="px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/5 transition-colors"
+                    className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
                 >
                     Cancelar
                 </button>
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="flex items-center gap-2 px-6 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-lg shadow-blue-500/20 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
                     {exercise ? 'Guardar Cambios' : 'Crear Ejercicio'}
