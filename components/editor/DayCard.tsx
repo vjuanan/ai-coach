@@ -181,7 +181,8 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
 
     // TRAINING DAY CARD - Full redesign
     const warmupBlocks = day.blocks.filter(b => b.section === 'warmup' || b.type === 'warmup');
-    const mainBlocks = day.blocks.filter(b => (b.section !== 'warmup' && b.type !== 'warmup') || b.section === 'main');
+    // Ensure strict separation: if it's a warmup block, it cannot be a main block
+    const mainBlocks = day.blocks.filter(b => !(b.section === 'warmup' || b.type === 'warmup'));
 
     // Create a merged list of IDs for SortableContext to manage all potential drag targets
     // Warning: Visual split + Single SortableContext works for reordering, 
