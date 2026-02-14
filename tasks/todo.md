@@ -1,48 +1,15 @@
-# KG Calculation Fix - Task Checklist
+# Task: Update Workout Templates Programmatically
 
-## Planning
-- [x] Investigate data storage (benchmarks in `clients.details.oneRmStats`)
-- [x] Trace KG calculation pipeline (`WorkoutBlockCard` → `useAthleteBenchmarks` → `getBenchmark`)
-- [x] Add debug logging and deploy to production
-- [x] Confirm root cause: `programClient` stays null in Zustand store
-- [x] Create implementation plan
-
-## Implementation
-- [x] Add `setProgramClient` action to Zustand store (`lib/store/index.ts`)
-- [x] Update `MesocycleEditor.tsx` `onAssignSuccess` to fetch full client and update store
-- [x] Remove debug logging from `useAthleteBenchmarks.ts`
-
-## Verification
-- [x] Deploy changes to production
-- [x] Browser test: assign athlete with benchmarks → KG appears ✅
-- [x] Screenshot verification (75kg and 80kg calculated correctly from 100kg RM)
-
-# Warmup UI Refactor - Task Checklist
-
-## Implementation
-- [x] Shrink "Rondas/Vueltas" input width (max-w-md)
-- [x] Add "SERIES" input to GenericMovementForm
-- [x] Reorganize movement grid to 4 columns (Series, Reps, Intensity, Rest)
-- [x] Move Notes to full-width row below grid
-- [x] Push changes to main
-
-## Verification
-- [x] Deploy changes to production
-- [x] Browser verification: Login and check Warmup block UI ✅
-- [x] Capture screenshots of verified state ✅
-- [x] Confirm "Rondas" input is smaller ✅
-- [x] Confirm "SERIES" input exists ✅
-- [x] Confirm 4-column grid layout ✅
-- [x] Confirm "Notas" below grid ✅
-
-# Fix Athlete Registration Sync - Task Checklist
-
-## Investigation
-- [x] Analyze user registration flow and Supabase triggers
-- [x] Identify why new athletes are not synced to athletes table (Missing client record creation)
-
-## Implementation
-- [x] Fix the synchronization logic (Migration to allow NULL coach_id and trigger update)
-- [x] Verify fix with new user registration ✅
-- [x] Backfill missing client records for existing users (Fixed 'Antonella Barone') ✅
-
+- [x] Explore existing templates and DB structure <!-- id: 0 -->
+    - [x] Check `programs` table for templates <!-- id: 1 -->
+    - [x] Identify authors/styles (e.g., Mike Israetel) <!-- id: 2 -->
+    - [x] Understand the JSON structure for days, blocks, and exercises <!-- id: 3 -->
+- [x] Research and Define Professional Templates <!-- id: 4 -->
+    - [x] Define "Professional" structure for identified authors <!-- id: 5 -->
+    - [x] Map out the Mon/Wed/Fri/Sat split for each <!-- id: 6 -->
+- [x] Create Update Script <!-- id: 7 -->
+    - [x] Create a script to programmatically update/insert data <!-- id: 8 -->
+    - [x] Implement robust logic for correct block types and methods <!-- id: 9 -->
+- [ ] Execute and Verify <!-- id: 10 -->
+    - [x] Run script <!-- id: 11 -->
+    - [ ] User verification (Screenshots) <!-- id: 12 -->

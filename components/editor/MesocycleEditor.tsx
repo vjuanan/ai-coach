@@ -1006,7 +1006,12 @@ function convertConfigToText(type: string, config: any, blockName?: string | nul
 
     // Generic handlers for other types
     if (config.movements && Array.isArray(config.movements)) {
-        const lines = [...config.movements];
+        const lines = config.movements.map((m: any) => {
+            if (typeof m === 'string') return m;
+            if (typeof m === 'object' && m && 'name' in m) return m.name;
+            return '';
+        }).filter(Boolean);
+
         if (config.notes && !excludeNotes) lines.push(config.notes);
         return lines;
     }

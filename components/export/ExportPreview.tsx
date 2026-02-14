@@ -98,149 +98,149 @@ interface ExportTheme {
 }
 
 const THEMES: Record<string, ExportTheme> = {
-    pinky: {
-        id: 'pinky',
-        label: 'Pinky (Original)',
+    white: {
+        id: 'white',
+        label: 'Clean (Apple Light)',
         colors: {
-            bgPrimary: '#FAFAF8',
-            textPrimary: '#2D2926',
-            textSecondary: '#5C5550',
-            accent: '#9D174D',
-            accentLight: '#FCE7F3',
-            border: '#E5E7EB',
-            headerTagBg: '#831843',
-            weekBannerBg: '#4A044E',
-            weekBannerText: '#FFFFFF',
-            dayHeaderBg: '#9D174D',
-            dayHeaderText: '#FFFFFF',
-            activationBg: '#FDF2F8',
-            activationTitle: '#DB2777',
-            activationBorder: '#FBCFE8',
-            activationText: '#5C5550',
-            finisherBg: '#FFF1F2',
-            finisherTitle: '#BE123C',
-            finisherBorder: '#E11D48',
-            finisherText: '#5C5550',
-            exerciseNumber: '#9D174D',
-            progressionBorder: '#9D174D',
-            progressionBg: '#FFF0F5',
-            progressionText: '#2D2926',
+            bgPrimary: '#FFFFFF',
+            textPrimary: '#1D1D1F',
+            textSecondary: '#86868B',
+            accent: '#0071E3', // Apple Blue
+            accentLight: '#F5F5F7',
+            border: '#D2D2D7',
+            headerTagBg: '#1D1D1F',
+            weekBannerBg: '#F5F5F7',
+            weekBannerText: '#1D1D1F',
+            dayHeaderBg: '#FFFFFF', // Clean
+            dayHeaderText: '#1D1D1F',
+            activationBg: '#F5F5F7', // Subtle gray box
+            activationTitle: '#86868B', // Muted title
+            activationBorder: 'transparent',
+            activationText: '#1D1D1F',
+            finisherBg: '#FFF5F5',
+            finisherTitle: '#FF3B30',
+            finisherBorder: '#FF3B30',
+            finisherText: '#1D1D1F',
+            exerciseNumber: '#0071E3',
+            progressionBorder: '#0071E3',
+            progressionBg: '#F5F9FF',
+            progressionText: '#1D1D1F',
         }
     },
     dark: {
         id: 'dark',
-        label: 'Dark Mode',
+        label: 'Pro (Apple Dark)',
         colors: {
-            bgPrimary: '#18181B', // Zinc 900
-            textPrimary: '#F4F4F5', // Zinc 100
-            textSecondary: '#A1A1AA', // Zinc 400
-            accent: '#3B82F6', // Blue 500
-            accentLight: '#1E293B', // Slate 800
-            border: '#27272A', // Zinc 800
-            headerTagBg: '#1E40AF', // Blue 800
-            weekBannerBg: '#1E3A8A', // Blue 900
-            weekBannerText: '#EFF6FF',
-            dayHeaderBg: '#2563EB', // Blue 600
-            dayHeaderText: '#FFFFFF',
-            activationBg: '#0F172A', // Slate 900
-            activationTitle: '#60A5FA', // Blue 400
-            activationBorder: '#1E293B', // Slate 800
-            activationText: '#94A3B8', // Slate 400
-            finisherBg: '#271A1A', // Dark Red/Brown
-            finisherTitle: '#F87171', // Red 400
-            finisherBorder: '#7F1D1D', // Red 900
-            finisherText: '#9CA3AF',
-            exerciseNumber: '#3B82F6',
-            progressionBorder: '#3B82F6',
-            progressionBg: '#1E293B',
-            progressionText: '#E2E8F0',
+            bgPrimary: '#000000',
+            textPrimary: '#F5F5F7',
+            textSecondary: '#A1A1A6',
+            accent: '#0A84FF', // Apple Blue Light
+            accentLight: '#1C1C1E',
+            border: '#38383A',
+            headerTagBg: '#2C2C2E',
+            weekBannerBg: '#1C1C1E',
+            weekBannerText: '#F5F5F7',
+            dayHeaderBg: '#000000',
+            dayHeaderText: '#F5F5F7',
+            activationBg: '#1C1C1E', // Dark gray box
+            activationTitle: '#A1A1A6',
+            activationBorder: 'transparent',
+            activationText: '#D1D1D6',
+            finisherBg: '#1A0505',
+            finisherTitle: '#FF453A',
+            finisherBorder: '#FF453A',
+            finisherText: '#D1D1D6',
+            exerciseNumber: '#0A84FF',
+            progressionBorder: '#0A84FF',
+            progressionBg: '#0A121E',
+            progressionText: '#F5F5F7',
         }
     },
-    white: {
-        id: 'white',
-        label: 'Minimalist White',
+    pinky: {
+        id: 'pinky',
+        label: 'Rose Gold',
         colors: {
-            bgPrimary: '#FFFFFF',
-            textPrimary: '#000000',
-            textSecondary: '#4B5563',
-            accent: '#000000',
-            accentLight: '#F3F4F6',
-            border: '#E5E7EB',
+            bgPrimary: '#FFF5F7', // Very subtle pink-white
+            textPrimary: '#4A2C36', // Deep brownish-red
+            textSecondary: '#8E6E79',
+            accent: '#BE123C', // Rose 700
+            accentLight: '#FFE4E9',
+            border: '#FECDD3',
+            headerTagBg: '#BE123C',
+            weekBannerBg: '#BE123C',
+            weekBannerText: '#FFFFFF',
+            dayHeaderBg: '#FFFFFF',
+            dayHeaderText: '#BE123C',
+            activationBg: '#FFF0F3',
+            activationTitle: '#BE123C',
+            activationBorder: 'transparent',
+            activationText: '#881337',
+            finisherBg: '#881337', // Rose 900
+            finisherTitle: '#FFFFFF',
+            finisherBorder: '#881337',
+            finisherText: '#FFE4E6',
+            exerciseNumber: '#BE123C',
+            progressionBorder: '#BE123C',
+            progressionBg: '#FFF1F2',
+            progressionText: '#881337',
+        }
+    },
+    hard: {
+        id: 'hard',
+        label: 'Titanium',
+        colors: {
+            bgPrimary: '#F2F2F7', // System Gray 6
+            textPrimary: '#1C1C1E', // System Gray 6 Dark
+            textSecondary: '#636366',
+            accent: '#8E8E93', // System Gray
+            accentLight: '#FFFFFF',
+            border: '#C7C7CC',
             headerTagBg: '#000000',
             weekBannerBg: '#000000',
             weekBannerText: '#FFFFFF',
-            dayHeaderBg: '#000000',
-            dayHeaderText: '#FFFFFF',
+            dayHeaderBg: '#F2F2F7',
+            dayHeaderText: '#000000',
             activationBg: '#FFFFFF',
-            activationTitle: '#000000',
-            activationBorder: '#D1D5DB', // Gray 300
-            activationText: '#374151',
-            finisherBg: '#FFFFFF',
-            finisherTitle: '#000000',
+            activationTitle: '#636366',
+            activationBorder: 'transparent',
+            activationText: '#1C1C1E',
+            finisherBg: '#000000',
+            finisherTitle: '#FFFFFF',
             finisherBorder: '#000000',
-            finisherText: '#374151',
+            finisherText: '#8E8E93',
             exerciseNumber: '#000000',
             progressionBorder: '#000000',
-            progressionBg: '#F9FAFB', // Gray 50
+            progressionBg: '#E5E5EA',
             progressionText: '#000000',
         }
     },
     crazy: {
         id: 'crazy',
-        label: 'Crazy (Cyberpunk)',
+        label: 'Cyber (Electric)',
         colors: {
-            bgPrimary: '#0F0524', // Deep Purple
-            textPrimary: '#E0E0E0',
-            textSecondary: '#A0A0C0',
-            accent: '#39FF14', // Neon Green
-            accentLight: '#2D1B4E',
-            border: '#39FF14',
-            headerTagBg: '#FF00FF', // Magenta
-            weekBannerBg: '#00F3FF', // Cyan
-            weekBannerText: '#000000',
-            dayHeaderBg: '#FF00FF', // Magenta
-            dayHeaderText: '#FFFFFF',
-            activationBg: '#1A0B2E',
-            activationTitle: '#00F3FF', // Cyan
-            activationBorder: '#00F3FF',
-            activationText: '#D1D1E9',
-            finisherBg: '#2E0B1A',
-            finisherTitle: '#FF00FF',
-            finisherBorder: '#FF00FF',
-            finisherText: '#E9D1D1',
-            exerciseNumber: '#39FF14',
-            progressionBorder: '#39FF14',
-            progressionBg: 'rgba(57, 255, 20, 0.1)',
-            progressionText: '#39FF14',
-        }
-    },
-    hard: {
-        id: 'hard',
-        label: 'Hard (Old School)',
-        colors: {
-            bgPrimary: '#1C1917', // Stone 900
-            textPrimary: '#E7E5E4', // Stone 200
-            textSecondary: '#A8A29E', // Stone 400
-            accent: '#DC2626', // Red 600
-            accentLight: '#292524', // Stone 800
-            border: '#44403C', // Stone 700
-            headerTagBg: '#7F1D1D', // Red 900
-            weekBannerBg: '#7F1D1D',
-            weekBannerText: '#FECACA', // Red 200
-            dayHeaderBg: '#DC2626',
-            dayHeaderText: '#FFFFFF',
-            activationBg: '#292524',
-            activationTitle: '#A8A29E',
-            activationBorder: '#57534E',
-            activationText: '#D6D3D1',
-            finisherBg: '#000000',
-            finisherTitle: '#DC2626',
-            finisherBorder: '#DC2626',
-            finisherText: '#A8A29E',
-            exerciseNumber: '#DC2626',
-            progressionBorder: '#DC2626',
-            progressionBg: '#292524',
-            progressionText: '#E7E5E4',
+            bgPrimary: '#09090B', // Zinc 950
+            textPrimary: '#FAFAFA',
+            textSecondary: '#A1A1AA',
+            accent: '#22D3EE', // Cyan 400
+            accentLight: '#18181B', // Zinc 900
+            border: '#27272A',
+            headerTagBg: '#C026D3', // Fuchsia 600
+            weekBannerBg: 'linear-gradient(135deg, #C026D3 0%, #7C3AED 100%)',
+            weekBannerText: '#FFFFFF',
+            dayHeaderBg: '#09090B',
+            dayHeaderText: '#E879F9', // Fuchsia 400
+            activationBg: '#18181B',
+            activationTitle: '#22D3EE',
+            activationBorder: '#22D3EE',
+            activationText: '#E2E8F0',
+            finisherBg: '#2E1065', // Violet 950
+            finisherTitle: '#F472B6', // Pink 400
+            finisherBorder: '#C026D3',
+            finisherText: '#E9D5FF',
+            exerciseNumber: '#22D3EE',
+            progressionBorder: '#C026D3',
+            progressionBg: 'rgba(192, 38, 211, 0.1)',
+            progressionText: '#E879F9',
         }
     }
 };
@@ -275,10 +275,10 @@ export function ExportPreview({
     const exportRef = useRef<HTMLDivElement>(null);
     const [isExporting, setIsExporting] = useState(false);
     const [exportFormat, setExportFormat] = useState<'png' | 'pdf'>('png');
-    const [currentThemeId, setCurrentThemeId] = useState<string>('pinky');
+    const [currentThemeId, setCurrentThemeId] = useState<string>('white');
 
-    // Get current theme object, fallback to pinky safely
-    const theme = THEMES[currentThemeId] || THEMES.pinky;
+    // Get current theme object, fallback to white safely
+    const theme = THEMES[currentThemeId] || THEMES.white;
 
     // Handle escape key
     useEffect(() => {
@@ -352,9 +352,16 @@ export function ExportPreview({
     };
 
     const groupBlocks = (blocks: WorkoutBlock[]) => {
-        const activation = blocks.filter(b => b.section === 'warmup' || b.type === 'warmup' || b.type === 'mobility');
-        const finisher = blocks.filter(b => b.section === 'cooldown' || b.type === 'finisher');
-        const main = blocks.filter(b => !activation.includes(b) && !finisher.includes(b));
+        // Filter out completely empty blocks (no name AND no content/empty content)
+        const validBlocks = blocks.filter(b => {
+            const hasName = b.name && b.name.trim().length > 0;
+            const hasContent = b.content && b.content.some(c => c && c.trim().length > 0);
+            return hasName || hasContent;
+        });
+
+        const activation = validBlocks.filter(b => b.section === 'warmup' || b.type === 'warmup' || b.type === 'mobility');
+        const finisher = validBlocks.filter(b => b.section === 'cooldown' || b.type === 'finisher');
+        const main = validBlocks.filter(b => !activation.includes(b) && !finisher.includes(b));
         return { activation, main, finisher };
     };
 
@@ -517,13 +524,15 @@ export function ExportPreview({
                         ref={exportRef}
                         style={{
                             width: '800px',
-                            minHeight: '1123px',
+                            minHeight: '1000px',
+                            height: 'auto', // Allow growth
                             backgroundColor: theme.colors.bgPrimary,
-                            padding: '40px',
+                            padding: '60px', // More generous padding
                             boxSizing: 'border-box',
                             fontFamily: 'Inter, system-ui, sans-serif',
                             color: theme.colors.textPrimary,
-                            position: 'relative'
+                            position: 'relative',
+                            overflow: 'visible' // Ensure shadows/etc don't clip
                         }}
                     >
                         {/* 1. Header Section */}
@@ -531,14 +540,15 @@ export function ExportPreview({
                             {weekDateRanges && (
                                 <div style={{
                                     display: 'inline-block',
-                                    backgroundColor: theme.colors.weekBannerBg,
+                                    background: theme.colors.weekBannerBg.includes('gradient') ? theme.colors.weekBannerBg : undefined,
+                                    backgroundColor: !theme.colors.weekBannerBg.includes('gradient') ? theme.colors.weekBannerBg : undefined,
                                     color: theme.colors.weekBannerText,
-                                    padding: '6px 16px',
-                                    borderRadius: '8px',
+                                    padding: '8px 20px',
+                                    borderRadius: '12px',
                                     fontSize: '12px',
                                     fontWeight: '600',
                                     marginBottom: '20px',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                                 }}>
                                     {weekDateRanges.map(range => (
                                         <div key={range.weekNumber}>
@@ -620,46 +630,60 @@ export function ExportPreview({
                                     <div style={{
                                         backgroundColor: theme.colors.dayHeaderBg,
                                         color: theme.colors.dayHeaderText,
-                                        padding: '10px 20px',
-                                        borderRadius: '8px',
-                                        marginBottom: '24px',
-                                        fontSize: '18px',
+                                        padding: '12px 0', // Remove horizontal padding for cleaner look if transparent
+                                        borderBottom: `2px solid ${theme.colors.accent}`,
+                                        marginBottom: '30px',
+                                        fontSize: '22px',
                                         fontWeight: '800',
-                                        fontStyle: 'italic',
-                                        boxShadow: `0 4px 6px -1px ${theme.colors.accent}40`
+                                        letterSpacing: '-0.5px',
+                                        display: 'flex',
+                                        alignItems: 'center'
                                     }}>
+                                        <span style={{ marginRight: '10px', opacity: 0.8 }}>📅</span>
                                         {day.name}: {day.blocks[0]?.name?.split('(')[0] || 'Entrenamiento'}
                                     </div>
 
                                     {/* Activation */}
                                     {activation.length > 0 && (
                                         <div style={{
-                                            marginBottom: '24px',
+                                            marginBottom: '32px',
                                             backgroundColor: theme.colors.activationBg,
-                                            padding: '16px',
-                                            borderRadius: '8px',
-                                            border: `1px dashed ${theme.colors.activationBorder}`
+                                            padding: '20px',
+                                            borderRadius: '12px',
+                                            // Only render border if it is not transparent
+                                            border: theme.colors.activationBorder !== 'transparent' ? `1px solid ${theme.colors.activationBorder}` : 'none'
                                         }}>
                                             <h4 style={{
                                                 color: theme.colors.activationTitle,
                                                 fontWeight: '800',
                                                 textTransform: 'uppercase',
-                                                fontSize: '13px',
-                                                marginBottom: '10px',
-                                                letterSpacing: '0.5px'
+                                                fontSize: '12px',
+                                                marginBottom: '16px',
+                                                letterSpacing: '1px'
                                             }}>
-                                                ✨ Activación ({activation.length} ejercicios)
+                                                Warm Up
                                             </h4>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                                 {activation.map((block, i) => (
-                                                    <div key={i} style={{ display: 'flex', alignItems: 'baseline', fontSize: '14px', color: theme.colors.activationText }}>
-                                                        <span style={{ color: theme.colors.activationTitle, marginRight: '8px', fontSize: '10px' }}>●</span>
-                                                        <span style={{ fontWeight: '600', color: theme.colors.textPrimary, marginRight: '6px' }}>{block.name}</span>
-                                                        {block.content && block.content.length > 0 && (
-                                                            <span style={{ fontStyle: 'italic', fontSize: '13px' }}>
-                                                                — {block.content.join(', ')}
-                                                            </span>
-                                                        )}
+                                                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', fontSize: '14px', color: theme.colors.activationText }}>
+                                                        <span style={{
+                                                            display: 'inline-block',
+                                                            width: '6px',
+                                                            height: '6px',
+                                                            borderRadius: '50%',
+                                                            backgroundColor: theme.colors.accent,
+                                                            marginTop: '6px',
+                                                            marginRight: '12px',
+                                                            flexShrink: 0
+                                                        }} />
+                                                        <div>
+                                                            <span style={{ fontWeight: '600', color: theme.colors.textPrimary, marginRight: '6px' }}>{block.name}</span>
+                                                            {block.content && block.content.length > 0 && (
+                                                                <span style={{ opacity: 0.85, fontSize: '13px' }}>
+                                                                    — {block.content.join(', ')}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 ))}
                                             </div>
