@@ -214,8 +214,8 @@ const THEMES: Record<string, ExportTheme> = {
             progressionText: '#000000',
         }
     },
-    crazy: {
-        id: 'crazy',
+    cyber: {
+        id: 'cyber',
         label: 'Cyber (Electric)',
         colors: {
             bgPrimary: '#09090B', // Zinc 950
