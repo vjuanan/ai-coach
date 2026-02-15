@@ -376,7 +376,7 @@ export function ExportPreview({
         const numberDisplay = isSuperSet ? `${index}${superSetLetter}.` : `${index}.`;
 
         return (
-            <div key={`${index}-${block.name}`} style={{ marginBottom: '32px', breakInside: 'avoid' }}>
+            <div key={`${index}-${block.name}`} style={{ marginBottom: '32px' }}>
                 {/* Header */}
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
                     <span style={{
@@ -652,7 +652,7 @@ export function ExportPreview({
                             if (day.blocks.length === 0) return null;
 
                             return (
-                                <div key={dayIdx} style={{ marginBottom: '50px', breakInside: 'avoid' }}>
+                                <div key={dayIdx} style={{ marginBottom: '50px' }}>
                                     {/* Link Day Header */}
                                     <div style={{
                                         backgroundColor: theme.colors.dayHeaderBg,
