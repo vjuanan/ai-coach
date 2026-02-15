@@ -219,10 +219,10 @@ const THEMES: Record<string, ExportTheme> = {
         label: 'Cyber (Electric)',
         colors: {
             bgPrimary: '#09090B', // Zinc 950
-            textPrimary: '#FAFAFA',
+            textPrimary: '#F0F0F0', // Brighter White
             textSecondary: '#A1A1AA',
             accent: '#22D3EE', // Cyan 400
-            accentLight: '#18181B', // Zinc 900
+            accentLight: '#27272A', // Zinc 800 - Lighter for visibility
             border: '#27272A',
             headerTagBg: '#C026D3', // Fuchsia 600
             weekBannerBg: 'linear-gradient(135deg, #C026D3 0%, #7C3AED 100%)',
@@ -239,8 +239,8 @@ const THEMES: Record<string, ExportTheme> = {
             finisherText: '#E9D5FF',
             exerciseNumber: '#22D3EE',
             progressionBorder: '#C026D3',
-            progressionBg: 'rgba(192, 38, 211, 0.1)',
-            progressionText: '#E879F9',
+            progressionBg: 'rgba(192, 38, 211, 0.15)', // Slightly more visible
+            progressionText: '#F0F0F0', // White text for better contrast vs progressionBg
         }
     }
 };
@@ -375,8 +375,14 @@ export function ExportPreview({
         const progression = getProgressionForBlock(block.name || '');
         const numberDisplay = isSuperSet ? `${index}${superSetLetter}.` : `${index}.`;
 
+        // Validation: If no content provided and no progression, do not render
+        const hasContent = block.content && block.content.length > 0 && block.content.some(c => c.trim().length > 0);
+        const hasProgression = progression && progression.progression.some(p => p && p !== '-');
+
+        if (!hasContent && !hasProgression) return null;
+
         return (
-            <div key={`${index}-${block.name}`} style={{ marginBottom: '32px' }}>
+            <div key={`${index}-${block.name}`} style={{ marginBottom: '24px' }}>
                 {/* Header */}
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
                     <span style={{
@@ -652,7 +658,7 @@ export function ExportPreview({
                             if (day.blocks.length === 0) return null;
 
                             return (
-                                <div key={dayIdx} style={{ marginBottom: '50px' }}>
+                                <div key={dayIdx} style={{ marginBottom: '32px' }}>
                                     {/* Link Day Header */}
                                     <div style={{
                                         backgroundColor: theme.colors.dayHeaderBg,
