@@ -552,7 +552,7 @@ export function ExportPreview({
                 </div>
 
                 {/* Scrollable Preview Area */}
-                <div className="flex-1 overflow-y-auto bg-gray-100 p-8 flex justify-center">
+                <div className={`flex-1 overflow-y-auto p-8 flex justify-center ${['cyber', 'dark', 'hard'].includes(theme.id) ? 'bg-zinc-950/80' : 'bg-gray-100'}`}>
                     <div
                         ref={exportRef}
                         style={{
