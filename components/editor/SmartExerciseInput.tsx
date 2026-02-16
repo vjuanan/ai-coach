@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { searchExercises } from '@/lib/actions';
 import { useExerciseCache } from '@/hooks/useExerciseCache';
 import { Search, Loader2, Plus, AlertCircle } from 'lucide-react';
 import { ExerciseCreationModal } from './ExerciseCreationModal';

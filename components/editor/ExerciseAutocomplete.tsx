@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { searchExercises } from '@/lib/actions';
+import { getExercises } from '@/lib/actions';
 import { Search, Loader2 } from 'lucide-react';
 
 interface ExerciseAutocompleteProps {
@@ -42,7 +42,7 @@ export function ExerciseAutocomplete({
 
             setIsLoading(true);
             try {
-                const data = await searchExercises(query);
+                const { data } = await getExercises({ query });
                 setResults(data || []);
                 setIsOpen(true);
             } catch (error) {

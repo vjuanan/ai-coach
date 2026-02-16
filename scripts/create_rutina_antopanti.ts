@@ -74,7 +74,8 @@ async function runMigration() {
         } else {
             // Update aliases if needed
             const currentAliases = existing.aliases || [];
-            const newAliases = [...new Set([...currentAliases, ...aliases])];
+            // Remove duplicates using Set and convert back to array
+            const newAliases = Array.from(new Set([...currentAliases, ...aliases]));
 
             if (newAliases.length > currentAliases.length) {
                 console.log(`   ^ Updating aliases for ${name}`);
