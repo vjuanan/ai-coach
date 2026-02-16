@@ -29,7 +29,6 @@ export function ExerciseCreationModal({ isOpen, onClose, initialName = '', onSuc
     const [videoUrl, setVideoUrl] = useState('');
     const [description, setDescription] = useState('');
 
-    const [aiLoading, setAiLoading] = useState(false);
 
     // Helpers for array fields
     const [equipmentInput, setEquipmentInput] = useState('');
@@ -49,36 +48,6 @@ export function ExerciseCreationModal({ isOpen, onClose, initialName = '', onSuc
 
     const handleRemoveArrayItem = (index: number, list: string[], setList: (l: string[]) => void) => {
         setList(list.filter((_, i) => i !== index));
-    };
-
-    const handleGenerateAI = async () => {
-        if (!name.trim()) return;
-        setAiLoading(true);
-        setError(null);
-        try {
-            // Dynamic import to avoid server-side issues if not handled correctly, though standard import should work with use server
-            const { generateExerciseDetails } = await import('@/lib/ai-actions');
-            const result = await generateExerciseDetails(name);
-
-            if (result.error) {
-                setError(result.error);
-                return;
-            }
-
-            if (result.data) {
-                const d = result.data;
-                if (d.category) setCategory(d.category);
-                if (d.subcategory) setSubcategory(d.subcategory);
-                if (d.equipment && Array.isArray(d.equipment)) setEquipment(d.equipment);
-                if (d.modality_suitability && Array.isArray(d.modality_suitability)) setModalitySuitability(d.modality_suitability);
-                if (d.description) setDescription(d.description);
-            }
-        } catch (err) {
-            console.error(err);
-            setError('Error al generar con IA');
-        } finally {
-            setAiLoading(false);
-        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -136,26 +105,14 @@ export function ExerciseCreationModal({ isOpen, onClose, initialName = '', onSuc
                     {/* Name */}
                     <div className="col-span-1 md:col-span-2">
                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nombre</label>
-                        <div className="flex gap-2">
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-gray-400"
-                                placeholder="Ej: Push Press"
-                                autoFocus
-                            />
-                            <button
-                                type="button"
-                                onClick={handleGenerateAI}
-                                disabled={aiLoading || !name.trim()}
-                                className="px-3 py-2 bg-purple-50 text-purple-600 border border-purple-100 rounded-lg hover:bg-purple-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
-                                title="Autocompletar detalles con IA"
-                            >
-                                {aiLoading ? <Loader2 size={18} className="animate-spin" /> : "✨ IA Magic"}
-                            </button>
-                        </div>
-                        <p className="text-xs text-gray-400 mt-1">Escribe el nombre y presiona "IA Magic" para autocompletar.</p>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-gray-400"
+                            placeholder="Ej: Push Press"
+                            autoFocus
+                        />
                     </div>
 
                     {/* Category */}
