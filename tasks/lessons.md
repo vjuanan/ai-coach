@@ -8,3 +8,6 @@
 - **Always pass explicit `width`, `height`, `scrollX`, `scrollY`, `windowWidth`, `windowHeight` to html2canvas** based on `el.scrollHeight` / `el.scrollWidth`. Without this, html2canvas captures only the visible portion.
 - **In `onclone`, force `height: auto` and `overflow: visible`** on the cloned element to undo any CSS constraints.
 - **Verify fixes by scrolling to the ABSOLUTE bottom** of the preview and taking screenshots of both top AND bottom. A fix isn't verified unless you see the footer.
+
+## Deployment Debugging
+- **If deployment seems stuck or features are missing despite successful git push**, check the build logs or run `npm run build` / `npm run type-check` locally. Silent build failures (like missing exports or TS errors) can prevent Vercel from deploying the new commit, leaving the live site on an old version.

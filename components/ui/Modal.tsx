@@ -35,7 +35,7 @@ export function Modal({ isOpen, onClose, title, children, description, maxWidth 
             />
 
             {/* Modal Content */}
-            <div className={`relative w-full h-full sm:h-auto ${maxWidth} bg-white sm:rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col`}>
+            <div className={`relative w-full h-full sm:h-auto ${maxWidth} max-h-[85vh] bg-white sm:rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col`}>
 
                 {/* Header */}
                 <div className="relative flex items-center justify-between p-4 sm:p-6 border-b border-gray-100 shrink-0">
