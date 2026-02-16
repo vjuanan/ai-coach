@@ -2,7 +2,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { Download, Loader2, X, Heart, Target, ArrowRight } from 'lucide-react';
+import { Download, Loader2, X, Heart, Target, ArrowRight, Clock } from 'lucide-react';
 
 // -- DATA INTERFACES --
 interface MesocycleStrategy {
@@ -20,6 +20,7 @@ interface WorkoutBlock {
     section?: 'warmup' | 'main' | 'cooldown';
     cue?: string;
     format?: string;
+    rest?: string | null;
 }
 
 interface DayData {
@@ -37,6 +38,7 @@ interface MonthlyProgression {
     name: string;
     progression: string[];
     variable?: string;
+    rest?: string;
 }
 
 interface ExportPreviewProps {
@@ -277,6 +279,9 @@ const ExerciseRow = ({
         prescriptionText = block.content.filter(c => c.trim()).join(' · ');
     }
 
+    // Get rest from progression data or block
+    const restValue = progression?.rest || (block as any)?.rest || null;
+
     return (
         <div style={{
             padding: '10px 16px',
@@ -295,15 +300,34 @@ const ExerciseRow = ({
                     {index}.
                 </span>
 
-                {/* Name */}
-                <span style={{
-                    flex: 1,
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: theme.c.text,
-                }}>
-                    {displayName}
-                </span>
+                {/* Name + Rest badge inline */}
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: theme.c.text,
+                    }}>
+                        {displayName}
+                    </span>
+
+                    {/* Rest badge - shown outside progression since it doesn't change per week */}
+                    {restValue && (
+                        <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            fontSize: '10px',
+                            fontWeight: '600',
+                            color: theme.c.textMuted,
+                            backgroundColor: theme.c.accentSoft,
+                            padding: '2px 8px',
+                            borderRadius: '100px',
+                            whiteSpace: 'nowrap',
+                        }}>
+                            ⏱ {restValue}
+                        </span>
+                    )}
+                </div>
 
                 {/* Single prescription */}
                 {prescriptionText && !showInlineProgression && (
@@ -335,35 +359,45 @@ const ExerciseRow = ({
                 </div>
             )}
 
-            {/* Inline progression: Sem 1: val → Sem 2: val → ... */}
+            {/* Inline progression: Grid layout with proper columns */}
             {showInlineProgression && progression && (
                 <div style={{
-                    marginTop: '6px',
+                    marginTop: '8px',
                     marginLeft: '30px',
-                    fontSize: '12px',
-                    color: theme.c.textMuted,
-                    lineHeight: '1.6',
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    alignItems: 'center',
-                    gap: '2px',
+                    backgroundColor: theme.c.accentSoft,
+                    borderRadius: '8px',
+                    padding: '10px 14px',
+                    display: 'grid',
+                    gridTemplateColumns: `repeat(${progression.progression.filter(v => v && v !== '-').length}, 1fr)`,
+                    gap: '12px',
                 }}>
                     {progression.progression.map((val, idx) => {
                         if (!val || val === '-') return null;
-                        const isLast = idx === progression.progression.length - 1 ||
-                            progression.progression.slice(idx + 1).every(v => !v || v === '-');
                         return (
-                            <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
-                                <span style={{ fontWeight: '700', color: theme.c.accent, fontSize: '10px' }}>
-                                    Sem {idx + 1}:
+                            <div key={idx} style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '2px',
+                            }}>
+                                <span style={{
+                                    fontSize: '9px',
+                                    fontWeight: '800',
+                                    color: theme.c.accent,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px',
+                                }}>
+                                    SEM {idx + 1}
                                 </span>
-                                <span style={{ fontWeight: '600', color: theme.c.text, marginRight: '2px' }}>
+                                <span style={{
+                                    fontSize: '13px',
+                                    fontWeight: '700',
+                                    color: theme.c.text,
+                                    whiteSpace: 'nowrap',
+                                }}>
                                     {val}
                                 </span>
-                                {!isLast && (
-                                    <span style={{ color: theme.c.accentMuted, margin: '0 2px', fontSize: '11px' }}>→</span>
-                                )}
-                            </span>
+                            </div>
                         );
                     })}
                 </div>
@@ -747,7 +781,7 @@ export function ExportPreview({
                                     {/* Header row */}
                                     <div style={{
                                         display: 'grid',
-                                        gridTemplateColumns: `2.5fr ${Array(totalWeeks).fill('1fr').join(' ')}`,
+                                        gridTemplateColumns: `minmax(120px, 2fr) ${Array(totalWeeks).fill('minmax(60px, 1fr)').join(' ')}`,
                                         backgroundColor: theme.c.headerBg,
                                         borderBottom: `1px solid ${theme.c.border}`,
                                     }}>
@@ -770,7 +804,7 @@ export function ExportPreview({
                                     {changingProgressions.map((prog, pIdx) => (
                                         <div key={pIdx} style={{
                                             display: 'grid',
-                                            gridTemplateColumns: `2.5fr ${Array(totalWeeks).fill('1fr').join(' ')}`,
+                                            gridTemplateColumns: `minmax(120px, 2fr) ${Array(totalWeeks).fill('minmax(60px, 1fr)').join(' ')}`,
                                             borderBottom: pIdx < changingProgressions.length - 1 ? `1px solid ${theme.c.borderSoft}` : 'none',
                                             backgroundColor: pIdx % 2 === 0 ? theme.c.rowEven : theme.c.rowOdd,
                                         }}>
@@ -780,20 +814,37 @@ export function ExportPreview({
                                                 color: theme.c.text,
                                                 display: 'flex',
                                                 alignItems: 'center',
+                                                gap: '6px',
                                             }}>
-                                                {prog.name}
+                                                <span>{prog.name}</span>
+                                                {prog.rest && (
+                                                    <span style={{
+                                                        fontSize: '9px',
+                                                        fontWeight: '600',
+                                                        color: theme.c.textMuted,
+                                                        backgroundColor: theme.c.accentSoft,
+                                                        padding: '1px 6px',
+                                                        borderRadius: '100px',
+                                                        whiteSpace: 'nowrap',
+                                                    }}>
+                                                        ⏱ {prog.rest}
+                                                    </span>
+                                                )}
                                             </div>
                                             {Array.from({ length: totalWeeks }, (_, i) => {
                                                 const v = prog.progression[i] || '-';
                                                 return (
                                                     <div key={i} style={{
-                                                        padding: '7px 6px',
+                                                        padding: '7px 8px',
                                                         color: v === '-' ? theme.c.textMuted : theme.c.text,
                                                         textAlign: 'center',
-                                                        fontWeight: '500',
+                                                        fontWeight: v !== '-' ? '700' : '400',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
+                                                        fontSize: '12px',
+                                                        lineHeight: '1.3',
+                                                        wordBreak: 'break-word',
                                                     }}>
                                                         {v}
                                                     </div>

@@ -442,6 +442,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                             section: b.section || 'main',
                             cue: (b.config as any)?.notes || '',
                             format: (b.config as any)?.format || (b.config as any)?.methodology || null,
+                            rest: (b.config as any)?.rest || null,
                         }))
                     }))
             }));
@@ -453,7 +454,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         const firstAttrs = (firstMeso?.attributes || {}) as Record<string, unknown>;
         const oneRmStats = (programClient?.details as any)?.oneRmStats;
 
-        const progressionMap = new Map<string, { values: string[], variable?: string }>();
+        const progressionMap = new Map<string, { values: string[], variable?: string, rest?: string }>();
         mesocycles
             .sort((a, b) => a.week_number - b.week_number)
             .forEach(meso => {
@@ -509,7 +510,8 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                             }
 
                             if (!progressionMap.has(block.name)) {
-                                progressionMap.set(block.name, { values: [], variable: progressionVar });
+                                const restValue = (config.rest as string) || undefined;
+                                progressionMap.set(block.name, { values: [], variable: progressionVar, rest: restValue });
                             }
 
                             const entry = progressionMap.get(block.name)!;
@@ -529,7 +531,8 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         const progressions = Array.from(progressionMap.entries()).map(([name, data]) => ({
             name,
             progression: data.values,
-            variable: data.variable
+            variable: data.variable,
+            rest: data.rest
         }));
 
         const objectives: string[] = [];
