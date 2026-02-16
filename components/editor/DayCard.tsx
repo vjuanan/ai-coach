@@ -56,7 +56,7 @@ const blockTypeOptions: { type: BlockType; label: string; color: string }[] = [
 ];
 
 export function DayCard({ day, dayName, compact = false, isActiveInBuilder = false, hideHeader = false }: DayCardProps) {
-    const { addBlock, toggleRestDay, selectDay, selectBlock, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures, clearDay, enterBlockBuilder, blockBuilderMode, draggedBlockId, copyDayToFutureWeeks } = useEditorStore();
+    const { addBlock, toggleRestDay, selectDay, selectBlock, selectedDayId, dropTargetDayId, updateDay, stimulusFeatures, clearDay, enterBlockBuilder, blockBuilderMode, draggedBlockId, copyDayToFutureWeeks, blockBuilderSection } = useEditorStore();
 
     // UI State for Copy Confirmation
     const [showCopyConfirm, setShowCopyConfirm] = useState(false);
@@ -373,12 +373,27 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
 
                     {/* WARM UP SECTION */}
                     <div className="space-y-3">
-                        <div className="flex items-center justify-between px-1">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 opacity-90">
+                        <div
+                            className={`flex items-center justify-between px-1 cursor-pointer rounded-lg py-1 transition-colors ${isActiveInBuilder && blockBuilderSection === 'warmup'
+                                ? 'bg-emerald-50 dark:bg-emerald-900/20'
+                                : 'hover:bg-slate-50 dark:hover:bg-slate-800'
+                                }`}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                enterBlockBuilder(day.id, 'warmup');
+                            }}
+                        >
+                            <h4 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 opacity-90 ${isActiveInBuilder && blockBuilderSection === 'warmup'
+                                ? 'text-emerald-700 dark:text-emerald-300'
+                                : 'text-emerald-600 dark:text-emerald-400'
+                                }`}>
                                 <Flame size={12} />
                                 Calentamiento
                             </h4>
-                            <div className="h-px bg-emerald-100 dark:bg-emerald-900/30 flex-1 ml-3" />
+                            <div className={`h-px flex-1 ml-3 ${isActiveInBuilder && blockBuilderSection === 'warmup'
+                                ? 'bg-emerald-200 dark:bg-emerald-800'
+                                : 'bg-emerald-100 dark:bg-emerald-900/30'
+                                }`} />
                         </div>
 
                         {warmupBlocks.length > 0 ? (
@@ -406,12 +421,27 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
 
                     {/* MAIN WORKOUT SECTION */}
                     <div className="space-y-3">
-                        <div className="flex items-center justify-between px-1">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-cv-text-tertiary flex items-center gap-1.5">
+                        <div
+                            className={`flex items-center justify-between px-1 cursor-pointer rounded-lg py-1 transition-colors ${isActiveInBuilder && (blockBuilderSection === 'main' || !blockBuilderSection)
+                                ? 'bg-slate-100 dark:bg-slate-800'
+                                : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                                }`}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                enterBlockBuilder(day.id, 'main');
+                            }}
+                        >
+                            <h4 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isActiveInBuilder && (blockBuilderSection === 'main' || !blockBuilderSection)
+                                ? 'text-cv-text-primary'
+                                : 'text-cv-text-tertiary'
+                                }`}>
                                 <Dumbbell size={12} />
                                 Entrenamiento
                             </h4>
-                            <div className="h-px bg-slate-100 dark:bg-slate-700/50 flex-1 ml-3" />
+                            <div className={`h-px flex-1 ml-3 ${isActiveInBuilder && (blockBuilderSection === 'main' || !blockBuilderSection)
+                                ? 'bg-slate-300 dark:bg-slate-600'
+                                : 'bg-slate-100 dark:bg-slate-700/50'
+                                }`} />
                         </div>
 
                         {mainBlocks.length > 0 ? (
