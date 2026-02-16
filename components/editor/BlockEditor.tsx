@@ -283,13 +283,24 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
             return Boolean(config.content);
         }
 
-        // For Strength (Classic), require a name (Exercise) AND it must be valid
+        // For Strength (Classic), require name + sets + reps + intensity + rest
         if (block.type === 'strength_linear') {
             if (!block.name || block.name.trim().length === 0) return false;
             // Strict validation: must match an exercise in cache
-            // We use searchLocal to verify match.
             const match = searchLocal(block.name).find(e => e.name.toLowerCase() === block.name?.toLowerCase());
-            return !!match;
+            if (!match) return false;
+
+            // Field completeness: sets, reps, at least one intensity, rest
+            const cfg = block.config || {};
+            const hasSets = cfg.sets && Number(cfg.sets) > 0;
+            const hasReps = cfg.reps && String(cfg.reps).trim().length > 0;
+            const hasIntensity = (cfg.weight && String(cfg.weight).trim().length > 0) ||
+                (cfg.percentage && Number(cfg.percentage) > 0) ||
+                (cfg.rpe && Number(cfg.rpe) > 0) ||
+                (cfg.rir !== undefined && cfg.rir !== null && cfg.rir !== '');
+            const hasRest = cfg.rest && String(cfg.rest).trim().length > 0;
+
+            return !!(hasSets && hasReps && hasIntensity && hasRest);
         }
 
         // For structured blocks (Metcon, Warmup, etc), require a methodology (format) AND valid movements

@@ -267,7 +267,7 @@ async function runMigration() {
             sets: 3, reps: bulgReps, weight: bulgWeight, rir: 2, rest: "0 min", notes: "Cue: incliná levemente el tronco hacia adelante para foco en glúteo."
         });
         await addBlock(d1.id, 4, 'strength_linear', '3B. Plancha Frontal', {
-            sets: 3, reps: "45-60s", rest: "2 min", notes: "Cue: glúteos y abdomen apretados, no “cuelgues” la cintura."
+            sets: 3, reps: "45-60s", weight: "Bodyweight", rpe: 8, rest: "2 min", notes: "Cue: glúteos y abdomen apretados, no “cuelgues” la cintura."
         });
 
         // Accessories
@@ -306,7 +306,7 @@ async function runMigration() {
 
         if (weekNum === 4) {
             await addBlock(d2.id, 1, 'strength_linear', 'Pull-Up (Intento)', {
-                sets: 3, reps: "1", notes: "Intento de pull up estricta. Cue: arrancá con escápulas abajo.", rest: "2-3 min"
+                sets: 3, reps: "1", weight: "Bodyweight", rpe: 10, notes: "Intento de pull up estricta. Cue: arrancá con escápulas abajo.", rest: "2-3 min"
             });
             await addBlock(d2.id, 2, 'strength_linear', 'Press Plano', {
                 sets: 4, reps: "6", weight: "30 kg", rpe: 8, rest: "2-3 min", notes: "Cue: escápulas juntas y abajo."
@@ -315,7 +315,7 @@ async function runMigration() {
             let negSets = weekNum === 3 ? 5 : 4;
             let negTempo = weekNum === 1 ? "3s" : "5s";
             await addBlock(d2.id, 1, 'strength_linear', 'Negative Pull-Ups', {
-                sets: negSets, reps: "3", tempo: negTempo, rest: "2 min", notes: "Cue: subí con ayuda, bajá lento control total."
+                sets: negSets, reps: "3", weight: "Bodyweight", rpe: 9, tempo: negTempo, rest: "2 min", notes: "Cue: subí con ayuda, bajá lento control total."
             });
 
             let pressSets = 3;
@@ -371,7 +371,7 @@ async function runMigration() {
         let pushSets = weekNum >= 3 ? 5 : 4;
         let pushReps = weekNum === 2 ? "10" : (weekNum === 1 ? "8" : (weekNum === 3 ? "10" : "Al fallo"));
         await addBlock(d3.id, 2, 'strength_linear', '2A. Push-Ups', {
-            sets: pushSets, reps: pushReps, rir: 1, rest: "0 min", notes: "Cue: cuerpo en tabla."
+            sets: pushSets, reps: pushReps, weight: "Bodyweight", rir: 1, rest: "0 min", notes: "Cue: cuerpo en tabla."
         });
 
         let flySets = weekNum >= 3 ? 4 : 3;

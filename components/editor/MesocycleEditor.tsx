@@ -238,6 +238,8 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
     const [showExport, setShowExport] = useState(false);
     const [showStrategy, setShowStrategy] = useState(false);
+    const [showExportWarning, setShowExportWarning] = useState(false);
+    const [exportIncompleteCount, setExportIncompleteCount] = useState(0);
 
     // Invalid Blocks Modal State
     const [showInvalidBlocksModal, setShowInvalidBlocksModal] = useState(false);
@@ -261,7 +263,19 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             if (!block.name || block.name.trim().length === 0) return false;
             // Strict validation: must match an exercise in cache
             const match = searchLocal(block.name).find(e => e.name.toLowerCase() === block.name?.toLowerCase());
-            return !!match;
+            if (!match) return false;
+
+            // Field completeness: sets, reps, at least one intensity, rest
+            const cfg = block.config || {};
+            const hasSets = cfg.sets && Number(cfg.sets) > 0;
+            const hasReps = cfg.reps && String(cfg.reps).trim().length > 0;
+            const hasIntensity = (cfg.weight && String(cfg.weight).trim().length > 0) ||
+                (cfg.percentage && Number(cfg.percentage) > 0) ||
+                (cfg.rpe && Number(cfg.rpe) > 0) ||
+                (cfg.rir !== undefined && cfg.rir !== null && cfg.rir !== '');
+            const hasRest = cfg.rest && String(cfg.rest).trim().length > 0;
+
+            return !!(hasSets && hasReps && hasIntensity && hasRest);
         }
         if (['metcon_structured', 'warmup', 'accessory', 'skill'].includes(block.type)) {
             if (!block.format) return false;
@@ -357,6 +371,27 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             exitBlockBuilder();
         });
     }, [validateAndProceed, hasUnsavedChanges, forceSave, exitBlockBuilder]);
+
+    // Handle Export with pre-validation across ALL mesocycles
+    const handleExportClick = useCallback(() => {
+        let incompleteCount = 0;
+        for (const meso of mesocycles) {
+            for (const day of meso.days) {
+                if (day.is_rest_day) continue;
+                for (const block of (day.blocks || [])) {
+                    if (!validateBlockContent(block)) {
+                        incompleteCount++;
+                    }
+                }
+            }
+        }
+        if (incompleteCount > 0) {
+            setExportIncompleteCount(incompleteCount);
+            setShowExportWarning(true);
+        } else {
+            setShowExport(true);
+        }
+    }, [mesocycles, validateBlockContent]);
 
     // Handle Week Change
     const handleWeekChange = (week: number) => {
@@ -794,14 +829,14 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                         <div className="w-px h-4 bg-cv-border" />
 
                         <button
-                            onClick={() => setShowExport(true)}
+                            onClick={handleExportClick}
                             className="cv-btn-ghost p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
                             title="Preview"
                         >
                             <Eye size={14} />
                         </button>
                         <button
-                            onClick={() => setShowExport(true)}
+                            onClick={handleExportClick}
                             className="cv-btn-secondary px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-medium"
                             title="Exportar PDF"
                         >
@@ -951,6 +986,50 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                             >
                                 <div className="w-1.5 h-1.5 rounded-full bg-white/50" />
                                 Eliminar y Continuar
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+
+                {/* Export Validation Warning Modal */}
+                <Modal
+                    isOpen={showExportWarning}
+                    onClose={() => setShowExportWarning(false)}
+                    title={
+                        <div className="flex items-center gap-2 text-amber-500">
+                            <AlertTriangle size={24} />
+                            <span>Datos Incompletos</span>
+                        </div>
+                    }
+                    description="Algunos bloques no tienen toda la información."
+                >
+                    <div className="space-y-4">
+                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
+                            <h4 className="text-amber-500 font-medium mb-2">
+                                Hay <span className="font-bold">{exportIncompleteCount}</span> bloque(s) con datos incompletos.
+                            </h4>
+                            <ul className="list-disc list-inside text-sm text-gray-300 space-y-1">
+                                <li>Los ejercicios de fuerza necesitan: series, reps, intensidad y descanso.</li>
+                                <li>Los bloques estructurados necesitan al menos un movimiento válido.</li>
+                            </ul>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-3 mt-6">
+                            <button
+                                onClick={() => setShowExportWarning(false)}
+                                className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                                Volver y Corregir
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowExportWarning(false);
+                                    setShowExport(true);
+                                }}
+                                className="px-4 py-2 rounded-lg text-sm font-medium bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 transition-all flex items-center gap-2"
+                            >
+                                <Download size={14} />
+                                Exportar Igual
                             </button>
                         </div>
                     </div>
