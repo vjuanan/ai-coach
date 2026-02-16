@@ -1695,32 +1695,27 @@ export async function saveMesocycleChanges(
     }
 }
 
-export async function searchExercises(query: string) {
+export async function getAllExercises() {
     const supabase = createServerClient();
-
-    const { data, error } = await supabase
+    const { data } = await supabase
         .from('exercises')
         .select('*')
-        .ilike('name', `%${query}%`)
-        .limit(10);
-
-    if (error) return [];
-    return data;
+        .order('name');
+    return data || [];
 }
 
 export async function getAllExercisesLight() {
     const supabase = createServerClient();
-
     const { data, error } = await supabase
         .from('exercises')
-        .select('id, name, category, subcategory, equipment, tracking_parameters')
-        .order('name', { ascending: true });
+        .select('id, name, category, subcategory, equipment, aliases')
+        .order('name');
 
     if (error) {
         console.error('Error fetching all exercises:', error);
         return [];
     }
-    return data;
+    return data || [];
 }
 
 export async function getExercises(options?: {

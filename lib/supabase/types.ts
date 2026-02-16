@@ -202,6 +202,7 @@ export interface Exercise {
         weight?: boolean;
         reps?: boolean;
     } | null;
+    aliases?: string[] | null;
     created_at: string;
 }
 

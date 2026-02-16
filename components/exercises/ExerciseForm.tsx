@@ -42,8 +42,27 @@ export function ExerciseForm({ exercise, onClose, onSuccess }: ExerciseFormProps
             video_url: exercise?.video_url || '',
             equipment: exercise?.equipment || [],
             modality_suitability: exercise?.modality_suitability || [],
+            aliases: exercise?.aliases || [],
         }
     });
+
+    const [aliasInput, setAliasInput] = useState('');
+    const aliases = watch('aliases') || [];
+
+    const addAlias = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            const val = aliasInput.trim();
+            if (val && !aliases.includes(val)) {
+                setValue('aliases', [...aliases, val]);
+                setAliasInput('');
+            }
+        }
+    };
+
+    const removeAlias = (aliasToRemove: string) => {
+        setValue('aliases', aliases.filter((a: string) => a !== aliasToRemove));
+    };
 
     const selectedEquipment = watch('equipment');
     const selectedModalities = watch('modality_suitability');

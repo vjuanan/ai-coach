@@ -438,7 +438,8 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                         blocks: d.blocks.map(b => ({
                             type: b.type,
                             name: b.name || b.type,
-                            content: convertConfigToText(b.type, b.config, b.name, oneRmStats, true), // Exclude notes from content
+                            content: convertConfigToText(b.type, b.config, b.name, oneRmStats, true), // Keep for fallback
+                            structure: configToStructure(b.type, b.config, b.name, oneRmStats, true), // NEW structural data
                             section: b.section || 'main',
                             cue: (b.config as any)?.notes || '',
                             format: (b.config as any)?.format || (b.config as any)?.methodology || null,
@@ -961,11 +962,9 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
 // Helper to format block config for preview
 function convertConfigToText(type: string, config: any, blockName?: string | null, oneRmStats?: any, excludeNotes: boolean = false): string[] {
+    // 1. Handle Strength Linear (Explicit)
     if (type === 'strength_linear') {
-        // If distance is present, use it instead of reps or alongside
         const mainMetric = config.distance ? config.distance : config.reps;
-
-        // Calculate KG if percentage and stats match
         let kgBadge = '';
         if (config.percentage && blockName && oneRmStats) {
             const pctValue = parseFloat(config.percentage);
@@ -977,19 +976,21 @@ function convertConfigToText(type: string, config: any, blockName?: string | nul
 
         const parts = [
             config.sets && mainMetric ? `${config.sets} x ${mainMetric}` : '',
-            config.percentage ? `@ ${config.percentage}% ${kgBadge}` : '', // Added % symbol and KG badge
-            config.rpe ? `@ RPE ${config.rpe}` : ''
-        ].filter(Boolean).join('  '); // Double space for better separation
+            config.percentage ? `@ ${config.percentage}% ${kgBadge}` : '',
+            config.rpe ? `@ RPE ${config.rpe}` : '',
+            config.weight ? `(${config.weight})` : '' // Explicit weight if present
+        ].filter(Boolean).join('  ');
 
         const lines = [parts];
         if (config.notes && !excludeNotes) lines.push(config.notes);
-
         return lines.filter(Boolean);
     }
+
+    // 2. Handle Structured Metcons
     if (type === 'metcon_structured') {
         const lines = [];
         const header = [
-            config.time_cap || config.minutes ? `Time Cap: ${config.time_cap || config.minutes} min` : '',
+            config.time_cap || config.minutes ? `${config.format === 'EMOM' ? 'EMOM' : 'Time Cap'}: ${config.time_cap || config.minutes} min` : '',
             config.rounds ? `${config.rounds} Rounds` : '',
             config.score_type ? `Score: ${config.score_type}` : ''
         ].filter(Boolean).join(' | ');
@@ -1003,11 +1004,26 @@ function convertConfigToText(type: string, config: any, blockName?: string | nul
         }
 
         if (config.notes && !excludeNotes) lines.push(config.notes);
-
         return lines;
     }
 
-    // Generic handlers for other types
+    // 3. Handle Generic Sets/Reps for Accessory/Warmup/Other
+    if (config.sets || config.reps || config.distance || config.weight) {
+        const mainMetric = config.distance || config.reps;
+        const parts = [
+            config.sets && mainMetric ? `${config.sets} x ${mainMetric}` : (config.sets ? `${config.sets} sets` : ''),
+            config.weight ? `(${config.weight})` : '',
+            config.rpe ? `@ RPE ${config.rpe}` : ''
+        ].filter(Boolean).join('  ');
+
+        const lines = [];
+        if (parts) lines.push(parts);
+        if (config.notes && !excludeNotes) lines.push(config.notes);
+
+        if (lines.length > 0) return lines;
+    }
+
+    // 4. Default Handlers (Movements array or Content string)
     if (config.movements && Array.isArray(config.movements)) {
         const lines = config.movements.map((m: any) => {
             if (typeof m === 'string') return m;
@@ -1024,4 +1040,87 @@ function convertConfigToText(type: string, config: any, blockName?: string | nul
     }
 
     return !excludeNotes ? [config.notes || ''] : [];
+}
+
+// NEW HELPER: Extract structured data for Export Redesign
+function configToStructure(type: string, config: any, blockName?: string | null, oneRmStats?: any, excludeNotes: boolean = false) {
+    const res = {
+        sets: '',
+        reps: '',
+        weight: '',
+        rpe: '',
+        rest: config.rest || '',
+        text: '', // For MetCons or text-based blocks
+        notes: (!excludeNotes && config.notes) ? config.notes : ''
+    };
+
+    // 1. Strength / Generic Sets & Reps
+    if (type === 'strength_linear' || config.sets || config.reps || config.weight) {
+        if (config.sets) res.sets = `${config.sets}`;
+
+        // Reps can be distance too
+        if (config.reps) res.reps = `${config.reps}`;
+        if (config.distance) res.reps = config.reps ? `${config.reps} (${config.distance})` : `${config.distance}`;
+
+        // Weight logic
+        if (config.weight) res.weight = config.weight;
+        if (config.percentage) {
+            let kgBadge = '';
+            if (blockName && oneRmStats) {
+                const pctValue = parseFloat(config.percentage);
+                if (!isNaN(pctValue)) {
+                    const kg = calculateKgFromStats(oneRmStats, blockName, pctValue);
+                    if (kg) kgBadge = ` (≈${kg}kg)`;
+                }
+            }
+            // If weight already exists, append percentage. If not, set it.
+            res.weight = res.weight ? `${res.weight} @ ${config.percentage}%${kgBadge}` : `${config.percentage}%${kgBadge}`;
+        }
+
+        if (config.rpe) res.rpe = `${config.rpe}`;
+
+        return res;
+    }
+
+    // 2. MetCons
+    if (type === 'metcon_structured') {
+        const parts = [];
+
+        // Explicitly handle formats based on correct inputs
+        if (config.format === 'EMOM') {
+            parts.push(`EMOM ${config.minutes || config.time_cap || ''}min`);
+        } else if (config.format === 'AMRAP') {
+            parts.push(`AMRAP ${config.minutes || config.time_cap || ''}min`);
+        } else if (config.format === 'For Time') {
+            parts.push(`For Time ${config.time_cap ? `(Cap: ${config.time_cap}min)` : ''}`);
+        } else {
+            // Fallback
+            if (config.time_cap || config.minutes) parts.push(`Time Cap: ${config.time_cap || config.minutes} min`);
+        }
+
+        if (config.rounds) parts.push(`${config.rounds} Rounds`);
+        if (config.score_type) parts.push(`Score: ${config.score_type}`);
+
+        const header = parts.filter(Boolean).join(' | ');
+
+        let content = '';
+        if (header) content += header + '\n';
+
+        if (Array.isArray(config.movements)) {
+            content += config.movements.map((m: any) => typeof m === 'string' ? m : m.name).join('\n');
+        } else if (typeof config.content === 'string') {
+            content += config.content;
+        }
+
+        res.text = content;
+        return res;
+    }
+
+    // 3. Defaults
+    const existingLines = convertConfigToText(type, config, blockName, oneRmStats, excludeNotes);
+    if (existingLines.length > 0) {
+        res.text = existingLines.join('\n');
+    }
+
+    return res;
 }

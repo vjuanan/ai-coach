@@ -553,6 +553,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                     config={config}
                                     onChange={handleConfigChange}
                                     methodology={currentMethodology}
+                                    blockType={block.type}
                                 />
                             )}
 
@@ -583,7 +584,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             )}
 
                             {(block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill' || block.type === 'finisher') && !currentMethodology && (
-                                <GenericMovementForm key={blockId} config={config} onChange={handleConfigChange} methodology={currentMethodology} />
+                                <GenericMovementForm key={blockId} config={config} onChange={handleConfigChange} methodology={currentMethodology} blockType={block.type} />
                             )}
                         </>
                     )

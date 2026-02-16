@@ -11,6 +11,7 @@ interface GenericMovementFormProps {
     config: Record<string, unknown>;
     onChange: (key: string, value: unknown) => void;
     methodology?: TrainingMethodology;
+    blockType?: string; // Added blockType
 }
 
 interface MovementObject {
@@ -40,12 +41,15 @@ const parseMovements = (data: unknown[]): MovementObject[] => {
     });
 };
 
-export function GenericMovementForm({ config, onChange, methodology }: GenericMovementFormProps) {
+export function GenericMovementForm({ config, onChange, methodology, blockType }: GenericMovementFormProps) {
     // Logic for displaying inputs based on methodology
     // Force git update: 4
     const isMetconLike = methodology?.category === 'metcon' || methodology?.category === 'hiit';
     const isStrengthLike = methodology?.category === 'strength';
     const isStandard = methodology?.code === 'STANDARD';
+
+    // Check if it's a Warm Up block
+    const isWarmUp = blockType === 'warmup';
 
     // Strict display rules:
     // - Rounds: Only for Metcon/HIIT, but NEVER for STANDARD
@@ -113,6 +117,7 @@ export function GenericMovementForm({ config, onChange, methodology }: GenericMo
                             onChange={(updates) => updateMovement(index, updates)}
                             onRemove={() => removeMovement(index)}
                             showSets={showSets}
+                            isWarmUp={isWarmUp}
                         />
                     ))}
 
@@ -147,9 +152,10 @@ interface MovementCardProps {
     onChange: (updates: Partial<MovementObject>) => void;
     onRemove: () => void;
     showSets: boolean;
+    isWarmUp: boolean;
 }
 
-function MovementCard({ index, movement, onChange, onRemove, showSets }: MovementCardProps) {
+function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp }: MovementCardProps) {
     const { searchLocal } = useExerciseCache();
 
     // Check validity
@@ -159,6 +165,14 @@ function MovementCard({ index, movement, onChange, onRemove, showSets }: Movemen
     // Attributes
     const showDistance = exerciseMatch?.tracking_parameters?.distance;
 
+    // Check if it's a Warm Up block to hide RPE and Rest
+    // We can check if the methodology passed down (if any) is 'warmup' OR if the parent component told us so.
+    // BUT the prop is not yet passed to MovementCard. We need to thread it.
+
+    // Actually, `GenericMovementForm` doesn't pass `blockType` to `MovementCard` yet.
+    // Let's assume we will pass it. 
+    // Wait, I need to update the props of MovementCard first in the same file.
+
     return (
         <div className={`rounded-xl border transition-all duration-200 overflow-hidden
             ${isValid
@@ -166,6 +180,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets }: Movemen
                 : 'bg-slate-50 dark:bg-slate-800/50 border-transparent'
             }`}
         >
+            {/* ... Header ... */}
             {/* Header: Exercise Name & Actions */}
             <div className="p-3 flex gap-3 items-center border-b border-slate-100 dark:border-slate-800/50">
                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-500">
@@ -234,31 +249,35 @@ function MovementCard({ index, movement, onChange, onRemove, showSets }: Movemen
                             />
                         )}
 
-                        {/* 3. Intensity / RPE / Weight */}
-                        <InputCard
-                            label="INTENSIDAD / RPE"
-                            value={(movement.rpe || movement.weight) as string}
-                            onChange={(val) => {
-                                // Simple heuristic: if number < 11, assume RPE.
-                                if (typeof val === 'number' && val <= 10) onChange({ rpe: val, weight: undefined });
-                                else onChange({ weight: val ? String(val) : undefined, rpe: undefined });
-                            }}
-                            type="text"
-                            icon={Flame}
-                            presets={[7, 8, 9]}
-                            placeholder="RPE 8"
-                        />
+                        {/* 3. Intensity / RPE / Weight - HIDDEN FOR WARM UP */}
+                        {!isWarmUp && (
+                            <InputCard
+                                label="INTENSIDAD / RPE"
+                                value={(movement.rpe || movement.weight) as string}
+                                onChange={(val) => {
+                                    // Simple heuristic: if number < 11, assume RPE.
+                                    if (typeof val === 'number' && val <= 10) onChange({ rpe: val, weight: undefined });
+                                    else onChange({ weight: val ? String(val) : undefined, rpe: undefined });
+                                }}
+                                type="text"
+                                icon={Flame}
+                                presets={[7, 8, 9]}
+                                placeholder="RPE 8"
+                            />
+                        )}
 
-                        {/* 4. Rest */}
-                        <InputCard
-                            label="DESCANSO"
-                            value={movement.rest as string}
-                            onChange={(val) => onChange({ rest: val })}
-                            type="text"
-                            icon={Clock}
-                            presets={['0:00', '0:30', '1:00']}
-                            placeholder="-"
-                        />
+                        {/* 4. Rest - HIDDEN FOR WARM UP */}
+                        {!isWarmUp && (
+                            <InputCard
+                                label="DESCANSO"
+                                value={movement.rest as string}
+                                onChange={(val) => onChange({ rest: val })}
+                                type="text"
+                                icon={Clock}
+                                presets={['0:00', '0:30', '1:00']}
+                                placeholder="-"
+                            />
+                        )}
                     </div>
 
                     {/* Notes (Full Width) */}

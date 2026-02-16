@@ -401,17 +401,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                             </div>
                         )}
 
-                        {warmupBlocks.length > 0 && (
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    enterBlockBuilder(day.id, 'warmup');
-                                }}
-                                className="w-full py-1.5 text-xs text-emerald-600/70 dark:text-emerald-400/70 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors flex items-center justify-center gap-1"
-                            >
-                                <Plus size={12} /> Añadir bloque
-                            </button>
-                        )}
+
                     </div>
 
                     {/* MAIN WORKOUT SECTION */}

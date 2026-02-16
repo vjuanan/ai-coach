@@ -35,10 +35,12 @@ export function useExerciseCache() {
             return [];
         });
 
-        globalFetchPromise.then(data => {
-            setExercises(data);
-            setIsLoading(false);
-        });
+        if (globalFetchPromise) {
+            globalFetchPromise.then(data => {
+                setExercises(data);
+                setIsLoading(false);
+            });
+        }
 
     }, []);
 
@@ -48,9 +50,11 @@ export function useExerciseCache() {
         // if (lowerQuery.length < 2) return []; // Disable min length for local search
 
 
-        return (exercises || []).filter(ex =>
-            ex.name.toLowerCase().includes(lowerQuery)
-        ).slice(0, 50); // Limit results for performance
+        return (exercises || []).filter(ex => {
+            const matchesName = ex.name.toLowerCase().includes(lowerQuery);
+            const matchesAlias = ex.aliases?.some((alias: string) => alias.toLowerCase().includes(lowerQuery));
+            return matchesName || matchesAlias;
+        }).slice(0, 50); // Limit results for performance
     };
 
     return {
