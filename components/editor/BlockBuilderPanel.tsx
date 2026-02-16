@@ -243,6 +243,9 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
 
                 {/* Right Column - Speed Editor */}
                 <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/30 dark:bg-cv-bg-tertiary/10">
+                    <div className="bg-red-500 text-white text-xs p-1">
+                        DEBUG: Section={blockBuilderSection || 'null'} | Total Blocks={currentDay?.blocks.length || 0}
+                    </div>
                     {/* Added Blocks List - Horizontal Horizontal Scrolling */}
                     {currentDay && (
                         <div className="flex-shrink-0 px-3 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary relative z-20 flex items-center gap-3">
