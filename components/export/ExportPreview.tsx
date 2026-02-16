@@ -781,7 +781,7 @@ export function ExportPreview({
                                     {/* Header row */}
                                     <div style={{
                                         display: 'grid',
-                                        gridTemplateColumns: `minmax(120px, 2fr) ${Array(totalWeeks).fill('minmax(60px, 1fr)').join(' ')}`,
+                                        gridTemplateColumns: `minmax(140px, 2.5fr) ${Array(totalWeeks).fill('minmax(55px, 1fr)').join(' ')}`,
                                         backgroundColor: theme.c.headerBg,
                                         borderBottom: `1px solid ${theme.c.border}`,
                                     }}>
@@ -804,7 +804,7 @@ export function ExportPreview({
                                     {changingProgressions.map((prog, pIdx) => (
                                         <div key={pIdx} style={{
                                             display: 'grid',
-                                            gridTemplateColumns: `minmax(120px, 2fr) ${Array(totalWeeks).fill('minmax(60px, 1fr)').join(' ')}`,
+                                            gridTemplateColumns: `minmax(140px, 2.5fr) ${Array(totalWeeks).fill('minmax(55px, 1fr)').join(' ')}`,
                                             borderBottom: pIdx < changingProgressions.length - 1 ? `1px solid ${theme.c.borderSoft}` : 'none',
                                             backgroundColor: pIdx % 2 === 0 ? theme.c.rowEven : theme.c.rowOdd,
                                         }}>
@@ -813,10 +813,11 @@ export function ExportPreview({
                                                 fontWeight: '600',
                                                 color: theme.c.text,
                                                 display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '6px',
+                                                flexDirection: 'column',
+                                                justifyContent: 'center',
+                                                gap: '3px',
                                             }}>
-                                                <span>{prog.name}</span>
+                                                <span style={{ lineHeight: '1.3' }}>{prog.name}</span>
                                                 {prog.rest && (
                                                     <span style={{
                                                         fontSize: '9px',
@@ -826,6 +827,7 @@ export function ExportPreview({
                                                         padding: '1px 6px',
                                                         borderRadius: '100px',
                                                         whiteSpace: 'nowrap',
+                                                        alignSelf: 'flex-start',
                                                     }}>
                                                         ⏱ {prog.rest}
                                                     </span>
