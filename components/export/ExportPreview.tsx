@@ -73,27 +73,29 @@ interface ExportTheme {
         border: string;
 
         // Specific Sections
-        headerTagBg: string;
+        headerTagBg: string; // The Pill for program name
+        headerTagText: string;
+
         weekBannerBg: string;
         weekBannerText: string;
 
         dayHeaderBg: string;
         dayHeaderText: string;
+        dayHeaderBorder: string;
 
-        activationBg: string;
-        activationTitle: string;
-        activationBorder: string;
-        activationText: string;
+        sectionTitle: string; // "WARM UP", "TRAINING"
 
-        finisherBg: string;
-        finisherTitle: string;
-        finisherBorder: string;
-        finisherText: string;
+        cardBg: string;
+        cardBorder: string;
+        cardShadow: string;
 
-        exerciseNumber: string;
-        progressionBorder: string;
+        exerciseNumberBg: string;
+        exerciseNumberText: string;
+
         progressionBg: string;
+        progressionBorder: string;
         progressionText: string;
+        progressionLabel: string; // "SEMANA 1"
     };
 }
 
@@ -105,26 +107,33 @@ const THEMES: Record<string, ExportTheme> = {
             bgPrimary: '#FFFFFF',
             textPrimary: '#1D1D1F',
             textSecondary: '#86868B',
-            accent: '#0071E3', // Apple Blue
+            accent: '#0071E3',
             accentLight: '#F5F5F7',
             border: '#D2D2D7',
+
             headerTagBg: '#1D1D1F',
+            headerTagText: '#FFFFFF',
+
             weekBannerBg: '#F5F5F7',
             weekBannerText: '#1D1D1F',
-            dayHeaderBg: '#FFFFFF', // Clean
+
+            dayHeaderBg: '#FFFFFF',
             dayHeaderText: '#1D1D1F',
-            activationBg: '#F5F5F7', // Subtle gray box
-            activationTitle: '#86868B', // Muted title
-            activationBorder: 'transparent',
-            activationText: '#1D1D1F',
-            finisherBg: '#FFF5F5',
-            finisherTitle: '#FF3B30',
-            finisherBorder: '#FF3B30',
-            finisherText: '#1D1D1F',
-            exerciseNumber: '#0071E3',
-            progressionBorder: '#0071E3',
+            dayHeaderBorder: '#E5E5EA',
+
+            sectionTitle: '#86868B',
+
+            cardBg: '#FFFFFF',
+            cardBorder: '#E5E5EA',
+            cardShadow: '0 4px 12px rgba(0,0,0,0.04)',
+
+            exerciseNumberBg: '#F5F5F7',
+            exerciseNumberText: '#1D1D1F',
+
             progressionBg: '#F5F9FF',
+            progressionBorder: 'transparent',
             progressionText: '#1D1D1F',
+            progressionLabel: '#0071E3',
         }
     },
     dark: {
@@ -133,114 +142,142 @@ const THEMES: Record<string, ExportTheme> = {
         colors: {
             bgPrimary: '#000000',
             textPrimary: '#F5F5F7',
-            textSecondary: '#A1A1A6',
-            accent: '#0A84FF', // Apple Blue Light
+            textSecondary: '#86868B', // A bit darker than white theme secondary
+            accent: '#0A84FF',
             accentLight: '#1C1C1E',
             border: '#38383A',
+
             headerTagBg: '#2C2C2E',
+            headerTagText: '#F5F5F7',
+
             weekBannerBg: '#1C1C1E',
             weekBannerText: '#F5F5F7',
+
             dayHeaderBg: '#000000',
             dayHeaderText: '#F5F5F7',
-            activationBg: '#1C1C1E', // Dark gray box
-            activationTitle: '#A1A1A6',
-            activationBorder: 'transparent',
-            activationText: '#D1D1D6',
-            finisherBg: '#1A0505',
-            finisherTitle: '#FF453A',
-            finisherBorder: '#FF453A',
-            finisherText: '#D1D1D6',
-            exerciseNumber: '#0A84FF',
-            progressionBorder: '#0A84FF',
+            dayHeaderBorder: '#2C2C2E',
+
+            sectionTitle: '#6E6E73',
+
+            cardBg: '#1C1C1E',
+            cardBorder: '#2C2C2E',
+            cardShadow: '0 4px 12px rgba(0,0,0,0.4)',
+
+            exerciseNumberBg: '#2C2C2E',
+            exerciseNumberText: '#F5F5F7',
+
             progressionBg: '#0A121E',
+            progressionBorder: 'transparent',
             progressionText: '#F5F5F7',
+            progressionLabel: '#0A84FF',
         }
     },
     pinky: {
         id: 'pinky',
         label: 'Rose Gold',
         colors: {
-            bgPrimary: '#FFF5F7', // Very subtle pink-white
-            textPrimary: '#4A2C36', // Deep brownish-red
-            textSecondary: '#8E6E79',
-            accent: '#BE123C', // Rose 700
-            accentLight: '#FFE4E9',
-            border: '#FECDD3',
-            headerTagBg: '#BE123C',
-            weekBannerBg: '#BE123C',
-            weekBannerText: '#FFFFFF',
-            dayHeaderBg: '#FFFFFF',
-            dayHeaderText: '#BE123C',
-            activationBg: '#FFF0F3',
-            activationTitle: '#BE123C',
-            activationBorder: 'transparent',
-            activationText: '#881337',
-            finisherBg: '#881337', // Rose 900
-            finisherTitle: '#FFFFFF',
-            finisherBorder: '#881337',
-            finisherText: '#FFE4E6',
-            exerciseNumber: '#BE123C',
-            progressionBorder: '#BE123C',
+            bgPrimary: '#FFF5F7',
+            textPrimary: '#881337', // Rose 900
+            textSecondary: '#BE123C', // Rose 700
+            accent: '#E11D48', // Rose 600
+            accentLight: '#FFE4E6', // Rose 100
+            border: '#FECDD3', // Rose 200
+
+            headerTagBg: '#E11D48',
+            headerTagText: '#FFFFFF',
+
+            weekBannerBg: '#FFE4E6',
+            weekBannerText: '#881337',
+
+            dayHeaderBg: 'transparent',
+            dayHeaderText: '#881337',
+            dayHeaderBorder: '#FECDD3',
+
+            sectionTitle: '#BE123C',
+
+            cardBg: '#FFFFFF',
+            cardBorder: '#F43F5E', // Rose 500
+            cardShadow: '0 4px 12px rgba(225, 29, 72, 0.1)',
+
+            exerciseNumberBg: '#FFE4E6',
+            exerciseNumberText: '#881337',
+
             progressionBg: '#FFF1F2',
+            progressionBorder: '#FECDD3',
             progressionText: '#881337',
+            progressionLabel: '#E11D48',
         }
     },
     hard: {
         id: 'hard',
         label: 'Titanium',
         colors: {
-            bgPrimary: '#F2F2F7', // System Gray 6
-            textPrimary: '#1C1C1E', // System Gray 6 Dark
+            bgPrimary: '#F2F2F7',
+            textPrimary: '#000000',
             textSecondary: '#636366',
-            accent: '#8E8E93', // System Gray
+            accent: '#8E8E93',
             accentLight: '#FFFFFF',
             border: '#C7C7CC',
+
             headerTagBg: '#000000',
-            weekBannerBg: '#000000',
-            weekBannerText: '#FFFFFF',
-            dayHeaderBg: '#F2F2F7',
+            headerTagText: '#FFFFFF',
+
+            weekBannerBg: '#E5E5EA',
+            weekBannerText: '#000000',
+
+            dayHeaderBg: 'transparent',
             dayHeaderText: '#000000',
-            activationBg: '#FFFFFF',
-            activationTitle: '#636366',
-            activationBorder: 'transparent',
-            activationText: '#1C1C1E',
-            finisherBg: '#000000',
-            finisherTitle: '#FFFFFF',
-            finisherBorder: '#000000',
-            finisherText: '#8E8E93',
-            exerciseNumber: '#000000',
-            progressionBorder: '#000000',
-            progressionBg: '#E5E5EA',
+            dayHeaderBorder: '#D1D1D6',
+
+            sectionTitle: '#8E8E93',
+
+            cardBg: '#FFFFFF',
+            cardBorder: '#C7C7CC',
+            cardShadow: '0 2px 6px rgba(0,0,0,0.05)',
+
+            exerciseNumberBg: '#E5E5EA',
+            exerciseNumberText: '#000000',
+
+            progressionBg: '#F2F2F7',
+            progressionBorder: 'transparent',
             progressionText: '#000000',
+            progressionLabel: '#636366',
         }
     },
     cyber: {
         id: 'cyber',
         label: 'Cyber (Electric)',
         colors: {
-            bgPrimary: '#09090B', // Zinc 950
-            textPrimary: '#F0F0F0', // Brighter White
-            textSecondary: '#A1A1AA',
-            accent: '#22D3EE', // Cyan 400
-            accentLight: '#27272A', // Zinc 800 - Lighter for visibility
-            border: '#27272A',
-            headerTagBg: '#C026D3', // Fuchsia 600
-            weekBannerBg: 'linear-gradient(135deg, #C026D3 0%, #7C3AED 100%)',
-            weekBannerText: '#FFFFFF',
-            dayHeaderBg: '#09090B',
-            dayHeaderText: '#E879F9', // Fuchsia 400
-            activationBg: '#18181B',
-            activationTitle: '#22D3EE',
-            activationBorder: '#22D3EE',
-            activationText: '#E2E8F0',
-            finisherBg: '#2E1065', // Violet 950
-            finisherTitle: '#F472B6', // Pink 400
-            finisherBorder: '#C026D3',
-            finisherText: '#E9D5FF',
-            exerciseNumber: '#22D3EE',
-            progressionBorder: '#C026D3',
-            progressionBg: 'rgba(192, 38, 211, 0.15)', // Slightly more visible
-            progressionText: '#F0F0F0', // White text for better contrast vs progressionBg
+            bgPrimary: '#09090B',
+            textPrimary: '#E2E8F0',
+            textSecondary: '#94A3B8',
+            accent: '#22D3EE', // Cyan
+            accentLight: 'rgba(34, 211, 238, 0.1)',
+            border: '#334155',
+
+            headerTagBg: '#22D3EE',
+            headerTagText: '#09090B',
+
+            weekBannerBg: 'linear-gradient(90deg, #0F172A 0%, #1E293B 100%)',
+            weekBannerText: '#22D3EE',
+
+            dayHeaderBg: 'transparent',
+            dayHeaderText: '#F8FAFC',
+            dayHeaderBorder: '#334155',
+
+            sectionTitle: '#64748B',
+
+            cardBg: '#1E293B',
+            cardBorder: '#334155',
+            cardShadow: '0 0 15px rgba(34, 211, 238, 0.1)',
+
+            exerciseNumberBg: 'rgba(34, 211, 238, 0.2)',
+            exerciseNumberText: '#22D3EE',
+
+            progressionBg: '#0F172A',
+            progressionBorder: '#1E293B',
+            progressionText: '#E2E8F0',
+            progressionLabel: '#22D3EE',
         }
     }
 };
@@ -256,6 +293,312 @@ const BLOCK_ICONS: Record<string, any> = {
     free_text: FileText,
     mobility: ImageIcon,
 };
+
+// -- HELPER FUNCTIONS --
+const getWeekDateRange = (weekNum: number, weekDateRanges?: { weekNumber: number; startDate: string; endDate: string; }[]) => {
+    if (!weekDateRanges) return null;
+    const range = weekDateRanges.find(r => r.weekNumber === weekNum);
+    if (!range) return null;
+
+    const formatDate = (dateStr: string) => {
+        const date = new Date(dateStr);
+        const day = date.getDate().toString().padStart(2, '0');
+        const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const month = monthNames[date.getMonth()];
+        return `${day} ${month}`;
+    };
+
+    return `${formatDate(range.startDate)} - ${formatDate(range.endDate)}`;
+};
+
+const getProgressionForBlock = (blockName: string, monthlyStrategy?: { progressions: MonthlyProgression[] }) => {
+    if (!monthlyStrategy?.progressions) return null;
+    const normName = blockName.trim().toLowerCase();
+    return monthlyStrategy.progressions.find(p => p.name.trim().toLowerCase() === normName);
+};
+
+// -- SUB-COMPONENTS --
+
+// 1. Exercise Card
+const ExerciseCard = ({
+    block,
+    index,
+    isSuperSet = false,
+    superSetLetter = '',
+    theme,
+    monthlyStrategy
+}: {
+    block: WorkoutBlock,
+    index: number,
+    isSuperSet?: boolean,
+    superSetLetter?: string,
+    theme: ExportTheme,
+    monthlyStrategy?: { progressions: MonthlyProgression[] }
+}) => {
+    const IconComponent = BLOCK_ICONS[block.type] || Dumbbell;
+    const progression = getProgressionForBlock(block.name || '', monthlyStrategy);
+    const numberDisplay = isSuperSet ? `${index}${superSetLetter}` : `${index}`;
+
+    // Skip empty blocks
+    const hasContent = block.content && block.content.length > 0 && block.content.some(c => c.trim().length > 0);
+    const hasProgression = progression && progression.progression.some(p => p && p !== '-' && p !== 'Active');
+
+    if (!hasContent && !hasProgression) return null;
+
+    return (
+        <div style={{
+            marginBottom: '16px',
+            backgroundColor: theme.colors.cardBg,
+            border: `1px solid ${theme.colors.cardBorder}`,
+            borderRadius: '16px',
+            boxShadow: theme.colors.cardShadow,
+            padding: '20px',
+            breakInside: 'avoid',
+            position: 'relative'
+        }}>
+            {/* Header: Number, Title, Icon */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '16px' }}>
+                {/* Number Badge */}
+                <div style={{
+                    backgroundColor: theme.colors.exerciseNumberBg,
+                    color: theme.colors.exerciseNumberText,
+                    minWidth: '28px',
+                    height: '28px',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: '700',
+                    fontSize: '14px',
+                    marginRight: '12px',
+                    flexShrink: 0,
+                    marginTop: '2px'
+                }}>
+                    {numberDisplay}
+                </div>
+
+                {/* Title & Badge */}
+                <div style={{ flex: 1 }}>
+                    <h4 style={{
+                        fontSize: '17px',
+                        fontWeight: '700',
+                        color: theme.colors.textPrimary,
+                        margin: 0,
+                        lineHeight: '1.3',
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+                    }}>
+                        {block.name || 'Ejercicio'}
+                    </h4>
+                    {block.cue && (
+                        <div style={{
+                            marginTop: '4px',
+                            color: theme.colors.textSecondary,
+                            fontSize: '13px',
+                            fontStyle: 'italic',
+                            lineHeight: '1.4'
+                        }}>
+                            {block.cue}
+                        </div>
+                    )}
+                </div>
+
+                {/* Icon */}
+                <div style={{
+                    color: theme.colors.accent,
+                    marginLeft: '12px',
+                    opacity: 0.8
+                }}>
+                    <IconComponent size={18} strokeWidth={2.5} />
+                </div>
+            </div>
+
+            {/* Content / Progression */}
+            <div style={{
+                paddingLeft: '40px', // Indent to align with text
+            }}>
+                {progression ? (
+                    // Progression Table
+                    <div style={{
+                        backgroundColor: theme.colors.progressionBg,
+                        borderRadius: '12px',
+                        border: theme.colors.progressionBorder !== 'transparent' ? `1px solid ${theme.colors.progressionBorder}` : 'none',
+                        padding: '12px 16px',
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))',
+                        gap: '12px'
+                    }}>
+                        {progression.progression.map((val, idx) => {
+                            if (val === '-' || !val) return null;
+                            return (
+                                <div key={idx} style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{
+                                        fontSize: '10px',
+                                        fontWeight: '700',
+                                        color: theme.colors.progressionLabel,
+                                        textTransform: 'uppercase',
+                                        marginBottom: '2px'
+                                    }}>
+                                        SEM {idx + 1}
+                                    </span>
+                                    <span style={{
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        color: theme.colors.progressionText
+                                    }}>
+                                        {val}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    // Static Content List
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px'
+                    }}>
+                        {block.content.map((line, i) => (
+                            <div key={i} style={{
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                fontSize: '14px',
+                                color: theme.colors.textPrimary,
+                                lineHeight: '1.5'
+                            }}>
+                                <span style={{
+                                    color: theme.colors.accent,
+                                    marginRight: '8px',
+                                    fontWeight: 'bold',
+                                    marginTop: '1px' // optical alignment
+                                }}>•</span>
+                                <span>{line}</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+
+// 2. Day Column
+const DayColumn = ({
+    day,
+    theme,
+    monthlyStrategy
+}: {
+    day: DayData,
+    theme: ExportTheme,
+    monthlyStrategy?: { progressions: MonthlyProgression[] }
+}) => {
+    // Group blocks by section
+    const warmupBlocks = day.blocks.filter(b => b.section === 'warmup' || b.type === 'warmup' || b.type === 'mobility');
+    const cooldownBlocks = day.blocks.filter(b => b.section === 'cooldown' || b.type === 'finisher');
+    const mainBlocks = day.blocks.filter(b => !warmupBlocks.includes(b) && !cooldownBlocks.includes(b));
+    let mainExIndex = 1;
+
+    return (
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            marginBottom: '32px' // Spacing between days if stacked, or bottom margin
+        }}>
+            {/* Day Header */}
+            <div style={{
+                paddingBottom: '12px',
+                borderBottom: `2px solid ${theme.colors.dayHeaderBorder}`,
+                marginBottom: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+            }}>
+                <h3 style={{
+                    fontSize: '22px',
+                    fontWeight: '800',
+                    color: theme.colors.dayHeaderText,
+                    textTransform: 'uppercase',
+                    margin: 0,
+                    letterSpacing: '-0.5px'
+                }}>
+                    {day.name}
+                </h3>
+                {/* Optional: Add day generic info if needed */}
+            </div>
+
+            {/* Warm Up Section */}
+            {warmupBlocks.length > 0 && (
+                <div style={{ marginBottom: '8px' }}>
+                    <div style={{
+                        fontSize: '11px',
+                        fontWeight: '800',
+                        color: theme.colors.sectionTitle,
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px',
+                        marginBottom: '12px',
+                        display: 'flex',
+                        alignItems: 'center'
+                    }}>
+                        <Zap size={12} style={{ marginRight: '6px' }} />
+                        CALENTAMIENTO
+                    </div>
+                    {warmupBlocks.map((block, i) => (
+                        <ExerciseCard key={i} block={block} index={i + 1} theme={theme} monthlyStrategy={monthlyStrategy} />
+                    ))}
+                </div>
+            )}
+
+            {/* Main Training Section */}
+            {mainBlocks.length > 0 && (
+                <div>
+                    <div style={{
+                        fontSize: '11px',
+                        fontWeight: '800',
+                        color: theme.colors.sectionTitle,
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px',
+                        marginBottom: '12px',
+                        marginTop: '8px',
+                        display: 'flex',
+                        alignItems: 'center'
+                    }}>
+                        <Dumbbell size={12} style={{ marginRight: '6px' }} />
+                        ENTRENAMIENTO
+                    </div>
+                    {mainBlocks.map((block, i) => {
+                        const idx = mainExIndex++;
+                        return <ExerciseCard key={i} block={block} index={idx} theme={theme} monthlyStrategy={monthlyStrategy} />;
+                    })}
+                </div>
+            )}
+
+            {/* Finisher Section */}
+            {cooldownBlocks.length > 0 && (
+                <div style={{ marginTop: '8px' }}>
+                    <div style={{
+                        fontSize: '11px',
+                        fontWeight: '800',
+                        color: theme.colors.sectionTitle,
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px',
+                        marginBottom: '12px',
+                        display: 'flex',
+                        alignItems: 'center'
+                    }}>
+                        <Flame size={12} style={{ marginRight: '6px' }} />
+                        FINISHER / COOL DOWN
+                    </div>
+                    {cooldownBlocks.map((block, i) => (
+                        <ExerciseCard key={i} block={block} index={i + 1} theme={theme} monthlyStrategy={monthlyStrategy} />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 // -- MAIN COMPONENT --
 export function ExportPreview({
@@ -274,10 +617,8 @@ export function ExportPreview({
     const [exportFormat, setExportFormat] = useState<'png' | 'pdf'>('png');
     const [currentThemeId, setCurrentThemeId] = useState<string>('white');
 
-    // Get current theme object, fallback to white safely
     const theme = THEMES[currentThemeId] || THEMES.white;
 
-    // Handle escape key
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && isOpen) onClose();
@@ -288,21 +629,54 @@ export function ExportPreview({
 
     if (!isOpen) return null;
 
-    // -- EXPORT HANDLER --
     const handleExport = async () => {
         if (!exportRef.current) return;
-
         setIsExporting(true);
 
         try {
             await document.fonts.ready;
 
-            const canvas = await html2canvas(exportRef.current, {
+            // wait for images to load
+            const images = Array.from(exportRef.current.getElementsByTagName('img'));
+            await Promise.all(images.map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise((resolve) => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                });
+            }));
+
+            // Force a small delay to ensure rendering is settled
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Capture the FULL scrollHeight of the element so nothing is clipped
+            const el = exportRef.current;
+            const fullHeight = el.scrollHeight;
+            const fullWidth = el.scrollWidth;
+
+            const canvas = await html2canvas(el, {
                 backgroundColor: theme.colors.bgPrimary,
-                scale: 2,
+                scale: 2, // 2x is enough and avoids memory issues on large plans
                 useCORS: true,
                 logging: false,
                 allowTaint: true,
+                imageTimeout: 15000,
+                width: fullWidth,
+                height: fullHeight,
+                windowWidth: fullWidth,
+                windowHeight: fullHeight,
+                scrollX: 0,
+                scrollY: 0,
+                onclone: (clonedDoc) => {
+                    const clonedEl = clonedDoc.getElementById('export-container');
+                    if (clonedEl) {
+                        // Force the cloned element to show its full height without overflow constraints
+                        clonedEl.style.height = 'auto';
+                        clonedEl.style.overflow = 'visible';
+                        clonedEl.style.fontFeatureSettings = '"liga" 0';
+                        clonedEl.style.fontVariantLigatures = 'none';
+                    }
+                }
             });
 
             if (exportFormat === 'png') {
@@ -312,15 +686,13 @@ export function ExportPreview({
                 link.click();
             } else {
                 const imgData = canvas.toDataURL('image/png');
-                const imgWidth = 595.28;
+                const imgWidth = 595.28; // A4 width in pt
                 const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
                 const pdf = new jsPDF({
                     orientation: imgHeight > imgWidth ? 'p' : 'l',
                     unit: 'pt',
                     format: [imgWidth, imgHeight],
                 });
-
                 pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
                 pdf.save(`${clientInfo.name}-${programName.replace(/\s+/g, '_')}-${theme.id}.pdf`);
             }
@@ -331,457 +703,208 @@ export function ExportPreview({
         }
     };
 
-    // -- HELPER FUNCTIONS --
-    const getWeekDateRange = (weekNum: number) => {
-        if (!weekDateRanges) return null;
-        const range = weekDateRanges.find(r => r.weekNumber === weekNum);
-        if (!range) return null;
-
-        const formatDate = (dateStr: string) => {
-            const date = new Date(dateStr);
-            const day = date.getDate().toString().padStart(2, '0');
-            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-            const month = monthNames[date.getMonth()];
-            return `${day} ${month}`;
-        };
-
-        return `${formatDate(range.startDate)} - ${formatDate(range.endDate)}`;
-    };
-
-    const groupBlocks = (blocks: WorkoutBlock[]) => {
-        // Filter out completely empty blocks (no name AND no content/empty content)
-        const validBlocks = blocks.filter(b => {
-            const hasName = b.name && b.name.trim().length > 0;
-            const hasContent = b.content && b.content.some(c => c && c.trim().length > 0);
-            return hasName || hasContent;
-        });
-
-        const activation = validBlocks.filter(b => b.section === 'warmup' || b.type === 'warmup' || b.type === 'mobility');
-        const finisher = validBlocks.filter(b => b.section === 'cooldown' || b.type === 'finisher');
-        const main = validBlocks.filter(b => !activation.includes(b) && !finisher.includes(b));
-        return { activation, main, finisher };
-    };
-
-    const getProgressionForBlock = (blockName: string) => {
-        if (!monthlyStrategy?.progressions) return null;
-        const normName = blockName.trim().toLowerCase();
-        return monthlyStrategy.progressions.find(p => p.name.trim().toLowerCase() === normName);
-    };
-
-    // -- COMPONENT RENDERERS --
-    const renderExercise = (block: WorkoutBlock, index: number, isSuperSet: boolean = false, superSetLetter: string = '') => {
-        // dynamic icon determination
-        const IconComponent = BLOCK_ICONS[block.type] || Dumbbell;
-        const progression = getProgressionForBlock(block.name || '');
-        const numberDisplay = isSuperSet ? `${index}${superSetLetter}.` : `${index}.`;
-
-        // Validation: If no content provided and no progression, do not render
-        const hasContent = block.content && block.content.length > 0 && block.content.some(c => c.trim().length > 0);
-        const hasProgression = progression && progression.progression.some(p => p && p !== '-');
-
-        if (!hasContent && !hasProgression) return null;
-
-        return (
-            <div key={`${index}-${block.name}`} style={{ marginBottom: '24px' }}>
-                {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{
-                        fontSize: '24px',
-                        fontWeight: '800',
-                        color: theme.colors.exerciseNumber,
-                        marginRight: '12px',
-                        width: '40px',
-                        textAlign: 'right',
-                        fontFamily: 'SF Pro Display, -apple-system, system-ui, sans-serif'
-                    }}>
-                        {numberDisplay}
-                    </span>
-                    <h4 style={{
-                        fontSize: '20px',
-                        fontWeight: '700',
-                        color: theme.colors.textPrimary,
-                        margin: 0,
-                        marginRight: '12px',
-                        fontFamily: 'SF Pro Display, -apple-system, system-ui, sans-serif',
-                        letterSpacing: '-0.02em'
-                    }}>
-                        {block.name || 'Bloque'}
-                    </h4>
-
-                    {/* Icon Badge */}
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: theme.colors.accentLight,
-                        borderRadius: '6px',
-                        padding: '4px',
-                        color: theme.colors.accent
-                    }}>
-                        <IconComponent size={16} strokeWidth={2.5} />
-                    </div>
-                </div>
-
-                {/* Content */}
-                <div style={{ paddingLeft: '52px' }}>
-                    {block.cue && (
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            marginBottom: '8px',
-                            color: theme.colors.textSecondary,
-                            fontSize: '13px',
-                            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace'
-                        }}>
-                            <span style={{ marginRight: '6px' }}>💡</span>
-                            <span style={{ fontStyle: 'italic', lineHeight: '1.4' }}>
-                                {block.cue}
-                            </span>
-                        </div>
-                    )}
-
-                    <div style={{
-                        backgroundColor: theme.colors.progressionBg,
-                        // Removing the borderLeft to make it cleaner - "Apple Style" card look
-                        borderRadius: '12px',
-                        padding: '16px',
-                        marginTop: '8px',
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
-                    }}>
-                        {progression ? (
-                            <div style={{ fontSize: '14px', lineHeight: '1.6', color: theme.colors.progressionText, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px 16px' }}>
-                                    {progression.progression.map((val, idx) => {
-                                        if (val === '-' || !val) return null;
-                                        return (
-                                            <div key={idx} style={{ display: 'flex', alignItems: 'center' }}>
-                                                <span style={{
-                                                    fontWeight: '600',
-                                                    color: theme.colors.textSecondary,
-                                                    fontSize: '11px',
-                                                    textTransform: 'uppercase',
-                                                    marginRight: '6px',
-                                                    letterSpacing: '0.5px'
-                                                }}>
-                                                    SEM {idx + 1}
-                                                </span>
-                                                <span style={{ fontWeight: '500', color: theme.colors.textPrimary }}>
-                                                    {val}
-                                                </span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        ) : (
-                            <div style={{ fontSize: '14px', lineHeight: '1.6', color: theme.colors.progressionText, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>
-                                {block.content.map((line, i) => (
-                                    <div key={i} style={{ marginBottom: i < block.content.length - 1 ? '4px' : 0 }}>
-                                        {line}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-            {/* Backdrop */}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 font-sans">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative w-full max-w-7xl h-[95vh] bg-white dark:bg-zinc-900 rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
 
-            {/* Modal Content */}
-            <div className="relative w-full max-w-5xl h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white shrink-0">
-                    <h2 className="text-lg font-semibold text-gray-900">Vista Previa del Export</h2>
-
+                {/* Toolbar */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Vista Previa</h2>
                     <div className="flex items-center gap-3">
-                        {/* Theme Select */}
-                        <div className="relative">
-                            <select
-                                value={currentThemeId}
-                                onChange={(e) => setCurrentThemeId(e.target.value)}
-                                className="h-9 w-[140px] rounded-md border border-gray-200 bg-white px-3 py-1 text-sm shadow-sm focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500 cursor-pointer appearance-none"
-                            >
-                                {Object.values(THEMES).map(t => (
-                                    <option key={t.id} value={t.id}>{t.label}</option>
-                                ))}
-                            </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                                <ImageIcon size={14} />
-                            </div>
-                        </div>
-
-                        {/* Format Select */}
-                        <div className="relative">
-                            <select
-                                value={exportFormat}
-                                onChange={(e) => setExportFormat(e.target.value as 'png' | 'pdf')}
-                                className="h-9 w-[100px] rounded-md border border-gray-200 bg-white px-3 py-1 text-sm shadow-sm focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500 cursor-pointer appearance-none"
-                            >
-                                <option value="png">PNG</option>
-                                <option value="pdf">PDF</option>
-                            </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                                <FileText size={14} />
-                            </div>
-                        </div>
-
+                        <select
+                            value={currentThemeId}
+                            onChange={(e) => setCurrentThemeId(e.target.value)}
+                            className="h-9 w-[140px] rounded-md border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer appearance-none text-gray-900 dark:text-gray-100"
+                        >
+                            {Object.values(THEMES).map(t => (
+                                <option key={t.id} value={t.id}>{t.label}</option>
+                            ))}
+                        </select>
+                        <select
+                            value={exportFormat}
+                            onChange={(e) => setExportFormat(e.target.value as 'png' | 'pdf')}
+                            className="h-9 w-[100px] rounded-md border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer appearance-none text-gray-900 dark:text-gray-100"
+                        >
+                            <option value="png">PNG</option>
+                            <option value="pdf">PDF</option>
+                        </select>
                         <button
                             onClick={handleExport}
                             disabled={isExporting}
-                            className="inline-flex items-center justify-center gap-2 rounded-md bg-pink-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-pink-800 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 transition-colors"
+                            className="inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700 focus-visible:outline-none disabled:opacity-50 transition-colors"
                         >
                             {isExporting ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />}
                             Exportar
                         </button>
-
                         <button
                             onClick={onClose}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 bg-transparent text-sm font-medium transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 dark:border-zinc-700 bg-transparent text-sm font-medium hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors text-gray-500 dark:text-gray-400"
                         >
                             <X size={16} />
                         </button>
                     </div>
                 </div>
 
-                {/* Scrollable Preview Area */}
-                <div className={`flex-1 overflow-y-auto p-8 flex justify-center ${['cyber', 'dark', 'hard'].includes(theme.id) ? 'bg-zinc-950/80' : 'bg-gray-100'}`}>
+                {/* Preview Container */}
+                {/* NO flex on the scroll container — flex constrains child height to viewport */}
+                <div className="flex-1 overflow-y-auto bg-gray-50/50 dark:bg-zinc-950/50 p-8">
                     <div
+                        id="export-container"
                         ref={exportRef}
                         style={{
-                            width: '800px',
-                            minHeight: '1000px',
-                            height: 'auto', // Allow growth
+                            width: '900px',
+                            margin: '0 auto', // center horizontally without flex
                             backgroundColor: theme.colors.bgPrimary,
-                            padding: '60px', // More generous padding
+                            padding: '60px',
                             boxSizing: 'border-box',
-                            fontFamily: 'Inter, system-ui, sans-serif',
                             color: theme.colors.textPrimary,
-                            position: 'relative',
-                            overflow: 'visible' // Ensure shadows/etc don't clip
+                            transition: 'background-color 0.3s ease',
+                            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
                         }}
                     >
-                        {/* 1. Header Section */}
-                        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                            {weekDateRanges && (
+                        {/* 1. BRAND HEADER */}
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                            marginBottom: '40px',
+                            borderBottom: `1px solid ${theme.colors.border}`,
+                            paddingBottom: '24px'
+                        }}>
+                            <div>
                                 <div style={{
-                                    display: 'inline-block',
-                                    background: theme.colors.weekBannerBg.includes('gradient') ? theme.colors.weekBannerBg : undefined,
-                                    backgroundColor: !theme.colors.weekBannerBg.includes('gradient') ? theme.colors.weekBannerBg : undefined,
-                                    color: theme.colors.weekBannerText,
-                                    padding: '8px 20px',
-                                    borderRadius: '12px',
                                     fontSize: '12px',
-                                    fontWeight: '600',
-                                    marginBottom: '20px',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                    fontWeight: '700',
+                                    color: theme.colors.accent,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1px',
+                                    marginBottom: '8px'
                                 }}>
-                                    {weekDateRanges.map(range => (
-                                        <div key={range.weekNumber}>
-                                            SEM {range.weekNumber}: {getWeekDateRange(range.weekNumber)}
-                                        </div>
-                                    ))}
+                                    PREPARADO PARA {clientInfo.name.toUpperCase()}
                                 </div>
-                            )}
-
-                            <h2 style={{
-                                fontFamily: 'cursive',
-                                fontSize: '28px',
-                                color: theme.colors.accent,
-                                marginBottom: '4px',
-                                fontStyle: 'italic'
-                            }}>
-                                Para {clientInfo.name} ❤️
-                            </h2>
-                            <h1 style={{
-                                fontSize: '40px',
-                                fontWeight: '900',
-                                textTransform: 'uppercase',
-                                lineHeight: '1.1',
-                                marginBottom: '16px',
-                                color: theme.colors.textPrimary
-                            }}>
-                                Plan de Entrenamiento
-                            </h1>
-                            <div style={{
-                                display: 'inline-block',
-                                backgroundColor: theme.colors.headerTagBg,
-                                color: 'white',
-                                padding: '6px 16px',
-                                borderRadius: '20px',
-                                fontSize: '13px',
-                                fontWeight: '700',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px'
-                            }}>
-                                {programName} • {monthlyStrategy?.focus || 'General'}
+                                <h1 style={{
+                                    fontSize: '36px',
+                                    fontWeight: '900',
+                                    margin: 0,
+                                    lineHeight: '1.2',
+                                    color: theme.colors.textPrimary,
+                                    letterSpacing: '-1px'
+                                }}>
+                                    {programName}
+                                </h1>
+                                <div style={{
+                                    marginTop: '12px',
+                                    display: 'inline-block',
+                                    backgroundColor: theme.colors.headerTagBg,
+                                    color: theme.colors.headerTagText,
+                                    padding: '6px 16px',
+                                    borderRadius: '100px',
+                                    fontSize: '13px',
+                                    fontWeight: '600'
+                                }}>
+                                    {monthlyStrategy?.focus || 'General Conditioning'}
+                                </div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                                {/* Optional Logo Placeholder or Date */}
+                                <div style={{
+                                    fontSize: '14px',
+                                    color: theme.colors.textSecondary,
+                                    fontWeight: '500'
+                                }}>
+                                    COACH {coachName.toUpperCase()}
+                                </div>
                             </div>
                         </div>
 
-                        {/* 2. Mission Statement */}
+                        {/* 2. MISSION STATEMENT */}
                         {mission && (
                             <div style={{
                                 backgroundColor: theme.colors.accentLight,
-                                padding: '20px 24px',
-                                borderRadius: '12px',
+                                padding: '24px',
+                                borderRadius: '16px',
                                 marginBottom: '40px',
-                                borderLeft: `6px solid ${theme.colors.accent}`
+                                borderLeft: `4px solid ${theme.colors.accent}`
                             }}>
                                 <h3 style={{
-                                    color: theme.colors.accent,
-                                    fontSize: '18px',
+                                    fontSize: '14px',
                                     fontWeight: '800',
-                                    marginBottom: '8px'
+                                    color: theme.colors.accent,
+                                    textTransform: 'uppercase',
+                                    marginBottom: '8px',
+                                    letterSpacing: '0.5px'
                                 }}>
-                                    🎯 Misión: {mission.split(':')[0]}
+                                    OBJETIVO PRINCIPAL
                                 </h3>
                                 <p style={{
-                                    fontSize: '14px',
-                                    lineHeight: '1.6',
-                                    color: theme.colors.textSecondary
+                                    fontSize: '16px',
+                                    lineHeight: '1.5',
+                                    color: theme.colors.textPrimary,
+                                    margin: 0
                                 }}>
-                                    {mission.includes(':') ? mission.split(':').slice(1).join(':').trim() : mission}
+                                    {mission}
                                 </p>
                             </div>
                         )}
 
-                        {/* 3. Daily Workouts */}
-                        {weeks.flatMap(week => week.days).map((day, dayIdx) => {
-                            const { activation, main, finisher } = groupBlocks(day.blocks);
-                            if (day.blocks.length === 0) return null;
-
-                            return (
-                                <div key={dayIdx} style={{ marginBottom: '32px' }}>
-                                    {/* Link Day Header */}
+                        {/* 3. WEEKS LOOP */}
+                        {weeks.map((week) => (
+                            <div key={week.weekNumber} style={{ marginBottom: '60px', breakInside: 'avoid' }}>
+                                {/* Week Banner */}
+                                {weekDateRanges && (
                                     <div style={{
-                                        backgroundColor: theme.colors.dayHeaderBg,
-                                        color: theme.colors.dayHeaderText,
-                                        padding: '12px 0', // Remove horizontal padding for cleaner look if transparent
-                                        borderBottom: `2px solid ${theme.colors.accent}`,
-                                        marginBottom: '30px',
-                                        fontSize: '22px',
-                                        fontWeight: '800',
-                                        letterSpacing: '-0.5px',
+                                        background: theme.colors.weekBannerBg,
+                                        color: theme.colors.weekBannerText,
+                                        padding: '12px 24px',
+                                        borderRadius: '12px',
+                                        marginBottom: '32px',
                                         display: 'flex',
-                                        alignItems: 'center'
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between'
                                     }}>
-                                        <span style={{ marginRight: '10px', opacity: 0.8, display: 'flex' }}><Calendar size={24} /></span>
-                                        {day.name}
+                                        <span style={{ fontWeight: '800', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                            SEMANA {week.weekNumber}
+                                        </span>
+                                        <span style={{ fontSize: '14px', fontWeight: '500', opacity: 0.9 }}>
+                                            {getWeekDateRange(week.weekNumber, weekDateRanges)}
+                                        </span>
                                     </div>
+                                )}
 
-                                    {/* Activation */}
-                                    {activation.length > 0 && (
-                                        <div style={{
-                                            marginBottom: '32px',
-                                            backgroundColor: theme.colors.activationBg,
-                                            padding: '20px',
-                                            borderRadius: '12px',
-                                            // Only render border if it is not transparent
-                                            border: theme.colors.activationBorder !== 'transparent' ? `1px solid ${theme.colors.activationBorder}` : 'none'
-                                        }}>
-                                            <h4 style={{
-                                                color: theme.colors.activationTitle,
-                                                fontWeight: '800',
-                                                textTransform: 'uppercase',
-                                                fontSize: '12px',
-                                                marginBottom: '16px',
-                                                letterSpacing: '1px'
-                                            }}>
-                                                Warm Up
-                                            </h4>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                                {activation.map((block, i) => (
-                                                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', fontSize: '14px', color: theme.colors.activationText }}>
-                                                        <span style={{
-                                                            display: 'inline-block',
-                                                            width: '6px',
-                                                            height: '6px',
-                                                            borderRadius: '50%',
-                                                            backgroundColor: theme.colors.accent,
-                                                            marginTop: '6px',
-                                                            marginRight: '12px',
-                                                            flexShrink: 0
-                                                        }} />
-                                                        <div>
-                                                            <span style={{ fontWeight: '600', color: theme.colors.textPrimary, marginRight: '6px' }}>{block.name}</span>
-                                                            {block.content && block.content.length > 0 && (
-                                                                <span style={{ opacity: 0.85, fontSize: '13px' }}>
-                                                                    — {block.content.join(', ')}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
+                                {/* Days Grid - MASONRY / COLUMNS Layout */}
+                                {/* We use CSS Columns for masonry-like effect or simple Flex for robust rendering */}
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr', // 2 Columns fixed
+                                    gap: '40px',
+                                    alignItems: 'start'
+                                }}>
+                                    {week.days.map((day, dIdx) => (
+                                        <div key={dIdx} style={{ minWidth: 0 }}> {/* minWidth 0 prevents grid blowout */}
+                                            <DayColumn
+                                                day={day}
+                                                theme={theme}
+                                                monthlyStrategy={monthlyStrategy}
+                                            />
                                         </div>
-                                    )}
-
-                                    {/* Main Blocks */}
-                                    <div>
-                                        {main.map((block, i) => renderExercise(block, i + 1))}
-                                    </div>
-
-                                    {/* Finisher */}
-                                    {finisher.length > 0 && (
-                                        <div style={{
-                                            marginTop: '24px',
-                                            padding: '16px',
-                                            backgroundColor: theme.colors.finisherBg,
-                                            borderLeft: `4px solid ${theme.colors.finisherBorder}`,
-                                            borderRadius: '0 8px 8px 0'
-                                        }}>
-                                            <h4 style={{
-                                                color: theme.colors.finisherTitle,
-                                                fontSize: '16px',
-                                                fontWeight: '800',
-                                                marginBottom: '10px',
-                                                textTransform: 'uppercase'
-                                            }}>
-                                                🔥 Finisher
-                                            </h4>
-                                            {finisher.map((block, i) => (
-                                                <div key={i} style={{ marginBottom: '12px' }}>
-                                                    <div style={{ fontWeight: '700', color: theme.colors.textPrimary }}>
-                                                        {block.name}
-                                                    </div>
-                                                    <div style={{ fontSize: '13px', color: theme.colors.finisherText }}>
-                                                        {block.content.map((line, l) => (
-                                                            <div key={l}>{line}</div>
-                                                        ))}
-                                                    </div>
-                                                    {block.cue && (
-                                                        <div style={{ fontSize: '12px', fontStyle: 'italic', color: theme.colors.textSecondary, marginTop: '2px' }}>
-                                                            💡 {block.cue}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
+                                    ))}
                                 </div>
-                            );
-                        })}
+                            </div>
+                        ))}
 
-                        {/* Footer */}
+                        {/* FOOTER */}
                         <div style={{
-                            marginTop: '60px',
-                            borderTop: `2px solid ${theme.colors.border}`,
-                            paddingTop: '20px',
-                            display: 'flex',
-                            justifyContent: 'space-between',
+                            marginTop: '80px',
+                            paddingTop: '32px',
+                            borderTop: `1px solid ${theme.colors.border}`,
+                            textAlign: 'center',
                             color: theme.colors.textSecondary,
-                            fontSize: '11px',
-                            fontWeight: '500'
+                            fontSize: '12px'
                         }}>
-                            <div>Coach {coachName}</div>
-                            <div>Generado por AI Coach • {new Date().getFullYear()}</div>
+                            <p style={{ margin: 0, fontWeight: '500' }}>
+                                PROGRAMA DISEÑADO CON AI COACH
+                            </p>
                         </div>
 
                     </div>
@@ -790,3 +913,11 @@ export function ExportPreview({
         </div>
     );
 }
+
+// Add these global styles to handle font smoothing in the export container if needed
+// const globalStyles = `
+//   #export-container {
+//     -webkit-font-smoothing: antialiased;
+//     -moz-osx-font-smoothing: grayscale;
+//   }
+// `;
