@@ -395,9 +395,7 @@ export default function AthletesPage() {
                                         <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Coach Asignado</th>
                                         <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Nivel</th>
                                         <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Objetivo</th>
-                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Datos</th>
-                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Periodo</th>
-                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Estado Pago</th>
+                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Estado</th>
                                         <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold text-right">Acciones</th>
                                     </tr>
                                 </thead>
@@ -471,36 +469,19 @@ export default function AthletesPage() {
                                                     </div>
                                                 </td>
                                                 <td className="p-2 px-3">
-                                                    <div className="flex gap-2 text-xs text-cv-text-secondary">
-                                                        {athlete.details?.height && (
-                                                            <div title="Altura">
-                                                                <span className="font-medium text-cv-text-primary">{athlete.details.height}</span> cm
-                                                            </div>
-                                                        )}
-                                                        {athlete.details?.weight && (
-                                                            <div title="Peso">
-                                                                <span className="font-medium text-cv-text-primary">{athlete.details.weight}</span> kg
-                                                            </div>
-                                                        )}
-                                                        {!athlete.details?.height && !athlete.details?.weight && (
-                                                            <span className="text-cv-text-tertiary">-</span>
-                                                        )}
+                                                    <div className="flex flex-col items-start gap-1.5">
+                                                        <Badge variant="outline" className={`font-normal border text-[10px] px-1.5 py-0 ${getStatusColor(athlete.payment_status)}`}>
+                                                            {getStatusLabel(athlete.payment_status)}
+                                                        </Badge>
+                                                        <div className="flex flex-col gap-0.5 text-[10px] text-cv-text-tertiary">
+                                                            <span title="Inicio Servicio">
+                                                                <span className="font-medium text-cv-text-secondary">In:</span> {formatDate(athlete.service_start_date)}
+                                                            </span>
+                                                            <span title="Fin Servicio">
+                                                                <span className="font-medium text-cv-text-secondary">Fin:</span> {formatDate(athlete.service_end_date)}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                </td>
-                                                <td className="p-2 px-3">
-                                                    <div className="flex flex-col gap-0.5 text-xs text-cv-text-secondary">
-                                                        <span title="Inicio Servicio">
-                                                            <span className="font-medium">Inicio:</span> {formatDate(athlete.service_start_date)}
-                                                        </span>
-                                                        <span title="Fin Servicio">
-                                                            <span className="font-medium">Fin:</span> {formatDate(athlete.service_end_date)}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="p-2 px-3">
-                                                    <Badge variant="outline" className={`font-normal border text-xs ${getStatusColor(athlete.payment_status)}`}>
-                                                        {getStatusLabel(athlete.payment_status)}
-                                                    </Badge>
                                                 </td>
                                                 <td className="p-2 px-3 text-right">
                                                     <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
