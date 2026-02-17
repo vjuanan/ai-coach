@@ -200,7 +200,8 @@ export async function middleware(request: NextRequest) {
         if (role === 'athlete') {
             // Strict: Athletes go to /athlete/dashboard, Profile, etc.
             // Block Coach/Admin routes
-            if (path === '/' || path.startsWith('/programs') || path.startsWith('/athletes') || path.startsWith('/gyms')) {
+            // ALLOW '/' to access the new Home Page
+            if (path.startsWith('/programs') || path.startsWith('/athletes') || path.startsWith('/gyms')) {
                 return NextResponse.redirect(new URL('/athlete/dashboard', request.url));
             }
         }
