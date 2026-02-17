@@ -50,6 +50,7 @@ export default function LoginPage() {
                     loop
                     muted
                     playsInline
+                    preload="auto"
                     className="h-full w-full object-cover"
                     poster="/images/HeroPic.png"
                 >
