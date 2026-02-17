@@ -22,13 +22,13 @@ interface NavItem {
     icon: React.ReactNode;
 }
 
-// Unified nav items - AI Nutrition Nomenclature
+// Unified nav items - Reverted to Original Nomenclature
 const navItems: NavItem[] = [
-    { label: 'Mi Panel', href: '/', icon: <LayoutDashboard size={20} /> },
-    { label: 'Pacientes', href: '/athletes', icon: <Users size={20} /> },
-    { label: 'Clínicas', href: '/gyms', icon: <Building2 size={20} /> },
-    { label: 'Alimentos', href: '/exercises', icon: <Dumbbell size={20} /> },
-    { label: 'Planes', href: '/programs', icon: <FileText size={20} /> },
+    { label: 'Panel', href: '/', icon: <LayoutDashboard size={20} /> },
+    { label: 'Atletas', href: '/athletes', icon: <Users size={20} /> },
+    { label: 'Gimnasios', href: '/gyms', icon: <Building2 size={20} /> },
+    { label: 'Ejercicios', href: '/exercises', icon: <Dumbbell size={20} /> },
+    { label: 'Programas', href: '/programs', icon: <FileText size={20} /> },
     { label: 'Plantillas', href: '/templates', icon: <FileText size={20} /> },
     { label: 'Conocimiento', href: '/knowledge', icon: <BookOpen size={20} /> },
     { label: 'Usuarios', href: '/admin/users', icon: <Shield size={20} /> },
@@ -48,7 +48,7 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
         if (role === 'admin') return true; // See all
 
         if (role === 'coach') {
-            // Coach cannot see 'Clínicas' (Gyms) OR admin sections
+            // Coach cannot see 'Gimnasios' OR admin sections
             return item.href !== '/gyms' && !item.href.startsWith('/admin');
         }
 
