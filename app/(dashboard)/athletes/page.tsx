@@ -25,7 +25,9 @@ import {
     Trash2,
     User,
     Loader2,
-    CheckCircle2
+    CheckCircle2,
+    AlertTriangle,
+    X
 } from 'lucide-react';
 import { diagnoseUserVisibility } from '@/lib/actions';
 
