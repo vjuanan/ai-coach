@@ -1264,6 +1264,9 @@ export async function assignClientToCoach(clientId: string, coachId: string) {
 // ==========================================
 
 export async function getProfiles() {
+    noStore(); // Disable caching for this action to ensure fresh data
+    console.log('--- getProfiles CALLED (Unified) ---');
+
     const supabase = createServerClient();
 
     // Check for admin role
@@ -1291,16 +1294,66 @@ export async function getProfiles() {
         process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    const { data, error } = await adminSupabase
+    const { data: profiles, error: profilesError } = await adminSupabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-    if (error) {
-        console.error('Error fetching profiles:', error);
+    if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
         return [];
     }
-    return data;
+    console.log(`Fetched ${profiles?.length || 0} profiles from DB`);
+
+    // Fetch clients to find those who don't have a profile (created manually without auth)
+    const { data: clients, error: clientsError } = await adminSupabase
+        .from('clients')
+        .select('*');
+
+    if (clientsError) {
+        console.error('Error fetching clients for unified view:', clientsError);
+        // Continue with just profiles if clients fail, but log it
+    } else {
+        console.log(`Fetched ${clients?.length || 0} clients from DB`);
+    }
+
+    // Merge logic:
+    // 1. Start with all Profiles. mark them source='auth'
+    // 2. Iterate Clients.
+    //    If client.user_id exists in Profiles, it's already covered (linked).
+    //    If client.user_id is NULL or NOT in Profiles, add it as source='client_only'.
+
+    const unifiedUsers: any[] = profiles?.map(p => ({ ...p, source: 'auth' })) || [];
+    const profileUserIds = new Set(unifiedUsers.map(p => p.id));
+
+    if (clients) {
+        let addedCount = 0;
+        clients.forEach(client => {
+            // Check if this client is already represented by a profile
+            const isLinked = client.user_id && profileUserIds.has(client.user_id);
+
+            if (!isLinked) {
+                // Add as virtual profile
+                unifiedUsers.push({
+                    id: client.id, // Use client ID as ID
+                    email: client.email || `client-${client.id.slice(0, 8)}@placeholder.com`, // Fallback email
+                    full_name: client.name,
+                    role: client.type, // 'athlete' or 'gym'
+                    created_at: client.created_at,
+                    updated_at: client.created_at,
+                    source: 'client_only',
+                    original_client: client // Keep ref just in case
+                });
+                addedCount++;
+            }
+        });
+        console.log(`Merged: Added ${addedCount} client-only records. Total users: ${unifiedUsers.length}`);
+    }
+
+    // Sort again by created_at desc
+    return unifiedUsers.sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 }
 
 export async function updateUserRole(userId: string, newRole: 'coach' | 'athlete' | 'admin') {

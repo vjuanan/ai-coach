@@ -246,7 +246,7 @@ async function runMigration() {
         let hipThrustReps = "10"; if (weekNum == 2) hipThrustReps = "12"; if (weekNum == 4) hipThrustReps = "8";
         let hipThrustSets = 3; if (weekNum >= 3) hipThrustSets = 4;
 
-        await addBlock(d1.id, 1, 'strength_linear', 'Hip Thrust (barra)', {
+        await addBlock(d1.id, 1, 'strength_linear', 'Hip Thrust', {
             sets: hipThrustSets, reps: hipThrustReps, weight: hipThrustLoad, rir: weekNum === 4 ? 3 : 1, rest: "2-3 min",
             notes: "Cue: mirada al frente, mentón levemente hacia el pecho, costillas “abajo”, empujá con talones, arriba apretá glúteos sin hiperextender lumbar."
         });
@@ -255,7 +255,7 @@ async function runMigration() {
         let deadReps = "5"; if (weekNum == 3) deadReps = "4"; if (weekNum == 4) deadReps = "3";
         let deadSets = 3; if (weekNum >= 3) deadSets = 4;
 
-        await addBlock(d1.id, 2, 'strength_linear', 'Deadlift Convencional', {
+        await addBlock(d1.id, 2, 'strength_linear', 'Deadlift', {
             sets: deadSets, reps: deadReps, weight: deadLoad, rir: weekNum === 4 ? 3 : 2, rest: "3 min",
             notes: "Cue: barra pegada a tibias, pecho “orgulloso”, espalda neutra, empujá el piso, cerrá con glúteos."
         });
@@ -263,24 +263,24 @@ async function runMigration() {
         // Superserie A
         let bulgReps = weekNum === 4 ? "8" : (weekNum === 3 ? "12" : (weekNum === 2 ? "10" : "8"));
         let bulgWeight = weekNum === 4 ? "12 kg" : "10 kg";
-        await addBlock(d1.id, 3, 'strength_linear', '3A. Sentadilla Búlgara', {
-            sets: 3, reps: bulgReps, weight: bulgWeight, rir: 2, rest: "0 min", notes: "Cue: incliná levemente el tronco hacia adelante para foco en glúteo."
+        await addBlock(d1.id, 3, 'strength_linear', 'Bulgarian Split Squat', {
+            sets: 3, reps: bulgReps, weight: bulgWeight, rir: 2, rest: "0 min", notes: "Superserie A. Cue: incliná levemente el tronco hacia adelante para foco en glúteo."
         });
-        await addBlock(d1.id, 4, 'strength_linear', '3B. Plancha Frontal', {
+        await addBlock(d1.id, 4, 'strength_linear', 'Plank', {
             sets: 3, reps: "45-60s", weight: "Bodyweight", rpe: 8, rest: "2 min", notes: "Cue: glúteos y abdomen apretados, no “cuelgues” la cintura."
         });
 
         // Accessories
         let curlReps = weekNum === 1 ? "12" : (weekNum === 2 ? "15" : "12");
         let curlSets = weekNum >= 3 ? 4 : 3;
-        await addBlock(d1.id, 5, 'accessory', 'Curl Femoral', {
+        await addBlock(d1.id, 5, 'accessory', 'Leg Curl', {
             sets: curlSets, reps: curlReps, weight: weekNum >= 3 ? "12kg" : "10kg", rir: 1, rest: "90s", notes: "Cue: bajá lento."
         });
 
         let abdReps = weekNum === 1 ? "15" : "20";
         if (weekNum === 3) abdReps = "15";
         let abdSets = weekNum >= 3 ? 4 : 3;
-        await addBlock(d1.id, 6, 'accessory', 'Abducciones Maquina', {
+        await addBlock(d1.id, 6, 'accessory', 'Abduction Machine', {
             sets: abdSets, reps: abdReps, weight: "35-45kg", rir: 0, rest: "60-90s", notes: "Cue: empujá desde las rodillas, no rebotes."
         });
 
@@ -305,22 +305,22 @@ async function runMigration() {
         await addBlock(d2.id, 0, 'warmup', 'Activación', { rounds: 3, movements: ACTIVATION_D2.movements }, 'warmup');
 
         if (weekNum === 4) {
-            await addBlock(d2.id, 1, 'strength_linear', 'Pull-Up (Intento)', {
+            await addBlock(d2.id, 1, 'strength_linear', 'Pull-Up', {
                 sets: 3, reps: "1", weight: "Bodyweight", rpe: 10, notes: "Intento de pull up estricta. Cue: arrancá con escápulas abajo.", rest: "2-3 min"
             });
-            await addBlock(d2.id, 2, 'strength_linear', 'Press Plano', {
+            await addBlock(d2.id, 2, 'strength_linear', 'Bench Press', {
                 sets: 4, reps: "6", weight: "30 kg", rpe: 8, rest: "2-3 min", notes: "Cue: escápulas juntas y abajo."
             });
         } else {
             let negSets = weekNum === 3 ? 5 : 4;
             let negTempo = weekNum === 1 ? "3s" : "5s";
-            await addBlock(d2.id, 1, 'strength_linear', 'Negative Pull-Ups', {
+            await addBlock(d2.id, 1, 'strength_linear', 'Negative Pull-Up', {
                 sets: negSets, reps: "3", weight: "Bodyweight", rpe: 9, tempo: negTempo, rest: "2 min", notes: "Cue: subí con ayuda, bajá lento control total."
             });
 
             let pressSets = 3;
             let pressReps = weekNum === 3 ? "8" : "10";
-            await addBlock(d2.id, 2, 'strength_linear', 'Press Plano', {
+            await addBlock(d2.id, 2, 'strength_linear', 'Bench Press', {
                 sets: pressSets, reps: pressReps, weight: weekNum === 3 ? "25 kg" : "22.5 kg", rir: 2, rest: "2 min", notes: "Cue: pies firmes, bajá a línea del pecho."
             });
         }
@@ -330,20 +330,20 @@ async function runMigration() {
         let rowSets = weekNum >= 3 ? 4 : 3;
         let rowWeight = weekNum >= 3 ? (weekNum === 4 ? "16kg" : "14kg") : (weekNum === 2 ? "12kg" : "10-12kg");
 
-        await addBlock(d2.id, 3, 'strength_linear', '3A. Remo Unilateral', {
-            sets: rowSets, reps: rowReps, weight: rowWeight, rir: 1, rest: "0 min", notes: "Cue: tirá el codo al bolsillo."
+        await addBlock(d2.id, 3, 'strength_linear', 'Dumbbell Row', {
+            sets: rowSets, reps: rowReps, weight: rowWeight, rir: 1, rest: "0 min", notes: "Superserie A. Cue: tirá el codo al bolsillo."
         });
 
         let triSets = weekNum >= 3 ? 4 : 3;
         let triReps = weekNum === 1 ? "12" : (weekNum === 2 ? "15" : (weekNum === 3 ? "12" : "15"));
-        await addBlock(d2.id, 4, 'strength_linear', '3B. Tríceps Trasnuca', {
-            sets: triSets, reps: triReps, weight: "6-8 kg", rir: 1, rest: "90s", notes: "Cue: codos cerrados."
+        await addBlock(d2.id, 4, 'strength_linear', 'Tricep Overhead Extension', {
+            sets: triSets, reps: triReps, weight: "6-8 kg", rir: 1, rest: "90s", notes: "Superserie A. Cue: codos cerrados."
         });
 
         // Vuelos
         let latSets = weekNum === 4 ? 4 : 3;
         let latReps = weekNum === 3 ? "20" : "15";
-        await addBlock(d2.id, 5, 'accessory', 'Vuelos Laterales', {
+        await addBlock(d2.id, 5, 'accessory', 'Lateral Raises', {
             sets: latSets, reps: latReps, weight: "4-6 kg", rir: 0, rest: "60s", notes: "Cue: sube el codo, no la mano."
         });
 
@@ -363,35 +363,35 @@ async function runMigration() {
         let sqSets = weekNum >= 3 ? (weekNum === 4 ? 3 : 4) : 3;
         let sqReps = weekNum === 4 ? "6" : (weekNum === 3 ? "8" : "10");
         let sqWeight = weekNum === 4 ? "50 kg" : (weekNum === 3 ? "45 kg" : "40 kg");
-        await addBlock(d3.id, 1, 'strength_linear', 'Sentadilla Trasera', {
+        await addBlock(d3.id, 1, 'strength_linear', 'Back Squat', {
             sets: sqSets, reps: sqReps, weight: sqWeight, rir: 2, rest: "2-3 min", notes: "Cue: aire a la panza, rodillas afuera."
         });
 
         // Super A
         let pushSets = weekNum >= 3 ? 5 : 4;
         let pushReps = weekNum === 2 ? "10" : (weekNum === 1 ? "8" : (weekNum === 3 ? "10" : "Al fallo"));
-        await addBlock(d3.id, 2, 'strength_linear', '2A. Push-Ups', {
-            sets: pushSets, reps: pushReps, weight: "Bodyweight", rir: 1, rest: "0 min", notes: "Cue: cuerpo en tabla."
+        await addBlock(d3.id, 2, 'strength_linear', 'Push-Up', {
+            sets: pushSets, reps: pushReps, weight: "Bodyweight", rir: 1, rest: "0 min", notes: "Superserie A. Cue: cuerpo en tabla."
         });
 
         let flySets = weekNum >= 3 ? 4 : 3;
         let flyReps = weekNum === 3 ? "12" : (weekNum === 4 ? "15" : "12"); // Sem 1 12, Sem 2 15? Sem 2 15.
         if (weekNum == 2) flyReps = "15";
-        await addBlock(d3.id, 3, 'strength_linear', '2B. Vuelos Posteriores', {
-            sets: flySets, reps: flyReps, weight: "4-6 kg", rir: 1, rest: "90s", notes: "Cue: abrí como alas."
+        await addBlock(d3.id, 3, 'strength_linear', 'Rear Delt Fly', {
+            sets: flySets, reps: flyReps, weight: "4-6 kg", rir: 1, rest: "90s", notes: "Superserie A. Cue: abrí como alas."
         });
 
         // Super B
         let stepSets = 3;
         let stepReps = weekNum === 3 ? "12" : (weekNum === 4 ? "8" : (weekNum === 2 ? "10" : "8"));
-        await addBlock(d3.id, 4, 'strength_linear', '3A. Step-Up Lateral', {
-            sets: stepSets, reps: stepReps, weight: weekNum === 4 ? "12kg" : "10kg", rir: 2, rest: "0 min", notes: "Cue: empujá con pierna de arriba."
+        await addBlock(d3.id, 4, 'strength_linear', 'Box Step-Up', {
+            sets: stepSets, reps: stepReps, weight: weekNum === 4 ? "12kg" : "10kg", rir: 2, rest: "0 min", notes: "Superserie B. Cue: empujá con pierna de arriba."
         });
 
         let kickSets = weekNum >= 3 ? 4 : 3;
         let kickReps = weekNum === 1 ? "15" : (weekNum === 2 ? "20" : (weekNum === 3 ? "15" : "20"));
-        await addBlock(d3.id, 5, 'strength_linear', '3B. Patada Glúteo Polea', {
-            sets: kickSets, reps: kickReps, weight: "15-20kg", rir: 0, rest: "60-90s", notes: "Cue: pelvis quieta, apretá glúteo."
+        await addBlock(d3.id, 5, 'strength_linear', 'Cable Glute Kickback', {
+            sets: kickSets, reps: kickReps, weight: "15-20kg", rir: 0, rest: "60-90s", notes: "Superserie B. Cue: pelvis quieta, apretá glúteo."
         });
 
         await addBlock(d3.id, 6, 'conditioning', 'Sprints', {

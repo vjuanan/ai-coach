@@ -18,7 +18,9 @@ import {
     UserPlus,
     X,
     ChevronDown,
-    Trash2
+    Trash2,
+    Database,
+    Globe
 } from 'lucide-react';
 
 interface Profile {
@@ -28,6 +30,7 @@ interface Profile {
     role: 'coach' | 'athlete' | 'admin' | null;
     created_at: string;
     updated_at: string;
+    source?: 'auth' | 'client_only';
 }
 
 export default function AdminUsersPage() {
@@ -59,6 +62,7 @@ export default function AdminUsersPage() {
     async function loadProfiles() {
         try {
             const data = await getProfiles();
+            console.log('AdminUsersPage loaded profiles:', data);
             setProfiles(data as Profile[]);
         } catch (err) {
             console.error(err);
@@ -285,6 +289,18 @@ export default function AdminUsersPage() {
                                                     <span className="font-medium text-cv-text-primary">
                                                         {user.full_name || 'Sin nombre'}
                                                     </span>
+                                                    {user.source === 'client_only' && (
+                                                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center gap-1">
+                                                            <Database size={10} />
+                                                            MANUAL
+                                                        </span>
+                                                    )}
+                                                    {user.source === 'auth' && (
+                                                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20 flex items-center gap-1">
+                                                            <Globe size={10} />
+                                                            CUENTA
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td className="p-4 text-cv-text-secondary font-mono text-sm">
@@ -300,7 +316,8 @@ export default function AdminUsersPage() {
                                                                 user.role === 'athlete' ? 'text-green-400 bg-green-500/10' :
                                                                     'text-yellow-400 bg-yellow-500/10'
                                                             }`}
-                                                        disabled={updatingId === user.id}
+                                                        disabled={updatingId === user.id || user.source === 'client_only'}
+                                                        title={user.source === 'client_only' ? 'Usuarios manuales no tienen rol de sistema' : 'Cambiar rol'}
                                                     >
                                                         <option value="" className="bg-cv-bg-primary">Sin Rol</option>
                                                         <option value="athlete" className="bg-cv-bg-primary">Atleta</option>
@@ -312,9 +329,11 @@ export default function AdminUsersPage() {
                                             <td className="p-4 text-right">
                                                 <button
                                                     onClick={() => handlePasswordReset(user.id)}
-                                                    disabled={updatingId === user.id}
-                                                    className="p-2 hover:bg-cv-bg-elevated rounded-lg text-cv-text-tertiary hover:text-cv-text-primary transition-colors"
-                                                    title="Resetear Contraseña"
+                                                    disabled={updatingId === user.id || user.source === 'client_only'}
+                                                    className={`p-2 rounded-lg transition-colors ${user.source === 'client_only'
+                                                        ? 'text-gray-300 cursor-not-allowed'
+                                                        : 'hover:bg-cv-bg-elevated text-cv-text-tertiary hover:text-cv-text-primary'}`}
+                                                    title={user.source === 'client_only' ? 'Sin cuenta de acceso (User Manual)' : 'Resetear Contraseña'}
                                                 >
                                                     {updatingId === user.id ? (
                                                         <Loader2 size={18} className="animate-spin" />
@@ -324,9 +343,11 @@ export default function AdminUsersPage() {
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteUser(user.id)}
-                                                    disabled={updatingId === user.id}
-                                                    className="p-2 hover:bg-red-500/10 rounded-lg text-cv-text-tertiary hover:text-red-500 transition-colors"
-                                                    title="Eliminar Usuario"
+                                                    disabled={updatingId === user.id || user.source === 'client_only'}
+                                                    className={`p-2 rounded-lg transition-colors ${user.source === 'client_only'
+                                                        ? 'text-gray-300 cursor-not-allowed'
+                                                        : 'hover:bg-red-500/10 text-cv-text-tertiary hover:text-red-500'}`}
+                                                    title={user.source === 'client_only' ? 'Gestionar desde Atletas/Gimnasios' : 'Eliminar Usuario'}
                                                 >
                                                     {updatingId === user.id ? (
                                                         <Loader2 size={18} className="animate-spin" />
