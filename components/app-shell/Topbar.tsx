@@ -37,7 +37,7 @@ export function Topbar({ title, actions, prefixActions }: TopbarProps) {
                 className={`
             fixed top-0 right-0 h-12 bg-white
             flex items-center justify-between px-6 z-30 transition-all duration-300
-            ${isSidebarCollapsed ? 'left-16' : 'left-56'}
+            ${isSidebarCollapsed ? 'left-16' : 'left-48'}
           `}
             >
                 {/* Left: Title & Breadcrumb */}
