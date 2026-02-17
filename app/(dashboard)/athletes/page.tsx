@@ -9,9 +9,12 @@ import {
     getClients,
     createClient,
     deleteClient,
-    getCoaches,
+    getClients,
+    createClient,
+    deleteClient,
     assignClientToCoach
 } from '@/lib/actions';
+import { getCoachesNew } from '@/lib/actions-coach';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -115,7 +118,7 @@ export default function AthletesPage() {
         setIsLoading(true);
         const [athletesData, coachesData] = await Promise.all([
             getClients('athlete'),
-            getCoaches()
+            getCoachesNew()
         ]);
         if (athletesData) setAthletes(athletesData as Athlete[]);
         if (coachesData) setCoaches(coachesData);
@@ -391,7 +394,7 @@ export default function AthletesPage() {
                                             />
                                         </th>
                                         <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Atleta</th>
-                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Coach Asignado</th>
+                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Coach Asignado [FIX]</th>
                                         <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Nivel</th>
                                         <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Objetivo</th>
                                         <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Estado</th>
