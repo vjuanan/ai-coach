@@ -2,18 +2,26 @@
 
 import { createServerClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { createClient } from '@supabase/supabase-js';
 
 /**
- * Fetches all coaches for assignment dropdowns
+ * Fetches all coaches for assignment dropdowns (now from profiles table)
  */
 export async function getCoaches() {
     const supabase = createServerClient();
 
-    // We need to fetch from the coaches table
-    // Depending on RLS, we might need admin access, but typically admins can see all coaches
-    const { data: coaches, error } = await supabase
-        .from('coaches')
-        .select('id, full_name, business_name')
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    // Use admin client to bypass RLS
+    const adminSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
+        : supabase;
+
+    const { data: profiles, error } = await adminSupabase
+        .from('profiles')
+        .select('id, full_name, role, email')
+        .in('role', ['coach', 'admin'])
         .order('full_name');
 
     if (error) {
@@ -21,7 +29,11 @@ export async function getCoaches() {
         return [];
     }
 
-    return coaches || [];
+    return (profiles || []).map(p => ({
+        id: p.id,
+        full_name: p.full_name || p.email || 'Sin Nombre',
+        business_name: p.role === 'admin' ? 'Admin / Entrenador' : null
+    }));
 }
 
 /**

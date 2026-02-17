@@ -51,6 +51,24 @@ export async function getUserRole(): Promise<'admin' | 'coach' | 'athlete'> {
 // PROGRAMS ACTIONS
 // ==========================================
 
+export async function getUserDashboardInfo() {
+    const supabase = createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return null;
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, role')
+        .eq('id', user.id)
+        .single();
+
+    return {
+        name: profile?.full_name || user.user_metadata?.full_name || 'Usuario',
+        role: (profile?.role as 'admin' | 'coach' | 'athlete' | 'gym') || 'coach'
+    };
+}
+
 export async function getDashboardStats() {
     let supabase = createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -64,7 +82,7 @@ export async function getDashboardStats() {
         : supabase;
 
     // Get user profile and role
-    let role: 'admin' | 'coach' | 'athlete' = 'coach';
+    let role: 'admin' | 'coach' | 'athlete' | 'gym' = 'coach';
     let userName = 'Coach';
     let coachId: string | null = null;
 
@@ -75,7 +93,7 @@ export async function getDashboardStats() {
             .eq('id', user.id)
             .single();
 
-        role = (profile?.role as 'admin' | 'coach' | 'athlete') || 'coach';
+        role = (profile?.role as 'admin' | 'coach' | 'athlete' | 'gym') || 'coach';
         userName = profile?.full_name || user?.user_metadata?.full_name || 'Coach';
 
         // Get coach_id for filtering if role is coach
@@ -90,7 +108,7 @@ export async function getDashboardStats() {
     }
 
     // Athletes and Gyms don't see these stats
-    if (role === 'athlete') {
+    if (role === 'athlete' || role === 'gym') {
         return {
             showStats: false,
             userName,
@@ -1188,6 +1206,9 @@ export async function getAdminClients() {
 /**
  * Get all coaches for admin dropdown
  */
+/**
+ * Get all coaches for admin dropdown (Sourced from Profiles now)
+ */
 export async function getCoaches() {
     const supabase = createServerClient();
     const adminSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -1209,16 +1230,26 @@ export async function getCoaches() {
         return [];
     }
 
+    // Fetch from PROFILES instead of coaches table
+    // We include both 'coach' and 'admin' roles as potential coaches
     const { data, error } = await adminSupabase
-        .from('coaches')
-        .select('id, full_name, business_name, user_id')
+        .from('profiles')
+        .select('id, full_name, role, email')
+        .in('role', ['coach', 'admin'])
         .order('full_name', { ascending: true });
 
     if (error) {
-        console.error('Error fetching coaches:', error);
+        console.error('Error fetching coaches from profiles:', error);
         return [];
     }
-    return data || [];
+
+    // Map to the interface expected by CoachAssigner
+    // interface Coach { id: string; full_name: string; business_name: string | null; }
+    return data.map(p => ({
+        id: p.id,
+        full_name: p.full_name || p.email || 'Usuario sin nombre',
+        business_name: p.role === 'admin' ? 'Admin / Entrenador' : null // Helpful distinction
+    })) || [];
 }
 
 /**

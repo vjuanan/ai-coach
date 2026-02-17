@@ -1,198 +1,129 @@
-'use client';
-
-import { Topbar } from '@/components/app-shell/Topbar';
-import { GlobalCreateButton } from '@/components/app-shell/GlobalCreateButton';
-import { useAppStore } from '@/lib/store';
-import { getPrograms, createProgram, getDashboardStats } from '@/lib/actions';
-import {
-    TrendingUp,
-    Users,
-    Building2,
-    Dumbbell,
-    Calendar,
-    ArrowRight,
-    Clock,
-    Plus,
-    Loader2
-} from 'lucide-react';
+import { getUserDashboardInfo } from '@/lib/actions';
+import { Dumbbell, Users, Building2, Plus, Shield, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
 
-export default function DashboardPage() {
-    const { currentView } = useAppStore();
-    const [programs, setPrograms] = useState<any[]>([]);
-    const [stats, setStats] = useState({ showStats: true, athletes: 0, gyms: 0, activePrograms: 0, totalBlocks: 0, userName: 'Coach' });
-    const [isLoading, setIsLoading] = useState(true);
-    const router = useRouter();
+export const dynamic = 'force-dynamic';
 
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const [programsData, statsData] = await Promise.all([
-                    getPrograms(),
-                    getDashboardStats()
-                ]);
-                setPrograms(programsData || []);
-                setStats(statsData);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchData();
-    }, []);
+export default async function DashboardPage() {
+    const userInfo = await getUserDashboardInfo();
 
-    // Logic removed - moved to GlobalCreateButton
+    if (!userInfo) {
+        redirect('/login');
+    }
+
+    const { name, role } = userInfo;
 
     return (
-        <>
-            <Topbar title="Dashboard" />
-            <div className="max-w-7xl mx-auto space-y-8">
-                {/* Welcome Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-cv-text-primary">
-                            Bienvenido, {stats.userName}
-                        </h1>
-                        <p className="text-cv-text-secondary mt-1">
-                            Resumen de actividad de tus {currentView === 'athletes' ? 'atletas' : 'gimnasios'} hoy.
-                        </p>
-                    </div>
-                    <GlobalCreateButton />
-                </div>
+        <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
+            <div className="text-center mb-12 space-y-4">
+                <h1 className="text-4xl md:text-5xl font-bold text-cv-text-primary tracking-tight">
+                    ¡Bienvenido, <span className="text-cv-accent">{name}</span>!
+                </h1>
+                <p className="text-xl text-cv-text-secondary font-light">
+                    ¿Qué deseas hacer hoy?
+                </p>
+            </div>
 
-                {/* Stats Grid - REAL DATA (hidden for athletes) */}
-                {stats.showStats && (
-                    <div className="grid grid-cols-4 gap-4">
-                        <StatCard
-                            icon={<Users size={20} />}
-                            label="Atletas"
-                            value={stats.athletes}
-                            trend="Total registrados"
-                            color="text-blue-400"
-                        />
-                        <StatCard
-                            icon={<Building2 size={20} />}
-                            label="Gimnasios"
-                            value={stats.gyms}
-                            trend="Total registrados"
-                            color="text-purple-400"
-                        />
-                        <StatCard
-                            icon={<Dumbbell size={20} />}
-                            label="Programas Activos"
-                            value={stats.activePrograms}
-                            trend="En curso"
-                            color="text-cv-accent"
-                        />
-                        <StatCard
-                            icon={<Calendar size={20} />}
-                            label="Bloques Totales"
-                            value={stats.totalBlocks}
-                            trend="Sesiones diseñadas"
-                            color="text-green-400"
-                        />
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-4xl">
+                {/* ATHLETE OPTIONS */}
+                {role === 'athlete' && (
+                    <DashboardCard
+                        href="/athlete"
+                        icon={<Dumbbell size={32} />}
+                        title="Ver mi Programa"
+                        description="Accede a tu plan de entrenamiento actual"
+                        color="bg-blue-500/10 text-blue-500"
+                    />
                 )}
 
-                {/* Main Content Grid */}
-                <div className="grid grid-cols-3 gap-6">
-                    {/* Quick Access */}
-                    <div className="col-span-2 space-y-6">
-                        {/* Recent Programs */}
-                        <div className="cv-card">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="font-semibold text-cv-text-primary">Tus Programas</h2>
-                                <Link href="/programs" className="text-sm text-cv-accent hover:underline flex items-center gap-1">
-                                    Ver todos <ArrowRight size={14} />
-                                </Link>
-                            </div>
+                {/* GYM OPTIONS */}
+                {role === 'gym' && (
+                    <>
+                        <DashboardCard
+                            href="/programs"
+                            icon={<Dumbbell size={32} />}
+                            title="Ver Programa"
+                            description="Visualiza los entrenamientos"
+                            color="bg-purple-500/10 text-purple-500"
+                        />
+                        <DashboardCard
+                            href="/athletes"
+                            icon={<Users size={32} />}
+                            title="Ver Atletas"
+                            description="Gestiona los atletas asignados"
+                            color="bg-green-500/10 text-green-500"
+                        />
+                    </>
+                )}
 
-                            {isLoading ? (
-                                <div className="space-y-3">
-                                    {[1, 2, 3].map(i => (
-                                        <div key={i} className="h-16 bg-cv-bg-tertiary rounded-lg animate-pulse" />
-                                    ))}
-                                </div>
-                            ) : programs.length === 0 ? (
-                                <div className="text-center py-8 text-cv-text-tertiary">
-                                    Aún no hay programas. ¡Crea el primero!
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {programs.map((program) => (
-                                        <Link
-                                            key={program.id}
-                                            href={`/editor/${program.id}`}
-                                            className="flex items-center justify-between p-3 rounded-lg bg-cv-bg-tertiary hover:bg-cv-bg-elevated transition-colors group"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-lg bg-cv-accent-muted flex items-center justify-center">
-                                                    <Dumbbell size={18} className="text-cv-accent" />
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-cv-text-primary">{program.name}</p>
-                                                    <p className="text-sm text-cv-text-tertiary">
-                                                        {program.client ? program.client.name : 'Sin asignar'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-sm text-cv-text-secondary">
-                                                    Act. {new Date(program.updated_at).toLocaleDateString('es-ES')}
-                                                </span>
-                                                <span className={`cv-badge ${program.status === 'active' ? 'cv-badge-success' : 'cv-badge-warning'}`}>
-                                                    {program.status}
-                                                </span>
-                                                <ArrowRight size={16} className="text-cv-text-tertiary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                {/* COACH OPTIONS */}
+                {role === 'coach' && (
+                    <>
+                        <DashboardCard
+                            href="/programs"
+                            icon={<Plus size={32} />}
+                            title="Crear un programa"
+                            description="Diseña nuevos planes de entrenamiento"
+                            color="bg-cv-accent-muted text-cv-accent"
+                        />
+                        <DashboardCard
+                            href="/athletes"
+                            icon={<Users size={32} />}
+                            title="Ver mis atletas"
+                            description="Gestiona el progreso de tus alumnos"
+                            color="bg-blue-500/10 text-blue-500"
+                        />
+                        <DashboardCard
+                            href="/gyms"
+                            icon={<Building2 size={32} />}
+                            title="Ver mis gimnasios"
+                            description="Administra las sedes vinculadas"
+                            color="bg-orange-500/10 text-orange-500"
+                        />
+                    </>
+                )}
 
-                    {/* Sidebar */}
-                    <div className="space-y-6">
-                        {/* Quick Actions */}
-                        <div className="cv-card">
-                            <h2 className="font-semibold text-cv-text-primary mb-4">Acciones Rápidas</h2>
-                            <div className="space-y-2">
-                                {/* "Crear Programa" removed - use Global + button */}
-                                <Link href="/athletes/new" className="cv-btn-secondary w-full justify-start">
-                                    <Users size={16} />
-                                    Añadir Atleta
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {/* ADMIN OPTIONS */}
+                {role === 'admin' && (
+                    <DashboardCard
+                        href="/admin/users"
+                        icon={<Shield size={32} />}
+                        title="Administrar Usuarios"
+                        description="Gestión global de usuarios y roles"
+                        color="bg-red-500/10 text-red-500"
+                    />
+                )}
             </div>
-        </>
+
+            {/* Fallback for roles with no options or undetermined */}
+            {!['athlete', 'gym', 'coach', 'admin'].includes(role) && (
+                <div className="text-center text-cv-text-tertiary mt-8">
+                    <p>Próximamente tendremos novedades para tu perfil.</p>
+                </div>
+            )}
+        </div>
     );
 }
 
-interface StatCardProps {
-    icon: React.ReactNode;
-    label: string;
-    value: number;
-    trend: string;
-    color: string;
-}
-
-function StatCard({ icon, label, value, trend, color }: StatCardProps) {
+function DashboardCard({ href, icon, title, description, color }: { href: string, icon: React.ReactNode, title: string, description: string, color: string }) {
     return (
-        <div className="cv-card">
-            <div className="flex items-center justify-between mb-3">
-                <span className={color}>{icon}</span>
-                <TrendingUp size={14} className="text-green-400" />
+        <Link
+            href={href}
+            className="group flex flex-col p-6 rounded-2xl bg-cv-bg-secondary hover:bg-cv-bg-elevated border border-cv-border/50 hover:border-cv-accent/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+        >
+            <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-colors ${color}`}>
+                {icon}
             </div>
-            <p className="text-2xl font-bold text-cv-text-primary font-mono">{value}</p>
-            <p className="text-sm text-cv-text-secondary">{label}</p>
-            <p className="text-xs text-cv-text-tertiary mt-1">{trend}</p>
-        </div>
+            <h3 className="text-xl font-semibold text-cv-text-primary mb-2 group-hover:text-cv-accent transition-colors">
+                {title}
+            </h3>
+            <p className="text-sm text-cv-text-secondary leading-relaxed">
+                {description}
+            </p>
+            <div className="mt-auto pt-6 flex items-center text-sm font-medium text-cv-text-tertiary group-hover:text-cv-text-primary transition-colors">
+                Comenzar <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
+            </div>
+        </Link>
     );
 }
