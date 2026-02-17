@@ -721,7 +721,7 @@ export async function getClients(type: 'athlete' | 'gym') {
             if (!clientsData || clientsData.length === 0) return [];
 
             // Manual Join with Coaches
-            const coachIds = [...new Set(clientsData.map(c => c.coach_id).filter(id => id))];
+            const coachIds = Array.from(new Set(clientsData.map(c => c.coach_id).filter(id => id)));
             let coachesMap: Record<string, any> = {};
 
             if (coachIds.length > 0) {
