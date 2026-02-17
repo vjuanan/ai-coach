@@ -31,7 +31,8 @@ export async function getCoaches() {
 
     return (profiles || []).map(p => ({
         id: p.id,
-        full_name: p.full_name || p.email || 'Sin Nombre',
+        // Adding [TEST] prefix to verify new code is running
+        full_name: `[TEST] ${p.full_name || p.email || 'Sin Nombre'}`,
         business_name: p.role === 'admin' ? 'Admin / Entrenador' : null
     }));
 }
