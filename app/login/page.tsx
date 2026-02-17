@@ -51,6 +51,7 @@ export default function LoginPage() {
                     muted
                     playsInline
                     className="h-full w-full object-cover"
+                    poster="/images/HeroPic.png"
                 >
                     {/* Primary: Local Video (User should upload this) */}
                     <source src="/videos/login-bg.mp4" type="video/mp4" />
