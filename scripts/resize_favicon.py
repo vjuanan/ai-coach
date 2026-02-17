@@ -1,7 +1,7 @@
 import os
 from PIL import Image
 
-def resize_icon(input_path, output_path, scale_factor=0.7):
+def resize_icon(input_path, output_path, scale_factor=1.05):
     try:
         img = Image.open(input_path).convert("RGBA")
         original_width, original_height = img.size
