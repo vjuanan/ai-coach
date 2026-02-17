@@ -395,7 +395,8 @@ export default function AthletesPage() {
                                         <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Coach Asignado</th>
                                         <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Nivel</th>
                                         <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Objetivo</th>
-                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Servicio</th>
+                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Datos</th>
+                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Periodo</th>
                                         <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Estado Pago</th>
                                         <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold text-right">Acciones</th>
                                     </tr>
@@ -454,9 +455,9 @@ export default function AthletesPage() {
                                                 <td className="p-2 px-3">
                                                     {athlete.details?.level ? (
                                                         <span className={`text-xs px-1.5 py-0.5 rounded-full border border-current opacity-80 font-medium ${athlete.details.level === 'Elite' ? 'text-purple-400 bg-purple-400/10' :
-                                                                athlete.details.level === 'RX' ? 'text-cv-accent bg-cv-accent/10' :
-                                                                    athlete.details.level === 'Scaled' ? 'text-blue-400 bg-blue-400/10' :
-                                                                        'text-cv-text-tertiary bg-cv-bg-tertiary'
+                                                            athlete.details.level === 'RX' ? 'text-cv-accent bg-cv-accent/10' :
+                                                                athlete.details.level === 'Scaled' ? 'text-blue-400 bg-blue-400/10' :
+                                                                    'text-cv-text-tertiary bg-cv-bg-tertiary'
                                                             }`}>
                                                             {athlete.details.level}
                                                         </span>
