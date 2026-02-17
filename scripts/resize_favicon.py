@@ -41,8 +41,8 @@ if __name__ == "__main__":
     base_dir = os.getcwd()
     public_dir = os.path.join(base_dir, 'public')
     icon_path = os.path.join(public_dir, 'icon.png')
-    app_icon_path = os.path.join(public_dir, 'app-icon.png')
-    backup_path = os.path.join(public_dir, 'icon_backup_v3.png')
+    logo_slate_path = os.path.join(public_dir, 'logo-slate.png')
+    backup_path = os.path.join(public_dir, 'icon_backup_final.png')
     
     # Backup original icon if it exists
     if os.path.exists(icon_path):
@@ -50,8 +50,8 @@ if __name__ == "__main__":
         shutil.copy2(icon_path, backup_path)
         print(f"Backed up {icon_path} to {backup_path}")
 
-    # Use app-icon.png as source if it exists, otherwise fall back to icon.png
-    source_path = app_icon_path if os.path.exists(app_icon_path) else icon_path
+    # Use logo-slate.png as source if it exists, otherwise fall back to icon.png
+    source_path = logo_slate_path if os.path.exists(logo_slate_path) else icon_path
     
     if os.path.exists(source_path):
         # Resize and overwrite icon.png with the new source content

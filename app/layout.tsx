@@ -10,8 +10,8 @@ export const metadata: Metadata = {
     title: 'AI Coach',
     description: 'Professional CrossFit programming and mesocycle design platform',
     icons: {
-        icon: '/icon.png?v=8',
-        shortcut: '/favicon.ico?v=8',
+        icon: '/icon.png?v=9',
+        shortcut: '/favicon.ico?v=9',
     },
 };
 
