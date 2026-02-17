@@ -22,20 +22,22 @@ import {
 interface NavItem {
     label: string;
     href: string;
-    icon: React.ReactNode;
-}
+    // If Sidebar handles its own width, we are good here. 
+    // BUT we need to check where the margin-left for the main content is defined.
+    // It's likely in a Layout component.
 
-// Unified nav items - no more context filtering
-const navItems: NavItem[] = [
-    { label: 'Panel', href: '/', icon: <LayoutDashboard size={20} /> },
-    { label: 'Atletas', href: '/athletes', icon: <Users size={20} /> },
-    { label: 'Gimnasios', href: '/gyms', icon: <Building2 size={20} /> },
-    { label: 'Ejercicios', href: '/exercises', icon: <Dumbbell size={20} /> }, // New
-    { label: 'Programas', href: '/programs', icon: <FileText size={20} /> },
-    { label: 'Plantillas', href: '/templates', icon: <FileText size={20} /> }, // Keep same icon or differentiate?
-    { label: 'Conocimiento', href: '/knowledge', icon: <BookOpen size={20} /> },
-    { label: 'Usuarios', href: '/admin/users', icon: <Shield size={20} /> },
-];
+
+    // Unified nav items - no more context filtering
+    const navItems: NavItem[] = [
+    { label: 'Panel', href: '/', icon: <LayoutDashboard size = {20} /> },
+    { label: 'Atletas', href: '/athletes', icon: <Users size = {20} /> },
+    { label: 'Gimnasios', href: '/gyms', icon: <Building2 size = {20} /> },
+    { label: 'Ejercicios', href: '/exercises', icon: <Dumbbell size = {20} /> }, // New
+    { label: 'Programas', href: '/programs', icon: <FileText size = {20} /> },
+    { label: 'Plantillas', href: '/templates', icon: <FileText size = {20} /> }, // Keep same icon or differentiate?
+    { label: 'Conocimiento', href: '/knowledge', icon: <BookOpen size = {20} /> },
+    { label: 'Usuarios', href: '/admin/users', icon: <Shield size = {20} /> },
+    ];
 
 interface SidebarProps {
     /** Role passed from server - NO async loading, immediate render */
@@ -68,7 +70,7 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
             className={`
         fixed left-0 top-0 h-screen bg-slate-50
         flex flex-col transition-all duration-300 ease-in-out z-40
-        ${isSidebarCollapsed ? 'w-16' : 'w-56'}
+        ${isSidebarCollapsed ? 'w-16' : 'w-48'}
       `}
         >
             {/* Logo - Horizontal layout matching reference */}

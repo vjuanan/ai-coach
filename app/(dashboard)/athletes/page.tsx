@@ -34,7 +34,6 @@ interface Coach {
     id: string;
     full_name: string;
     business_name: string | null;
-    user_id: string;
 }
 
 interface Athlete {
