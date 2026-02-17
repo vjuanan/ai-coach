@@ -55,7 +55,7 @@ export default function LoginPage() {
                     poster="/images/HeroPic.png"
                 >
                     {/* Primary: Local Video (User should upload this) */}
-                    <source src="/videos/login-bg.mp4" type="video/mp4" />
+                    <source src="/login-bg.mp4" type="video/mp4" />
                     {/* Fallback: Reliable placeholder if local file is missing */}
                     <source src="https://cdn.coverr.co/videos/coverr-crossfit-rope-climb-5353/1080p.mp4" type="video/mp4" />
                 </video>
