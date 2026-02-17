@@ -437,8 +437,8 @@ export default function AthletesPage() {
                                                                 <span className="font-medium text-gray-900 text-sm block truncate">{athlete.name}</span>
                                                                 {athlete.details?.level && (
                                                                     <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${athlete.details.level === 'Elite' ? 'bg-purple-50 text-purple-700 border-purple-100' :
-                                                                            athlete.details.level === 'RX' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                                                                                'bg-gray-100 text-gray-600 border-gray-200'
+                                                                        athlete.details.level === 'RX' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                                                            'bg-gray-100 text-gray-600 border-gray-200'
                                                                         }`}>
                                                                         {athlete.details.level}
                                                                     </span>
@@ -467,8 +467,8 @@ export default function AthletesPage() {
                                                 <td className="py-3 px-4">
                                                     <div className="flex flex-col items-start gap-1">
                                                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${athlete.payment_status === 'active'
-                                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                            : 'bg-amber-50 text-amber-700 border-amber-200'
                                                             }`}>
                                                             {getStatusLabel(athlete.payment_status)}
                                                         </span>
@@ -502,7 +502,10 @@ export default function AthletesPage() {
                                     {filteredAthletes.length === 0 && (
                                         <tr>
                                             <td colSpan={5} className="p-12 text-center text-gray-400 text-sm">
-                                                No se encontraron atletas
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <span>No se encontraron atletas</span>
+                                                    <DebugPanel />
+                                                </div>
                                             </td>
                                         </tr>
                                     )}

@@ -1,4 +1,8 @@
 - [x] Verificar diseño del Sidebar en producción <!-- id: 0 -->
     - [x] Capturar screenshots del estado expandido <!-- id: 1 -->
     - [x] Validar tipografía y colores <!-- id: 2 -->
-    - [x] Validar comportamiento de colapso (Botón removido intencionalmente) <!-- id: 3 -->
+    - [x] Validar comportamiento de colapso (Botón removido intencionalmente)
+- [ ] Diseñar y reemplazar logo
+    - [x] Generar logo "Dark Green Elegant" (logo-slate.png)
+    - [x] Generar versión blanca (logo-white.png)
+    - [x] Verificar implementación <!-- id: 3 -->
