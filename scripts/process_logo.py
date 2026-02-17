@@ -80,18 +80,41 @@ def process_logo():
         # We'll use the SLATE logo for the icon so it's visible on light tabs.
         # (Most browser tabs are light).
         
-        target_logo_width = int(icon_size[0] * 1.0) # Maximize width (100%)
+        target_logo_width = int(icon_size[0] * 1.3) # Zoom in 130% (USER REQUEST: 30% bigger)
+        # This might clip limits but maximizes the inner drawing
+        
         ratio = target_logo_width / logo_cropped.width
         target_logo_height = int(logo_cropped.height * ratio)
         
         # Resize the SLATE version
         logo_resized = logo_cropped.resize((target_logo_width, target_logo_height), Image.Resampling.LANCZOS)
         
-        # Center the logo
+        # Center the logo (allowing negative offsets to crop edges if needed)
         offset = ((icon_size[0] - target_logo_width) // 2, (icon_size[1] - target_logo_height) // 2)
         
         # Paste logo onto background
-        icon_img.paste(logo_resized, offset, logo_resized)
+        # When pasting a larger image onto a smaller one, PIL handles it by cropping.
+        # We need to be careful with negative offsets. 
+        # Actually PIL paste doesn't support negative offsets well for cropping in some versions,
+        # but let's try standard behavior. If it fails we crop source.
+        
+        # Safer way: Crop the resized logo to fit 192x192
+        left = (target_logo_width - icon_size[0]) // 2
+        top = (target_logo_height - icon_size[1]) // 2
+        right = left + icon_size[0]
+        bottom = top + icon_size[1]
+        
+        # Ensure we don't go out of bounds if it's smaller (won't happen with 1.3x but good practice)
+        if left < 0: left = 0
+        if top < 0: top = 0
+        
+        # Simple center paste if it's smaller, or crop if larger.
+        if target_logo_width > icon_size[0] or target_logo_height > icon_size[1]:
+             # Crop the center of the resized logo
+             logo_final = logo_resized.crop((left, top, right, bottom))
+             icon_img.paste(logo_final, (0,0), logo_final)
+        else:
+             icon_img.paste(logo_resized, offset, logo_resized)
         
         # Save icon.png (Next.js automatically uses this)
         icon_img.save("public/icon.png", "PNG")
