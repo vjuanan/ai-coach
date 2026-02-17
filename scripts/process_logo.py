@@ -68,53 +68,31 @@ def process_logo():
         # Create base
         icon_img = Image.new("RGBA", icon_size, bg_color)
         
-        # *** CRITICAL: Crop the slate logo to remove transparent padding ***
-        # This makes the actual logo shape fill more of the favicon
-        bbox = img_slate.getbbox()
-        if bbox:
-            logo_cropped = img_slate.crop(bbox)
-        else:
-            logo_cropped = img_slate
+        # *** EXTREME FORCE CROP ***
+        # The user says it's too small. The auto-bbox might be failing due to stray pixels.
+        # We will manually crop to the center to force the logo to be huge.
         
-        # Resize CROPPED logo to fit inside (with minimal padding)
-        # We'll use the SLATE logo for the icon so it's visible on light tabs.
-        # (Most browser tabs are light).
+        width, height = img_slate.size
+        # Crop 20% from each side to zoom in significantly on the center
+        left = int(width * 0.20)
+        top = int(height * 0.20)
+        right = int(width * 0.80)
+        bottom = int(height * 0.80)
         
-        target_logo_width = int(icon_size[0] * 1.3) # Zoom in 130% (USER REQUEST: 30% bigger)
-        # This might clip limits but maximizes the inner drawing
+        logo_cropped = img_slate.crop((left, top, right, bottom))
         
-        ratio = target_logo_width / logo_cropped.width
-        target_logo_height = int(logo_cropped.height * ratio)
+        # Now resize this tight crop to FILL the icon size
+        # We will use 100% of the icon size with this cropped version.
+        # Since we cropped the source, it will appear zoomed in.
         
-        # Resize the SLATE version
+        target_logo_width = int(icon_size[0])
+        target_logo_height = int(icon_size[1])
+        
+        # Resize to fill
         logo_resized = logo_cropped.resize((target_logo_width, target_logo_height), Image.Resampling.LANCZOS)
         
-        # Center the logo (allowing negative offsets to crop edges if needed)
-        offset = ((icon_size[0] - target_logo_width) // 2, (icon_size[1] - target_logo_height) // 2)
-        
-        # Paste logo onto background
-        # When pasting a larger image onto a smaller one, PIL handles it by cropping.
-        # We need to be careful with negative offsets. 
-        # Actually PIL paste doesn't support negative offsets well for cropping in some versions,
-        # but let's try standard behavior. If it fails we crop source.
-        
-        # Safer way: Crop the resized logo to fit 192x192
-        left = (target_logo_width - icon_size[0]) // 2
-        top = (target_logo_height - icon_size[1]) // 2
-        right = left + icon_size[0]
-        bottom = top + icon_size[1]
-        
-        # Ensure we don't go out of bounds if it's smaller (won't happen with 1.3x but good practice)
-        if left < 0: left = 0
-        if top < 0: top = 0
-        
-        # Simple center paste if it's smaller, or crop if larger.
-        if target_logo_width > icon_size[0] or target_logo_height > icon_size[1]:
-             # Crop the center of the resized logo
-             logo_final = logo_resized.crop((left, top, right, bottom))
-             icon_img.paste(logo_final, (0,0), logo_final)
-        else:
-             icon_img.paste(logo_resized, offset, logo_resized)
+        # Paste directly
+        icon_img.paste(logo_resized, (0, 0), logo_resized)
         
         # Save icon.png (Next.js automatically uses this)
         icon_img.save("public/icon.png", "PNG")
