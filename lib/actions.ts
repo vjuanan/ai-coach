@@ -741,6 +741,7 @@ export async function getClients(type: 'athlete' | 'gym') {
                 ...client,
                 coach: client.coach_id ? coachesMap[client.coach_id] : null
             }));
+        } catch (err) {
             console.error('getClients: Admin Bypass Failed', err);
             // Fallback to normal
         }
