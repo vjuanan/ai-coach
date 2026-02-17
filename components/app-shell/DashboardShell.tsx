@@ -29,7 +29,7 @@ export function DashboardShell({ children, role }: DashboardShellProps) {
             <main
                 className={`
                     pt-12 min-h-screen transition-all duration-300
-                    ${isSidebarCollapsed ? 'pl-20' : 'pl-56'}
+                    ${isSidebarCollapsed ? 'pl-20' : 'pl-60'}
                 `}
             >
                 {/* Warning Banner */}

@@ -65,7 +65,7 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
             className={`
         fixed left-0 top-0 h-screen bg-white border-r border-slate-100
         flex flex-col transition-all duration-300 ease-in-out z-40
-        ${isSidebarCollapsed ? 'w-20' : 'w-56'}
+        ${isSidebarCollapsed ? 'w-20' : 'w-60'}
       `}
         >
             {/* Logo - Horizontal layout matching reference */}
@@ -113,7 +113,7 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
                         >
                             {item.icon}
                             {!isSidebarCollapsed && (
-                                <span className="text-base">{item.label}</span>
+                                <span className="text-[15px]">{item.label}</span>
                             )}
                         </Link>
                     );
