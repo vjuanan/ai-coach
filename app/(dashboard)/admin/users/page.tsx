@@ -239,7 +239,7 @@ export default function AdminUsersPage() {
                             <Users className="text-cv-text-secondary" size={16} />
                             <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredProfiles.length}</span>
                         </div>
-                        <span className="text-xs text-cv-text-tertiary">v1.2</span>
+                        <span className="text-xs text-cv-text-tertiary">v1.3</span>
                         <button
                             onClick={() => setIsCreateOpen(true)}
                             className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
@@ -358,11 +358,9 @@ export default function AdminUsersPage() {
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteUser(user.id)}
-                                                    disabled={updatingId === user.id || user.source === 'client_only'}
-                                                    className={`p-2 rounded-lg transition-colors ${user.source === 'client_only'
-                                                        ? 'text-gray-300 cursor-not-allowed'
-                                                        : 'hover:bg-red-500/10 text-cv-text-tertiary hover:text-red-500'}`}
-                                                    title={user.source === 'client_only' ? 'Gestionar desde Atletas/Gimnasios' : 'Eliminar Usuario'}
+                                                    disabled={updatingId === user.id}
+                                                    className="p-2 rounded-lg transition-colors hover:bg-red-500/10 text-cv-text-tertiary hover:text-red-500"
+                                                    title="Eliminar Usuario"
                                                 >
                                                     {updatingId === user.id ? (
                                                         <Loader2 size={18} className="animate-spin" />
