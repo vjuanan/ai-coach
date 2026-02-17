@@ -68,16 +68,24 @@ def process_logo():
         # Create base
         icon_img = Image.new("RGBA", icon_size, bg_color)
         
-        # Resize logo to fit inside (with padding)
+        # *** CRITICAL: Crop the slate logo to remove transparent padding ***
+        # This makes the actual logo shape fill more of the favicon
+        bbox = img_slate.getbbox()
+        if bbox:
+            logo_cropped = img_slate.crop(bbox)
+        else:
+            logo_cropped = img_slate
+        
+        # Resize CROPPED logo to fit inside (with minimal padding)
         # We'll use the SLATE logo for the icon so it's visible on light tabs.
         # (Most browser tabs are light).
         
         target_logo_width = int(icon_size[0] * 0.98) # Make it bigger since no bg padding needed
-        ratio = target_logo_width / img.width
-        target_logo_height = int(img.height * ratio)
+        ratio = target_logo_width / logo_cropped.width
+        target_logo_height = int(logo_cropped.height * ratio)
         
         # Resize the SLATE version
-        logo_resized = img_slate.resize((target_logo_width, target_logo_height), Image.Resampling.LANCZOS)
+        logo_resized = logo_cropped.resize((target_logo_width, target_logo_height), Image.Resampling.LANCZOS)
         
         # Center the logo
         offset = ((icon_size[0] - target_logo_width) // 2, (icon_size[1] - target_logo_height) // 2)
