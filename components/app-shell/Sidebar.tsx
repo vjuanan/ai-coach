@@ -65,26 +65,26 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
             className={`
         fixed left-0 top-0 h-screen bg-white border-r border-slate-100
         flex flex-col transition-all duration-300 ease-in-out z-40
-        ${isSidebarCollapsed ? 'w-16' : 'w-64'}
+        ${isSidebarCollapsed ? 'w-16' : 'w-48'}
       `}
         >
             {/* Logo - Horizontal layout matching reference */}
             <div className={`
                 flex items-center bg-transparent transition-all duration-300 relative
-                ${isSidebarCollapsed ? 'h-14 justify-center px-2' : 'h-14 justify-start px-6'}
+                ${isSidebarCollapsed ? 'h-12 justify-center px-2' : 'h-12 justify-start px-6'}
             `}>
                 <Link href="/" className="flex items-center gap-2">
                     {/* Logo - Reduced size for better proportion */}
                     <Image
                         src="/icon.png"
                         alt="Logo"
-                        width={24}
-                        height={24}
-                        className="h-6 w-6 object-contain"
+                        width={20}
+                        height={20}
+                        className="h-5 w-5 object-contain"
                     />
 
                     {!isSidebarCollapsed && (
-                        <span className="text-slate-700 font-semibold text-lg tracking-tight whitespace-nowrap">
+                        <span className="text-slate-700 font-semibold text-sm tracking-tight whitespace-nowrap">
                             AI Nutrition
                         </span>
                     )}
