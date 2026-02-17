@@ -1,10 +1,22 @@
-# Task: Remove Green & Transparent Background (Image Processing)
+# Task: Optimizar Tabla de Atletas - Diseño Compacto
 
-- [ ] Revert code changes to use `Image` component again [/]
-- [ ] Create Python script to process `public/images/ai-coach-logo-v3.png`
-    - [ ] Generate `public/images/logo-white.png` (White + Transparent) for Login
-    - [ ] Generate `public/images/logo-slate.png` (Slate/Dark + Transparent) for Sidebar
-- [ ] Run script and verify output images
-- [ ] Update `app/login/page.tsx` to use `logo-white.png`
-- [ ] Update `components/app-shell/Sidebar.tsx` to use `logo-slate.png`
-- [ ] Verify on Production
+## Planificación
+- [x] Analizar código actual de la tabla
+- [x] Crear plan de implementación
+
+## Implementación
+- [x] Reducir padding de celdas y headers
+- [x] Optimizar columna de Atleta (avatar, nombre, email)
+- [x] Optimizar columna de Coach (select)
+- [x] Optimizar columna de Nivel (badge)
+- [x] Optimizar columna de Objetivo (texto)
+- [x] Optimizar columna de Servicio (fechas)
+- [x] Optimizar columna de Estado de Pago (badge)
+- [x] Optimizar columna de Acciones (botones)
+
+## Verificación
+- [ ] Push y deploy de cambios
+- [ ] Capturar screenshots en producción
+- [ ] Verificar diseño compacto
+- [ ] Corregir errores si existen
+- [ ] Validación final

@@ -383,7 +383,7 @@ export default function AthletesPage() {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-cv-bg-tertiary border-b border-cv-border-subtle">
-                                        <th className="p-4 w-10">
+                                        <th className="p-2 px-3 w-10">
                                             <input
                                                 type="checkbox"
                                                 className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
@@ -391,13 +391,13 @@ export default function AthletesPage() {
                                                 onChange={toggleSelectAll}
                                             />
                                         </th>
-                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Atleta</th>
-                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Coach Asignado</th>
-                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Nivel</th>
-                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Objetivo</th>
-                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Servicio</th>
-                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Estado Pago</th>
-                                        <th className="p-4 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold text-right">Acciones</th>
+                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Atleta</th>
+                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Coach Asignado</th>
+                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Nivel</th>
+                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Objetivo</th>
+                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Servicio</th>
+                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Estado Pago</th>
+                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold text-right">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-cv-border-subtle">
@@ -409,7 +409,7 @@ export default function AthletesPage() {
                                                 className={`hover:bg-cv-bg-tertiary/50 transition-colors group cursor-pointer ${selectedAthletes.has(athlete.id) ? 'bg-cv-accent/5' : ''}`}
                                                 onClick={() => router.push(`/athletes/${athlete.id}`)}
                                             >
-                                                <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                                                <td className="p-2 px-3" onClick={(e) => e.stopPropagation()}>
                                                     <input
                                                         type="checkbox"
                                                         className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
@@ -417,27 +417,27 @@ export default function AthletesPage() {
                                                         onChange={() => toggleSelectAthlete(athlete.id)}
                                                     />
                                                 </td>
-                                                <td className="p-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-full bg-cv-accent-muted flex items-center justify-center text-cv-accent font-bold text-lg shrink-0">
+                                                <td className="p-2 px-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-8 h-8 rounded-full bg-cv-accent-muted flex items-center justify-center text-cv-accent font-bold text-sm shrink-0">
                                                             {athlete.name.charAt(0).toUpperCase()}
                                                         </div>
                                                         <div className="min-w-0">
-                                                            <span className="font-medium text-cv-text-primary block truncate">{athlete.name}</span>
+                                                            <span className="font-medium text-cv-text-primary block truncate text-sm">{athlete.name}</span>
                                                             <div className="flex items-center gap-1 text-xs text-cv-text-tertiary">
-                                                                <Mail size={12} />
+                                                                <Mail size={10} />
                                                                 <span className="truncate">{athlete.email || 'Sin correo'}</span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                                                <td className="p-2 px-3" onClick={(e) => e.stopPropagation()}>
                                                     <div className="flex items-center gap-2">
                                                         <select
                                                             value={athlete.coach_id || ''}
                                                             onChange={(e) => handleCoachChange(athlete.id, e.target.value)}
                                                             disabled={updatingId === athlete.id}
-                                                            className="w-full max-w-[150px] px-2 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 disabled:opacity-50 transition-all cursor-pointer hover:border-slate-300"
+                                                            className="w-full max-w-[140px] px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 disabled:opacity-50 transition-all cursor-pointer hover:border-slate-300"
                                                         >
                                                             <option value="" disabled>Seleccionar Coach</option>
                                                             {coaches.map((coach) => (
@@ -447,16 +447,16 @@ export default function AthletesPage() {
                                                             ))}
                                                         </select>
                                                         {updatingId === athlete.id && (
-                                                            <Loader2 className="h-4 w-4 animate-spin text-slate-500" />
+                                                            <Loader2 className="h-3 w-3 animate-spin text-slate-500" />
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td className="p-4">
+                                                <td className="p-2 px-3">
                                                     {athlete.details?.level ? (
-                                                        <span className={`text-xs px-2 py-1 rounded-full border border-current opacity-80 font-medium ${athlete.details.level === 'Elite' ? 'text-purple-400 bg-purple-400/10' :
-                                                            athlete.details.level === 'RX' ? 'text-cv-accent bg-cv-accent/10' :
-                                                                athlete.details.level === 'Scaled' ? 'text-blue-400 bg-blue-400/10' :
-                                                                    'text-cv-text-tertiary bg-cv-bg-tertiary'
+                                                        <span className={`text-xs px-1.5 py-0.5 rounded-full border border-current opacity-80 font-medium ${athlete.details.level === 'Elite' ? 'text-purple-400 bg-purple-400/10' :
+                                                                athlete.details.level === 'RX' ? 'text-cv-accent bg-cv-accent/10' :
+                                                                    athlete.details.level === 'Scaled' ? 'text-blue-400 bg-blue-400/10' :
+                                                                        'text-cv-text-tertiary bg-cv-bg-tertiary'
                                                             }`}>
                                                             {athlete.details.level}
                                                         </span>
@@ -464,13 +464,13 @@ export default function AthletesPage() {
                                                         <span className="text-cv-text-tertiary text-xs">-</span>
                                                     )}
                                                 </td>
-                                                <td className="p-4">
-                                                    <div className="max-w-[200px] text-sm text-cv-text-secondary truncate" title={athlete.details?.goal}>
+                                                <td className="p-2 px-3">
+                                                    <div className="max-w-[150px] text-xs text-cv-text-secondary truncate" title={athlete.details?.goal}>
                                                         {athlete.details?.goal || <span className="text-cv-text-tertiary italic">Sin objetivo</span>}
                                                     </div>
                                                 </td>
-                                                <td className="p-4">
-                                                    <div className="flex gap-3 text-xs text-cv-text-secondary">
+                                                <td className="p-2 px-3">
+                                                    <div className="flex gap-2 text-xs text-cv-text-secondary">
                                                         {athlete.details?.height && (
                                                             <div title="Altura">
                                                                 <span className="font-medium text-cv-text-primary">{athlete.details.height}</span> cm
@@ -486,8 +486,8 @@ export default function AthletesPage() {
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td className="p-4">
-                                                    <div className="flex flex-col gap-1 text-xs text-cv-text-secondary">
+                                                <td className="p-2 px-3">
+                                                    <div className="flex flex-col gap-0.5 text-xs text-cv-text-secondary">
                                                         <span title="Inicio Servicio">
                                                             <span className="font-medium">Inicio:</span> {formatDate(athlete.service_start_date)}
                                                         </span>
@@ -496,27 +496,27 @@ export default function AthletesPage() {
                                                         </span>
                                                     </div>
                                                 </td>
-                                                <td className="p-4">
-                                                    <Badge variant="outline" className={`font-normal border ${getStatusColor(athlete.payment_status)}`}>
+                                                <td className="p-2 px-3">
+                                                    <Badge variant="outline" className={`font-normal border text-xs ${getStatusColor(athlete.payment_status)}`}>
                                                         {getStatusLabel(athlete.payment_status)}
                                                     </Badge>
                                                 </td>
-                                                <td className="p-4 text-right">
-                                                    <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                                                <td className="p-2 px-3 text-right">
+                                                    <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                                                         {/* View Button - stops propagation effectively by being a Link/Button? Using router push on row, need stopPropagation on buttons */}
                                                         <Link
                                                             href={`/athletes/${athlete.id}`}
-                                                            className="p-2 hover:bg-cv-bg-elevated rounded-lg text-cv-text-tertiary hover:text-cv-text-primary transition-colors"
+                                                            className="p-1.5 hover:bg-cv-bg-elevated rounded-lg text-cv-text-tertiary hover:text-cv-text-primary transition-colors"
                                                             title="Ver Perfil"
                                                         >
-                                                            <User size={18} />
+                                                            <User size={16} />
                                                         </Link>
                                                         <button
                                                             onClick={(e) => promptDelete(e, athlete.id)}
-                                                            className="p-2 hover:bg-red-500/10 rounded-lg text-cv-text-tertiary hover:text-red-500 transition-colors"
+                                                            className="p-1.5 hover:bg-red-500/10 rounded-lg text-cv-text-tertiary hover:text-red-500 transition-colors"
                                                             title="Eliminar Atleta"
                                                         >
-                                                            <Trash2 size={18} />
+                                                            <Trash2 size={16} />
                                                         </button>
                                                     </div>
                                                 </td>
