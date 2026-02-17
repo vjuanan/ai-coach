@@ -1,6 +1,6 @@
 import { Topbar } from '@/components/app-shell/Topbar';
 import { getClient, getClientPrograms, getClients } from '@/lib/actions';
-import { getCoaches } from '@/lib/actions-coach';
+import { getCoachesNew } from '@/lib/actions-coach';
 import { CoachAssigner } from '@/components/athletes/CoachAssigner';
 import { GymAssigner } from '@/components/athletes/GymAssigner';
 import { ProfileDetailsEditor } from '@/components/athletes/ProfileDetailsEditor';
@@ -21,7 +21,7 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
     const [athlete, programs, coaches] = await Promise.all([
         getClient(clientId),
         getClientPrograms(clientId),
-        getCoaches()
+        getCoachesNew()
     ]);
 
     if (!athlete) {
