@@ -6,15 +6,12 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 import {
-
     LayoutDashboard,
     Users,
     Building2,
     Dumbbell,
     FileText,
-    ChevronLeft,
     ChevronRight,
-    Briefcase,
     Shield,
     BookOpen,
 } from 'lucide-react';
@@ -25,14 +22,14 @@ interface NavItem {
     icon: React.ReactNode;
 }
 
-// Unified nav items - no more context filtering
+// Unified nav items - AI Nutrition Nomenclature
 const navItems: NavItem[] = [
-    { label: 'Panel', href: '/', icon: <LayoutDashboard size={20} /> },
-    { label: 'Atletas', href: '/athletes', icon: <Users size={20} /> },
-    { label: 'Gimnasios', href: '/gyms', icon: <Building2 size={20} /> },
-    { label: 'Ejercicios', href: '/exercises', icon: <Dumbbell size={20} /> }, // New
-    { label: 'Programas', href: '/programs', icon: <FileText size={20} /> },
-    { label: 'Plantillas', href: '/templates', icon: <FileText size={20} /> }, // Keep same icon or differentiate?
+    { label: 'Mi Panel', href: '/', icon: <LayoutDashboard size={20} /> },
+    { label: 'Pacientes', href: '/athletes', icon: <Users size={20} /> },
+    { label: 'Clínicas', href: '/gyms', icon: <Building2 size={20} /> },
+    { label: 'Alimentos', href: '/exercises', icon: <Dumbbell size={20} /> },
+    { label: 'Planes', href: '/programs', icon: <FileText size={20} /> },
+    { label: 'Plantillas', href: '/templates', icon: <FileText size={20} /> },
     { label: 'Conocimiento', href: '/knowledge', icon: <BookOpen size={20} /> },
     { label: 'Usuarios', href: '/admin/users', icon: <Shield size={20} /> },
 ];
@@ -51,7 +48,7 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
         if (role === 'admin') return true; // See all
 
         if (role === 'coach') {
-            // Coach cannot see 'Gimnasios' OR admin sections
+            // Coach cannot see 'Clínicas' (Gyms) OR admin sections
             return item.href !== '/gyms' && !item.href.startsWith('/admin');
         }
 
@@ -66,20 +63,20 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
         <aside
             data-version="2"
             className={`
-        fixed left-0 top-0 h-screen bg-slate-50
+        fixed left-0 top-0 h-screen bg-white border-r border-slate-100
         flex flex-col transition-all duration-300 ease-in-out z-40
-        ${isSidebarCollapsed ? 'w-16' : 'w-48'}
+        ${isSidebarCollapsed ? 'w-16' : 'w-64'}
       `}
         >
             {/* Logo - Horizontal layout matching reference */}
             <div className={`
                 flex items-center bg-transparent transition-all duration-300 relative
-                ${isSidebarCollapsed ? 'h-16 justify-center px-2' : 'h-16 justify-center px-4'}
+                ${isSidebarCollapsed ? 'h-16 justify-center px-2' : 'h-16 justify-start px-6'}
             `}>
-                <Link href="/" className="flex items-center justify-center gap-2.5">
-                    {/* Logo - Slightly larger for better visibility in compact sidebar */}
+                <Link href="/" className="flex items-center gap-3">
+                    {/* Logo - Increased size to h-10 w-10 */}
                     <Image
-                        src="/images/logo-slate.png"
+                        src="/icon.png"
                         alt="Logo"
                         width={32}
                         height={32}
@@ -87,41 +84,16 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
                     />
 
                     {!isSidebarCollapsed && (
-                        <>
-                            {/* The Divider - Shorter and more subtle */}
-                            <div className="h-4 w-[1.5px] bg-slate-200"></div>
-
-                            {/* The Text - Slightly larger and darker for better contrast */}
-                            <span className="text-slate-600 font-semibold text-sm tracking-tight whitespace-nowrap">
-                                AI Coach
-                            </span>
-                        </>
+                        <span className="text-slate-700 font-semibold text-lg tracking-tight whitespace-nowrap">
+                            AI Nutrition
+                        </span>
                     )}
                 </Link>
-                {!isSidebarCollapsed && (
-                    <button
-                        onClick={toggleSidebar}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-cv-text-tertiary hover:text-cv-text-primary hover:bg-cv-bg-tertiary transition-colors"
-                    >
-                        <ChevronLeft size={16} />
-                    </button>
-                )}
+                {/* Removed Toggle Button from Header to match clean look */}
             </div>
 
-            {/* Expand button when collapsed - moved outside header to avoid overlapping logo */}
-            {isSidebarCollapsed && (
-                <div className="flex justify-center py-2">
-                    <button
-                        onClick={toggleSidebar}
-                        className="p-1.5 rounded-md text-cv-text-tertiary hover:text-cv-text-primary hover:bg-cv-bg-tertiary transition-colors"
-                    >
-                        <ChevronRight size={16} />
-                    </button>
-                </div>
-            )}
-
             {/* Navigation - Unified, no toggle */}
-            <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+            <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
                 {filteredNavItems.map((item) => {
                     const isActive = pathname === item.href ||
                         (item.href !== '/' && pathname.startsWith(item.href));
@@ -131,27 +103,34 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
                             key={item.href}
                             href={item.href}
                             className={`
-                flex items-center gap-3 px-3 py-2 rounded-lg transition-all
+                flex items-center gap-3 px-3 py-3 rounded-lg transition-all mb-1
                 ${isSidebarCollapsed ? 'justify-center' : ''}
                 ${isActive
-                                    ? 'bg-cv-accent-muted text-cv-accent'
-                                    : 'text-cv-text-secondary hover:text-cv-text-primary hover:bg-cv-bg-tertiary'}
+                                    ? 'bg-emerald-50 text-emerald-600 font-medium'
+                                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}
               `}
                             title={isSidebarCollapsed ? item.label : undefined}
                         >
                             {item.icon}
                             {!isSidebarCollapsed && (
-                                <span className="font-medium text-sm">{item.label}</span>
+                                <span className="text-sm">{item.label}</span>
                             )}
                         </Link>
                     );
                 })}
             </nav>
 
-            {/* Bottom Section */}
-            <div className="p-3">
-                {/* Settings link removed as it is now accessible via the User Avatar in Topbar */}
-            </div>
+            {/* Expand button when collapsed - at bottom */}
+            {isSidebarCollapsed && (
+                <div className="flex justify-center py-4 border-t border-slate-100">
+                    <button
+                        onClick={toggleSidebar}
+                        className="p-1.5 rounded-md text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+                </div>
+            )}
         </aside>
     );
 }
