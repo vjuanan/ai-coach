@@ -701,9 +701,10 @@ export async function getClients(type: 'athlete' | 'gym') {
 
             // Fetch from clients table (manually created)
             // Admin sees ALL clients, coaches see only their own
+            // REMOVED JOIN to avoid FK errors. Fetching separately.
             let clientsQuery = adminSupabase
                 .from('clients')
-                .select('*, coach:coaches(full_name, business_name)')
+                .select('*')
                 .eq('type', type);
 
             if (!isAdmin) {
@@ -714,10 +715,32 @@ export async function getClients(type: 'athlete' | 'gym') {
 
             if (clientsError) {
                 console.error('getClients [Admin Bypass] Error:', clientsError);
+                return [];
             }
 
-            return clientsData || [];
-        } catch (err) {
+            if (!clientsData || clientsData.length === 0) return [];
+
+            // Manual Join with Coaches
+            const coachIds = [...new Set(clientsData.map(c => c.coach_id).filter(id => id))];
+            let coachesMap: Record<string, any> = {};
+
+            if (coachIds.length > 0) {
+                const { data: coaches } = await adminSupabase
+                    .from('coaches')
+                    .select('id, full_name, business_name')
+                    .in('id', coachIds);
+
+                if (coaches) {
+                    coaches.forEach(c => {
+                        coachesMap[c.id] = c;
+                    });
+                }
+            }
+
+            return clientsData.map(client => ({
+                ...client,
+                coach: client.coach_id ? coachesMap[client.coach_id] : null
+            }));
             console.error('getClients: Admin Bypass Failed', err);
             // Fallback to normal
         }
