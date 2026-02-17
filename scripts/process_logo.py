@@ -56,6 +56,41 @@ def process_logo():
         img_slate.save(output_slate, "PNG")
         print(f"Saved {output_slate}")
 
+        # --- Favicon Generation ---
+        # Create a Slate background square
+        # Favicon size: 64x64 (or 192x192 for high res)
+        # We will make a 192x192 generic icon and a 64x64 favicon
+        
+        icon_size = (192, 192)
+        bg_color = (15, 23, 42, 255) # Slate-900 (dark) for background
+        
+        # Create base
+        icon_img = Image.new("RGBA", icon_size, bg_color)
+        
+        # Resize logo to fit inside (with padding)
+        # Original is likely readable. Let's assume square-ish logo.
+        # We'll use the WHITE logo for the icon.
+        
+        target_logo_width = int(icon_size[0] * 0.7)
+        ratio = target_logo_width / img.width
+        target_logo_height = int(img.height * ratio)
+        
+        logo_resized = img_white.resize((target_logo_width, target_logo_height), Image.Resampling.LANCZOS)
+        
+        # Center the logo
+        offset = ((icon_size[0] - target_logo_width) // 2, (icon_size[1] - target_logo_height) // 2)
+        
+        # Paste logo onto background (using logo alpha as mask)
+        icon_img.paste(logo_resized, offset, logo_resized)
+        
+        # Save icon.png (Next.js automatically uses this)
+        icon_img.save("public/icon.png", "PNG")
+        print("Saved public/icon.png")
+        
+        # Save favicon.ico (Multi-size)
+        icon_img.save("public/favicon.ico", format='ICO', sizes=[(64, 64), (32, 32), (16, 16)])
+        print("Saved public/favicon.ico")
+
     except Exception as e:
         print(f"An error occurred: {e}")
 
