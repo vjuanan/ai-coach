@@ -55,6 +55,16 @@ interface Athlete {
     };
 }
 
+function getInitials(name: string) {
+    if (!name) return '';
+    return name
+        .split(' ')
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
+}
+
 export default function AthletesPage() {
     const [athletes, setAthletes] = useState<Athlete[]>([]);
     const [coaches, setCoaches] = useState<PageCoach[]>([]);
@@ -426,11 +436,10 @@ export default function AthletesPage() {
                                                             <div className="flex items-center gap-2">
                                                                 <span className="font-medium text-gray-900 text-sm block truncate">{athlete.name}</span>
                                                                 {athlete.details?.level && (
-                                                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${
-                                                                        athlete.details.level === 'Elite' ? 'bg-purple-50 text-purple-700 border-purple-100' :
-                                                                        athlete.details.level === 'RX' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                                                                        'bg-gray-100 text-gray-600 border-gray-200'
-                                                                    }`}>
+                                                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${athlete.details.level === 'Elite' ? 'bg-purple-50 text-purple-700 border-purple-100' :
+                                                                            athlete.details.level === 'RX' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                                                                'bg-gray-100 text-gray-600 border-gray-200'
+                                                                        }`}>
                                                                         {athlete.details.level}
                                                                     </span>
                                                                 )}
@@ -457,11 +466,10 @@ export default function AthletesPage() {
                                                 </td>
                                                 <td className="py-3 px-4">
                                                     <div className="flex flex-col items-start gap-1">
-                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${
-                                                            athlete.payment_status === 'active' 
-                                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${athlete.payment_status === 'active'
+                                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                                                 : 'bg-amber-50 text-amber-700 border-amber-200'
-                                                        }`}>
+                                                            }`}>
                                                             {getStatusLabel(athlete.payment_status)}
                                                         </span>
                                                         <div className="text-[10px] text-gray-400 flex items-center gap-1 font-medium">
