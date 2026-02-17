@@ -34,7 +34,7 @@ export function AppShell({ children, title, actions, prefixActions, fullScreen =
             <main
                 className={`
           pt-12 min-h-screen transition-all duration-300
-          ${isSidebarCollapsed ? 'pl-16' : 'pl-48'}
+          ${isSidebarCollapsed ? 'pl-20' : 'pl-56'}
         `}
             >
                 <div className="p-6">

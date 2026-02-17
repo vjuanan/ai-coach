@@ -65,27 +65,27 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
             className={`
         fixed left-0 top-0 h-screen bg-white border-r border-slate-100
         flex flex-col transition-all duration-300 ease-in-out z-40
-        ${isSidebarCollapsed ? 'w-16' : 'w-48'}
+        ${isSidebarCollapsed ? 'w-20' : 'w-56'}
       `}
         >
             {/* Logo - Horizontal layout matching reference */}
             <div className={`
                 flex items-center bg-transparent transition-all duration-300 relative
-                ${isSidebarCollapsed ? 'h-12 justify-center px-2' : 'h-12 justify-start px-6'}
+                ${isSidebarCollapsed ? 'h-16 justify-center px-2' : 'h-16 justify-start px-6'}
             `}>
-                <Link href="/" className="flex items-center gap-2">
+                <Link href="/" className="flex items-center gap-3">
                     {/* Logo - Reduced size for better proportion */}
                     <Image
                         src="/icon.png"
                         alt="Logo"
-                        width={20}
-                        height={20}
-                        className="h-5 w-5 object-contain"
+                        width={28}
+                        height={28}
+                        className="h-7 w-7 object-contain"
                     />
 
                     {!isSidebarCollapsed && (
-                        <span className="text-slate-700 font-semibold text-sm tracking-tight whitespace-nowrap">
-                            AI Nutrition
+                        <span className="text-slate-800 font-bold text-lg tracking-tight whitespace-nowrap">
+                            AI Coach
                         </span>
                     )}
                 </Link>
@@ -93,7 +93,7 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
             </div>
 
             {/* Navigation - Unified, no toggle */}
-            <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
+            <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
                 {filteredNavItems.map((item) => {
                     const isActive = pathname === item.href ||
                         (item.href !== '/' && pathname.startsWith(item.href));
@@ -103,7 +103,7 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
                             key={item.href}
                             href={item.href}
                             className={`
-                flex items-center gap-3 px-3 py-3 rounded-lg transition-all mb-1
+                flex items-center gap-3 px-4 py-3 rounded-lg transition-all mb-1
                 ${isSidebarCollapsed ? 'justify-center' : ''}
                 ${isActive
                                     ? 'bg-emerald-50 text-emerald-600 font-medium'
@@ -113,7 +113,7 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
                         >
                             {item.icon}
                             {!isSidebarCollapsed && (
-                                <span className="text-sm">{item.label}</span>
+                                <span className="text-base">{item.label}</span>
                             )}
                         </Link>
                     );
