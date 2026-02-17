@@ -2,7 +2,7 @@
 'use client';
 
 import { Topbar } from '@/components/app-shell/Topbar';
-import { getProfiles, updateUserRole, resetUserPassword, createUser, deleteUser } from '@/lib/actions';
+import { getProfiles, updateUserRole, resetUserPassword, createUser, deleteUser, deleteClient } from '@/lib/actions';
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -107,7 +107,14 @@ export default function AdminUsersPage() {
 
         setUpdatingId(userId);
         try {
-            const res = await deleteUser(userId);
+            const user = profiles.find(p => p.id === userId);
+
+            if (user?.source === 'client_only') {
+                await deleteClient(userId);
+            } else {
+                await deleteUser(userId);
+            }
+
             setMessage({ text: 'Usuario eliminado correctamente', type: 'success' });
             loadProfiles();
         } catch (err: any) {
@@ -149,7 +156,14 @@ export default function AdminUsersPage() {
         setMessage(null);
 
         try {
-            const deletePromises = Array.from(selectedUsers).map(userId => deleteUser(userId));
+            const deletePromises = Array.from(selectedUsers).map(userId => {
+                const user = profiles.find(p => p.id === userId);
+                if (user?.source === 'client_only') {
+                    return deleteClient(userId);
+                } else {
+                    return deleteUser(userId);
+                }
+            });
             const results = await Promise.allSettled(deletePromises);
 
             const failures = results.filter(r => r.status === 'rejected');
