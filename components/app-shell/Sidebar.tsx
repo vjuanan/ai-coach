@@ -22,22 +22,20 @@ import {
 interface NavItem {
     label: string;
     href: string;
-    // If Sidebar handles its own width, we are good here. 
-    // BUT we need to check where the margin-left for the main content is defined.
-    // It's likely in a Layout component.
+    icon: React.ReactNode;
+}
 
-
-    // Unified nav items - no more context filtering
-    const navItems: NavItem[] = [
-    { label: 'Panel', href: '/', icon: <LayoutDashboard size = {20} /> },
-    { label: 'Atletas', href: '/athletes', icon: <Users size = {20} /> },
-    { label: 'Gimnasios', href: '/gyms', icon: <Building2 size = {20} /> },
-    { label: 'Ejercicios', href: '/exercises', icon: <Dumbbell size = {20} /> }, // New
-    { label: 'Programas', href: '/programs', icon: <FileText size = {20} /> },
-    { label: 'Plantillas', href: '/templates', icon: <FileText size = {20} /> }, // Keep same icon or differentiate?
-    { label: 'Conocimiento', href: '/knowledge', icon: <BookOpen size = {20} /> },
-    { label: 'Usuarios', href: '/admin/users', icon: <Shield size = {20} /> },
-    ];
+// Unified nav items - no more context filtering
+const navItems: NavItem[] = [
+    { label: 'Panel', href: '/', icon: <LayoutDashboard size={20} /> },
+    { label: 'Atletas', href: '/athletes', icon: <Users size={20} /> },
+    { label: 'Gimnasios', href: '/gyms', icon: <Building2 size={20} /> },
+    { label: 'Ejercicios', href: '/exercises', icon: <Dumbbell size={20} /> }, // New
+    { label: 'Programas', href: '/programs', icon: <FileText size={20} /> },
+    { label: 'Plantillas', href: '/templates', icon: <FileText size={20} /> }, // Keep same icon or differentiate?
+    { label: 'Conocimiento', href: '/knowledge', icon: <BookOpen size={20} /> },
+    { label: 'Usuarios', href: '/admin/users', icon: <Shield size={20} /> },
+];
 
 interface SidebarProps {
     /** Role passed from server - NO async loading, immediate render */
