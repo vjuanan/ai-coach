@@ -378,124 +378,112 @@ export default function AthletesPage() {
                             </button>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
+                        <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm bg-white">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-cv-bg-tertiary border-b border-cv-border-subtle">
-                                        <th className="p-2 px-3 w-10">
-                                            <input
-                                                type="checkbox"
-                                                className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
-                                                checked={filteredAthletes.length > 0 && selectedAthletes.size === filteredAthletes.length}
-                                                onChange={toggleSelectAll}
-                                            />
+                                    <tr className="bg-gray-50/50 border-b border-gray-200 backdrop-blur-sm">
+                                        <th className="py-3 px-4 w-10">
+                                            <div className="flex items-center justify-center">
+                                                <input
+                                                    type="checkbox"
+                                                    className="w-4 h-4 rounded border-gray-300 text-cv-accent focus:ring-cv-accent focus:ring-offset-0 bg-white cursor-pointer"
+                                                    checked={filteredAthletes.length > 0 && selectedAthletes.size === filteredAthletes.length}
+                                                    onChange={toggleSelectAll}
+                                                />
+                                            </div>
                                         </th>
-                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Atleta</th>
-                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Coach Asignado [FIX]</th>
-                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Nivel</th>
-                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Objetivo</th>
-                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold">Estado</th>
-                                        <th className="p-2 px-3 text-xs uppercase tracking-wider text-cv-text-tertiary font-semibold text-right">Acciones</th>
+                                        <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-gray-500 font-semibold">Atleta</th>
+                                        <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-gray-500 font-semibold">Coach</th>
+                                        <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-gray-500 font-semibold">Estado</th>
+                                        <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-gray-500 font-semibold text-right"></th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-cv-border-subtle">
+                                <tbody className="divide-y divide-gray-100">
                                     {filteredAthletes
                                         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                                         .map((athlete) => (
                                             <tr
                                                 key={athlete.id}
-                                                className={`hover:bg-cv-bg-tertiary/50 transition-colors group cursor-pointer ${selectedAthletes.has(athlete.id) ? 'bg-cv-accent/5' : ''}`}
+                                                className={`group hover:bg-gray-50/80 transition-all duration-200 cursor-pointer ${selectedAthletes.has(athlete.id) ? 'bg-blue-50/50' : ''}`}
                                                 onClick={() => router.push(`/athletes/${athlete.id}`)}
                                             >
-                                                <td className="p-2 px-3" onClick={(e) => e.stopPropagation()}>
-                                                    <input
-                                                        type="checkbox"
-                                                        className="w-4 h-4 rounded border-cv-border-subtle text-cv-accent focus:ring-cv-accent bg-cv-bg-primary"
-                                                        checked={selectedAthletes.has(athlete.id)}
-                                                        onChange={() => toggleSelectAthlete(athlete.id)}
-                                                    />
+                                                <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                                                    <div className="flex items-center justify-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="w-4 h-4 rounded border-gray-300 text-cv-accent focus:ring-cv-accent focus:ring-offset-0 bg-white cursor-pointer"
+                                                            checked={selectedAthletes.has(athlete.id)}
+                                                            onChange={() => toggleSelectAthlete(athlete.id)}
+                                                        />
+                                                    </div>
                                                 </td>
-                                                <td className="p-2 px-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-8 h-8 rounded-full bg-cv-accent-muted flex items-center justify-center text-cv-accent font-bold text-sm shrink-0">
-                                                            {athlete.name.charAt(0).toUpperCase()}
+                                                <td className="py-3 px-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 border border-white shadow-sm flex items-center justify-center text-gray-600 font-bold text-xs shrink-0 tracking-tight">
+                                                            {getInitials(athlete.name)}
                                                         </div>
-                                                        <div className="min-w-0">
-                                                            <span className="font-medium text-cv-text-primary block truncate text-sm">{athlete.name}</span>
-                                                            <div className="flex items-center gap-1 text-xs text-cv-text-tertiary">
-                                                                <Mail size={10} />
-                                                                <span className="truncate">{athlete.email || 'Sin correo'}</span>
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-medium text-gray-900 text-sm block truncate">{athlete.name}</span>
+                                                                {athlete.details?.level && (
+                                                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${
+                                                                        athlete.details.level === 'Elite' ? 'bg-purple-50 text-purple-700 border-purple-100' :
+                                                                        athlete.details.level === 'RX' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                                                        'bg-gray-100 text-gray-600 border-gray-200'
+                                                                    }`}>
+                                                                        {athlete.details.level}
+                                                                    </span>
+                                                                )}
                                                             </div>
+                                                            <div className="text-xs text-gray-500 truncate mt-0.5 font-normal">{athlete.email || 'Sin email'}</div>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="p-2 px-3" onClick={(e) => e.stopPropagation()}>
-                                                    <div className="flex items-center gap-2">
+                                                <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
+                                                    <div className="max-w-[160px]">
                                                         <select
                                                             value={athlete.coach_id || ''}
                                                             onChange={(e) => handleCoachChange(athlete.id, e.target.value)}
-                                                            disabled={updatingId === athlete.id}
-                                                            className="w-full max-w-[140px] px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 disabled:opacity-50 transition-all cursor-pointer hover:border-slate-300"
+                                                            className="w-full bg-transparent text-sm text-gray-600 border-none focus:ring-0 cursor-pointer hover:text-gray-900 transition-colors py-1 pl-0 pr-8 truncate font-medium"
                                                         >
-                                                            <option value="" disabled>Seleccionar Coach</option>
+                                                            <option value="" className="text-gray-400">Sin Asignar</option>
                                                             {coaches.map((coach) => (
                                                                 <option key={coach.id} value={coach.id}>
                                                                     {coach.business_name || coach.full_name}
                                                                 </option>
                                                             ))}
                                                         </select>
-                                                        {updatingId === athlete.id && (
-                                                            <Loader2 className="h-3 w-3 animate-spin text-slate-500" />
-                                                        )}
                                                     </div>
                                                 </td>
-                                                <td className="p-2 px-3">
-                                                    {athlete.details?.level ? (
-                                                        <span className={`text-xs px-1.5 py-0.5 rounded-full border border-current opacity-80 font-medium ${athlete.details.level === 'Elite' ? 'text-purple-400 bg-purple-400/10' :
-                                                            athlete.details.level === 'RX' ? 'text-cv-accent bg-cv-accent/10' :
-                                                                athlete.details.level === 'Scaled' ? 'text-blue-400 bg-blue-400/10' :
-                                                                    'text-cv-text-tertiary bg-cv-bg-tertiary'
-                                                            }`}>
-                                                            {athlete.details.level}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-cv-text-tertiary text-xs">-</span>
-                                                    )}
-                                                </td>
-                                                <td className="p-2 px-3">
-                                                    <div className="max-w-[150px] text-xs text-cv-text-secondary truncate" title={athlete.details?.goal}>
-                                                        {athlete.details?.goal || <span className="text-cv-text-tertiary italic">Sin objetivo</span>}
-                                                    </div>
-                                                </td>
-                                                <td className="p-2 px-3">
-                                                    <div className="flex flex-col items-start gap-1.5">
-                                                        <Badge variant="outline" className={`font-normal border text-[10px] px-1.5 py-0 ${getStatusColor(athlete.payment_status)}`}>
+                                                <td className="py-3 px-4">
+                                                    <div className="flex flex-col items-start gap-1">
+                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                                                            athlete.payment_status === 'active' 
+                                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                                                        }`}>
                                                             {getStatusLabel(athlete.payment_status)}
-                                                        </Badge>
-                                                        <div className="flex flex-col gap-0.5 text-[10px] text-cv-text-tertiary">
-                                                            <span title="Inicio Servicio">
-                                                                <span className="font-medium text-cv-text-secondary">In:</span> {formatDate(athlete.service_start_date)}
-                                                            </span>
-                                                            <span title="Fin Servicio">
-                                                                <span className="font-medium text-cv-text-secondary">Fin:</span> {formatDate(athlete.service_end_date)}
-                                                            </span>
+                                                        </span>
+                                                        <div className="text-[10px] text-gray-400 flex items-center gap-1 font-medium">
+                                                            <span>{formatDate(athlete.service_start_date)}</span>
+                                                            <span className="text-gray-300">→</span>
+                                                            <span>{formatDate(athlete.service_end_date)}</span>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="p-2 px-3 text-right">
-                                                    <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                                                        {/* View Button - stops propagation effectively by being a Link/Button? Using router push on row, need stopPropagation on buttons */}
+                                                <td className="py-3 px-4 text-right">
+                                                    <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200" onClick={(e) => e.stopPropagation()}>
                                                         <Link
                                                             href={`/athletes/${athlete.id}`}
-                                                            className="p-1.5 hover:bg-cv-bg-elevated rounded-lg text-cv-text-tertiary hover:text-cv-text-primary transition-colors"
-                                                            title="Ver Perfil"
+                                                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                            title="Ver perfil"
                                                         >
                                                             <User size={16} />
                                                         </Link>
                                                         <button
                                                             onClick={(e) => promptDelete(e, athlete.id)}
-                                                            className="p-1.5 hover:bg-red-500/10 rounded-lg text-cv-text-tertiary hover:text-red-500 transition-colors"
-                                                            title="Eliminar Atleta"
+                                                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                            title="Eliminar"
                                                         >
                                                             <Trash2 size={16} />
                                                         </button>
@@ -503,9 +491,17 @@ export default function AthletesPage() {
                                                 </td>
                                             </tr>
                                         ))}
+                                    {filteredAthletes.length === 0 && (
+                                        <tr>
+                                            <td colSpan={5} className="p-12 text-center text-gray-400 text-sm">
+                                                No se encontraron atletas
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
+
                     )}
                 </div>
 
