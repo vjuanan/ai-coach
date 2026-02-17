@@ -193,7 +193,7 @@ async function fixExercises() {
     let renamedCount = 0;
     let createdCount = 0;
 
-    for (const blockName of blockNames) {
+    for (const blockName of Array.from(blockNames)) {
         const lower = blockName.toLowerCase();
 
         // Case 1: Exact match in library — PERFECT
