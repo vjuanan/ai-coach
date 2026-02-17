@@ -72,7 +72,7 @@ def process_logo():
         # We'll use the SLATE logo for the icon so it's visible on light tabs.
         # (Most browser tabs are light).
         
-        target_logo_width = int(icon_size[0] * 0.9) # Make it bigger since no bg padding needed
+        target_logo_width = int(icon_size[0] * 0.95) # Make it bigger since no bg padding needed
         ratio = target_logo_width / img.width
         target_logo_height = int(img.height * ratio)
         
