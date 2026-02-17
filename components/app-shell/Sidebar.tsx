@@ -64,6 +64,7 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
 
     return (
         <aside
+            data-version="2"
             className={`
         fixed left-0 top-0 h-screen bg-slate-50
         flex flex-col transition-all duration-300 ease-in-out z-40
@@ -75,24 +76,24 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
                 flex items-center bg-transparent transition-all duration-300 relative
                 ${isSidebarCollapsed ? 'h-12 justify-center px-2' : 'h-12 justify-center px-4'}
             `}>
-                <Link href="/" className="flex items-center justify-center">
+                <Link href="/" className="flex items-center justify-center gap-3">
                     {/* Logo - Increased size to h-10 w-10 */}
                     {/* Logo */}
                     <Image
                         src="/images/logo-slate.png"
                         alt="Logo"
-                        width={32}
-                        height={32}
-                        className="h-8 w-8 object-contain"
+                        width={28}
+                        height={28}
+                        className="h-7 w-7 object-contain"
                     />
 
                     {!isSidebarCollapsed && (
                         <>
                             {/* The Divider (CRITICAL) - Subtle vertical line */}
-                            <div className="h-6 w-[1.5px] bg-slate-200 mx-4"></div>
+                            <div className="h-5 w-[1.5px] bg-slate-200"></div>
 
                             {/* The Text - Specific slate grey, medium weight, tight tracking */}
-                            <span className="text-slate-500 font-medium text-base tracking-tight whitespace-nowrap">
+                            <span className="text-slate-500 font-medium text-sm tracking-tight whitespace-nowrap">
                                 AI Coach
                             </span>
                         </>

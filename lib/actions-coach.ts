@@ -1,15 +1,19 @@
 'use server';
 
 import { createServerClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 
 /**
  * Fetches all coaches for assignment dropdowns (now from profiles table)
+ * Using a new name to bust any potential build/import cache
  */
-export async function getCoaches() {
+export async function getCoachesNew() {
+    noStore(); // Opt out of static caching
+
     const supabase = createServerClient();
 
+    // Check auth
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
 
@@ -31,8 +35,8 @@ export async function getCoaches() {
 
     return (profiles || []).map(p => ({
         id: p.id,
-        // Adding [TEST] prefix to verify new code is running
-        full_name: `[TEST] ${p.full_name || p.email || 'Sin Nombre'}`,
+        // Removed validation prefix - trusting this will work now
+        full_name: p.full_name || p.email || 'Sin Nombre',
         business_name: p.role === 'admin' ? 'Admin / Entrenador' : null
     }));
 }

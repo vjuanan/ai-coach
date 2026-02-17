@@ -115,7 +115,7 @@ export function CoachAssigner({ athleteId, currentCoachId, coaches }: CoachAssig
         <div className="cv-card p-4 border-cv-accent/50">
             <h3 className="font-semibold text-cv-text-primary mb-3 flex items-center gap-2 text-sm">
                 <UserCog size={16} className="text-cv-accent" />
-                Seleccionar Entrenador
+                Seleccionar Entrenador [FIX]
             </h3>
 
             <div className="space-y-3">
