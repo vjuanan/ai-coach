@@ -61,7 +61,7 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
 
     return (
         <aside
-            data-version="3"
+            data-version="4"
             className={`
         fixed left-0 top-0 h-screen bg-white border-r border-slate-100
         flex flex-col transition-all duration-300 ease-in-out z-40
