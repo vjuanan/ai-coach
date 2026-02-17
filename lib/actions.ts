@@ -2147,3 +2147,80 @@ export async function getCoachStatus() {
         isAthlete: true
     };
 }
+
+// DIAGNOSTIC TOOL
+export async function diagnoseUserVisibility() {
+    const logs: string[] = [];
+    const log = (msg: string) => logs.push(msg);
+
+    log('--- DIAGNOSTIC START ---');
+
+    // 1. Check Env
+    log(`Service Key present: ${!!process.env.SUPABASE_SERVICE_ROLE_KEY}`);
+
+    // 2. Check Auth
+    const supabase = createServerClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError) log(`Auth Error: ${authError.message}`);
+    if (!user) {
+        log('No user authenticated');
+        return logs.join('\n');
+    }
+    log(`User ID: ${user.id}`);
+    log(`User Email: ${user.email}`);
+
+    // 3. Check Profile/Role
+    const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+    if (profileError) log(`Profile Error: ${profileError.message}`);
+    log(`Profile Role: ${profile?.role}`);
+
+    const isAdmin = profile?.role === 'admin';
+    log(`Is Admin: ${isAdmin}`);
+
+    // 4. Test Clients Query
+    try {
+        const adminSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY
+            ? createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
+            : supabase;
+
+        log('Querying clients table directly (admin bypass)...');
+        let query = adminSupabase.from('clients').select('*').eq('type', 'athlete');
+
+        if (!isAdmin) {
+            log('Applying non-admin filter (checking ensureCoach)...');
+            // Try ensureCoach
+            try {
+                // We need to reimplement ensureCoach logic briefly to debug it
+                const { data: coach } = await supabase.from('coaches').select('id').eq('user_id', user.id).single();
+                log(`Coach ID found: ${coach?.id}`);
+                if (coach) query = query.eq('coach_id', coach.id);
+                else log('No coach profile found for user!');
+            } catch (e: any) {
+                log(`EnsureCoach simulation error: ${e.message}`);
+            }
+        } else {
+            log('Skipping filter (Admin)');
+        }
+
+        const { data: clients, error: clientError } = await query;
+
+        if (clientError) log(`Clients Query Error: ${clientError.message} - ${clientError.details}`);
+        else log(`Clients Found: ${clients?.length}`);
+
+        if (clients && clients.length > 0) {
+            log(`First client name: ${clients[0].name}`);
+        }
+
+    } catch (e: any) {
+        log(`Exception: ${e.message}`);
+    }
+
+    log('--- DIAGNOSTIC END ---');
+    return logs.join('\n');
+}

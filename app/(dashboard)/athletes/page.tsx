@@ -25,10 +25,27 @@ import {
     Trash2,
     User,
     Loader2,
-    AlertTriangle,
-    X,
     CheckCircle2
 } from 'lucide-react';
+import { diagnoseUserVisibility } from '@/lib/actions';
+
+function DebugPanel() {
+    const [logs, setLogs] = useState<string>('Loading debug info...');
+    const [isOpen, setIsOpen] = useState(false);
+
+    useEffect(() => {
+        diagnoseUserVisibility().then(setLogs);
+    }, []);
+
+    if (!isOpen) return <button onClick={() => setIsOpen(true)} className="text-xs text-blue-500 underline mt-2">Ver Diagnóstico</button>;
+
+    return (
+        <div className="mt-4 p-4 bg-gray-900 text-green-400 font-mono text-xs text-left rounded w-full max-w-2xl overflow-x-auto whitespace-pre">
+            {logs}
+            <button onClick={() => setIsOpen(false)} className="block mt-2 text-gray-500 hover:text-white">Cerrar</button>
+        </div>
+    );
+}
 
 interface PageCoach {
     id: string;
