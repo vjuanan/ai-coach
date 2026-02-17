@@ -71,16 +71,16 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
             {/* Logo - Horizontal layout matching reference */}
             <div className={`
                 flex items-center bg-transparent transition-all duration-300 relative
-                ${isSidebarCollapsed ? 'h-16 justify-center px-2' : 'h-16 justify-start px-6'}
+                ${isSidebarCollapsed ? 'h-14 justify-center px-2' : 'h-14 justify-start px-6'}
             `}>
-                <Link href="/" className="flex items-center gap-3">
-                    {/* Logo - Increased size to h-10 w-10 */}
+                <Link href="/" className="flex items-center gap-2">
+                    {/* Logo - Reduced size for better proportion */}
                     <Image
                         src="/icon.png"
                         alt="Logo"
-                        width={32}
-                        height={32}
-                        className="h-8 w-8 object-contain"
+                        width={24}
+                        height={24}
+                        className="h-6 w-6 object-contain"
                     />
 
                     {!isSidebarCollapsed && (
@@ -93,7 +93,7 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
             </div>
 
             {/* Navigation - Unified, no toggle */}
-            <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+            <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
                 {filteredNavItems.map((item) => {
                     const isActive = pathname === item.href ||
                         (item.href !== '/' && pathname.startsWith(item.href));
