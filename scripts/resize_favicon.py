@@ -41,7 +41,7 @@ if __name__ == "__main__":
     base_dir = os.getcwd()
     public_dir = os.path.join(base_dir, 'public')
     icon_path = os.path.join(public_dir, 'icon.png')
-    logo_slate_path = os.path.join(public_dir, 'logo-slate.png')
+    logo_slate_path = os.path.join(public_dir, 'images', 'logo-slate.png')
     backup_path = os.path.join(public_dir, 'icon_backup_final.png')
     
     # Backup original icon if it exists
