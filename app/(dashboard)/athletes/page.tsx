@@ -9,9 +9,6 @@ import {
     getClients,
     createClient,
     deleteClient,
-    getClients,
-    createClient,
-    deleteClient,
     assignClientToCoach
 } from '@/lib/actions';
 import { getCoachesNew } from '@/lib/actions-coach';
@@ -33,7 +30,7 @@ import {
     CheckCircle2
 } from 'lucide-react';
 
-interface Coach {
+interface PageCoach {
     id: string;
     full_name: string;
     business_name: string | null;
@@ -60,7 +57,7 @@ interface Athlete {
 
 export default function AthletesPage() {
     const [athletes, setAthletes] = useState<Athlete[]>([]);
-    const [coaches, setCoaches] = useState<Coach[]>([]);
+    const [coaches, setCoaches] = useState<PageCoach[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const router = useRouter();
@@ -121,7 +118,7 @@ export default function AthletesPage() {
             getCoachesNew()
         ]);
         if (athletesData) setAthletes(athletesData as Athlete[]);
-        if (coachesData) setCoaches(coachesData);
+        if (coachesData) setCoaches(coachesData as PageCoach[]);
         setIsLoading(false);
     }
 
