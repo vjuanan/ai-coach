@@ -68,31 +68,44 @@ def process_logo():
         # Create base
         icon_img = Image.new("RGBA", icon_size, bg_color)
         
-        # *** EXTREME FORCE CROP ***
-        # The user says it's too small. The auto-bbox might be failing due to stray pixels.
-        # We will manually crop to the center to force the logo to be huge.
+        # *** ULTIMATE ZOOM STRATEGY ***
+        # 1. Get the tightest bounding box (remove all transparent space)
+        bbox = img_slate.getbbox()
+        if bbox:
+            logo_cropped = img_slate.crop(bbox)
+        else:
+            logo_cropped = img_slate
+            
+        print(f"BBox Size: {logo_cropped.size}")
         
-        width, height = img_slate.size
-        # Crop 20% from each side to zoom in significantly on the center
-        left = int(width * 0.20)
-        top = int(height * 0.20)
-        right = int(width * 0.80)
-        bottom = int(height * 0.80)
+        # 2. Scale to COVER the icon size (192x192)
+        # This will fill the square completely.
+        # Since the logo is wider (718x556), scaling to match height (192) means width will be > 192.
+        # This crops the sides (barbell plates) but maximizes the athlete size.
         
-        logo_cropped = img_slate.crop((left, top, right, bottom))
+        # Calculate scale ratio to ensure BOTH dimensions are at least 192
+        ratio_w = icon_size[0] / logo_cropped.width
+        ratio_h = icon_size[1] / logo_cropped.height
+        scale_ratio = max(ratio_w, ratio_h)
         
-        # Now resize this tight crop to FILL the icon size
-        # We will use 100% of the icon size with this cropped version.
-        # Since we cropped the source, it will appear zoomed in.
+        # Add EXTRA 10% zoom as requested ("30% mas grande")
+        scale_ratio = scale_ratio * 1.1 
         
-        target_logo_width = int(icon_size[0])
-        target_logo_height = int(icon_size[1])
+        new_width = int(logo_cropped.width * scale_ratio)
+        new_height = int(logo_cropped.height * scale_ratio)
         
-        # Resize to fill
-        logo_resized = logo_cropped.resize((target_logo_width, target_logo_height), Image.Resampling.LANCZOS)
+        logo_resized = logo_cropped.resize((new_width, new_height), Image.Resampling.LANCZOS)
         
-        # Paste directly
-        icon_img.paste(logo_resized, (0, 0), logo_resized)
+        # 3. Center Crop to fit 192x192
+        left = (new_width - icon_size[0]) // 2
+        top = (new_height - icon_size[1]) // 2
+        right = left + icon_size[0]
+        bottom = top + icon_size[1]
+        
+        logo_final = logo_resized.crop((left, top, right, bottom))
+        
+        # Paste
+        icon_img.paste(logo_final, (0, 0), logo_final)
         
         # Save icon.png (Next.js automatically uses this)
         icon_img.save("public/icon.png", "PNG")
