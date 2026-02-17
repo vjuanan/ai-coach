@@ -694,10 +694,10 @@ export async function getClients(type: 'athlete' | 'gym') {
 
             // We need to filter by Coach ID to mimic RLS.
             // But first we need the coach ID of the current user.
-            // Note: ensureCoach uses 'supabase' (user client) to find coach by auth.uid().
-            // If coach table RLS is also broken, ensureCoach might fail. 
-            // But typically 'coaches' RLS is simpler.
-            const coachId = await ensureCoach(supabase); // Use user session to identify coach
+            let coachId;
+            if (!isAdmin) {
+                coachId = await ensureCoach(supabase); // Use user session to identify coach
+            }
 
             // Fetch from clients table (manually created)
             // Admin sees ALL clients, coaches see only their own
