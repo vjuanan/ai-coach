@@ -74,26 +74,25 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
             {/* Logo - Horizontal layout matching reference */}
             <div className={`
                 flex items-center bg-transparent transition-all duration-300 relative
-                ${isSidebarCollapsed ? 'h-12 justify-center px-2' : 'h-12 justify-center px-4'}
+                ${isSidebarCollapsed ? 'h-16 justify-center px-2' : 'h-16 justify-center px-4'}
             `}>
-                <Link href="/" className="flex items-center justify-center gap-3">
-                    {/* Logo - Increased size to h-10 w-10 */}
-                    {/* Logo */}
+                <Link href="/" className="flex items-center justify-center gap-2.5">
+                    {/* Logo - Slightly larger for better visibility in compact sidebar */}
                     <Image
                         src="/images/logo-slate.png"
                         alt="Logo"
-                        width={28}
-                        height={28}
-                        className="h-7 w-7 object-contain"
+                        width={32}
+                        height={32}
+                        className="h-8 w-8 object-contain"
                     />
 
                     {!isSidebarCollapsed && (
                         <>
-                            {/* The Divider (CRITICAL) - Subtle vertical line */}
-                            <div className="h-5 w-[1.5px] bg-slate-200"></div>
+                            {/* The Divider - Shorter and more subtle */}
+                            <div className="h-4 w-[1.5px] bg-slate-200"></div>
 
-                            {/* The Text - Specific slate grey, medium weight, tight tracking */}
-                            <span className="text-slate-500 font-medium text-sm tracking-tight whitespace-nowrap">
+                            {/* The Text - Slightly larger and darker for better contrast */}
+                            <span className="text-slate-600 font-semibold text-sm tracking-tight whitespace-nowrap">
                                 AI Coach
                             </span>
                         </>
