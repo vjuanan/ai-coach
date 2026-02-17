@@ -4,9 +4,9 @@ import { useAppStore } from '@/lib/store';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Logo } from '@/components/Logo';
 
 import {
+
     LayoutDashboard,
     Users,
     Building2,
@@ -77,10 +77,14 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
             `}>
                 <Link href="/" className="flex items-center">
                     {/* Logo - Increased size to h-10 w-10 */}
-                    {/* Logo - SVG Icon */}
-                    <div className="flex items-center justify-center w-10 h-10">
-                        <Logo className="text-slate-700" size={32} />
-                    </div>
+                    {/* Logo */}
+                    <Image
+                        src="/images/logo-slate.png"
+                        alt="Logo"
+                        width={40}
+                        height={40}
+                        className="h-10 w-10 object-contain"
+                    />
 
                     {!isSidebarCollapsed && (
                         <>

@@ -1,6 +1,10 @@
-# Modificar Logo y Fondo
+# Task: Remove Green & Transparent Background (Image Processing)
 
-- [x] Identificar el componente del logo y sus assets.
-- [x] Cambiar el color verde del logo a uno más neutral o acorde al tema.
-- [x] Cambiar el fondo del logo de blanco a transparente.
-- [ ] Verificar los cambios en todas las secciones (Header, Login, Sidebar, etc.).
+- [ ] Revert code changes to use `Image` component again [/]
+- [ ] Create Python script to process `public/images/ai-coach-logo-v3.png`
+    - [ ] Generate `public/images/logo-white.png` (White + Transparent) for Login
+    - [ ] Generate `public/images/logo-slate.png` (Slate/Dark + Transparent) for Sidebar
+- [ ] Run script and verify output images
+- [ ] Update `app/login/page.tsx` to use `logo-white.png`
+- [ ] Update `components/app-shell/Sidebar.tsx` to use `logo-slate.png`
+- [ ] Verify on Production

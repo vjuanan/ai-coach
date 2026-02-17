@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Dumbbell, AlertCircle, ChevronRight } from 'lucide-react';
 import { login } from '@/app/auth/actions';
-import { Logo } from '@/components/Logo';
+
 
 
 export default function LoginPage() {
@@ -70,7 +70,11 @@ export default function LoginPage() {
                     <div className="relative group">
                         <div className="absolute -inset-1 bg-gradient-to-r from-cv-accent to-emerald-500 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
                         <div className="relative w-20 h-20 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center shadow-2xl ring-1 ring-white/20">
-                            <Logo className="text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" size={40} />
+                            <img
+                                src="/images/logo-white.png"
+                                alt="AI Coach Logo"
+                                className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                            />
                         </div>
                     </div>
                     <div className="mt-6 text-center space-y-1">
