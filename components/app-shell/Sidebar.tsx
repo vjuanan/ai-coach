@@ -84,8 +84,8 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
                     />
 
                     {!isSidebarCollapsed && (
-                        <span className="text-slate-800 font-[600] text-[18px] tracking-tight whitespace-nowrap">
-                            AI NCoach
+                        <span className="text-[#334155] font-[600] text-[18px] tracking-tight whitespace-nowrap">
+                            AI Coach
                         </span>
                     )}
                 </Link>
