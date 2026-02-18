@@ -84,7 +84,10 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
                     />
 
                     {!isSidebarCollapsed && (
-                        <span className="text-[#334155] font-[600] text-[18px] tracking-tight whitespace-nowrap">
+                        <span
+                            className="text-[#334155] font-[600] text-[18px] tracking-tight whitespace-nowrap"
+                            style={{ fontFeatureSettings: "'cv02', 'cv03', 'cv04', 'cv11'" }}
+                        >
                             AI Coach
                         </span>
                     )}
