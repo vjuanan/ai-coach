@@ -81,7 +81,7 @@ export function UserAvatar() {
 
     const AvatarButton = (
         <button
-            className="w-8 h-8 rounded-full bg-cv-accent/20 border border-cv-border flex items-center justify-center text-cv-accent font-medium text-sm overflow-hidden hover:ring-2 hover:ring-cv-accent/50 transition-all focus:outline-none"
+            className="w-9 h-9 rounded-full bg-cv-accent/10 border border-cv-border flex items-center justify-center text-cv-accent font-medium text-sm overflow-hidden hover:ring-2 hover:ring-cv-accent/30 transition-all focus:outline-none"
         >
             {avatarUrl ? (
                 <img src={avatarUrl} alt="User" className="w-full h-full object-cover" />

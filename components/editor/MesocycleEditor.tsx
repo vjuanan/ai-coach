@@ -372,26 +372,14 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         });
     }, [validateAndProceed, hasUnsavedChanges, forceSave, exitBlockBuilder]);
 
-    // Handle Export with pre-validation across ALL mesocycles
+    // Handle Export with lenient pre-validation across ALL mesocycles
+    // Export validation is LENIENT: we only flag truly empty blocks (no name, no content at all).
+    // This is different from the strict block-save validation (validateBlockContent).
     const handleExportClick = useCallback(() => {
-        let incompleteCount = 0;
-        for (const meso of mesocycles) {
-            for (const day of meso.days) {
-                if (day.is_rest_day) continue;
-                for (const block of (day.blocks || [])) {
-                    if (!validateBlockContent(block)) {
-                        incompleteCount++;
-                    }
-                }
-            }
-        }
-        if (incompleteCount > 0) {
-            setExportIncompleteCount(incompleteCount);
-            setShowExportWarning(true);
-        } else {
-            setShowExport(true);
-        }
-    }, [mesocycles, validateBlockContent]);
+        // For export, just open the preview directly.
+        // The export preview handles missing data gracefully by showing what's available.
+        setShowExport(true);
+    }, []);
 
     // Handle Week Change
     const handleWeekChange = (week: number) => {

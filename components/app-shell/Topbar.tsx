@@ -74,18 +74,16 @@ export function Topbar({ title, actions, prefixActions }: TopbarProps) {
                 </div>
 
                 {/* Right: Actions */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
 
                     {prefixActions}
 
                     {actions}
 
-                    {/* Separator if needed, but handled by pages */}
-
                     {/* Invite Button */}
                     <button
                         onClick={() => setIsInviteDialogOpen(true)}
-                        className="p-2 mr-1 rounded-lg text-cv-text-secondary hover:text-cv-accent hover:bg-cv-accent/10 transition-all duration-200"
+                        className="w-9 h-9 flex items-center justify-center rounded-lg text-cv-text-secondary hover:text-cv-accent hover:bg-cv-accent/10 transition-all duration-200"
                         title="Invitar usuarios"
                     >
                         <UserPlus size={20} strokeWidth={1.5} />
@@ -95,9 +93,7 @@ export function Topbar({ title, actions, prefixActions }: TopbarProps) {
                     <NotificationBell />
 
                     {/* User Avatar */}
-                    <div className="pl-2 border-l border-cv-border-subtle ml-2">
-                        <UserAvatar />
-                    </div>
+                    <UserAvatar />
                 </div>
             </header>
 
