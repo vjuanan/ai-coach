@@ -123,7 +123,7 @@ export function ExerciseList({
 
     // Construct actions for Topbar
     const actions = (
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
             {isSelectMode ? (
                 <>
                     <button
@@ -136,7 +136,7 @@ export function ExerciseList({
                     </button>
                     <button
                         onClick={toggleSelectMode}
-                        className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-100 text-cv-text-secondary hover:text-cv-text-primary rounded-lg transition-colors text-sm"
+                        className="flex items-center gap-2 px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 rounded-lg transition-colors text-sm"
                     >
                         <X size={16} />
                         Cancelar
@@ -146,12 +146,11 @@ export function ExerciseList({
                 <>
                     <button
                         onClick={toggleSelectMode}
-                        className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-100 text-cv-text-secondary hover:text-cv-text-primary rounded-lg transition-colors text-sm"
+                        className="flex items-center gap-2 px-3 py-1 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-lg transition-colors text-sm"
                     >
-                        <CheckSquare size={18} strokeWidth={1.5} />
+                        <CheckSquare size={20} />
                         <span className="hidden md:inline font-medium">Seleccionar</span>
                     </button>
-                    <div className="w-px h-6 bg-cv-border-subtle mx-1" />
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
                         className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
