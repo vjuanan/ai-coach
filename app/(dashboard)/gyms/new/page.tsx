@@ -335,6 +335,6 @@ export default function NewGymPage() {
 
                 </form>
             </div>
-        </AppShell >
+        </>
     );
 }

@@ -128,6 +128,6 @@ export default function NewAthletePage() {
                     </form>
                 </div>
             </div>
-        </AppShell >
+        </>
     );
 }
