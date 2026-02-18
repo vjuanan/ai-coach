@@ -284,7 +284,7 @@ export default function GymsPage() {
         <>
 
             <Topbar
-                title="Gimnasios"
+                title=""
                 actions={
                     <div className="flex items-center gap-4">
                         {selectedGyms.size > 0 && (
