@@ -1,5 +1,4 @@
-import { AppShell } from '@/components/app-shell';
-import { PageHeader } from '@/components/app-shell/PageHeader';
+import { Topbar } from '@/components/app-shell/Topbar';
 import { getClient, getClientPrograms } from '@/lib/actions';
 import {
     Building2,
@@ -25,23 +24,22 @@ export default async function GymDetailsPage({ params }: { params: { clientId: s
 
     if (!client) {
         return (
-            <AppShell>
+            <>
+                <Topbar title="Error" actions={<BackButton />} />
                 <div className="max-w-5xl mx-auto space-y-6 pt-6 px-6">
-                    <PageHeader title="Error" actions={<BackButton />} />
                     <div className="text-center py-12">
                         <p className="text-cv-text-secondary">No se encontró el gimnasio.</p>
                     </div>
                 </div>
-            </AppShell>
+            </>
         );
     }
 
     const { details } = client;
     return (
-        <AppShell>
-            <div className="max-w-5xl mx-auto space-y-6 py-6 px-6">
-                <PageHeader title={client.name} actions={<BackButton />} />
-
+        <>
+            <Topbar title={client.name} actions={<BackButton />} />
+            <div className="max-w-5xl mx-auto space-y-6 pt-6 px-6">
                 {/* Gym Details & Editor */}
                 <GymDetailsEditor
                     gymId={client.id}
@@ -114,6 +112,6 @@ export default async function GymDetailsPage({ params }: { params: { clientId: s
                     </div>
                 </div>
             </div>
-        </AppShell>
+        </>
     );
 }

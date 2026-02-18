@@ -1,7 +1,6 @@
 'use client';
 
-import { AppShell } from '@/components/app-shell';
-import { PageHeader } from '@/components/app-shell/PageHeader';
+import { Topbar } from '@/components/app-shell/Topbar';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient, getClients } from '@/lib/actions';
@@ -47,15 +46,16 @@ export default function NewAthletePage() {
     }
 
     return (
-        <AppShell>
-            <div className="max-w-2xl mx-auto space-y-6">
-                <PageHeader title="New Athlete" />
-                <div className="flex items-center gap-4 mb-8">
+        <>
+            <Topbar
+                title="Registrar Nuevo Atleta"
+                actions={
                     <Link href="/athletes" className="cv-btn-ghost">
                         <ArrowLeft size={20} />
                     </Link>
-                    <h1 className="text-2xl font-bold text-cv-text-primary">Registrar Nuevo Atleta</h1>
-                </div>
+                }
+            />
+            <div className="max-w-2xl mx-auto space-y-6 pt-6">
 
                 <div className="cv-card">
                     <form onSubmit={handleSubmit} className="space-y-6">
@@ -128,6 +128,6 @@ export default function NewAthletePage() {
                     </form>
                 </div>
             </div>
-        </AppShell>
+        </AppShell >
     );
 }

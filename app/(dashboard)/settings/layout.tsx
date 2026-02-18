@@ -1,7 +1,7 @@
 'use client';
 
 import { Topbar } from '@/components/app-shell/Topbar';
-import { PageHeader } from '@/components/app-shell/PageHeader';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { User, Zap } from 'lucide-react';
@@ -16,13 +16,9 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
     return (
         <>
-            <Topbar />
-            <div className="flex flex-col h-full bg-cv-bg-primary">
-                <div className="px-6 pt-6 animate-fade-in">
-                    <PageHeader
-                        title="Configuración"
-                        description="Gestiona tu perfil y preferencias de la cuenta."
-                    />
+            <Topbar title="Configuración" />
+            <div className="flex flex-col h-full bg-cv-bg-primary pt-6">
+                <div className="px-6 animate-fade-in">
                 </div>
                 {/* Tabs Navigation */}
                 <div className="flex items-center gap-1 border-b border-cv-border px-6 pt-4 mb-6">
