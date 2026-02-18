@@ -5,4 +5,5 @@
 - [ ] Diseñar y reemplazar logo
     - [x] Generar logo "Dark Green Elegant" (logo-slate.png)
     - [x] Generar versión blanca (logo-white.png)
+    - [x] Recolorear icon.png y favicon.ico (Fix Dashboard)
     - [x] Verificar implementación <!-- id: 3 -->

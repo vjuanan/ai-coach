@@ -100,13 +100,18 @@ export default function GymsPage() {
 
     async function fetchGyms() {
         setIsLoading(true);
-        const [gymsData, coachesData] = await Promise.all([
-            getClients('gym'),
-            getCoaches()
-        ]);
-        if (gymsData) setGyms(gymsData as Gym[]);
-        if (coachesData) setCoaches(coachesData);
-        setIsLoading(false);
+        try {
+            const [gymsData, coachesData] = await Promise.all([
+                getClients('gym'),
+                getCoaches()
+            ]);
+            if (gymsData) setGyms(gymsData as Gym[]);
+            if (coachesData) setCoaches(coachesData);
+        } catch (error) {
+            console.error('Error fetching gyms:', error);
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     async function addGym() {
