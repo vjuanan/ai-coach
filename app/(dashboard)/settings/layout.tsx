@@ -16,7 +16,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
     return (
         <>
-            <Topbar title="Configuración" />
+            <Topbar />
             <div className="flex flex-col h-full bg-cv-bg-primary pt-6">
                 <div className="px-6 animate-fade-in">
                 </div>

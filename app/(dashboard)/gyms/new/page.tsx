@@ -141,7 +141,7 @@ export default function NewGymPage() {
     return (
         <>
             <Topbar
-                title="Registrar Nuevo Gimnasio / Cliente B2B"
+                title=""
                 actions={
                     <Link href="/gyms" className="cv-btn-ghost">
                         <ArrowLeft size={20} />

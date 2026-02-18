@@ -87,7 +87,7 @@ export default function AthleteDashboard() {
 
     return (
         <>
-            <Topbar title={`Hola, ${userName} 👋`} />
+            <Topbar />
             <div className="p-8 max-w-7xl mx-auto pt-6">
 
                 {/* Quick Actions */}

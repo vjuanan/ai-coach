@@ -223,7 +223,7 @@ export default function AdminUsersPage() {
 
         <>
             <Topbar
-                title="Administración de Usuarios"
+                title=""
                 actions={
                     <div className="flex items-center gap-4">
                         {selectedUsers.size > 0 && (

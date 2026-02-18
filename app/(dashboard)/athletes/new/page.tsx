@@ -48,7 +48,7 @@ export default function NewAthletePage() {
     return (
         <>
             <Topbar
-                title="Registrar Nuevo Atleta"
+                title=""
                 actions={
                     <Link href="/athletes" className="cv-btn-ghost">
                         <ArrowLeft size={20} />

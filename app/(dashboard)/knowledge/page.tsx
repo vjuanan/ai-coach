@@ -11,7 +11,7 @@ export default async function KnowledgePage() {
     return (
 
         <>
-            <Topbar title="Conocimiento" />
+            <Topbar />
             <div className="max-w-7xl mx-auto pt-6">
 
                 {error ? (

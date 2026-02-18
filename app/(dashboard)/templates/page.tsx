@@ -16,7 +16,7 @@ export default async function TemplatesPage() {
 
     return (
         <>
-            <Topbar title="Plantillas" />
+            <Topbar />
             <div className="max-w-6xl mx-auto pt-6">
 
                 {/* Templates Grid */}

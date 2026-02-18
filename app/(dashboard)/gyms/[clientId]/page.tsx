@@ -25,7 +25,7 @@ export default async function GymDetailsPage({ params }: { params: { clientId: s
     if (!client) {
         return (
             <>
-                <Topbar title="Error" actions={<BackButton />} />
+                <Topbar title="" actions={<BackButton />} />
                 <div className="max-w-5xl mx-auto space-y-6 pt-6 px-6">
                     <div className="text-center py-12">
                         <p className="text-cv-text-secondary">No se encontró el gimnasio.</p>
@@ -38,7 +38,7 @@ export default async function GymDetailsPage({ params }: { params: { clientId: s
     const { details } = client;
     return (
         <>
-            <Topbar title={client.name} actions={<BackButton />} />
+            <Topbar title="" actions={<BackButton />} />
             <div className="max-w-5xl mx-auto space-y-6 pt-6 px-6">
                 {/* Gym Details & Editor */}
                 <GymDetailsEditor

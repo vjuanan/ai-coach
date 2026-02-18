@@ -240,7 +240,7 @@ export default function ProgramsPage() {
     return (
         <>
             <Topbar
-                title="Programas"
+                title=""
                 actions={
                     <div className="flex items-center gap-3">
                         {/* View Toggle */}
