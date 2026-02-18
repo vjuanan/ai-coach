@@ -8,3 +8,4 @@
     - [x] Recolorear icon.png y favicon.ico (Fix Dashboard)
     - [x] Corregir texto "AI Coach" y color #334155
     - [x] Verificar implementación <!-- id: 3 -->
+- [x] Refinar cabecera del editor (compactar altura, 'Sin asignar' en línea, botones pequeños)

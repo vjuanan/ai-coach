@@ -35,15 +35,15 @@ export function Topbar({ title, actions, prefixActions }: TopbarProps) {
         <>
             <header
                 className={`
-            fixed top-0 right-0 h-16 bg-white border-b border-cv-border
-            flex items-center justify-between px-6 z-30 transition-all duration-300
+            fixed top-0 right-0 h-12 bg-white border-b border-cv-border
+            flex items-center justify-between px-4 z-30 transition-all duration-300
             ${isSidebarCollapsed ? 'left-20' : 'left-60'}
           `}
             >
                 {/* Left: Title */}
                 <div className="flex items-center gap-4 min-w-[200px]">
                     {title && (
-                        <h1 className="text-xl font-semibold text-cv-text-primary tracking-tight">
+                        <h1 className="text-lg font-semibold text-cv-text-primary tracking-tight">
                             {title}
                         </h1>
                     )}
@@ -52,16 +52,16 @@ export function Topbar({ title, actions, prefixActions }: TopbarProps) {
                 {/* Center: Search */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[320px]">
                     <div className="relative group w-full">
-                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary group-hover:text-cv-text-secondary transition-colors" />
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary group-hover:text-cv-text-secondary transition-colors" />
                         <input
                             type="text"
                             placeholder="Buscar..."
                             defaultValue={searchParams.get('q')?.toString()}
                             onChange={(e) => handleSearch(e.target.value)}
                             className="
-                            w-full pl-10 pr-4 py-2 rounded-full
+                            w-full pl-9 pr-4 py-1.5 rounded-full
                             bg-slate-100
-                            text-sm text-cv-text-primary
+                            text-xs text-cv-text-primary
                             placeholder:text-cv-text-tertiary
                             focus:outline-none focus:ring-1 focus:ring-cv-accent
                             transition-all duration-200

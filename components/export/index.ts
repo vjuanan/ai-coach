@@ -1,1 +1,1 @@
-export { ExportPreview } from './ExportPreview';
+export { ExportPreview } from './ExportPreviewV2';

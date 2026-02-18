@@ -69,9 +69,10 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
       `}
         >
             {/* Logo - Horizontal layout matching reference */}
+            {/* Logo - Horizontal layout matching reference */}
             <div className={`
                 flex items-center bg-transparent transition-all duration-300 relative
-                ${isSidebarCollapsed ? 'h-16 justify-center px-2' : 'h-16 justify-start px-6'}
+                ${isSidebarCollapsed ? 'h-12 justify-center px-2' : 'h-12 justify-start px-5'}
             `}>
                 <Link href="/" className="flex items-center gap-3">
                     {/* Logo - Reduced size for better proportion */}
