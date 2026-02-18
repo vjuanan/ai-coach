@@ -20,10 +20,13 @@ import {
 } from 'lucide-react';
 import {
     getPrograms,
+    getProgram, // NEW
     deleteProgram,
     deletePrograms,
     getClients
 } from '@/lib/actions';
+import { prepareProgramForExport } from '@/lib/export-helpers'; // NEW
+import { ExportPreview } from '@/components/export/ExportPreviewV2'; // NEW
 import { ProgramsGrid } from './ProgramsGrid';
 import { ProgramsTable } from './ProgramsTable';
 import { ProgramAssignmentModal } from '@/components/programs/ProgramAssignmentModal';
@@ -78,19 +81,24 @@ export default function ProgramsPage() {
     const [selectedPrograms, setSelectedPrograms] = useState<Set<string>>(new Set());
     const isSelectionMode = selectedPrograms.size > 0;
 
-    // State for Export
+    // State for Card Export (Bulk/Simple)
     const [exportPrograms, setExportPrograms] = useState<Program[]>([]);
-    const [isExportOpen, setIsExportOpen] = useState(false);
+    const [isCardExportOpen, setIsCardExportOpen] = useState(false);
+
+    // State for Full Export (Single)
+    const [fullExportData, setFullExportData] = useState<any>(null);
+    const [isFullExportOpen, setIsFullExportOpen] = useState(false);
+    const [isExportingFull, setIsExportingFull] = useState(false);
 
     // State for Assignment Modal
     const [programToAssign, setProgramToAssign] = useState<Program | null>(null);
 
     useEscapeKey(() => {
-        if (!isDeleting && !programToAssign) {
+        if (!isDeleting && !programToAssign && !isCardExportOpen && !isFullExportOpen) {
             setProgramToAssign(null);
             setProgramToDelete(null);
         }
-    }, !!programToAssign || !!programToDelete);
+    }, !!programToAssign || !!programToDelete || isCardExportOpen || isFullExportOpen);
 
     const router = useRouter();
 
@@ -136,16 +144,37 @@ export default function ProgramsPage() {
         }
     }
 
-    // Export handler - single program
-    function handleExport(programId: string) {
-        const program = programs.find(p => p.id === programId);
-        if (program) {
-            setExportPrograms([program]);
-            setIsExportOpen(true);
+    // Export handler - single program (FULL DETAIL EXPORT)
+    async function handleExport(programId: string) {
+        if (isExportingFull) return;
+        setIsExportingFull(true);
+        try {
+            // Fetch full program data
+            const programFull = await getProgram(programId);
+            if (!programFull) {
+                alert('No se pudo cargar la información del programa.');
+                return;
+            }
+
+            // Prepare for export preview
+            const exportData = prepareProgramForExport(programFull);
+            if (!exportData) {
+                alert('El programa no tiene datos suficientes para exportar.');
+                return;
+            }
+
+            setFullExportData(exportData);
+            setIsFullExportOpen(true);
+        } catch (error) {
+            console.error('Export error:', error);
+            alert('Error al preparar la exportación.');
+        } finally {
+            setIsExportingFull(false);
         }
     }
 
     // Export handler - bulk (selected programs) - limit to 10
+    // Keep using Card Export for bulk for now
     function handleBulkExport() {
         if (selectedPrograms.size > 10) {
             alert('Solo puedes exportar hasta 10 programas a la vez.');
@@ -154,7 +183,7 @@ export default function ProgramsPage() {
         const toExport = programs.filter(p => selectedPrograms.has(p.id));
         if (toExport.length > 0) {
             setExportPrograms(toExport);
-            setIsExportOpen(true);
+            setIsCardExportOpen(true);
         }
     }
 
@@ -296,6 +325,16 @@ export default function ProgramsPage() {
                     </div>
                 }
             />
+            {/* Loading Indicator for Export */}
+            {isExportingFull && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/20 backdrop-blur-[1px]">
+                    <div className="bg-white p-4 rounded-xl shadow-xl flex items-center gap-3">
+                        <Loader2 className="animate-spin text-cv-accent" />
+                        <span className="font-medium text-cv-text-primary">Generando vista previa...</span>
+                    </div>
+                </div>
+            )}
+
             <div className="max-w-6xl mx-auto px-4 md:px-0 pt-2">
                 {/* Programs Grid/Table */}
                 {isLoading ? (
@@ -312,11 +351,6 @@ export default function ProgramsPage() {
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        {/* Batch Selection Header - Only show in Grid Mode or if mostly needed, 
-                            but Table handles selection internally well. 
-                            Let's keep the "Select All" button specific to the view or global.
-                            Actually, Table usually has a select all in the header. Grid has it here.
-                        */}
                         <div className="flex justify-end mb-4 h-6">
                             {filteredPrograms.length > 0 && viewMode === 'grid' && (
                                 <button
@@ -400,15 +434,30 @@ export default function ProgramsPage() {
                 )}
             </div>
 
-            {/* Export Modal */}
+            {/* Card Exporter Modal (For Bulk) */}
             <ProgramCardExporter
-                isOpen={isExportOpen}
+                isOpen={isCardExportOpen}
                 onClose={() => {
-                    setIsExportOpen(false);
+                    setIsCardExportOpen(false);
                     setExportPrograms([]);
                 }}
                 programs={exportPrograms}
             />
+
+            {/* Full Details Export Modal (Single) */}
+            {isFullExportOpen && fullExportData && (
+                <ExportPreview
+                    isOpen={isFullExportOpen}
+                    onClose={() => setIsFullExportOpen(false)}
+                    programName={fullExportData.programName}
+                    clientInfo={fullExportData.clientInfo}
+                    coachName={fullExportData.coachName}
+                    monthlyStrategy={fullExportData.monthlyStrategy}
+                    weeks={fullExportData.weeks}
+                    mission={fullExportData.mission}
+                    weekDateRanges={fullExportData.weekDateRanges}
+                />
+            )}
 
             {/* Assignment Modal */}
             {programToAssign && (

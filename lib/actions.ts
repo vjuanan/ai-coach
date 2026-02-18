@@ -2224,3 +2224,58 @@ export async function diagnoseUserVisibility() {
     log('--- DIAGNOSTIC END ---');
     return logs.join('\n');
 }
+
+export async function getProgram(id: string) {
+    const supabase = createServerClient();
+    // Use admin client for deep nested reads to avoid RLS complexity on public read for complex joins
+    const adminSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
+        : supabase;
+
+    // Fetch program with client details
+    const { data: program, error } = await adminSupabase
+        .from('programs')
+        .select(`
+            *,
+            client:clients(*),
+            coach:coaches(full_name)
+        `)
+        .eq('id', id)
+        .single();
+
+    if (error || !program) {
+        console.error('getProgram error:', error);
+        return null;
+    }
+
+    // Fetch full nested structure separately to ensure data integrity
+    const { data: mesocycles, error: mesoError } = await adminSupabase
+        .from('mesocycles')
+        .select(`
+            *,
+            days (
+                *,
+                blocks:workout_blocks(*)
+            )
+        `)
+        .eq('program_id', id)
+        .order('week_number', { ascending: true });
+
+    if (mesoError) {
+        console.error('getProgram mesocycles error:', mesoError);
+        return { ...program, mesocycles: [] };
+    }
+
+    // Sort days and blocks appropriately
+    const sortedMesocycles = mesocycles.map((meso: any) => ({
+        ...meso,
+        days: (meso.days || [])
+            .sort((a: any, b: any) => a.day_number - b.day_number)
+            .map((day: any) => ({
+                ...day,
+                blocks: (day.blocks || []).sort((a: any, b: any) => a.order_index - b.order_index)
+            }))
+    }));
+
+    return { ...program, mesocycles: sortedMesocycles };
+}

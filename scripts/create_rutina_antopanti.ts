@@ -172,21 +172,22 @@ async function runMigration() {
     const programId = newProg.id;
 
     // Helper to insert blocks
-    async function addBlock(dayId: string, idx: number, type: string, name: string, config: any, section: 'warmup' | 'main' | 'cooldown' = 'main') {
+    async function addBlock(dayId: string, idx: number, type: string, name: string, config: any, section: 'warmup' | 'main' | 'cooldown' = 'main', format: 'STANDARD' | 'EMOM' | 'AMRAP' | 'For Time' | null = null) {
         await supabase.from('workout_blocks').insert({
             day_id: dayId,
             order_index: idx,
             type: type,
             name: name,
             config: config,
-            section: section
+            section: section,
+            format: format
         });
     }
 
     // --- Create 4 Weeks ---
     const weeks = [1, 2, 3, 4];
 
-    // DATA CONSTANTS
+    // DATA CONSTANTS (Same as before)
     const ACTIVATION_D1 = {
         rounds: 3,
         movements: [
@@ -239,7 +240,7 @@ async function runMigration() {
         await addBlock(d1.id, 0, 'warmup', 'Activación (3 series)', {
             rounds: 3,
             movements: ACTIVATION_D1.movements
-        }, 'warmup');
+        }, 'warmup', 'STANDARD');
 
         // Main
         let hipThrustLoad = "75 kg"; if (weekNum == 2) hipThrustLoad = "80 kg"; if (weekNum == 3) hipThrustLoad = "85 kg"; if (weekNum == 4) hipThrustLoad = "90 kg";
@@ -275,14 +276,14 @@ async function runMigration() {
         let curlSets = weekNum >= 3 ? 4 : 3;
         await addBlock(d1.id, 5, 'accessory', 'Leg Curl', {
             sets: curlSets, reps: curlReps, weight: weekNum >= 3 ? "12kg" : "10kg", rir: 1, rest: "90s", notes: "Cue: bajá lento."
-        });
+        }, 'main', 'STANDARD');
 
         let abdReps = weekNum === 1 ? "15" : "20";
         if (weekNum === 3) abdReps = "15";
         let abdSets = weekNum >= 3 ? 4 : 3;
         await addBlock(d1.id, 6, 'accessory', 'Abduction Machine', {
             sets: abdSets, reps: abdReps, weight: "35-45kg", rir: 0, rest: "60-90s", notes: "Cue: empujá desde las rodillas, no rebotes."
-        });
+        }, 'main', 'STANDARD');
 
         // Condicionamiento
         await addBlock(d1.id, 7, 'metcon_structured', 'EMOM 6: Piernas', {
@@ -292,17 +293,17 @@ async function runMigration() {
                 "Min 2: 12 Sentadillas con disco (Goblet Squat) [12kg]"
             ],
             notes: "Calidad sobre velocidad."
-        });
+        }, 'main', 'EMOM');
 
         await addBlock(d1.id, 8, 'finisher', 'Core Finisher', {
             rounds: 1, movements: ["Knees to Chest con disco: 30 reps (Cue: no balancees, subí con abdomen)"]
-        });
+        }, 'main', 'STANDARD');
 
 
         // --- DAY 2: Upper Body ---
         const { data: d2 } = await supabase.from('days').insert({ mesocycle_id: mId, day_number: 2, name: "Día 2: Upper Body + Pull-Up" }).select().single();
 
-        await addBlock(d2.id, 0, 'warmup', 'Activación', { rounds: 3, movements: ACTIVATION_D2.movements }, 'warmup');
+        await addBlock(d2.id, 0, 'warmup', 'Activación', { rounds: 3, movements: ACTIVATION_D2.movements }, 'warmup', 'STANDARD');
 
         if (weekNum === 4) {
             await addBlock(d2.id, 1, 'strength_linear', 'Pull-Up', {
@@ -345,20 +346,20 @@ async function runMigration() {
         let latReps = weekNum === 3 ? "20" : "15";
         await addBlock(d2.id, 5, 'accessory', 'Lateral Raises', {
             sets: latSets, reps: latReps, weight: "4-6 kg", rir: 0, rest: "60s", notes: "Cue: sube el codo, no la mano."
-        });
+        }, 'main', 'STANDARD');
 
         // Sprints
         let rounds = weekNum === 1 ? 8 : (weekNum === 2 ? 8 : (weekNum === 3 ? 7 : 6));
         let work = weekNum === 1 ? "30s" : (weekNum === 2 ? "35s" : (weekNum === 3 ? "40s" : "50s"));
         await addBlock(d2.id, 6, 'conditioning', 'Sprints', {
             format: "Intervals", rounds: rounds, work: work, rest: "1:00", notes: "Cue: sprint al 90-95%, descanso suave."
-        });
+        }, 'main', 'STANDARD');
 
 
         // --- DAY 3: Full Body ---
         const { data: d3 } = await supabase.from('days').insert({ mesocycle_id: mId, day_number: 3, name: "Día 3: Full Body Mix" }).select().single();
 
-        await addBlock(d3.id, 0, 'warmup', 'Activación', { rounds: 3, movements: ACTIVATION_D3.movements }, 'warmup');
+        await addBlock(d3.id, 0, 'warmup', 'Activación', { rounds: 3, movements: ACTIVATION_D3.movements }, 'warmup', 'STANDARD');
 
         let sqSets = weekNum >= 3 ? (weekNum === 4 ? 3 : 4) : 3;
         let sqReps = weekNum === 4 ? "6" : (weekNum === 3 ? "8" : "10");
@@ -396,13 +397,13 @@ async function runMigration() {
 
         await addBlock(d3.id, 6, 'conditioning', 'Sprints', {
             format: "Intervals", rounds: rounds, work: work, rest: "1:00", notes: "Igual que día 2."
-        });
+        }, 'main', 'STANDARD');
 
 
         // --- DAY 4: Cardio & Tono ---
         const { data: d4 } = await supabase.from('days').insert({ mesocycle_id: mId, day_number: 4, name: "Día 4: Cardio & Tono (Metabólico)" }).select().single();
 
-        await addBlock(d4.id, 0, 'warmup', 'Activación', { rounds: 3, movements: ACTIVATION_D4.movements }, 'warmup');
+        await addBlock(d4.id, 0, 'warmup', 'Activación', { rounds: 3, movements: ACTIVATION_D4.movements }, 'warmup', 'STANDARD');
 
         let emomMin = weekNum === 1 ? 10 : (weekNum === 2 ? 12 : (weekNum === 3 ? 14 : 12));
         await addBlock(d4.id, 1, 'metcon_structured', `EMOM ${emomMin}: Swings & Plank`, {
@@ -411,7 +412,7 @@ async function runMigration() {
                 "Min par: 12 KB Swings (12-16kg) (Cue: bisagra, cadera dispara)",
                 "Min impar: 30s Plancha (Cue: abdomen duro)"
             ]
-        });
+        }, 'main', 'EMOM');
 
         await addBlock(d4.id, 2, 'metcon_structured', 'AMRAP 12: Wall Balls & Burpees', {
             format: "AMRAP", minutes: 12,
@@ -421,16 +422,16 @@ async function runMigration() {
                 "10 Box Jumps / Step-Ups (50cm)"
             ],
             notes: "Cue: ritmo constante."
-        });
+        }, 'main', 'AMRAP');
 
         await addBlock(d4.id, 3, 'accessory', 'Farmer Carry', {
             sets: 3, reps: "30-40m", weight: "10-12kg/lado", rest: "60s", notes: "Cue: hombros abajo, postura alta."
-        });
+        }, 'main', 'STANDARD');
 
         let z2Time = weekNum === 1 ? "35min" : (weekNum === 2 ? "40min" : (weekNum === 3 ? "45min" : "50min"));
         await addBlock(d4.id, 4, 'conditioning', 'Zona 2', {
             time: z2Time, notes: "Cue: podés hablar frases cortas sin ahogarte."
-        });
+        }, 'main', 'STANDARD');
 
     }
 

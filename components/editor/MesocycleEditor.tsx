@@ -655,42 +655,42 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             onDragCancel={handleDragCancel}
         >
             <div className="flex flex-col h-screen">
-                {/* Editor Header - Refined with more height */}
-                <div className="flex items-center justify-between px-4 py-2 border-b border-cv-border bg-white/80 dark:bg-cv-bg-secondary/80 backdrop-blur-sm flex-shrink-0">
+                {/* Editor Header - Compact */}
+                <div className="flex items-center justify-between px-4 py-1 border-b border-cv-border bg-white/80 dark:bg-cv-bg-secondary/80 backdrop-blur-sm flex-shrink-0 min-h-[48px]">
                     {/* Left Section - Breadcrumbs & Save Status */}
                     <div className="flex items-center gap-2">
                         {/* Back Button - Conditional behavior based on mode */}
                         {blockBuilderMode ? (
                             <button
                                 onClick={handleSaveAndExit}
-                                className="cv-btn-ghost p-1.5 rounded-lg flex items-center gap-1 text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                className="cv-btn-ghost p-1 rounded-lg flex items-center gap-1 text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                 title="Guardar y Volver a Vista Semanal"
                             >
-                                <ArrowLeft size={16} />
+                                <ArrowLeft size={14} />
                             </button>
                         ) : (
                             <Link
                                 href="/programs"
-                                className="cv-btn-ghost p-1.5 rounded-lg flex items-center gap-1 text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                className="cv-btn-ghost p-1 rounded-lg flex items-center gap-1 text-cv-text-secondary hover:text-cv-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                 title="Volver a Programas"
                             >
-                                <ArrowLeft size={16} />
+                                <ArrowLeft size={14} />
                             </Link>
                         )}
 
-                        <div className="w-px h-5 bg-cv-border" />
+                        <div className="w-px h-4 bg-cv-border" />
 
                         {/* Program Name (Editable feel) */}
-                        <div>
+                        <div className="flex items-center gap-2">
                             {blockBuilderMode ? (
                                 <div className="flex items-center gap-2">
-                                    <div className="w-5 h-5 rounded flex items-center justify-center bg-cv-accent/10">
-                                        <Zap size={12} className="text-cv-accent" />
+                                    <div className="w-4 h-4 rounded flex items-center justify-center bg-cv-accent/10">
+                                        <Zap size={10} className="text-cv-accent" />
                                     </div>
-                                    <span className="text-sm font-bold text-cv-text-primary">Block Builder</span>
+                                    <span className="text-xs font-bold text-cv-text-primary">Block Builder</span>
                                 </div>
                             ) : (
-                                <h2 className="text-sm font-semibold text-cv-text-primary flex items-center gap-1.5">
+                                <h2 className="text-xs font-semibold text-cv-text-primary flex items-center gap-1.5 whitespace-nowrap">
                                     {programName}
                                     {currentMesocycle?.focus && (
                                         <>
@@ -702,16 +702,15 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                             )}
                         </div>
 
-                        {/* Assignment Badge */}
+                        {/* Assignment Badge - Inline without separator */}
                         <>
-                            <div className="w-px h-5 bg-cv-border mx-2" />
                             {assignmentData.id ? (
                                 <Popover.Root>
                                     <Popover.Trigger asChild>
-                                        <button className="flex items-center gap-2 px-2 py-1 rounded-md bg-cv-accent/5 hover:bg-cv-accent/10 text-xs text-cv-accent font-medium transition-colors">
-                                            {assignmentData.type === 'athlete' ? <User size={12} /> : <Building size={12} />}
+                                        <button className="flex items-center gap-1.5 px-1.5 py-0.5 rounded-md bg-cv-accent/5 hover:bg-cv-accent/10 text-[10px] text-cv-accent font-medium transition-colors ml-1">
+                                            {assignmentData.type === 'athlete' ? <User size={10} /> : <Building size={10} />}
                                             <span>{assignmentData.name}</span>
-                                            <ChevronDown size={12} />
+                                            <ChevronDown size={10} />
                                         </button>
                                     </Popover.Trigger>
                                     <Popover.Portal>
@@ -738,10 +737,10 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                             ) : (
                                 <button
                                     onClick={() => setShowAssignmentModal(true)}
-                                    className="flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                                    className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-[10px] text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors ml-1 -my-1"
                                 >
-                                    <Users size={12} />
-                                    <span>Asignar</span>
+                                    <Users size={10} />
+                                    <span>Sin asignar</span>
                                 </button>
                             )}
                         </>
@@ -750,13 +749,13 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                     </div>
 
                     {/* Center - Week Tabs */}
-                    <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-cv-bg-tertiary rounded-lg p-0.5">
+                    <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-cv-bg-tertiary rounded-md p-0.5">
                         {[1, 2, 3, 4].map(week => (
                             <button
                                 key={week}
                                 onClick={() => handleWeekChange(week)}
                                 className={`
-                                px-3 py-1 rounded-md text-xs font-medium transition-all
+                                px-2 py-0.5 rounded text-[10px] font-medium transition-all
                                 ${selectedWeek === week
                                         ? 'bg-white dark:bg-cv-accent text-cv-text-primary dark:text-white shadow-sm'
                                         : 'text-cv-text-secondary hover:text-cv-text-primary hover:bg-white/50 dark:hover:bg-cv-bg-elevated'}
@@ -769,26 +768,26 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
                     {/* Right Section - Actions */}
                     <div className="flex items-center gap-1">
-                        {/* Manual Save Button - HIGHLIGHTED */}
+                        {/* Manual Save Button - COMPACT */}
                         {blockBuilderMode ? (
                             <button
                                 onClick={handleSaveAndExit}
-                                className="px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-all mr-1 bg-green-500 hover:bg-green-600 text-white shadow-sm"
+                                className="px-2.5 py-1 rounded-md flex items-center gap-1.5 text-xs font-medium transition-all mr-1 bg-green-500 hover:bg-green-600 text-white shadow-sm"
                                 title="Guardar cambios y salir"
                             >
                                 {saveStatus === 'saving' ? (
-                                    <Loader2 size={14} className="animate-spin" />
+                                    <Loader2 size={12} className="animate-spin" />
                                 ) : (
-                                    <CheckCircle2 size={14} />
+                                    <CheckCircle2 size={12} />
                                 )}
-                                Guardar y Salir
+                                OK
                             </button>
                         ) : (
                             <button
                                 onClick={() => forceSave()}
                                 disabled={saveStatus === 'saving'}
                                 className={`
-                                px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-all mr-1
+                                px-2.5 py-1 rounded-md flex items-center gap-1.5 text-xs font-medium transition-all mr-1
                                 ${hasUnsavedChanges
                                         ? 'bg-cv-accent text-white hover:bg-cv-accent/90 shadow-sm'
                                         : 'bg-transparent text-cv-text-secondary hover:bg-slate-100 dark:hover:bg-slate-800'}
@@ -796,7 +795,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                                 title={hasUnsavedChanges ? 'Guardar cambios' : 'Todo guardado'}
                             >
                                 {saveStatus === 'saving' ? (
-                                    <Loader2 size={14} className="animate-spin" />
+                                    <Loader2 size={12} className="animate-spin" />
                                 ) : hasUnsavedChanges ? (
                                     <Save size={14} />
                                 ) : (
@@ -817,22 +816,22 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                         {/* Strategy Button */}
                         <button
                             onClick={() => setShowStrategy(true)}
-                            className={`cv-btn-ghost p-1.5 rounded-lg flex items-center justify-center relative transition-colors
+                            className={`cv-btn-ghost p-1 rounded-lg flex items-center justify-center relative transition-colors
                             ${hasStrategy ? 'text-cv-accent bg-cv-accent/5' : 'text-cv-text-secondary hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title="Estrategia del Mesociclo"
                         >
                             <Target size={14} />
                             {hasStrategy && (
-                                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-cv-accent" />
+                                <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-cv-accent" />
                             )}
                         </button>
 
                         <div className="w-px h-4 bg-cv-border" />
 
-                        <button className="cv-btn-ghost p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Undo">
+                        <button className="cv-btn-ghost p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Undo">
                             <Undo size={14} />
                         </button>
-                        <button className="cv-btn-ghost p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Redo">
+                        <button className="cv-btn-ghost p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Redo">
                             <Redo size={14} />
                         </button>
 
@@ -840,7 +839,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
                         <button
                             onClick={handleExportClick}
-                            className="cv-btn-ghost p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                            className="cv-btn-ghost p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
                             title="Preview"
                         >
                             <Eye size={14} />
