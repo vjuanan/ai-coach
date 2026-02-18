@@ -7,12 +7,11 @@ import { useAppStore } from '@/lib/store';
 
 interface AppShellProps {
     children: React.ReactNode;
-    title?: string;
     actions?: React.ReactNode;
     prefixActions?: React.ReactNode;
 }
 
-export function AppShell({ children, title, actions, prefixActions, fullScreen = false }: AppShellProps & { fullScreen?: boolean }) {
+export function AppShell({ children, actions, prefixActions, fullScreen = false }: AppShellProps & { fullScreen?: boolean }) {
     const { isSidebarCollapsed } = useAppStore();
 
     if (fullScreen) {
@@ -28,7 +27,7 @@ export function AppShell({ children, title, actions, prefixActions, fullScreen =
     return (
         <div className="min-h-screen bg-white">
             <Sidebar />
-            <Topbar title={title} actions={actions} prefixActions={prefixActions} />
+            <Topbar actions={actions} prefixActions={prefixActions} />
             <CommandPalette />
 
             <main

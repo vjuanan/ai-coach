@@ -1,4 +1,5 @@
 import { Topbar } from '@/components/app-shell/Topbar';
+import { PageHeader } from '@/components/app-shell/PageHeader';
 import { getClient, getClientPrograms, getClients } from '@/lib/actions';
 import { getCoachesNew } from '@/lib/actions-coach';
 import { CoachAssigner } from '@/components/athletes/CoachAssigner';
@@ -27,10 +28,12 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
     if (!athlete) {
         return (
             <>
-                <Topbar title="Error" actions={<BackButton />} />
-                <div className="text-center py-12">
-                    <p className="text-cv-text-secondary">No se encontró el atleta.</p>
-                    <BackButton />
+                <Topbar />
+                <div className="max-w-5xl mx-auto space-y-6 p-6">
+                    <PageHeader title="Error" actions={<BackButton />} />
+                    <div className="text-center py-12">
+                        <p className="text-cv-text-secondary">No se encontró el atleta.</p>
+                    </div>
                 </div>
             </>
         );
@@ -41,11 +44,11 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
 
     return (
         <>
-            <Topbar
-                title={athlete.name}
-                actions={<BackButton />}
-            />
+            <Topbar />
             <div className="max-w-5xl mx-auto space-y-6">
+                <div className="mb-2">
+                    <BackButton />
+                </div>
 
                 {/* Athlete Header Card */}
                 <div className="cv-card flex items-start gap-6">

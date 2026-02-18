@@ -1,6 +1,7 @@
 'use client';
 
 import { Topbar } from '@/components/app-shell/Topbar';
+import { PageHeader } from '@/components/app-shell/PageHeader';
 import { GlobalCreateButton } from '@/components/app-shell/GlobalCreateButton';
 import { useState, useEffect } from 'react';
 import { useEscapeKey } from '@/hooks/use-escape-key';
@@ -238,64 +239,65 @@ export default function ProgramsPage() {
 
     return (
         <>
-            <Topbar
-                title="Programas"
-                actions={
-                    <div className="flex items-center gap-3">
-                        {/* View Toggle */}
-                        <div className="flex items-center p-1 bg-gray-100 rounded-lg mr-2">
-                            <button
-                                onClick={() => setViewMode('grid')}
-                                className={`p-1.5 rounded-md transition-all ${viewMode === 'grid'
-                                    ? 'bg-white text-cv-text-primary shadow-sm'
-                                    : 'text-cv-text-tertiary hover:text-cv-text-secondary'
-                                    }`}
-                                title="Vista Cuadrícula"
-                            >
-                                <LayoutGrid size={18} />
-                            </button>
-                            <button
-                                onClick={() => setViewMode('table')}
-                                className={`p-1.5 rounded-md transition-all ${viewMode === 'table'
-                                    ? 'bg-white text-cv-text-primary shadow-sm'
-                                    : 'text-cv-text-tertiary hover:text-cv-text-secondary'
-                                    }`}
-                                title="Vista Lista"
-                            >
-                                <List size={18} />
-                            </button>
-                        </div>
-
-                        {isSelectionMode ? (
-                            <div className="flex items-center gap-2">
+            <Topbar />
+            <div className="max-w-6xl mx-auto px-4 md:px-0">
+                <PageHeader
+                    title="Programas"
+                    actions={
+                        <div className="flex items-center gap-3">
+                            {/* View Toggle */}
+                            <div className="flex items-center p-1 bg-gray-100 rounded-lg mr-2">
                                 <button
-                                    onClick={handleBulkExport}
-                                    className="p-2 bg-orange-50 hover:bg-orange-100 text-cv-accent rounded-lg transition-colors flex items-center justify-center relative group"
-                                    title="Exportar selección"
+                                    onClick={() => setViewMode('grid')}
+                                    className={`p-1.5 rounded-md transition-all ${viewMode === 'grid'
+                                        ? 'bg-white text-cv-text-primary shadow-sm'
+                                        : 'text-cv-text-tertiary hover:text-cv-text-secondary'
+                                        }`}
+                                    title="Vista Cuadrícula"
                                 >
-                                    <Download size={18} />
-                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-cv-accent text-[10px] text-white font-medium">
-                                        {selectedPrograms.size}
-                                    </span>
+                                    <LayoutGrid size={18} />
                                 </button>
                                 <button
-                                    onClick={() => setProgramToDelete('BULK')} // Open confirmation modal correctly
-                                    className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors flex items-center justify-center relative group"
-                                    title="Eliminar selección"
+                                    onClick={() => setViewMode('table')}
+                                    className={`p-1.5 rounded-md transition-all ${viewMode === 'table'
+                                        ? 'bg-white text-cv-text-primary shadow-sm'
+                                        : 'text-cv-text-tertiary hover:text-cv-text-secondary'
+                                        }`}
+                                    title="Vista Lista"
                                 >
-                                    <Trash2 size={18} />
-                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] text-white font-medium">
-                                        {selectedPrograms.size}
-                                    </span>
+                                    <List size={18} />
                                 </button>
                             </div>
-                        ) : (
-                            <GlobalCreateButton />
-                        )}
-                    </div>
-                }
-            />
-            <div className="max-w-6xl mx-auto px-4 md:px-0">
+
+                            {isSelectionMode ? (
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={handleBulkExport}
+                                        className="p-2 bg-orange-50 hover:bg-orange-100 text-cv-accent rounded-lg transition-colors flex items-center justify-center relative group"
+                                        title="Exportar selección"
+                                    >
+                                        <Download size={18} />
+                                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-cv-accent text-[10px] text-white font-medium">
+                                            {selectedPrograms.size}
+                                        </span>
+                                    </button>
+                                    <button
+                                        onClick={() => setProgramToDelete('BULK')} // Open confirmation modal correctly
+                                        className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors flex items-center justify-center relative group"
+                                        title="Eliminar selección"
+                                    >
+                                        <Trash2 size={18} />
+                                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] text-white font-medium">
+                                            {selectedPrograms.size}
+                                        </span>
+                                    </button>
+                                </div>
+                            ) : (
+                                <GlobalCreateButton />
+                            )}
+                        </div>
+                    }
+                />
                 {/* Programs Grid/Table */}
                 {isLoading ? (
                     <div className="flex items-center justify-center py-12">

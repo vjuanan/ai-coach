@@ -9,12 +9,11 @@ import { UserAvatar } from './UserAvatar';
 import { InviteDialog } from './InviteDialog';
 
 interface TopbarProps {
-    title?: string;
     actions?: React.ReactNode;
     prefixActions?: React.ReactNode;
 }
 
-export function Topbar({ title, actions, prefixActions }: TopbarProps) {
+export function Topbar({ actions, prefixActions }: TopbarProps) {
     const { isSidebarCollapsed } = useAppStore();
     const searchParams = useSearchParams();
     const pathname = usePathname();
@@ -40,11 +39,9 @@ export function Topbar({ title, actions, prefixActions }: TopbarProps) {
             ${isSidebarCollapsed ? 'left-20' : 'left-60'}
           `}
             >
-                {/* Left: Title & Breadcrumb */}
+                {/* Left: Branding or Breadcrumbs (Future) */}
                 <div className="flex items-center gap-4">
-                    {title && (
-                        <h1 className="text-lg font-semibold text-cv-text-primary">{title}</h1>
-                    )}
+                    {/* Title removed from Topbar, moved to PageHeader in main content */}
                 </div>
 
                 {/* Center: Search */}

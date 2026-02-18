@@ -1,6 +1,7 @@
 'use client';
 
 import { AppShell } from '@/components/app-shell';
+import { PageHeader } from '@/components/app-shell/PageHeader';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient, getEquipmentCatalog } from '@/lib/actions';
@@ -139,14 +140,17 @@ export default function NewGymPage() {
     }, {} as Record<string, EquipmentCatalog[]>);
 
     return (
-        <AppShell title="Nuevo Gimnasio">
+        <AppShell>
             <div className="max-w-4xl mx-auto space-y-8 pb-20">
-                <div className="flex items-center gap-4">
-                    <Link href="/" className="cv-btn-ghost">
-                        <ArrowLeft size={20} />
-                    </Link>
-                    <h1 className="text-2xl font-bold text-cv-text-primary">Registrar Nuevo Gimnasio / Cliente B2B</h1>
-                </div>
+                <PageHeader
+                    title="Registrar Nuevo Gimnasio / Cliente B2B"
+                    actions={
+                        <Link href="/gyms" className="cv-btn-ghost">
+                            <ArrowLeft size={20} />
+                            <span className="ml-2">Volver</span>
+                        </Link>
+                    }
+                />
 
                 <form onSubmit={handleSubmit} className="space-y-8">
 

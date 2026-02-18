@@ -17,6 +17,7 @@ interface AssignedProgram {
 }
 
 import { Topbar } from '@/components/app-shell/Topbar';
+import { PageHeader } from '@/components/app-shell/PageHeader';
 
 export default function AthleteDashboard() {
     const supabase = createClient();
@@ -86,12 +87,12 @@ export default function AthleteDashboard() {
 
     return (
         <>
-            <Topbar title="Panel" />
+            <Topbar />
             <div className="p-8 max-w-7xl mx-auto">
-                <header className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Hola, {userName} 👋</h1>
-                    <p className="text-gray-500 mt-2">Bienvenido a tu panel de entrenamiento.</p>
-                </header>
+                <PageHeader
+                    title={`Hola, ${userName} 👋`}
+                    description="Bienvenido a tu panel de entrenamiento."
+                />
 
                 {/* Quick Actions */}
                 <div className="flex gap-4 mb-8">

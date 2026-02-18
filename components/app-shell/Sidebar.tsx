@@ -61,11 +61,11 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
 
     return (
         <aside
-            data-version="5"
+            data-version="6"
             className={`
         fixed left-0 top-0 h-screen bg-white border-r border-slate-100
         flex flex-col transition-all duration-300 ease-in-out z-40
-        ${isSidebarCollapsed ? 'w-16' : 'w-64'}
+        ${isSidebarCollapsed ? 'w-[64px]' : 'w-[256px]'}
       `}
         >
             {/* Logo - Horizontal layout matching reference */}
@@ -84,7 +84,7 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
                     />
 
                     {!isSidebarCollapsed && (
-                        <span className="text-slate-800 font-semibold text-lg tracking-tight whitespace-nowrap">
+                        <span className="text-slate-800 font-[600] text-[18px] tracking-tight whitespace-nowrap">
                             AI NCoach
                         </span>
                     )}
@@ -113,7 +113,7 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
                         >
                             {item.icon}
                             {!isSidebarCollapsed && (
-                                <span className="text-sm">{item.label}</span>
+                                <span className="text-[14px]">{item.label}</span>
                             )}
                         </Link>
                     );
@@ -134,4 +134,5 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
         </aside>
     );
 }
+
 
