@@ -103,7 +103,7 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
                             key={item.href}
                             href={item.href}
                             className={`
-                flex items-center gap-5 px-4 py-3 rounded-lg transition-all mb-1
+                flex items-center gap-3 px-4 py-3 rounded-lg transition-all mb-1
                 ${isSidebarCollapsed ? 'justify-center' : ''}
                 ${isActive
                                     ? 'bg-emerald-50 text-emerald-600 font-medium'
