@@ -374,12 +374,12 @@ export default function AthletesPage() {
                             className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
                             title="Añadir Atleta"
                         >
-                            <Plus size={20} strokeWidth={1.5} />
+                            <Plus size={20} />
                         </button>
                     </div>
                 }
             />
-            <div className="w-full px-6 pt-6">
+            <div className="w-full px-6 pt-2">
                 {/* Search removed - using global Topbar search */}
 
                 {bulkDeleteMessage && (

@@ -157,7 +157,7 @@ export function ExerciseList({
                         className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
                         title="Crear Ejercicio"
                     >
-                        <Plus size={20} strokeWidth={1.5} />
+                        <Plus size={20} />
                     </button>
                 </>
             )}
@@ -168,7 +168,7 @@ export function ExerciseList({
     return (
         <>
             <Topbar title="" actions={actions} />
-            <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 pt-6 space-y-6">
+            <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 pt-2 space-y-6">
 
                 {/* Filters Header */}
                 {/* Filters Header - Compact */}

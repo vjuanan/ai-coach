@@ -149,7 +149,7 @@ export default function NewGymPage() {
                     </Link>
                 }
             />
-            <div className="max-w-4xl mx-auto space-y-8 pb-20 pt-6">
+            <div className="max-w-4xl mx-auto space-y-8 pb-20 pt-2">
 
                 <form onSubmit={handleSubmit} className="space-y-8">
 

@@ -247,12 +247,12 @@ export default function AdminUsersPage() {
                             className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
                             title="Crear Usuario"
                         >
-                            <Plus size={20} strokeWidth={1.5} />
+                            <Plus size={20} />
                         </button>
                     </div>
                 }
             />
-            <div className="max-w-7xl mx-auto space-y-4 pt-6">
+            <div className="max-w-7xl mx-auto space-y-4 pt-2">
 
                 {message && (
                     <div className={`p-3 rounded-lg flex items-center gap-2 text-sm ${message.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'

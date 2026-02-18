@@ -88,7 +88,7 @@ export default function AthleteDashboard() {
     return (
         <>
             <Topbar />
-            <div className="p-8 max-w-7xl mx-auto pt-6">
+            <div className="p-8 max-w-7xl mx-auto pt-2">
 
                 {/* Quick Actions */}
                 <div className="flex gap-4 mb-8">

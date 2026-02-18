@@ -277,26 +277,36 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
             return !!(hasSets && hasReps && hasIntensity && hasRest);
         }
-        if (['metcon_structured', 'warmup', 'accessory', 'skill'].includes(block.type)) {
-            if (!block.format) return false;
-            const movements = block.config.movements as any[] || [];
-            if (movements.length > 0) {
-                for (const m of movements) {
-                    let name = '';
-                    if (typeof m === 'string') name = m;
-                    else if (typeof m === 'object' && m && 'name' in m) name = (m as any).name;
-
-                    // Strictly require non-empty name and valid exercise
-                    if (!name || name.trim().length === 0) return false;
-
-                    const match = searchLocal(name).find(e => e.name.toLowerCase() === name.toLowerCase());
-                    if (!match) return false;
-                }
-                return true;
-            }
-            return false; // Require at least one movement
+        if (block.type === 'warmup') {
+            // Warmups: need format (from column OR config) and at least one movement (freeform text OK)
+            const hasFormat = block.format || (block.config as any)?.format;
+            if (!hasFormat) return false;
+            const movements = (block.config as any)?.movements as any[] || [];
+            return movements.length > 0;
         }
-        return true; // Other types like free_text (if content exists) or defaults
+        if (block.type === 'accessory') {
+            // Accessories: need format (from column OR config) and either movements OR sets/reps
+            const hasFormat = block.format || (block.config as any)?.format;
+            if (!hasFormat) return false;
+            const cfg = block.config || {};
+            const movements = cfg.movements as any[] || [];
+            const hasSetsReps = (cfg.sets && Number(cfg.sets) > 0) && (cfg.reps && String(cfg.reps).trim().length > 0);
+            return movements.length > 0 || !!hasSetsReps;
+        }
+        if (block.type === 'metcon_structured') {
+            // MetCons: need format (from column OR config) and at least one movement
+            const hasFormat = block.format || (block.config as any)?.format;
+            if (!hasFormat) return false;
+            const movements = (block.config as any)?.movements as any[] || [];
+            return movements.length > 0;
+        }
+        if (block.type === 'skill') {
+            const hasFormat = block.format || (block.config as any)?.format;
+            if (!hasFormat) return false;
+            const movements = (block.config as any)?.movements as any[] || [];
+            return movements.length > 0;
+        }
+        return true; // Other types like conditioning, finisher, free_text — auto-pass
     };
 
     // Handle Save & Exit with Validation
@@ -372,14 +382,26 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         });
     }, [validateAndProceed, hasUnsavedChanges, forceSave, exitBlockBuilder]);
 
-    // Handle Export with lenient pre-validation across ALL mesocycles
-    // Export validation is LENIENT: we only flag truly empty blocks (no name, no content at all).
-    // This is different from the strict block-save validation (validateBlockContent).
+    // Handle Export with pre-validation across ALL mesocycles
     const handleExportClick = useCallback(() => {
-        // For export, just open the preview directly.
-        // The export preview handles missing data gracefully by showing what's available.
-        setShowExport(true);
-    }, []);
+        let incompleteCount = 0;
+        for (const meso of mesocycles) {
+            for (const day of meso.days) {
+                if (day.is_rest_day) continue;
+                for (const block of (day.blocks || [])) {
+                    if (!validateBlockContent(block)) {
+                        incompleteCount++;
+                    }
+                }
+            }
+        }
+        if (incompleteCount > 0) {
+            setExportIncompleteCount(incompleteCount);
+            setShowExportWarning(true);
+        } else {
+            setShowExport(true);
+        }
+    }, [mesocycles, validateBlockContent]);
 
     // Handle Week Change
     const handleWeekChange = (week: number) => {

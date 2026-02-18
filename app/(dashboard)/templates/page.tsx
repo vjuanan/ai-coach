@@ -17,7 +17,7 @@ export default async function TemplatesPage() {
     return (
         <>
             <Topbar />
-            <div className="max-w-6xl mx-auto pt-6">
+            <div className="max-w-6xl mx-auto pt-2">
 
                 {/* Templates Grid */}
                 <TemplateGrid templates={templates} athletes={athletes as any} gyms={gyms as any} />

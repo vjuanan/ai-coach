@@ -1,18 +1,23 @@
 # Lessons Learned
 
-## Template Updates
-- [ ] Make sure to fetch latest DB schema before updating.
+## 2026-02-18: Topbar Button Consistency
 
-## Export / html2canvas
-- **NEVER use `flex` on a scroll container that wraps dynamic-height content.** `flex justify-center` constrains the child's computed height to the viewport, causing background cutoff AND export clipping. Use `margin: 0 auto` on the child for centering instead.
-- **Always pass explicit `width`, `height`, `scrollX`, `scrollY`, `windowWidth`, `windowHeight` to html2canvas** based on `el.scrollHeight` / `el.scrollWidth`. Without this, html2canvas captures only the visible portion.
-- **In `onclone`, force `height: auto` and `overflow: visible`** on the cloned element to undo any CSS constraints.
-- **Verify fixes by scrolling to the ABSOLUTE bottom** of the preview and taking screenshots of both top AND bottom. A fix isn't verified unless you see the footer.
+### Problem
+Using different CSS approaches (`cv-btn-ghost` class, raw `p-2`, explicit `w-X h-X`) for icon buttons leads to invisible size mismatches.
 
-## Deployment Debugging
-- **If deployment seems stuck or features are missing despite successful git push**, check the build logs or run `npm run build` / `npm run type-check` locally. Silent build failures (like missing exports or TS errors) can prevent Vercel from deploying the new commit, leaving the live site on an old version.
+### Rule
+**All icon-only buttons in the topbar must use explicit `w-9 h-9 flex items-center justify-center` containers.** Never rely on padding alone (`p-2`) or utility classes (`cv-btn-ghost`) for sizing icon buttons — they include padding/gap from base classes that cause visual inconsistency.
 
-## Git & Deployment
-- **Ambiguous Git Status**: If `git status` is clean but `git log` seems outdated or incorrect, trust the actual file content on disk. If files are modified but `git status` claims clean, they are committed. Always double-check with `git show HEAD` or by pushing.
-- **Verification**: Always verify production changes with a fresh browser session (incognito/cleared cookies) to avoid caching issues.
+### Checklist for icon buttons
+- [ ] Same container: `w-9 h-9 flex items-center justify-center rounded-lg`
+- [ ] Same icon size: `size={20}`
+- [ ] Same stroke: `strokeWidth={1.5}`
+- [ ] Same gap between buttons: `gap-1.5`
 
+## 2026-02-18: Export vs Save Validation
+
+### Problem
+`handleExportClick` reused the strict `validateBlockContent` function (which requires sets+reps+intensity+rest for strength, matching exercises in cache for metcons). This flagged 44 blocks as "incomplete" and blocked export with a scary warning, even though the data was perfectly fine for rendering.
+
+### Rule
+**Export validation must be LENIENT.** The export preview already handles missing fields gracefully. Never gate export behind the same strict validation used for saving blocks. For export, just open the preview directly.

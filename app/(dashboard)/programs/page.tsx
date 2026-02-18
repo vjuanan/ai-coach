@@ -296,7 +296,7 @@ export default function ProgramsPage() {
                     </div>
                 }
             />
-            <div className="max-w-6xl mx-auto px-4 md:px-0 pt-6">
+            <div className="max-w-6xl mx-auto px-4 md:px-0 pt-2">
                 {/* Programs Grid/Table */}
                 {isLoading ? (
                     <div className="flex items-center justify-center py-12">

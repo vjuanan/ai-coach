@@ -44,7 +44,7 @@ export function DashboardShell({ children, role }: DashboardShellProps) {
                    Individual pages will render their own Topbar which handles its own positioning.
                    The 'pt-12' accounts for the Topbar height.
                 */}
-                <div className="p-6">
+                <div className="px-6 pt-2 pb-6">
                     {children}
                 </div>
             </main>

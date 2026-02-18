@@ -29,7 +29,7 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
         return (
             <>
                 <Topbar title="" actions={<BackButton />} />
-                <div className="max-w-5xl mx-auto space-y-6 p-6 pt-12">
+                <div className="max-w-5xl mx-auto space-y-6 p-6 pt-2">
                     <div className="text-center py-12">
                         <p className="text-cv-text-secondary">No se encontró el atleta.</p>
                     </div>
@@ -44,7 +44,7 @@ export default async function AthleteDetailsPage({ params }: { params: { clientI
     return (
         <>
             <Topbar title="" actions={<BackButton />} />
-            <div className="max-w-5xl mx-auto space-y-6 pt-6">
+            <div className="max-w-5xl mx-auto space-y-6 pt-2">
 
                 {/* Athlete Header Card */}
                 <div className="cv-card flex items-start gap-6">

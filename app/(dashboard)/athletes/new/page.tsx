@@ -55,7 +55,7 @@ export default function NewAthletePage() {
                     </Link>
                 }
             />
-            <div className="max-w-2xl mx-auto space-y-6 pt-6">
+            <div className="max-w-2xl mx-auto space-y-6 pt-2">
 
                 <div className="cv-card">
                     <form onSubmit={handleSubmit} className="space-y-6">

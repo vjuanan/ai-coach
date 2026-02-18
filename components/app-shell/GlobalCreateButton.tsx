@@ -68,7 +68,7 @@ export function GlobalCreateButton() {
                     className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-md shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-105 active:scale-95 transition-all duration-200"
                     title="Crear..."
                 >
-                    <Plus size={20} strokeWidth={1.5} className={`transition-transform duration-200 ${isOpen ? 'rotate-45' : ''}`} />
+                    <Plus size={20} className={`transition-transform duration-200 ${isOpen ? 'rotate-45' : ''}`} />
                 </button>
 
                 {/* Dropdown Menu */}

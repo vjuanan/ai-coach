@@ -12,7 +12,7 @@ export default async function KnowledgePage() {
 
         <>
             <Topbar />
-            <div className="max-w-7xl mx-auto pt-6">
+            <div className="max-w-7xl mx-auto pt-2">
 
                 {error ? (
                     <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-red-700">

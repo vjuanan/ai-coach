@@ -83,10 +83,10 @@ export function Topbar({ title, actions, prefixActions }: TopbarProps) {
                     {/* Invite Button */}
                     <button
                         onClick={() => setIsInviteDialogOpen(true)}
-                        className="w-9 h-9 flex items-center justify-center rounded-lg text-cv-text-secondary hover:text-cv-accent hover:bg-cv-accent/10 transition-all duration-200"
+                        className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all duration-200"
                         title="Invitar usuarios"
                     >
-                        <UserPlus size={20} strokeWidth={1.5} />
+                        <UserPlus size={20} />
                     </button>
 
                     {/* Notifications */}

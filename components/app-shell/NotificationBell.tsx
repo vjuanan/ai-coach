@@ -86,10 +86,10 @@ export function NotificationBell() {
     return (
         <div className="relative">
             <button
-                className="w-9 h-9 flex items-center justify-center rounded-lg text-cv-text-secondary hover:text-cv-accent hover:bg-cv-accent/10 transition-all duration-200 relative"
+                className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all duration-200 relative"
                 onClick={() => setShowDropdown(!showDropdown)}
             >
-                <Bell size={20} strokeWidth={1.5} />
+                <Bell size={20} />
                 {unreadCount > 0 && (
                     <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
                 )}
