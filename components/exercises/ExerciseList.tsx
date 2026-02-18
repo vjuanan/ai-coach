@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Search, Tag, Dumbbell, Trash2, X, CheckSquare, Edit2, Plus, Square } from 'lucide-react';
+import { Tag, Dumbbell, Trash2, X, CheckSquare, Edit2, Plus, Square } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { ExerciseForm } from './ExerciseForm';
 import { deleteExercises } from '@/lib/actions';
@@ -171,37 +171,28 @@ export function ExerciseList({
             <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 pt-6 space-y-6">
 
                 {/* Filters Header */}
-                <div className="flex flex-col md:flex-row gap-4 justify-between bg-white p-4 rounded-xl border border-cv-border shadow-sm">
-                    <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" size={18} />
-                        <input
-                            type="text"
-                            placeholder="Buscar ejercicios..."
-                            value={query}
-                            onChange={(e) => {
-                                setQuery(e.target.value);
-                                handleSearch(e.target.value);
-                            }}
-                            className="w-full pl-10 pr-4 py-2 rounded-lg border border-cv-border focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent outline-none transition-all"
-                        />
-                    </div>
-
-                    <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
+                {/* Filters Header - Compact */}
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between sticky top-16 z-20 bg-cv-bg-primary/95 backdrop-blur-sm py-2">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full sm:w-auto mask-linear-fade">
                         {CATEGORIES.map((cat) => (
                             <button
                                 key={cat.value}
                                 onClick={() => handleCategoryChange(cat.value)}
                                 className={`
-                                    whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all
+                                    whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium transition-all border
                                     ${category === cat.value
-                                        ? 'bg-cv-accent text-white shadow-md shadow-cv-accent/20'
-                                        : 'bg-cv-bg-tertiary text-cv-text-secondary hover:bg-cv-bg-secondary hover:text-cv-text-primary'
+                                        ? 'bg-cv-text-primary text-white border-cv-text-primary'
+                                        : 'bg-white text-cv-text-secondary border-cv-border hover:border-cv-text-secondary'
                                     }
                                 `}
                             >
                                 {cat.label}
                             </button>
                         ))}
+                    </div>
+                    {/* Count Indicator */}
+                    <div className="text-xs text-cv-text-tertiary font-medium hidden sm:block">
+                        {totalCount} ejercicios
                     </div>
                 </div>
 
