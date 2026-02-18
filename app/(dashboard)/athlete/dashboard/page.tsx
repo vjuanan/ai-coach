@@ -87,12 +87,8 @@ export default function AthleteDashboard() {
 
     return (
         <>
-            <Topbar />
-            <div className="p-8 max-w-7xl mx-auto">
-                <PageHeader
-                    title={`Hola, ${userName} 👋`}
-                    description="Bienvenido a tu panel de entrenamiento."
-                />
+            <Topbar title={`Hola, ${userName} 👋`} />
+            <div className="p-8 max-w-7xl mx-auto pt-6">
 
                 {/* Quick Actions */}
                 <div className="flex gap-4 mb-8">

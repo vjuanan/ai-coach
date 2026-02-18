@@ -1,7 +1,7 @@
 'use client';
 
 import { Topbar } from '@/components/app-shell/Topbar';
-import { PageHeader } from '@/components/app-shell/PageHeader';
+
 import { useState, useEffect } from 'react';
 import { useEscapeKey } from '@/hooks/use-escape-key';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -276,36 +276,35 @@ export default function GymsPage() {
         return (
             <>
 
-                <Topbar />
-                <div className="max-w-6xl mx-auto">
-                    <PageHeader
-                        title="Gimnasios"
-                        actions={
-                            <>
-                                {selectedGyms.size > 0 && (
-                                    <button
-                                        onClick={handleBulkDelete}
-                                        disabled={isBulkDeleting}
-                                        className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors mr-2"
-                                    >
-                                        {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
-                                        Eliminar ({selectedGyms.size})
-                                    </button>
-                                )}
-                                <div className="bg-slate-100 px-3 py-1.5 rounded-md flex items-center gap-2">
-                                    <Building2 className="text-cv-text-secondary" size={16} />
-                                    <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredGyms.length}</span>
-                                </div>
+                <Topbar
+                    title="Gimnasios"
+                    actions={
+                        <>
+                            {selectedGyms.size > 0 && (
                                 <button
-                                    onClick={() => setShowAddModal(true)}
-                                    className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
-                                    title="Añadir Gimnasio"
+                                    onClick={handleBulkDelete}
+                                    disabled={isBulkDeleting}
+                                    className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors mr-2"
                                 >
-                                    <Plus size={20} />
+                                    {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                                    Eliminar ({selectedGyms.size})
                                 </button>
-                            </>
-                        }
-                    />
+                            )}
+                            <div className="bg-slate-100 px-3 py-1.5 rounded-md flex items-center gap-2">
+                                <Building2 className="text-cv-text-secondary" size={16} />
+                                <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredGyms.length}</span>
+                            </div>
+                            <button
+                                onClick={() => setShowAddModal(true)}
+                                className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
+                                title="Añadir Gimnasio"
+                            >
+                                <Plus size={20} />
+                            </button>
+                        </>
+                    }
+                />
+                <div className="max-w-6xl mx-auto pt-6">
 
                     {bulkDeleteMessage && (
                         <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${bulkDeleteMessage.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'

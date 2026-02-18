@@ -1,5 +1,5 @@
 import { Topbar } from '@/components/app-shell/Topbar';
-import { PageHeader } from '@/components/app-shell/PageHeader';
+
 import { getTrainingPrinciples } from './actions';
 import { getTrainingMethodologies } from '@/lib/actions';
 import { KnowledgeContent } from './knowledge-content';
@@ -11,12 +11,8 @@ export default async function KnowledgePage() {
     return (
 
         <>
-            <Topbar />
-            <div className="max-w-7xl mx-auto">
-                <PageHeader
-                    title="Conocimiento"
-                    description="Base de conocimiento para la creación de programas de entrenamiento basados en evidencia científica."
-                />
+            <Topbar title="Conocimiento" />
+            <div className="max-w-7xl mx-auto pt-6">
 
                 {error ? (
                     <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-red-700">

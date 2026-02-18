@@ -1,7 +1,7 @@
 'use client';
 
 import { Topbar } from '@/components/app-shell/Topbar';
-import { PageHeader } from '@/components/app-shell/PageHeader';
+
 import { useState, useEffect } from 'react';
 import { useEscapeKey } from '@/hooks/use-escape-key';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -350,37 +350,35 @@ export default function AthletesPage() {
     return (
 
         <>
-            <Topbar />
-            <div className="w-full px-6">
-                <PageHeader
-                    title="Atletas"
-                    description="Gestiona tus atletas, clientes y asignaciones."
-                    actions={
-                        <div className="flex items-center gap-2">
-                            {selectedAthletes.size > 0 && (
-                                <button
-                                    onClick={handleBulkDelete}
-                                    disabled={isBulkDeleting}
-                                    className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors mr-2"
-                                >
-                                    {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
-                                    Eliminar ({selectedAthletes.size})
-                                </button>
-                            )}
-                            <div className="bg-slate-100 px-3 py-1.5 rounded-md flex items-center gap-2">
-                                <User className="text-cv-text-secondary" size={16} />
-                                <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredAthletes.length}</span>
-                            </div>
+            <Topbar
+                title="Atletas"
+                actions={
+                    <div className="flex items-center gap-2">
+                        {selectedAthletes.size > 0 && (
                             <button
-                                onClick={() => setShowAddModal(true)}
-                                className="cv-btn-primary flex items-center justify-center w-10 h-10 p-0"
-                                title="Añadir Atleta"
+                                onClick={handleBulkDelete}
+                                disabled={isBulkDeleting}
+                                className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors mr-2"
                             >
-                                <Plus size={20} />
+                                {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                                Eliminar ({selectedAthletes.size})
                             </button>
+                        )}
+                        <div className="bg-slate-100 px-3 py-1.5 rounded-md flex items-center gap-2">
+                            <User className="text-cv-text-secondary" size={16} />
+                            <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredAthletes.length}</span>
                         </div>
-                    }
-                />
+                        <button
+                            onClick={() => setShowAddModal(true)}
+                            className="cv-btn-primary flex items-center justify-center w-10 h-10 p-0"
+                            title="Añadir Atleta"
+                        >
+                            <Plus size={20} />
+                        </button>
+                    </div>
+                }
+            />
+            <div className="w-full px-6 pt-6">
                 {/* Search removed - using global Topbar search */}
 
                 {bulkDeleteMessage && (
