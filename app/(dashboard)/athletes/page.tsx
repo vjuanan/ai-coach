@@ -353,7 +353,7 @@ export default function AthletesPage() {
             <Topbar
                 title="Atletas"
                 actions={
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-4">
                         {selectedAthletes.size > 0 && (
                             <button
                                 onClick={handleBulkDelete}
@@ -364,16 +364,17 @@ export default function AthletesPage() {
                                 Eliminar ({selectedAthletes.size})
                             </button>
                         )}
-                        <div className="bg-slate-100 px-3 py-1.5 rounded-md flex items-center gap-2">
-                            <User className="text-cv-text-secondary" size={16} />
-                            <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredAthletes.length}</span>
+                        <div className="flex items-center gap-2 px-2 text-cv-text-secondary">
+                            <User size={18} strokeWidth={1.5} />
+                            <span className="font-medium text-sm">{filteredAthletes.length}</span>
                         </div>
+                        <div className="w-px h-6 bg-cv-border-subtle mx-1" />
                         <button
                             onClick={() => setShowAddModal(true)}
-                            className="cv-btn-primary flex items-center justify-center w-10 h-10 p-0"
+                            className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
                             title="Añadir Atleta"
                         >
-                            <Plus size={20} />
+                            <Plus size={20} strokeWidth={2.5} />
                         </button>
                     </div>
                 }

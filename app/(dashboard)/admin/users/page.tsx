@@ -225,7 +225,7 @@ export default function AdminUsersPage() {
             <Topbar
                 title="Administración de Usuarios"
                 actions={
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-4">
                         {selectedUsers.size > 0 && (
                             <button
                                 onClick={handleBulkDelete}
@@ -236,17 +236,18 @@ export default function AdminUsersPage() {
                                 Eliminar ({selectedUsers.size})
                             </button>
                         )}
-                        <div className="bg-slate-100 px-3 py-1.5 rounded-md flex items-center gap-2">
-                            <Users className="text-cv-text-secondary" size={16} />
-                            <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredProfiles.length}</span>
+                        <div className="flex items-center gap-2 px-2 text-cv-text-secondary">
+                            <Users size={18} strokeWidth={1.5} />
+                            <span className="font-medium text-sm">{filteredProfiles.length}</span>
                         </div>
-                        <span className="text-xs text-cv-text-tertiary">v1.3</span>
+                        <span className="text-xs text-cv-text-tertiary font-mono">v1.3</span>
+                        <div className="w-px h-6 bg-cv-border-subtle mx-1" />
                         <button
                             onClick={() => setIsCreateOpen(true)}
-                            className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
+                            className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
                             title="Crear Usuario"
                         >
-                            <Plus size={20} />
+                            <Plus size={20} strokeWidth={2.5} />
                         </button>
                     </div>
                 }

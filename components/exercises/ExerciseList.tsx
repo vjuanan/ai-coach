@@ -7,8 +7,8 @@ import { Modal } from '@/components/ui/Modal';
 import { ExerciseForm } from './ExerciseForm';
 import { deleteExercises } from '@/lib/actions';
 import { toast } from 'sonner';
+import { Topbar } from '@/components/app-shell/Topbar';
 
-// Mock constants if not found
 const CATEGORIES = [
     { value: 'all', label: 'Todos' },
     { value: 'Weightlifting', label: 'Weightlifting' },
@@ -16,17 +16,6 @@ const CATEGORIES = [
     { value: 'Monostructural', label: 'Monostructural' },
     { value: 'Metcon', label: 'Metcon' }
 ];
-
-interface Exercise {
-    id: string;
-    name: string;
-    description?: string;
-    category: string;
-    equipment?: string[];
-    modality_suitability?: string[];
-}
-
-// ... existing interfaces & constants
 
 interface Exercise {
     id: string;
@@ -132,217 +121,220 @@ export function ExerciseList({
         }
     };
 
+    // Construct actions for Topbar
+    const actions = (
+        <div className="flex gap-2">
+            {isSelectMode ? (
+                <>
+                    <button
+                        onClick={handleBulkDelete}
+                        disabled={selectedIds.size === 0}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-md transition-colors disabled:opacity-50 text-sm"
+                    >
+                        <Trash2 size={16} />
+                        <span className="hidden md:inline">Eliminar ({selectedIds.size})</span>
+                    </button>
+                    <button
+                        onClick={toggleSelectMode}
+                        className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-100 text-cv-text-secondary hover:text-cv-text-primary rounded-lg transition-colors text-sm"
+                    >
+                        <X size={16} />
+                        Cancelar
+                    </button>
+                </>
+            ) : (
+                <>
+                    <button
+                        onClick={toggleSelectMode}
+                        className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-100 text-cv-text-secondary hover:text-cv-text-primary rounded-lg transition-colors text-sm"
+                    >
+                        <CheckSquare size={18} strokeWidth={1.5} />
+                        <span className="hidden md:inline font-medium">Seleccionar</span>
+                    </button>
+                    <div className="w-px h-6 bg-cv-border-subtle mx-1" />
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
+                        title="Crear Ejercicio"
+                    >
+                        <Plus size={20} strokeWidth={2.5} />
+                    </button>
+                </>
+            )}
+        </div>
+    );
+
+    console.log('Rendering ExerciseList with empty title');
     return (
-        <div className="space-y-6">
+        <>
+            <Topbar title="" actions={actions} />
+            <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 pt-6 space-y-6">
 
-            {/* Header with Actions */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <h2 className="text-2xl font-bold">Biblioteca</h2>
-                <div className="flex gap-2 w-full md:w-auto">
-                    {isSelectMode ? (
-                        <>
-                            <button
-                                onClick={handleBulkDelete}
-                                disabled={selectedIds.size === 0}
-                                className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-lg transition-colors disabled:opacity-50"
-                            >
-                                <Trash2 size={18} />
-                                <span className="hidden md:inline">Eliminar ({selectedIds.size})</span>
-                            </button>
-                            <button
-                                onClick={toggleSelectMode}
-                                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-lg transition-colors"
-                            >
-                                <X size={18} />
-                                Cancelar
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <button
-                                onClick={toggleSelectMode}
-                                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-lg transition-colors"
-                            >
-                                <CheckSquare size={18} />
-                                <span className="hidden md:inline">Seleccionar</span>
-                            </button>
-                            <button
-                                onClick={() => setIsCreateModalOpen(true)}
-                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-cv-accent hover:bg-cv-accent/90 text-white rounded-lg transition-colors shadow-lg shadow-cv-accent/20"
-                            >
-                                <Plus size={18} />
-                                Crear Ejercicio
-                            </button>
-                        </>
-                    )}
-                </div>
-            </div>
+                {/* Filters Header */}
+                <div className="flex flex-col md:flex-row gap-4 justify-between bg-white p-4 rounded-xl border border-cv-border shadow-sm">
+                    <div className="relative flex-1 max-w-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Buscar ejercicios..."
+                            value={query}
+                            onChange={(e) => {
+                                setQuery(e.target.value);
+                                handleSearch(e.target.value);
+                            }}
+                            className="w-full pl-10 pr-4 py-2 rounded-lg border border-cv-border focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent outline-none transition-all"
+                        />
+                    </div>
 
-            {/* Filters Header (Existing) */}
-            <div className="flex flex-col md:flex-row gap-4 justify-between bg-white p-4 rounded-xl border border-cv-border shadow-sm">
-                {/* ... keep existing search and filter logic ... */}
-                <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" size={18} />
-                    <input
-                        type="text"
-                        placeholder="Buscar ejercicios..."
-                        value={query}
-                        onChange={(e) => {
-                            setQuery(e.target.value);
-                            handleSearch(e.target.value);
-                        }}
-                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-cv-border focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent outline-none transition-all"
-                    />
-                </div>
-
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
-                    {CATEGORIES.map((cat) => (
-                        <button
-                            key={cat.value}
-                            onClick={() => handleCategoryChange(cat.value)}
-                            className={`
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
+                        {CATEGORIES.map((cat) => (
+                            <button
+                                key={cat.value}
+                                onClick={() => handleCategoryChange(cat.value)}
+                                className={`
                                     whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all
                                     ${category === cat.value
-                                    ? 'bg-cv-accent text-white shadow-md shadow-cv-accent/20'
-                                    : 'bg-cv-bg-tertiary text-cv-text-secondary hover:bg-cv-bg-secondary hover:text-cv-text-primary'
-                                }
+                                        ? 'bg-cv-accent text-white shadow-md shadow-cv-accent/20'
+                                        : 'bg-cv-bg-tertiary text-cv-text-secondary hover:bg-cv-bg-secondary hover:text-cv-text-primary'
+                                    }
                                 `}
-                        >
-                            {cat.label}
-                        </button>
-                    ))}
+                            >
+                                {cat.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-            </div>
 
-            {/* Results Grid */}
-            {initialExercises.length === 0 ? (
-                <div className="text-center py-20 bg-cv-bg-tertiary/30 rounded-2xl border border-dashed border-cv-border">
-                    <Dumbbell className="mx-auto text-cv-text-tertiary mb-4 opacity-50" size={48} />
-                    <h3 className="text-lg font-medium text-cv-text-primary">No se encontraron ejercicios</h3>
-                    <p className="text-cv-text-secondary mt-1">Intenta ajustar tu búsqueda o filtros.</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {initialExercises.map((exercise) => (
-                        <div
-                            key={exercise.id}
-                            onClick={() => isSelectMode ? toggleSelection(exercise.id) : setEditingExercise(exercise)}
-                            className={`
+                {/* Results Grid */}
+                {initialExercises.length === 0 ? (
+                    <div className="text-center py-20 bg-cv-bg-tertiary/30 rounded-2xl border border-dashed border-cv-border">
+                        <Dumbbell className="mx-auto text-cv-text-tertiary mb-4 opacity-50" size={48} />
+                        <h3 className="text-lg font-medium text-cv-text-primary">No se encontraron ejercicios</h3>
+                        <p className="text-cv-text-secondary mt-1">Intenta ajustar tu búsqueda o filtros.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {initialExercises.map((exercise) => (
+                            <div
+                                key={exercise.id}
+                                onClick={() => isSelectMode ? toggleSelection(exercise.id) : setEditingExercise(exercise)}
+                                className={`
                                     group bg-white rounded-xl border transition-all duration-200 overflow-hidden flex flex-col relative
                                     ${isSelectMode
-                                    ? selectedIds.has(exercise.id)
-                                        ? 'border-cv-accent ring-1 ring-cv-accent shadow-md'
-                                        : 'border-cv-border hover:border-gray-400 cursor-pointer'
-                                    : 'border-cv-border hover:border-cv-accent/50 hover:shadow-md cursor-pointer'
-                                }
+                                        ? selectedIds.has(exercise.id)
+                                            ? 'border-cv-accent ring-1 ring-cv-accent shadow-md'
+                                            : 'border-cv-border hover:border-gray-400 cursor-pointer'
+                                        : 'border-cv-border hover:border-cv-accent/50 hover:shadow-md cursor-pointer'
+                                    }
                                 `}
-                        >
-                            {/* Selection Indicator */}
-                            {isSelectMode && (
-                                <div className="absolute top-3 right-3 z-10">
-                                    {selectedIds.has(exercise.id) ? (
-                                        <div className="bg-cv-accent text-white rounded-md p-1 shadow-sm">
-                                            <CheckSquare size={20} />
-                                        </div>
-                                    ) : (
-                                        <div className="bg-white/80 text-gray-400 rounded-md p-1 shadow-sm border border-gray-200">
-                                            <Square size={20} />
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            <div className="p-5 flex-1">
-                                <div className="flex items-start justify-between mb-3">
-                                    <span className={`
-                                            px-2.5 py-1 rounded-md text-xs font-semibold
-                                            ${exercise.category === 'Weightlifting' ? 'bg-blue-50 text-blue-700' :
-                                            exercise.category === 'Gymnastics' ? 'bg-purple-50 text-purple-700' :
-                                                exercise.category === 'Monostructural' ? 'bg-green-50 text-green-700' :
-                                                    'bg-orange-50 text-orange-700'}
-                                        `}>
-                                        {exercise.category}
-                                    </span>
-                                    {/* Edit Trigger (Only show if not select mode) */}
-                                    {!isSelectMode && (
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setEditingExercise(exercise);
-                                            }}
-                                            className="text-gray-300 hover:text-cv-accent transition-colors p-1"
-                                        >
-                                            <Edit2 size={16} />
-                                        </button>
-                                    )}
-                                </div>
-
-                                <h3 className="text-base font-semibold text-cv-text-primary mb-2 line-clamp-2 leading-tight group-hover:text-cv-accent transition-colors">
-                                    {exercise.name}
-                                </h3>
-
-                                {exercise.description && (
-                                    <p className="text-sm text-cv-text-secondary line-clamp-3 mb-4">
-                                        {exercise.description}
-                                    </p>
+                            >
+                                {/* Selection Indicator */}
+                                {isSelectMode && (
+                                    <div className="absolute top-3 right-3 z-10">
+                                        {selectedIds.has(exercise.id) ? (
+                                            <div className="bg-cv-accent text-white rounded-md p-1 shadow-sm">
+                                                <CheckSquare size={20} />
+                                            </div>
+                                        ) : (
+                                            <div className="bg-white/80 text-gray-400 rounded-md p-1 shadow-sm border border-gray-200">
+                                                <Square size={20} />
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
 
-                                <div className="flex flex-wrap gap-2 mt-auto pt-3 border-t border-cv-border/50">
-                                    {exercise.equipment && exercise.equipment.length > 0 && (
-                                        <div className="flex items-center gap-1.5 text-xs text-cv-text-tertiary">
-                                            <Dumbbell size={12} />
-                                            <span>{exercise.equipment[0]}</span>
-                                            {exercise.equipment.length > 1 && <span>+{exercise.equipment.length - 1}</span>}
-                                        </div>
+                                <div className="p-5 flex-1">
+                                    <div className="flex items-start justify-between mb-3">
+                                        <span className={`
+                                            px-2.5 py-1 rounded-md text-xs font-semibold
+                                            ${exercise.category === 'Weightlifting' ? 'bg-blue-50 text-blue-700' :
+                                                exercise.category === 'Gymnastics' ? 'bg-purple-50 text-purple-700' :
+                                                    exercise.category === 'Monostructural' ? 'bg-green-50 text-green-700' :
+                                                        'bg-orange-50 text-orange-700'}
+                                        `}>
+                                            {exercise.category}
+                                        </span>
+                                        {/* Edit Trigger (Only show if not select mode) */}
+                                        {!isSelectMode && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setEditingExercise(exercise);
+                                                }}
+                                                className="text-gray-300 hover:text-cv-accent transition-colors p-1"
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <h3 className="text-base font-semibold text-cv-text-primary mb-2 line-clamp-2 leading-tight group-hover:text-cv-accent transition-colors">
+                                        {exercise.name}
+                                    </h3>
+
+                                    {exercise.description && (
+                                        <p className="text-sm text-cv-text-secondary line-clamp-3 mb-4">
+                                            {exercise.description}
+                                        </p>
                                     )}
-                                    {exercise.modality_suitability && exercise.modality_suitability.length > 0 && (
-                                        <div className="flex items-center gap-1.5 text-xs text-cv-text-tertiary">
-                                            <Tag size={12} />
-                                            <span>{exercise.modality_suitability[0]}</span>
-                                        </div>
-                                    )}
+
+                                    <div className="flex flex-wrap gap-2 mt-auto pt-3 border-t border-cv-border/50">
+                                        {exercise.equipment && exercise.equipment.length > 0 && (
+                                            <div className="flex items-center gap-1.5 text-xs text-cv-text-tertiary">
+                                                <Dumbbell size={12} />
+                                                <span>{exercise.equipment[0]}</span>
+                                                {exercise.equipment.length > 1 && <span>+{exercise.equipment.length - 1}</span>}
+                                            </div>
+                                        )}
+                                        {exercise.modality_suitability && exercise.modality_suitability.length > 0 && (
+                                            <div className="flex items-center gap-1.5 text-xs text-cv-text-tertiary">
+                                                <Tag size={12} />
+                                                <span>{exercise.modality_suitability[0]}</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {/* Simple Pagination Feedback */}
-            {totalCount > 0 && (
-                <div className="text-center text-xs text-cv-text-tertiary pt-4">
-                    Mostrando {initialExercises.length} de {totalCount} ejercicios
-                </div>
-            )}
-
-            {/* Create Modal */}
-            <Modal
-                isOpen={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
-                title="Crear Nuevo Ejercicio"
-                maxWidth="max-w-2xl"
-            >
-                <ExerciseForm
-                    onClose={() => setIsCreateModalOpen(false)}
-                    onSuccess={() => setIsCreateModalOpen(false)}
-                />
-            </Modal>
-
-            {/* Edit Modal */}
-            <Modal
-                isOpen={!!editingExercise}
-                onClose={() => setEditingExercise(null)}
-                title="Editar Ejercicio"
-                maxWidth="max-w-2xl"
-            >
-                {editingExercise && (
-                    <ExerciseForm
-                        exercise={editingExercise}
-                        onClose={() => setEditingExercise(null)}
-                        onSuccess={() => setEditingExercise(null)}
-                    />
+                        ))}
+                    </div>
                 )}
-            </Modal>
-        </div>
+
+                {/* Simple Pagination Feedback */}
+                {totalCount > 0 && (
+                    <div className="text-center text-xs text-cv-text-tertiary pt-4">
+                        Mostrando {initialExercises.length} de {totalCount} ejercicios
+                    </div>
+                )}
+
+                {/* Create Modal */}
+                <Modal
+                    isOpen={isCreateModalOpen}
+                    onClose={() => setIsCreateModalOpen(false)}
+                    title="Crear Nuevo Ejercicio"
+                    maxWidth="max-w-2xl"
+                >
+                    <ExerciseForm
+                        onClose={() => setIsCreateModalOpen(false)}
+                        onSuccess={() => setIsCreateModalOpen(false)}
+                    />
+                </Modal>
+
+                {/* Edit Modal */}
+                <Modal
+                    isOpen={!!editingExercise}
+                    onClose={() => setEditingExercise(null)}
+                    title="Editar Ejercicio"
+                    maxWidth="max-w-2xl"
+                >
+                    {editingExercise && (
+                        <ExerciseForm
+                            exercise={editingExercise}
+                            onClose={() => setEditingExercise(null)}
+                            onSuccess={() => setEditingExercise(null)}
+                        />
+                    )}
+                </Modal>
+            </div>
+        </>
     );
 }

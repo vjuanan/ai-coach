@@ -28,6 +28,7 @@ import {
     User,
     Mail
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Coach {
     id: string;
@@ -101,14 +102,17 @@ export default function GymsPage() {
     async function fetchGyms() {
         setIsLoading(true);
         try {
+            console.log('Fetching gyms...');
             const [gymsData, coachesData] = await Promise.all([
                 getClients('gym'),
                 getCoaches()
             ]);
+            console.log('Gyms fetched:', gymsData);
             if (gymsData) setGyms(gymsData as Gym[]);
             if (coachesData) setCoaches(coachesData);
         } catch (error) {
             console.error('Error fetching gyms:', error);
+            toast.error('Error cargando gimnasios');
         } finally {
             setIsLoading(false);
         }
@@ -173,11 +177,13 @@ export default function GymsPage() {
         }
     }
 
-    const filteredGyms = gyms.filter(g =>
-        g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (g.details?.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (g as any).email?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredGyms = gyms.filter(g => {
+        if (!g) return false;
+        const name = g.name || '';
+        const email = (g.details?.email || '') + ((g as any).email || '');
+        return name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            email.toLowerCase().includes(searchQuery.toLowerCase());
+    });
 
     const toggleSelectAll = () => {
         if (selectedGyms.size === filteredGyms.length) {
@@ -280,7 +286,7 @@ export default function GymsPage() {
             <Topbar
                 title="Gimnasios"
                 actions={
-                    <>
+                    <div className="flex items-center gap-4">
                         {selectedGyms.size > 0 && (
                             <button
                                 onClick={handleBulkDelete}
@@ -291,18 +297,19 @@ export default function GymsPage() {
                                 Eliminar ({selectedGyms.size})
                             </button>
                         )}
-                        <div className="bg-slate-100 px-3 py-1.5 rounded-md flex items-center gap-2">
-                            <Building2 className="text-cv-text-secondary" size={16} />
-                            <span className="font-mono font-bold text-cv-text-primary text-sm">{filteredGyms.length}</span>
+                        <div className="flex items-center gap-2 px-2 text-cv-text-secondary">
+                            <Building2 size={18} strokeWidth={1.5} />
+                            <span className="font-medium text-sm">{filteredGyms.length}</span>
                         </div>
+                        <div className="w-px h-6 bg-cv-border-subtle mx-1" />
                         <button
                             onClick={() => setShowAddModal(true)}
-                            className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
+                            className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
                             title="Añadir Gimnasio"
                         >
-                            <Plus size={20} />
+                            <Plus size={20} strokeWidth={2.5} />
                         </button>
-                    </>
+                    </div>
                 }
             />
             <div className="max-w-6xl mx-auto pt-6">
