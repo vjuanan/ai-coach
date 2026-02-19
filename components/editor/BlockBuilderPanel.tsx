@@ -382,13 +382,14 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                             selectBlock(block.id);
                                                         }}
                                                         className={`
-                                                            group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left min-w-[150px] cursor-pointer
+                                                            group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left w-[160px] flex-shrink-0 cursor-pointer
                                                             ${isActive
                                                                 ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-lg ring-2 ring-cv-accent/40 z-20'
                                                                 : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-500 hover:z-30'
                                                             }
                                                             `}
                                                         style={!isActive ? { '--hover-shadow': blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)' } as React.CSSProperties : undefined}
+                                                        title={block.name || blockOption?.label || "Sin nombre"}
                                                     >
                                                         {/* Delete Trash Button - Visible on Hover - Minimalist Style */}
                                                         <button
@@ -413,7 +414,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                             }`}>
                                                             <Icon size={14} />
                                                         </div>
-                                                        <div className="flex-1 min-w-0">
+                                                        <div className="flex-1 min-w-0 overflow-hidden">
                                                             <p className={`text-xs font-semibold truncate ${isActive ? 'text-cv-text-primary' : 'text-cv-text-secondary'}`}>
                                                                 {block.name || blockOption?.label || "Sin nombre"}
                                                             </p>

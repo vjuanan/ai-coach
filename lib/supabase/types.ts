@@ -204,6 +204,7 @@ export interface Exercise {
         sets?: boolean;
     } | null;
     aliases?: string[] | null;
+    cue?: string | null;
     created_at: string;
 }
 
