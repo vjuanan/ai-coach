@@ -132,19 +132,27 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
     };
 
     const getBlockPreview = () => {
+        let pillText = '';
+        let primaryMetric = '';
+        let secondaryMetric: React.ReactNode = null;
+        let exerciseList: { name: string; reps: string }[] = [];
+        let footerText: React.ReactNode = null;
+
         switch (block.type) {
-            case 'strength_linear':
+            case 'strength_linear': {
                 const sets = config.sets as number;
                 const reps = config.reps as string;
                 const percentage = config.percentage as string;
 
+                if (sets || reps) {
+                    primaryMetric = `${sets || 0} × ${reps || 0}`;
+                }
+
                 // Calculate weight for preview
                 let calculatedWeight: number | null = null;
-
                 if (percentage && (block.name || config.exercise)) {
                     const exerciseName = (config.exercise as string) || block.name || '';
                     const rm = getBenchmark(exerciseName);
-                    // Ensure percentage is a string before replace
                     const pctString = String(percentage);
                     const pct = parseInt(pctString.replace('%', ''), 10);
 
@@ -153,13 +161,12 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
                     }
                 }
 
-                return (
-                    <div className="flex flex-col gap-0.5 min-h-[1.25rem]">
-                        <div className="text-sm font-medium flex items-center flex-wrap gap-1">
-                            <span>{sets} × {reps}</span>
+                if (percentage || calculatedWeight !== null) {
+                    secondaryMetric = (
+                        <div className="flex items-center gap-1">
                             {percentage && (
-                                <span className="text-cv-accent bg-cv-accent/5 px-1 rounded">
-                                    @ {percentage}% del RM
+                                <span className="text-cv-accent bg-cv-accent/5 px-1 rounded text-xs">
+                                    @ {percentage}% RM
                                 </span>
                             )}
                             {calculatedWeight !== null && (
@@ -168,14 +175,19 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
                                 </span>
                             )}
                         </div>
-                        {(config.rest as string) && (
-                            <div className="text-xs text-cv-text-tertiary flex items-center gap-1">
-                                <span className="opacity-70">Descanso:</span>
-                                <span>{config.rest as string}</span>
-                            </div>
-                        )}
-                    </div>
-                );
+                    );
+                }
+
+                if (config.rest as string) {
+                    footerText = (
+                        <div className="flex items-center gap-1">
+                            <span className="opacity-70">Descanso:</span>
+                            <span>{config.rest as string}</span>
+                        </div>
+                    );
+                }
+                break;
+            }
 
             case 'metcon':
             case 'metcon_structured': {
@@ -189,8 +201,25 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
                 const workSeconds = (config as any).workSeconds as number;
                 const restSeconds = (config as any).restSeconds as number;
 
+                if (format) {
+                    pillText = formatLabels[format] || format;
+                }
+
+                // Build meta line based on format
+                if (format === 'AMRAP' && minutes) {
+                    primaryMetric = `${minutes} min`;
+                } else if (format === 'EMOM' && minutes) {
+                    const interval = (config as any).interval as number;
+                    primaryMetric = `${minutes} min` + (interval && interval > 1 ? ` / c/${interval} min` : '');
+                } else if ((format === 'RFT' || format === 'For Time') && rounds) {
+                    primaryMetric = `${rounds} rondas` + (timeCap ? ` · TC ${timeCap}'` : '');
+                } else if (format === 'Chipper') {
+                    primaryMetric = timeCap ? `TC ${timeCap}'` : '';
+                } else if (format === 'Tabata') {
+                    primaryMetric = `${rounds || 8}R · ${workSeconds || 20}s/${restSeconds || 10}s`;
+                }
+
                 // Build exercise list based on format
-                const exerciseList: { name: string; reps: string }[] = [];
                 if (items.length > 0) {
                     items.forEach(it => { if (it.exercise) exerciseList.push({ name: it.exercise, reps: it.reps }); });
                 } else if (slots.length > 0) {
@@ -198,96 +227,117 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
                 } else if (movements.length > 0) {
                     movements.forEach(m => exerciseList.push({ name: m, reps: '' }));
                 }
-
-                // Build meta line based on format
-                let metaText = '';
-                if (format === 'AMRAP' && minutes) {
-                    metaText = `${minutes} min`;
-                } else if (format === 'EMOM' && minutes) {
-                    const interval = (config as any).interval as number;
-                    metaText = `${minutes} min` + (interval && interval > 1 ? ` / c/${interval} min` : '');
-                } else if ((format === 'RFT' || format === 'For Time') && rounds) {
-                    metaText = `${rounds} rondas` + (timeCap ? ` · TC ${timeCap}'` : '');
-                } else if (format === 'Chipper') {
-                    metaText = timeCap ? `TC ${timeCap}'` : '';
-                } else if (format === 'Tabata') {
-                    metaText = `${rounds || 8}R · ${workSeconds || 20}s/${restSeconds || 10}s`;
-                }
-
-                return (
-                    <div className="flex flex-col gap-2 min-h-[1.25rem]">
-                        <div className="flex items-center gap-2 flex-wrap">
-                            {format && (
-                                <span
-                                    className="font-bold text-[10px] px-1.5 py-0.5 rounded leading-none tracking-wide uppercase"
-                                    style={{ backgroundColor: '#f1f5f9', color: '#64748b' }}
-                                >
-                                    {formatLabels[format] || format}
-                                </span>
-                            )}
-                            {metaText && (
-                                <span className="text-xs text-cv-text-secondary font-semibold">{metaText}</span>
-                            )}
-                        </div>
-                        {exerciseList.length > 0 && (
-                            <div className="flex flex-col gap-1 pl-0.5">
-                                {exerciseList.map((ex, i) => (
-                                    <div key={i} className="text-xs grid grid-cols-[min-content_1fr] items-baseline gap-2">
-                                        {ex.reps && (
-                                            <span className="font-bold text-cv-text-primary whitespace-nowrap text-right min-w-[2ch]">
-                                                {ex.reps}
-                                            </span>
-                                        )}
-                                        <span className={`text-cv-text-secondary truncate ${!ex.reps && 'col-span-2'}`}>
-                                            {ex.name}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                );
+                break;
             }
 
             case 'warmup':
             case 'accessory':
             case 'skill':
-            case 'finisher':
+            case 'finisher': {
+                const rounds = config.rounds as number;
+                if (rounds) {
+                    primaryMetric = `${rounds} ${rounds === 1 ? 'Vuelta' : 'Vueltas'}`;
+                }
+
                 // Check both 'exercises' (old?) and 'movements' (new generic form)
-                // Cast to any[] to handle both string[] and object[]
                 const items = (config.movements as any[]) || (config.exercises as string[]) || [];
                 const notes = config.notes as string;
 
-                if (items.length === 0 && !notes) return <div className="min-h-[1.25rem]" />;
+                items.forEach(item => {
+                    const name = typeof item === 'string' ? item : item.name;
+                    if (name) {
+                        exerciseList.push({ name: name, reps: '' }); // Reps in accessory are not strictly separated in standard view yet
+                    }
+                });
 
-                return (
-                    <div className="text-xs text-cv-text-tertiary min-h-[1.25rem]">
-                        {items.length > 0 ? (
-                            <div className="flex flex-col gap-0.5">
-                                {items.slice(0, 2).map((item, i) => (
-                                    <div key={i} className="truncate">
-                                        • {typeof item === 'string' ? item : item.name}
-                                    </div>
-                                ))}
-                                {items.length > 2 && <div className="italic">+ {items.length - 2} más</div>}
-                            </div>
-                        ) : (
-                            <div className="italic truncate">{notes}</div>
-                        )}
-                    </div>
-                );
+                if (notes) {
+                    footerText = <div className="italic truncate">{notes}</div>;
+                }
+                break;
+            }
 
-            case 'free_text':
+            case 'free_text': {
                 const content = config.content as string;
-                return (
-                    <div className="text-xs text-cv-text-tertiary truncate min-h-[1.25rem]">
-                        {content || ''}
-                    </div>
-                );
+                footerText = content || '';
+                break;
+            }
 
             default:
-                return <div className="min-h-[1.25rem]" />;
+                break;
         }
+
+        // --- Render the Unified Layout ---
+
+        // Truncate exercise list if it's too long in warmup/accessory types (like it did before)
+        const isListType = ['warmup', 'accessory', 'skill', 'finisher'].includes(block.type);
+        const displayLimit = isListType ? 2 : exerciseList.length;
+        const visibleExercises = exerciseList.slice(0, displayLimit);
+        const extraCount = exerciseList.length - displayLimit;
+
+        if (!pillText && !primaryMetric && !secondaryMetric && visibleExercises.length === 0 && !footerText) {
+            return <div className="min-h-[1.25rem]" />;
+        }
+
+        return (
+            <div className="flex flex-col gap-2 min-h-[1.25rem] mt-1">
+                {/* Main Row: Pill + Metric + SubMetric */}
+                {(pillText || primaryMetric || secondaryMetric) && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {pillText && (
+                            <span
+                                className="font-bold text-[10px] px-1.5 py-0.5 rounded leading-none tracking-wide uppercase"
+                                style={{ backgroundColor: '#f1f5f9', color: '#64748b' }}
+                            >
+                                {pillText}
+                            </span>
+                        )}
+                        {primaryMetric && (
+                            <span className="text-sm text-cv-text-primary font-bold">
+                                {primaryMetric}
+                            </span>
+                        )}
+                        {secondaryMetric}
+                    </div>
+                )}
+
+                {/* Body: Exercises */}
+                {visibleExercises.length > 0 && (
+                    <div className="flex flex-col gap-1 pl-0.5">
+                        {visibleExercises.map((ex, i) => (
+                            <div key={i} className="text-xs grid grid-cols-[min-content_1fr] items-baseline gap-2">
+                                {ex.reps ? (
+                                    <>
+                                        <span className="font-bold text-cv-text-primary whitespace-nowrap text-right min-w-[2ch]">
+                                            {ex.reps}
+                                        </span>
+                                        <span className="text-cv-text-secondary truncate">
+                                            {ex.name}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span className="text-cv-text-secondary truncate col-span-2 flex items-center gap-1.5">
+                                        {isListType && <span className="text-[10px] opacity-50">•</span>}
+                                        {ex.name}
+                                    </span>
+                                )}
+                            </div>
+                        ))}
+                        {extraCount > 0 && (
+                            <div className="text-xs italic text-cv-text-tertiary pl-[3px]">
+                                + {extraCount} más
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Footer: Notes / Rest */}
+                {footerText && (
+                    <div className="text-xs text-cv-text-tertiary">
+                        {footerText}
+                    </div>
+                )}
+            </div>
+        );
     };
 
     return (
