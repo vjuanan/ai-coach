@@ -255,8 +255,17 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
     const router = useRouter();
 
-    // Exercise Cache for validation
-    const { searchLocal } = useExerciseCache();
+    // Exercise Cache for validation and export cues
+    const { exercises, searchLocal } = useExerciseCache();
+
+    // Build map of exercises cues for export
+    const exercisesCues = useMemo(() => {
+        const map: Record<string, string> = {};
+        exercises.forEach(ex => {
+            if (ex.cue) map[ex.name] = ex.cue;
+        });
+        return map;
+    }, [exercises]);
     // Helper to validate a single block (duplicated logic from BlockEditor for safety)
     const validateBlockContent = (block: any): boolean => {
         if (block.type === 'strength_linear') {
@@ -483,8 +492,8 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                         blocks: d.blocks.map(b => ({
                             type: b.type,
                             name: b.name || b.type,
-                            content: convertConfigToText(b.type, b.config, b.name, oneRmStats, true), // Keep for fallback
-                            structure: configToStructure(b.type, b.config, b.name, oneRmStats, true), // NEW structural data
+                            content: convertConfigToText(b.type, b.config, b.name, oneRmStats, true, exercisesCues), // Keep for fallback, pass cues
+                            structure: configToStructure(b.type, b.config, b.name, oneRmStats, true, exercisesCues), // NEW structural data, pass cues
                             section: b.section || 'main',
                             cue: (b.config as any)?.notes || '',
                             format: (b.config as any)?.format || (b.config as any)?.methodology || null,

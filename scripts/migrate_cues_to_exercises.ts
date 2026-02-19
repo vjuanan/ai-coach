@@ -55,6 +55,10 @@ const EXERCISE_CUES: Record<string, string> = {
     'Farmer Carry': 'hombros abajo, postura alta',
     'Sprint': 'sprint al 90-95%, descanso suave',
     'Run (Zone 2)': 'podés hablar frases cortas sin ahogarte',
+
+    // Synonyms / Handling duplicates in DB
+    'Push-up': 'cuerpo en tabla',
+    'Pull-up (Strict)': 'arrancá con escápulas abajo'
 };
 
 async function run() {
@@ -70,28 +74,7 @@ async function run() {
         auth: { persistSession: false }
     });
 
-    console.log('🔧 Step 1: Adding cue column to exercises table...');
-
-    // Try adding the column via RPC (raw SQL). If this fails, we'll try the REST approach.
-    const { error: rpcError } = await supabase.rpc('exec_sql', {
-        query: 'ALTER TABLE exercises ADD COLUMN IF NOT EXISTS cue TEXT DEFAULT NULL;'
-    }).single();
-
-    if (rpcError) {
-        console.log('   ⚠️ RPC approach failed (expected if exec_sql not available). Trying REST approach...');
-        // The column might already exist, let's just try updating a row to check
-        const { data: testEx } = await supabase.from('exercises').select('id, cue').limit(1);
-        if (testEx === null) {
-            console.error('   ❌ Cannot access exercises table at all.');
-            console.log('   Please manually run: ALTER TABLE exercises ADD COLUMN IF NOT EXISTS cue TEXT DEFAULT NULL;');
-            console.log('   You can run this in the Supabase SQL Editor.');
-            // Continue anyway - the updates below will fail gracefully
-        } else {
-            console.log('   ✅ Column already exists or table accessible.');
-        }
-    } else {
-        console.log('   ✅ Column added successfully.');
-    }
+    console.log('🔧 Step 1: Adding cue column to exercises table (Skipping, assumed done)...');
 
     console.log('\n🏋️ Step 2: Populating cues for exercises...');
 
@@ -99,11 +82,21 @@ async function run() {
     let skipped = 0;
 
     for (const [exerciseName, cue] of Object.entries(EXERCISE_CUES)) {
-        // Find exercise by name (case-insensitive)
-        const { data: exercises } = await supabase
+        // Try exact match first
+        let { data: exercises } = await supabase
             .from('exercises')
             .select('id, name, cue')
-            .ilike('name', exerciseName);
+            .eq('name', exerciseName);
+
+        if (!exercises || exercises.length === 0) {
+            // Try case-insensitive
+            const { data: ilikeExercises } = await supabase
+                .from('exercises')
+                .select('id, name, cue')
+                .ilike('name', exerciseName);
+
+            exercises = ilikeExercises;
+        }
 
         if (!exercises || exercises.length === 0) {
             // Try aliases
@@ -112,20 +105,13 @@ async function run() {
                 .select('id, name, cue')
                 .contains('aliases', [exerciseName]);
 
-            if (byAlias && byAlias.length > 0) {
-                for (const ex of byAlias) {
-                    const { error } = await supabase.from('exercises')
-                        .update({ cue })
-                        .eq('id', ex.id);
-                    if (!error) {
-                        console.log(`   ✅ ${ex.name} (via alias) → "${cue.substring(0, 50)}..."`);
-                        updated++;
-                    }
-                }
-            } else {
-                console.log(`   ⏭️ Exercise "${exerciseName}" not found in library. Skipping.`);
-                skipped++;
-            }
+            exercises = byAlias;
+        }
+
+
+        if (!exercises || exercises.length === 0) {
+            console.log(`   ⏭️ Exercise "${exerciseName}" not found in library. Skipping.`);
+            skipped++;
             continue;
         }
 

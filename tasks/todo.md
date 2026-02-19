@@ -34,3 +34,9 @@
 - [ ] Screenshot: Block editor (strength) → no cues in notes
 - [ ] Screenshot: Export preview → cues visible for each exercise
 - [ ] Screenshot: Search/autocomplete working in warmup section
+
+## Block Size Consistency
+- [x] Fix variable block width (set fixed width 160px)
+- [x] Add truncation for long names
+- [x] Add hover tooltip
+- [x] Verify on production (screenshot captured)

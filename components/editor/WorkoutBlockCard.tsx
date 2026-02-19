@@ -27,14 +27,20 @@ interface WorkoutBlockCardProps {
     block: DraftWorkoutBlock;
 }
 
+// Uniform styles for all blocks
+const UNIFORM_BLOCK_STYLE = {
+    color: 'border-l-4 border-slate-200 dark:border-slate-700',
+    hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500'
+};
+
 const blockTypeStyles: Record<string, { color: string; label: string; hoverClass: string }> = {
-    warmup: { color: 'modality-warmup', label: 'Calentamiento', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
-    strength_linear: { color: 'modality-strength', label: 'Fuerza', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
-    metcon_structured: { color: 'modality-metcon', label: 'MetCon', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
-    accessory: { color: 'modality-accessory', label: 'Accesorio', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
-    skill: { color: 'modality-skill', label: 'Habilidad', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
-    free_text: { color: 'border-l-4 border-l-gray-500', label: 'Notas', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md hover:-translate-y-0.5' },
-    finisher: { color: 'border-l-4 border-l-amber-500', label: 'Finisher', hoverClass: 'hover:border-amber-300 dark:hover:border-amber-500 hover:shadow-md hover:-translate-y-0.5' },
+    warmup: { ...UNIFORM_BLOCK_STYLE, label: 'Calentamiento' },
+    strength_linear: { ...UNIFORM_BLOCK_STYLE, label: 'Fuerza' },
+    metcon_structured: { ...UNIFORM_BLOCK_STYLE, label: 'MetCon' },
+    accessory: { ...UNIFORM_BLOCK_STYLE, label: 'Accesorio' },
+    skill: { ...UNIFORM_BLOCK_STYLE, label: 'Habilidad' },
+    free_text: { ...UNIFORM_BLOCK_STYLE, label: 'Notas' },
+    finisher: { ...UNIFORM_BLOCK_STYLE, label: 'Finisher' },
 };
 
 const formatLabels: Record<string, string> = {

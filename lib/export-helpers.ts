@@ -47,7 +47,7 @@ export function calculateKgFromStats(
 // CONFIG TO TEXT HELPERS
 // ==========================================
 
-export function convertConfigToText(type: string, config: any, blockName?: string | null, oneRmStats?: any, excludeNotes: boolean = false): string[] {
+export function convertConfigToText(type: string, config: any, blockName?: string | null, oneRmStats?: any, excludeNotes: boolean = false, exercisesCues?: Record<string, string>): string[] {
     // 1. Handle Strength Linear (Explicit)
     if (type === 'strength_linear') {
         const mainMetric = config.distance ? config.distance : config.reps;
@@ -112,9 +112,53 @@ export function convertConfigToText(type: string, config: any, blockName?: strin
     // 4. Default Handlers (Movements array or Content string)
     if (config.movements && Array.isArray(config.movements)) {
         const lines = config.movements.map((m: any) => {
-            if (typeof m === 'string') return m;
-            if (typeof m === 'object' && m && 'name' in m) return m.name;
-            return '';
+            let name = '';
+            if (typeof m === 'string') name = m;
+            else if (typeof m === 'object' && m && 'name' in m) name = m.name;
+
+            if (!name) return '';
+
+            // 5. Append Cue if available (for list-based blocks like Warmup/Metcon)
+            // We try to match exact name, then case-insensitive, then alias
+            let cue = '';
+            if (exercisesCues) {
+                // Remove embedded existing cues just in case (e.g. "Plank (Cue: ...)")
+                // usage: name might be "Plank: 30s". We need to extract the base exercise name.
+                // This is hard because "Plank: 30s" isn't the key. 
+                // The structure usually is just the name if it's a list? 
+                // In Antopanti script: "Plancha: 30” (Cue: ...)" was the string.
+                // If we just use the string as is, we can't look it up.
+                // But `SmartExerciseInput` saves JUST the name "Plank" in the array for new blocks?
+                // GenericMovementForm saves ` { name: 'Plank' } ` objects or strings.
+
+                // If m is object with name, use m.name.
+                // If m is string, we might not match.
+                // But for NEW blocks, we encourage objects? GenericMovementForm returns objects now?
+                // Let's check GenericMovementForm: `return data.map(item => typeof item === 'string' ? { name: item } : item);`
+                // So internal state is objects. But `onChange` might save strings if it was legacy?
+                // `handleMovementsChange` calls `onChange('movements', newMovements)`. 
+                // So config.movements is strictly `MovementObject[]` now.
+
+                // However, `convertConfigToText` handles strings too.
+
+                // Let's try to match the name.
+                const cleanName = name.split(':')[0].trim(); // "Plank: 30s" -> "Plank"
+
+                if (exercisesCues[name]) cue = exercisesCues[name];
+                else if (exercisesCues[cleanName]) cue = exercisesCues[cleanName];
+                else {
+                    const key = Object.keys(exercisesCues).find(k => k.toLowerCase() === name.toLowerCase() || k.toLowerCase() === cleanName.toLowerCase());
+                    if (key) cue = exercisesCues[key];
+                }
+            }
+
+            if (cue) {
+                // If the name already has the cue (legacy), don't add it.
+                if (name.toLowerCase().includes(cue.toLowerCase().substring(0, 10))) return name;
+                return `${name} | Cue: ${cue}`;
+            }
+
+            return name;
         }).filter(Boolean);
 
         if (config.notes && !excludeNotes) lines.push(config.notes);
@@ -128,7 +172,7 @@ export function convertConfigToText(type: string, config: any, blockName?: strin
     return !excludeNotes ? [config.notes || ''] : [];
 }
 
-export function configToStructure(type: string, config: any, blockName?: string | null, oneRmStats?: any, excludeNotes: boolean = false) {
+export function configToStructure(type: string, config: any, blockName?: string | null, oneRmStats?: any, excludeNotes: boolean = false, exercisesCues?: Record<string, string>) {
     const res = {
         sets: '',
         reps: '',
@@ -202,7 +246,7 @@ export function configToStructure(type: string, config: any, blockName?: string 
     }
 
     // 3. Defaults
-    const existingLines = convertConfigToText(type, config, blockName, oneRmStats, excludeNotes);
+    const existingLines = convertConfigToText(type, config, blockName, oneRmStats, excludeNotes, exercisesCues);
     if (existingLines.length > 0) {
         res.text = existingLines.join('\n');
     }
@@ -214,7 +258,7 @@ export function configToStructure(type: string, config: any, blockName?: string 
 // MAIN TRANSFORMATION FUNCTION
 // ==========================================
 
-export function prepareProgramForExport(program: any) {
+export function prepareProgramForExport(program: any, exercisesCues?: Record<string, string>) {
     if (!program || !program.mesocycles) return null;
 
     const mesocycles = program.mesocycles;
@@ -237,16 +281,29 @@ export function prepareProgramForExport(program: any) {
             .map((d: any) => ({
                 name: dayNames[(d.day_number - 1) % 7] || `Día ${d.day_number}`,
                 day_number: d.day_number, // Explicitly keep day_number for DaySection
-                blocks: (d.blocks || []).map((b: any) => ({
-                    type: b.type,
-                    name: b.name || b.type,
-                    content: convertConfigToText(b.type, b.config, b.name, oneRmStats, true),
-                    structure: configToStructure(b.type, b.config, b.name, oneRmStats, true),
-                    section: b.section || 'main',
-                    cue: (b.config as any)?.notes || '',
-                    format: (b.config as any)?.format || (b.config as any)?.methodology || null,
-                    rest: (b.config as any)?.rest || null,
-                }))
+                blocks: (d.blocks || []).map((b: any) => {
+                    // Resolve cue from library if available
+                    let exerciseCue = '';
+                    if (exercisesCues && b.name && exercisesCues[b.name]) {
+                        exerciseCue = exercisesCues[b.name];
+                    }
+                    if (!exerciseCue && b.name && exercisesCues) {
+                        // Try case insensitive
+                        const key = Object.keys(exercisesCues).find(k => k.toLowerCase() === b.name?.toLowerCase());
+                        if (key) exerciseCue = exercisesCues[key];
+                    }
+
+                    return {
+                        type: b.type,
+                        name: b.name || b.type,
+                        content: convertConfigToText(b.type, b.config, b.name, oneRmStats, true, exercisesCues),
+                        structure: configToStructure(b.type, b.config, b.name, oneRmStats, true, exercisesCues),
+                        section: b.section || 'main',
+                        cue: exerciseCue || (b.config as any)?.notes || '', // Fallback to notes if no library cue (or if user manually added notes)
+                        format: (b.config as any)?.format || (b.config as any)?.methodology || null,
+                        rest: (b.config as any)?.rest || null,
+                    };
+                })
             }))
     })).filter(w => w.days.length > 0); // Only weeks with content
 

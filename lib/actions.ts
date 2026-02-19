@@ -1816,7 +1816,7 @@ export async function getAllExercisesLight() {
     const supabase = createServerClient();
     const { data, error } = await supabase
         .from('exercises')
-        .select('id, name, category, subcategory, equipment, aliases')
+        .select('id, name, category, subcategory, equipment, aliases, cue')
         .order('name');
 
     if (error) {
