@@ -540,20 +540,25 @@ const MinimalistProgression = ({
     monthlyStrategy?: { progressions: MonthlyProgression[] };
     theme: ExportTheme;
 }) => {
-    // Extract unique exercises that have progressions
-    const exercises = new Set<string>();
-    if (monthlyStrategy?.progressions) {
-        monthlyStrategy.progressions.forEach(p => {
-            if (!isConstantProgression(p.progression)) {
-                exercises.add(p.name);
-            }
-        });
-    }
+    // Extract unique exercises that have progressions enabled
+    // We check the first instance of the exercise (usually Week 1) to determine its toggle state
+    // This prevents glitches where an exercise might have a stale progression_id in later weeks
+    const exerciseToggleState = new Map<string, boolean>();
+    const sortedWeeks = [...weeks].sort((a, b) => a.weekNumber - b.weekNumber);
 
-    // Also scan weeks for exercises that might not be in strategy but are main lifts
-    weeks.forEach(w => w.days.forEach(d => d.blocks.forEach(b => {
-        if (b.type === 'strength_linear' && b.name && b.progression_id) exercises.add(b.name);
+    sortedWeeks.forEach(w => w.days.forEach(d => d.blocks.forEach(b => {
+        if (b.type === 'strength_linear' && b.name) {
+            if (!exerciseToggleState.has(b.name)) {
+                const isOn = !!b.progression_id && b.progression_id !== 'null' && b.progression_id !== 'false';
+                exerciseToggleState.set(b.name, isOn);
+            }
+        }
     })));
+
+    const exercises = new Set<string>();
+    exerciseToggleState.forEach((isOn, name) => {
+        if (isOn) exercises.add(name);
+    });
 
     const exerciseList = Array.from(exercises).sort();
     if (exerciseList.length === 0) return null;
