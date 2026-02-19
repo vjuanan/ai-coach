@@ -20,6 +20,7 @@ interface DraftWorkoutBlock {
     config: Record<string, unknown>;
     isDirty?: boolean;
     progression_id?: string | null;
+    section?: 'warmup' | 'main' | 'cooldown';
 }
 
 interface WorkoutBlockCardProps {
