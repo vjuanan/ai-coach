@@ -73,78 +73,72 @@ interface BlockBuilderPanelProps {
     onClose: () => void;
 }
 
-// Block type options with icons
+// Block type options with icons — Uniform styling (all same gray)
+const UNIFORM_COLOR = 'text-slate-400 dark:text-slate-500';
+const UNIFORM_BG = 'bg-slate-50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800/50';
+
 const blockTypeOptions: {
     type: BlockType;
     label: string;
     description: string;
     color: string;
     bgColor: string;
-    glowColor: string;
     icon: React.ElementType;
 }[] = [
-
         {
             type: 'warmup',
             label: 'Calentamiento',
             description: 'Movilidad y activación',
-            color: 'text-orange-600 dark:text-orange-400',
-            bgColor: 'bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50',
-            glowColor: 'rgba(234, 88, 12, 0.7)',
+            color: UNIFORM_COLOR,
+            bgColor: UNIFORM_BG,
             icon: Flame
         },
         {
             type: 'strength_linear',
             label: 'Classic',
             description: 'Series, reps y porcentajes',
-            color: 'text-red-600 dark:text-red-400',
-            bgColor: 'bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50',
-            glowColor: 'rgba(239, 68, 68, 0.7)',
+            color: UNIFORM_COLOR,
+            bgColor: UNIFORM_BG,
             icon: Dumbbell
         },
         {
             type: 'metcon_structured',
             label: 'MetCon',
             description: 'AMRAP, EMOM, For Time',
-            color: 'text-cv-accent',
-            bgColor: 'bg-teal-50 dark:bg-teal-900/30 hover:bg-teal-100 dark:hover:bg-teal-900/50',
-            glowColor: 'rgba(134, 196, 163, 0.8)',
+            color: UNIFORM_COLOR,
+            bgColor: UNIFORM_BG,
             icon: Zap
         },
         {
             type: 'accessory',
             label: 'Accesorio',
             description: 'Trabajo complementario',
-            color: 'text-purple-600 dark:text-purple-400',
-            bgColor: 'bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50',
-            glowColor: 'rgba(168, 85, 247, 0.7)',
+            color: UNIFORM_COLOR,
+            bgColor: UNIFORM_BG,
             icon: ListOrdered
         },
         {
             type: 'skill',
             label: 'Habilidad',
             description: 'Práctica técnica',
-            color: 'text-blue-600 dark:text-blue-400',
-            bgColor: 'bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50',
-            glowColor: 'rgba(59, 130, 246, 0.7)',
+            color: UNIFORM_COLOR,
+            bgColor: UNIFORM_BG,
             icon: Sparkles
         },
         {
             type: 'free_text',
             label: 'Texto Libre',
             description: 'Notas y comentarios',
-            color: 'text-slate-600 dark:text-slate-400',
-            bgColor: 'bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800',
-            glowColor: 'rgba(100, 116, 139, 0.5)',
+            color: UNIFORM_COLOR,
+            bgColor: UNIFORM_BG,
             icon: FileText
         },
         {
             type: 'finisher',
             label: 'Finisher',
             description: 'Dropsets, Rest-Pause, etc',
-            color: 'text-amber-600 dark:text-amber-400',
-            bgColor: 'bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50',
-            glowColor: 'rgba(217, 119, 6, 0.7)',
+            color: UNIFORM_COLOR,
+            bgColor: UNIFORM_BG,
             icon: Target
         },
     ];
@@ -316,26 +310,19 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                     <button
                                         key={option.type}
                                         onClick={() => handleAddBlock(option.type)}
-                                        className={`w-full relative flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${option.bgColor} group hover:scale-[1.01] hover:-translate-y-0.5`}
-                                        style={{ '--glow-color': option.glowColor } as React.CSSProperties}
-                                        onMouseEnter={(e) => {
-                                            (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px -2px ${option.glowColor}`;
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-                                        }}
+                                        className={`w-full relative flex items-center gap-3 p-3 rounded-xl transition-colors duration-150 ${option.bgColor} group`}
                                     >
-                                        <div className={`w-9 h-9 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm ${option.color}`}>
+                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500">
                                             <Icon size={18} />
                                         </div>
-                                        <div className="text-left flex-1 pr-12">
-                                            <p className="font-semibold text-sm text-cv-text-primary">{option.label}</p>
+                                        <div className="text-left flex-1 pr-8">
+                                            <p className="font-medium text-sm text-cv-text-secondary">{option.label}</p>
                                             <p className="text-[10px] text-cv-text-tertiary">{option.description}</p>
                                         </div>
 
                                         {/* Hover Add Indicator */}
-                                        <div className="absolute top-1/2 -translate-y-1/2 right-3 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-white/50 dark:bg-black/20 p-1.5 rounded-full backdrop-blur-sm scale-90 group-hover:scale-100 shadow-sm border border-black/5 dark:border-white/10">
-                                            <Plus size={14} className="text-cv-text-primary" />
+                                        <div className="absolute top-1/2 -translate-y-1/2 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                                            <Plus size={14} className="text-slate-400" />
                                         </div>
                                     </button>
                                 );
@@ -388,7 +375,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                                 : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-500 hover:z-30'
                                                             }
                                                             `}
-                                                        style={!isActive ? { '--hover-shadow': blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)' } as React.CSSProperties : undefined}
+                                                        style={undefined}
                                                         title={block.name || blockOption?.label || "Sin nombre"}
                                                     >
                                                         {/* Delete Trash Button - Visible on Hover - Minimalist Style */}
@@ -410,7 +397,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                             <Trash2 size={13} strokeWidth={2.5} />
                                                         </button>
 
-                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'
+                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400'
                                                             }`}>
                                                             <Icon size={14} />
                                                         </div>
@@ -486,7 +473,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                             }}
                                                             className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left group"
                                                         >
-                                                            <div className={`w-7 h-7 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center ${option.color} group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors`}>
+                                                            <div className="w-7 h-7 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 transition-colors">
                                                                 <Icon size={14} />
                                                             </div>
                                                             <div>

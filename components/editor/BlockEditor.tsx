@@ -219,7 +219,11 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         const isAllowed = !block?.type || (allowed && allowed.includes(cat));
 
         if (isAllowed) {
-            const methods = trainingMethodologies.filter(m => m.category === cat);
+            let methods = trainingMethodologies.filter(m => m.category === cat);
+            // For warmup blocks, Classic = only Series x Reps (STANDARD)
+            if (blockType === 'warmup' && cat === 'strength') {
+                methods = methods.filter(m => m.code === 'STANDARD');
+            }
             if (methods.length > 0) {
                 acc[cat] = methods;
             }
@@ -327,7 +331,14 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                             return (
                                                 <button
                                                     key={category}
-                                                    onClick={() => setExpandedCategory(category)}
+                                                    onClick={() => {
+                                                        setExpandedCategory(category);
+                                                        // Auto-select if category has only 1 methodology
+                                                        const catItems = groupedMethodologies[category] || [];
+                                                        if (catItems.length === 1) {
+                                                            handleFormatChange(catItems[0].code);
+                                                        }
+                                                    }}
                                                     className={`
                                                     flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border
                                                     ${isExpanded
@@ -345,8 +356,8 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                         })}
                                     </div>
 
-                                    {/* Active Category Options */}
-                                    {expandedCategory && (groupedMethodologies[expandedCategory]?.length ?? 0) > 0 && (
+                                    {/* Active Category Options - Only show if more than 1 option */}
+                                    {expandedCategory && (groupedMethodologies[expandedCategory]?.length ?? 0) > 1 && (
                                         <div className="bg-slate-50 dark:bg-cv-bg-tertiary/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-1 duration-200">
                                             <div className="flex flex-wrap gap-2">
                                                 {(groupedMethodologies[expandedCategory] || []).map(m => {
