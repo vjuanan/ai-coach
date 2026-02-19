@@ -48,7 +48,6 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
     const isStrengthLike = methodology?.category === 'strength';
     const isStandard = methodology?.code === 'STANDARD';
 
-    // Check if it's a Warm Up block
     const isWarmUp = blockType === 'warmup';
 
     // Strict display rules:
@@ -56,10 +55,12 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
     // - Sets: Only for Strength/Standard
     // - If no methodology selected (undefined), show NEITHER
     const showRounds = isMetconLike && !isStandard;
-    const showSets = isStrengthLike || isStandard;
+    const showGlobalSets = (methodology?.code === 'SUPER_SET' || methodology?.code === 'GIANT_SET');
+    const showSetsPerMovement = (isStrengthLike || isStandard) && !showGlobalSets;
 
     const movements = parseMovements((config.movements as unknown[]) || []);
     const rounds = (config.rounds as string) || '';
+    const globalSets = (config.sets as string) || '';
 
     const handleMovementsChange = (newMovements: MovementObject[]) => {
         onChange('movements', newMovements);
@@ -82,17 +83,17 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-            {/* 1. Global Rounds Input - Only if methodology supports it */}
-            {showRounds && (
+            {/* 1. Global Rounds/Sets Input - Only if methodology supports it */}
+            {(showRounds || showGlobalSets) && (
                 <div className="max-w-md"> {/* Limited width */}
                     <InputCard
-                        label="RONDAS / VUELTAS"
-                        value={rounds}
-                        onChange={(val) => onChange('rounds', val)}
+                        label={showRounds ? "RONDAS / VUELTAS" : "SERIES"}
+                        value={showRounds ? rounds : globalSets}
+                        onChange={(val) => onChange(showRounds ? 'rounds' : 'sets', val)}
                         type="text"
                         icon={RotateCcw}
-                        placeholder="Ej: 3, 4, 5"
-                        presets={[3, 4, 5]}
+                        placeholder={showRounds ? "Ej: 3, 4, 5" : "3"}
+                        presets={[2, 3, 4, 5]}
                     />
                 </div>
             )}
@@ -116,7 +117,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                             movement={movement}
                             onChange={(updates) => updateMovement(index, updates)}
                             onRemove={() => removeMovement(index)}
-                            showSets={showSets}
+                            showSets={showSetsPerMovement}
                             isWarmUp={isWarmUp}
                         />
                     ))}

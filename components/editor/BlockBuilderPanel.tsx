@@ -186,7 +186,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
             initialConfig = {
                 sets: 4,
                 reps: 10,
-                percentage: 75,
+                percentage: '75',
                 rest: '2:00'
             };
         }
@@ -249,16 +249,28 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                             <div className="flex-1 flex items-center gap-3 overflow-x-auto pb-2 pt-2 pl-1 no-scrollbar" style={{ isolation: 'isolate' }}>
                                 <SortableContext
                                     items={[...currentDay.blocks]
-                                        .filter(b => (b.section || 'main') === (blockBuilderSection || 'main'))
+                                        .filter(b => {
+                                            const isWarmup = b.section === 'warmup' || b.type === 'warmup';
+                                            const targetIsWarmup = blockBuilderSection === 'warmup';
+                                            return targetIsWarmup ? isWarmup : !isWarmup;
+                                        })
                                         .sort((a, b) => a.order_index - b.order_index)
                                         .map(b => `builder-${b.id}`)}
                                     strategy={horizontalListSortingStrategy}
                                 >
                                     {[...currentDay.blocks]
-                                        .filter(b => (b.section || 'main') === (blockBuilderSection || 'main'))
+                                        .filter(b => {
+                                            const isWarmup = b.section === 'warmup' || b.type === 'warmup';
+                                            const targetIsWarmup = blockBuilderSection === 'warmup';
+                                            return targetIsWarmup ? isWarmup : !isWarmup;
+                                        })
                                         .length > 0 ? (
                                         [...currentDay.blocks]
-                                            .filter(b => (b.section || 'main') === (blockBuilderSection || 'main'))
+                                            .filter(b => {
+                                                const isWarmup = b.section === 'warmup' || b.type === 'warmup';
+                                                const targetIsWarmup = blockBuilderSection === 'warmup';
+                                                return targetIsWarmup ? isWarmup : !isWarmup;
+                                            })
                                             .sort((a, b) => a.order_index - b.order_index)
                                             .map((block, index) => {
                                                 const isActive = selectedBlockId === block.id;

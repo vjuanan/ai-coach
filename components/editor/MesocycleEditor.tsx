@@ -538,7 +538,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
                                 // Format: 3x10 (75kg) or 3x10 @ 75%
                                 const volume = (sets && (reps || config.distance)) ? `${sets}x${reps || config.distance}` : '';
-                                const intensity = percentage ? (percentage.endsWith('%') ? percentage : `${percentage}%`) : '';
+                                const intensity = percentage ? (String(percentage).endsWith('%') ? percentage : `${percentage}%`) : '';
 
                                 const parts = [];
                                 if (volume) parts.push(volume);

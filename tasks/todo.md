@@ -1,11 +1,10 @@
-- [x] Verificar diseño del Sidebar en producción <!-- id: 0 -->
-    - [x] Capturar screenshots del estado expandido <!-- id: 1 -->
-    - [x] Validar tipografía y colores <!-- id: 2 -->
-    - [x] Validar comportamiento de colapso (Botón removido intencionalmente)
-- [ ] Diseñar y reemplazar logo
-    - [x] Generar logo "Dark Green Elegant" (logo-slate.png)
-    - [x] Generar versión blanca (logo-white.png)
-    - [x] Recolorear icon.png y favicon.ico (Fix Dashboard)
-    - [x] Corregir texto "AI Coach" y color #334155
-    - [x] Verificar implementación <!-- id: 3 -->
-- [x] Refinar cabecera del editor (compactar altura, 'Sin asignar' en línea, botones pequeños)
+# Tareas de Creación de Programa Cardio
+
+- [/] Planificar y configurar el entorno <!-- id: 0 -->
+- [ ] Crear el programa en el navegador (Lunes: Nadar, Miércoles: Correr, Viernes: Remo) <!-- id: 1 -->
+- [ ] Completar todos los inputs (distancia, duración, etc.) <!-- id: 2 -->
+- [ ] Exportar el programa y verificar advertencias <!-- id: 3 -->
+- [ ] Verificación final con screenshots <!-- id: 4 -->
+
+## Revisión de Resultados
+(Pendiente)

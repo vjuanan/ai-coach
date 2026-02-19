@@ -583,6 +583,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 }
 
                 {/* 4. FALLBACK FORMS (No Methodology) */}
+                {/* 4. FALLBACK FORMS (No Methodology) */}
                 {
                     !currentMethodology && (
                         <>
@@ -596,6 +597,19 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
 
                             {(block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill' || block.type === 'finisher') && !currentMethodology && (
                                 <GenericMovementForm key={blockId} config={config} onChange={handleConfigChange} methodology={currentMethodology} blockType={block.type} />
+                            )}
+
+                            {/* CRITICAL UI FIX: Force user to select a methodology for MetCon */}
+                            {block.type === 'metcon_structured' && (
+                                <div className="p-6 text-center border-2 border-dashed border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-900/30 rounded-xl">
+                                    <AlertCircle className="w-10 h-10 text-amber-500 mx-auto mb-3" />
+                                    <h3 className="text-sm font-bold text-cv-text-primary mb-1">
+                                        Selecciona un tipo de MetCon
+                                    </h3>
+                                    <p className="text-xs text-cv-text-secondary max-w-[200px] mx-auto">
+                                        Debes elegir una metodología (EMOM, AMRAP, For Time, etc.) arriba para configurar este bloque.
+                                    </p>
+                                </div>
                             )}
                         </>
                     )
