@@ -20,7 +20,7 @@ import {
     Plus,
     Target
 } from 'lucide-react';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import type { BlockType, WorkoutFormat, WorkoutConfig } from '@/lib/supabase/types';
 import { SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -28,6 +28,22 @@ import { CSS } from '@dnd-kit/utilities';
 // Sortable Item Wrapper for Horizontal List
 function SortableBuilderItem({ id, children, isActive }: { id: string; children: React.ReactNode; isActive: boolean }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+    const localRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (isActive && localRef.current) {
+            localRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'center'
+            });
+        }
+    }, [isActive]);
+
+    const setRefs = (node: HTMLDivElement | null) => {
+        setNodeRef(node);
+        localRef.current = node;
+    };
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -37,7 +53,7 @@ function SortableBuilderItem({ id, children, isActive }: { id: string; children:
     };
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+        <div ref={setRefs} style={style} {...attributes} {...listeners}>
             {children}
         </div>
     );

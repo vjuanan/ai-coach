@@ -660,33 +660,37 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     block.type !== 'strength_linear' && (
                         currentMethodology && currentMethodology.code === 'AMRAP' ? (
                             <div className="flex gap-4">
+                                {/* Time Cap - 40% - NOW FIRST */}
+                                <div className="w-[40%]">
+                                    <label className="block text-xs font-bold text-cv-text-secondary mb-2 uppercase tracking-wide text-center">
+                                        Time Cap (Min)
+                                    </label>
+                                    <div className="relative h-[80px]">
+                                        <Clock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-cv-text-tertiary opacity-50" />
+                                        <input
+                                            type="number"
+                                            value={config.minutes || ''}
+                                            onChange={(e) => handleConfigChange('minutes', parseInt(e.target.value) || 0)}
+                                            className="w-full h-full pl-10 pr-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-800 focus:border-cv-accent focus:ring-4 focus:ring-cv-accent/10 transition-all font-black text-4xl text-cv-text-primary text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                            placeholder="00"
+                                        />
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-cv-text-tertiary pointer-events-none uppercase tracking-wider">
+                                            MIN
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {/* Notes - 60% */}
                                 <div className="w-[60%]">
-                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">
+                                    <label className="block text-xs font-bold text-cv-text-secondary mb-2 uppercase tracking-wide">
                                         Notas
                                     </label>
                                     <textarea
                                         value={(config.notes as string) || ''}
                                         onChange={(e) => handleConfigChange('notes', e.target.value)}
-                                        placeholder="Focus on quality, tempo, etc."
-                                        className="cv-input min-h-[80px] resize-none"
+                                        placeholder="Objetivo, estrategia, rpe..."
+                                        className="cv-input h-[80px] resize-none"
                                     />
-                                </div>
-                                {/* Time Cap - 40% */}
-                                <div className="w-[40%]">
-                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2 uppercase tracking-wide">
-                                        Time Cap (Min)
-                                    </label>
-                                    <div className="relative">
-                                        <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                                        <input
-                                            type="number"
-                                            value={config.minutes || ''}
-                                            onChange={(e) => handleConfigChange('minutes', parseInt(e.target.value) || 0)}
-                                            className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-bold text-lg text-cv-text-primary h-[80px]"
-                                            placeholder="Min"
-                                        />
-                                    </div>
                                 </div>
                             </div>
                         ) : (
