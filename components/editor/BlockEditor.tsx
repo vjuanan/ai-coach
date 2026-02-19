@@ -658,17 +658,50 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 {/* 5. NOTES (Visible for all except Strength, which has it inline) */}
                 {
                     block.type !== 'strength_linear' && (
-                        <div>
-                            <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                                Notas
-                            </label>
-                            <textarea
-                                value={(config.notes as string) || ''}
-                                onChange={(e) => handleConfigChange('notes', e.target.value)}
-                                placeholder="Focus on quality, tempo, etc."
-                                className="cv-input min-h-[60px] resize-none"
-                            />
-                        </div>
+                        currentMethodology && currentMethodology.code === 'AMRAP' ? (
+                            <div className="flex gap-4">
+                                {/* Notes - 60% */}
+                                <div className="w-[60%]">
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">
+                                        Notas
+                                    </label>
+                                    <textarea
+                                        value={(config.notes as string) || ''}
+                                        onChange={(e) => handleConfigChange('notes', e.target.value)}
+                                        placeholder="Focus on quality, tempo, etc."
+                                        className="cv-input min-h-[80px] resize-none"
+                                    />
+                                </div>
+                                {/* Time Cap - 40% */}
+                                <div className="w-[40%]">
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2 uppercase tracking-wide">
+                                        Time Cap (Min)
+                                    </label>
+                                    <div className="relative">
+                                        <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                                        <input
+                                            type="number"
+                                            value={config.minutes || ''}
+                                            onChange={(e) => handleConfigChange('minutes', parseInt(e.target.value) || 0)}
+                                            className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-bold text-lg text-cv-text-primary h-[80px]"
+                                            placeholder="Min"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div>
+                                <label className="block text-sm font-medium text-cv-text-secondary mb-2">
+                                    Notas
+                                </label>
+                                <textarea
+                                    value={(config.notes as string) || ''}
+                                    onChange={(e) => handleConfigChange('notes', e.target.value)}
+                                    placeholder="Focus on quality, tempo, etc."
+                                    className="cv-input min-h-[60px] resize-none"
+                                />
+                            </div>
+                        )
                     )
                 }
 

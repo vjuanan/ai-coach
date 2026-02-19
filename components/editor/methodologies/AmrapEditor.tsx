@@ -75,26 +75,6 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
         <div className="space-y-6 animate-in fade-in duration-300">
             {/* Top Config Row: Inputs based on Mode */}
             <div className="flex flex-wrap items-center gap-4 bg-slate-50 dark:bg-cv-bg-tertiary/30 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50">
-                {mode === 'AMRAP' && (
-                    <div className="flex-1 min-w-[140px]">
-                        <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide">
-                            Time Cap / Duración
-                        </label>
-                        <div className="flex items-center gap-2">
-                            <div className="relative flex-1">
-                                <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                                <input
-                                    type="number"
-                                    value={config.minutes || ''}
-                                    onChange={(e) => onChange('minutes', parseInt(e.target.value) || 0)}
-                                    className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
-                                    placeholder="Minutos"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
-
                 {(mode === 'RFT' || mode === 'CHIPPER') && (
                     <>
                         <div className="flex-1 min-w-[120px]">
