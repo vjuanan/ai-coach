@@ -202,10 +202,6 @@ export function SingleDayView({ mesocycle, dayId, onSelectDay }: SingleDayViewPr
                         </Popover.Portal>
                     </Popover.Root>
 
-                    {/* Week indicator */}
-                    <span className="text-xs text-cv-text-tertiary ml-2 border-l border-slate-200 dark:border-slate-700 pl-3">
-                        Semana {mesocycle.week_number}
-                    </span>
                 </div>
             </div>
 
