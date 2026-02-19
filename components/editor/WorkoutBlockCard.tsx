@@ -298,7 +298,10 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                         wasDraggingRef.current = false;
                         return;
                     }
-                    enterBlockBuilder(block.day_id);
+                    // Fix: Explicitly pass section to enterBlockBuilder
+                    // This ensures the BlockBuilderPanel switches to the correct tab (Warmup vs Training)
+                    const targetSection = (block.section === 'warmup' || block.type === 'warmup') ? 'warmup' : 'main';
+                    enterBlockBuilder(block.day_id, targetSection);
                     selectBlock(block.id);
                 }}
             >

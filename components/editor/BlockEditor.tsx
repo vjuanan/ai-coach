@@ -497,7 +497,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                         inputRef={firstInputRef}
                                     />
                                 </div>
-                                {block.name && searchLocal(block.name).find(e => e.name === block.name) && (
+                                {block.name && searchLocal(block.name).find(e => e.name.toLowerCase() === block.name?.toLowerCase()) && (
                                     <button
                                         onClick={() => setShowEditExerciseModal(true)}
                                         className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors border border-slate-200"
@@ -528,7 +528,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 <ExerciseEditModal
                                     isOpen={showEditExerciseModal}
                                     onClose={() => setShowEditExerciseModal(false)}
-                                    exercise={searchLocal(block.name).find(e => e.name === block.name)}
+                                    exercise={searchLocal(block.name).find(e => e.name.toLowerCase() === block.name?.toLowerCase())}
                                     onSuccess={(updatedExercise) => {
                                         // Update block name if changed
                                         if (updatedExercise.name !== block.name) {
