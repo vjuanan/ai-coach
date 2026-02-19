@@ -153,6 +153,9 @@ export function SmartExerciseInput({
                                     <span className="font-medium">{exercise.name}</span>
                                     <span className="text-xs text-cv-text-tertiary">
                                         {exercise.category} {exercise.subcategory ? `• ${exercise.subcategory}` : ''}
+                                        {exercise.matchedAlias && (
+                                            <span className="ml-1 text-cv-accent/70">• Coincide con &quot;{exercise.matchedAlias}&quot;</span>
+                                        )}
                                     </span>
                                 </button>
                             ))}

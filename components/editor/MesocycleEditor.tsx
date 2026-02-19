@@ -5,6 +5,7 @@
 import { useCallback, useState, useMemo, useEffect } from 'react';
 import { useEditorStore } from '@/lib/store';
 import { getClient } from '@/lib/actions';
+import { prepareProgramForExport } from '@/lib/export-helpers';
 import { WeekView } from './WeekView';
 // import { SmartInspector } from './SmartInspector';
 import { SingleDayView } from './SingleDayView';
@@ -474,163 +475,27 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         };
     }, [currentMesocycle]);
 
-    // Build monthly export data with all weeks
-    const exportWeeks = useMemo(() => {
-        const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-        const oneRmStats = (programClient?.details as any)?.oneRmStats;
-
-        return mesocycles
-            .sort((a, b) => a.week_number - b.week_number)
-            .map(meso => ({
-                weekNumber: meso.week_number,
-                focus: meso.focus || '',
-                days: meso.days
-                    .filter(d => !d.is_rest_day && d.blocks.length > 0) // Only include non-rest days with blocks
-                    .sort((a, b) => a.day_number - b.day_number)
-                    .map(d => ({
-                        name: dayNames[(d.day_number - 1) % 7] || `Día ${d.day_number}`,
-                        blocks: d.blocks.map(b => ({
-                            type: b.type,
-                            name: b.name || b.type,
-                            content: convertConfigToText(b.type, b.config, b.name, oneRmStats, true, exercisesCues), // Keep for fallback, pass cues
-                            structure: configToStructure(b.type, b.config, b.name, oneRmStats, true, exercisesCues), // NEW structural data, pass cues
-                            section: b.section || 'main',
-                            cue: (b.config as any)?.notes || '',
-                            format: (b.config as any)?.format || (b.config as any)?.methodology || null,
-                            rest: (b.config as any)?.rest || null,
-                        }))
-                    }))
-            }));
-    }, [mesocycles, programClient]);
-
-    // Build monthly strategy with progressions
-    const monthlyStrategy = useMemo(() => {
-        const firstMeso = mesocycles.find(m => m.week_number === 1);
-        const firstAttrs = (firstMeso?.attributes || {}) as Record<string, unknown>;
-        const oneRmStats = (programClient?.details as any)?.oneRmStats;
-
-        const progressionMap = new Map<string, { values: string[], variable?: string, rest?: string }>();
-        mesocycles
-            .sort((a, b) => a.week_number - b.week_number)
-            .forEach(meso => {
-                meso.days.forEach(day => {
-                    day.blocks.forEach(block => {
-                        // Check if block is part of a progression OR is explicitly strength_linear
-                        // We prioritize progression_id but keep strength_linear for backward compatibility
-                        const isProgression = block.progression_id || block.type === 'strength_linear';
-
-                        if (isProgression && block.name) {
-                            const config = block.config as Record<string, unknown>;
-                            let value = '';
-
-                            // Determine value based on progression_variable if available
-                            const progressionVar = config.progression_variable as string;
-
-                            if (block.type === 'strength_linear') {
-                                const percentage = config.percentage as string || '';
-                                const sets = config.sets as number || 0;
-                                const reps = config.reps as number || 0;
-                                const weight = config.weight as string || '';
-                                const rpe = config.rpe as string || '';
-
-                                // Calculate KG if possible
-                                let kgText = '';
-                                if (percentage && block.name && oneRmStats) {
-                                    const pctValue = parseFloat(percentage);
-                                    if (!isNaN(pctValue)) {
-                                        const kg = calculateKgFromStats(oneRmStats, block.name, pctValue);
-                                        if (kg) kgText = `(${kg}kg)`;
-                                    }
-                                } else if (weight) {
-                                    kgText = `(${weight})`;
-                                }
-
-                                // Format: 3x10 (75kg) or 3x10 @ 75%
-                                const volume = (sets && (reps || config.distance)) ? `${sets}x${reps || config.distance}` : '';
-                                const intensity = percentage ? (String(percentage).endsWith('%') ? percentage : `${percentage}%`) : '';
-
-                                const parts = [];
-                                if (volume) parts.push(volume);
-                                if (kgText) parts.push(kgText);
-                                else if (intensity) parts.push(`@ ${intensity}`);
-                                if (rpe) parts.push(`@ RPE ${rpe}`);
-
-                                value = parts.join(' ') || '-';
-
-                            } else if (block.type === 'metcon_structured') {
-                                // For metcons, maybe show time cap, rounds, or just "Check"
-                                value = (config.time_cap as string) || (config.rounds as string) || 'Active';
-                            } else {
-                                value = 'Active';
-                            }
-
-                            if (!progressionMap.has(block.name)) {
-                                const restValue = (config.rest as string) || undefined;
-                                progressionMap.set(block.name, { values: [], variable: progressionVar, rest: restValue });
-                            }
-
-                            const entry = progressionMap.get(block.name)!;
-                            // Update variable if not set (or if changed, though usually consistent per ID)
-                            if (!entry.variable && progressionVar) entry.variable = progressionVar;
-
-                            // Fill gaps with dashes if missed weeks
-                            while (entry.values.length < meso.week_number - 1) {
-                                entry.values.push('-');
-                            }
-                            entry.values.push(value);
-                        }
-                    });
-                });
-            });
-
-        const progressions = Array.from(progressionMap.entries()).map(([name, data]) => ({
-            name,
-            progression: data.values,
-            variable: data.variable,
-            rest: data.rest
-        }));
-
-        const objectives: string[] = [];
-        mesocycles.forEach(meso => {
-            const attrs = (meso.attributes || {}) as Record<string, unknown>;
-            if (attrs.considerations && typeof attrs.considerations === 'string') {
-                const lines = attrs.considerations.split('\n').filter(l => l.trim());
-                objectives.push(...lines.slice(0, 1));
-            }
-        });
-
-        return {
-            focus: (firstAttrs.focus as string) || firstMeso?.focus || programName,
-            duration: `${mesocycles.length} semanas`,
-            objectives: Array.from(new Set(objectives)).slice(0, 4),
-            progressions,
+    // Use centralized export logic (Fixes missing cues)
+    const exportData = useMemo(() => {
+        const fullProgram = {
+            id: programId,
+            name: programName,
+            mesocycles: mesocycles,
+            client: programClient ? {
+                id: programClient.id!,
+                name: programClient.name!,
+                type: programClient.type as any,
+                details: programClient.details
+            } : undefined,
+            coach: { full_name: programCoachName },
+            attributes: programAttributes,
         };
-    }, [mesocycles, programName, programClient]);
+        return prepareProgramForExport(fullProgram, exercisesCues);
+    }, [programId, programName, mesocycles, programClient, programCoachName, programAttributes, exercisesCues]);
 
-    // Build week date ranges from programAttributes
-    const weekDateRanges = useMemo(() => {
-        const startDateStr = (programAttributes as any)?.start_date;
-        if (!startDateStr) return undefined;
-        try {
-            const start = new Date(startDateStr + 'T00:00:00');
-            if (isNaN(start.getTime())) return undefined;
-            return mesocycles
-                .sort((a, b) => a.week_number - b.week_number)
-                .map(meso => {
-                    const weekStart = new Date(start);
-                    weekStart.setDate(weekStart.getDate() + (meso.week_number - 1) * 7);
-                    const weekEnd = new Date(weekStart);
-                    weekEnd.setDate(weekEnd.getDate() + 6);
-                    return {
-                        weekNumber: meso.week_number,
-                        startDate: weekStart.toISOString().split('T')[0],
-                        endDate: weekEnd.toISOString().split('T')[0],
-                    };
-                });
-        } catch {
-            return undefined;
-        }
-    }, [mesocycles, programAttributes]);
+    const exportWeeks = exportData?.weeks || [];
+    const monthlyStrategy = exportData?.monthlyStrategy;
+    const weekDateRanges = exportData?.weekDateRanges;
 
     const exportStrategy = currentStrategy;
 
@@ -1055,169 +920,4 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             </div>
         </DndContext>
     );
-}
 
-// Helper to format block config for preview
-function convertConfigToText(type: string, config: any, blockName?: string | null, oneRmStats?: any, excludeNotes: boolean = false): string[] {
-    // 1. Handle Strength Linear (Explicit)
-    if (type === 'strength_linear') {
-        const mainMetric = config.distance ? config.distance : config.reps;
-        let kgBadge = '';
-        if (config.percentage && blockName && oneRmStats) {
-            const pctValue = parseFloat(config.percentage);
-            if (!isNaN(pctValue)) {
-                const kg = calculateKgFromStats(oneRmStats, blockName, pctValue);
-                if (kg) kgBadge = `(≈${kg}kg)`;
-            }
-        }
-
-        const parts = [
-            config.sets && mainMetric ? `${config.sets} x ${mainMetric}` : '',
-            config.percentage ? `@ ${config.percentage}% ${kgBadge}` : '',
-            config.rpe ? `@ RPE ${config.rpe}` : '',
-            config.weight ? `(${config.weight})` : '' // Explicit weight if present
-        ].filter(Boolean).join('  ');
-
-        const lines = [parts];
-        if (config.notes && !excludeNotes) lines.push(config.notes);
-        return lines.filter(Boolean);
-    }
-
-    // 2. Handle Structured Metcons
-    if (type === 'metcon_structured') {
-        const lines = [];
-        const header = [
-            config.time_cap || config.minutes ? `${config.format === 'EMOM' ? 'EMOM' : 'Time Cap'}: ${config.time_cap || config.minutes} min` : '',
-            config.rounds ? `${config.rounds} Rounds` : '',
-            config.score_type ? `Score: ${config.score_type}` : ''
-        ].filter(Boolean).join(' | ');
-
-        if (header) lines.push(header);
-
-        if (Array.isArray(config.movements)) {
-            lines.push(...config.movements);
-        } else if (typeof config.content === 'string') {
-            lines.push(...config.content.split('\n'));
-        }
-
-        if (config.notes && !excludeNotes) lines.push(config.notes);
-        return lines;
-    }
-
-    // 3. Handle Generic Sets/Reps for Accessory/Warmup/Other
-    if (config.sets || config.reps || config.distance || config.weight) {
-        const mainMetric = config.distance || config.reps;
-        const parts = [
-            config.sets && mainMetric ? `${config.sets} x ${mainMetric}` : (config.sets ? `${config.sets} sets` : ''),
-            config.weight ? `(${config.weight})` : '',
-            config.rpe ? `@ RPE ${config.rpe}` : ''
-        ].filter(Boolean).join('  ');
-
-        const lines = [];
-        if (parts) lines.push(parts);
-        if (config.notes && !excludeNotes) lines.push(config.notes);
-
-        if (lines.length > 0) return lines;
-    }
-
-    // 4. Default Handlers (Movements array or Content string)
-    if (config.movements && Array.isArray(config.movements)) {
-        const lines = config.movements.map((m: any) => {
-            if (typeof m === 'string') return m;
-            if (typeof m === 'object' && m && 'name' in m) return m.name;
-            return '';
-        }).filter(Boolean);
-
-        if (config.notes && !excludeNotes) lines.push(config.notes);
-        return lines;
-    }
-
-    if (config.content) {
-        return config.content.split('\n');
-    }
-
-    return !excludeNotes ? [config.notes || ''] : [];
-}
-
-// NEW HELPER: Extract structured data for Export Redesign
-function configToStructure(type: string, config: any, blockName?: string | null, oneRmStats?: any, excludeNotes: boolean = false) {
-    const res = {
-        sets: '',
-        reps: '',
-        weight: '',
-        rpe: '',
-        rest: config.rest || '',
-        text: '', // For MetCons or text-based blocks
-        notes: (!excludeNotes && config.notes) ? config.notes : ''
-    };
-
-    // 1. Strength / Generic Sets & Reps
-    if (type === 'strength_linear' || config.sets || config.reps || config.weight) {
-        if (config.sets) res.sets = `${config.sets}`;
-
-        // Reps can be distance too
-        if (config.reps) res.reps = `${config.reps}`;
-        if (config.distance) res.reps = config.reps ? `${config.reps} (${config.distance})` : `${config.distance}`;
-
-        // Weight logic
-        if (config.weight) res.weight = config.weight;
-        if (config.percentage) {
-            let kgBadge = '';
-            if (blockName && oneRmStats) {
-                const pctValue = parseFloat(config.percentage);
-                if (!isNaN(pctValue)) {
-                    const kg = calculateKgFromStats(oneRmStats, blockName, pctValue);
-                    if (kg) kgBadge = ` (≈${kg}kg)`;
-                }
-            }
-            // If weight already exists, append percentage. If not, set it.
-            res.weight = res.weight ? `${res.weight} @ ${config.percentage}%${kgBadge}` : `${config.percentage}%${kgBadge}`;
-        }
-
-        if (config.rpe) res.rpe = `${config.rpe}`;
-
-        return res;
-    }
-
-    // 2. MetCons
-    if (type === 'metcon_structured') {
-        const parts = [];
-
-        // Explicitly handle formats based on correct inputs
-        if (config.format === 'EMOM') {
-            parts.push(`EMOM ${config.minutes || config.time_cap || ''}min`);
-        } else if (config.format === 'AMRAP') {
-            parts.push(`AMRAP ${config.minutes || config.time_cap || ''}min`);
-        } else if (config.format === 'For Time') {
-            parts.push(`For Time ${config.time_cap ? `(Cap: ${config.time_cap}min)` : ''}`);
-        } else {
-            // Fallback
-            if (config.time_cap || config.minutes) parts.push(`Time Cap: ${config.time_cap || config.minutes} min`);
-        }
-
-        if (config.rounds) parts.push(`${config.rounds} Rounds`);
-        if (config.score_type) parts.push(`Score: ${config.score_type}`);
-
-        const header = parts.filter(Boolean).join(' | ');
-
-        let content = '';
-        if (header) content += header + '\n';
-
-        if (Array.isArray(config.movements)) {
-            content += config.movements.map((m: any) => typeof m === 'string' ? m : m.name).join('\n');
-        } else if (typeof config.content === 'string') {
-            content += config.content;
-        }
-
-        res.text = content;
-        return res;
-    }
-
-    // 3. Defaults
-    const existingLines = convertConfigToText(type, config, blockName, oneRmStats, excludeNotes);
-    if (existingLines.length > 0) {
-        res.text = existingLines.join('\n');
-    }
-
-    return res;
-}

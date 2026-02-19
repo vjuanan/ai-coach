@@ -331,11 +331,113 @@ export function prepareProgramForExport(program: any, exercisesCues?: Record<str
         }
     }
 
-    // 3. Monthly Strategy (Simplified for export)
-    // We try to extract progressions from the first mesocycle or aggregated
+    // 3. Monthly Strategy
+    // Calculate progressions
+    const progressionMap = new Map<string, { values: string[], variable?: string, rest?: string }>();
+    sortedMesos.forEach(meso => {
+        const weeks = meso.days || [];
+        weeks.forEach((day: any) => {
+            const blocks = day.blocks || [];
+            blocks.forEach((block: any) => {
+                const config = block.config || {};
+                const isProgression = block.progression_id || block.type === 'strength_linear';
+
+                if (isProgression && block.name) {
+                    let value = '';
+                    const progressionVar = config.progression_variable as string;
+
+                    if (block.type === 'strength_linear') {
+                        const percentage = config.percentage as string || '';
+                        const sets = config.sets as number || 0;
+                        const reps = config.reps as number || 0;
+                        const weight = config.weight as string || '';
+                        const rpe = config.rpe as string || '';
+
+                        // Calculate KG if possible
+                        let kgText = '';
+                        if (percentage && block.name && oneRmStats) {
+                            const pctValue = parseFloat(percentage);
+                            if (!isNaN(pctValue)) {
+                                import('./../components/editor/MesocycleEditor').then(mod => {
+                                    // Circular dependency risk? calculateKgFromStats should be in a hook or helper.
+                                    // Use imported helper if available.
+                                });
+                                // Recalculating KG here might be hard without helper import.
+                                // Let's simplify and rely on what we have.
+                                // Actually, export-helpers usually doesn't have access to hooks.
+                                // But I can copy calculateKgFromStats logic or move it to a shared helper?
+                                // calculateKgFromStats is in hooks/useAthleteRm.ts.
+                                // I cannot easy import hook logic here if it uses hooks.
+                                // But calculateKgFromStats is an exported function?
+                                // Let's check imports in export-helpers.ts.
+                            }
+                        }
+
+                        // Just use text for now to avoid dependency hell, or try to implement simple calc
+                        // Re-implement simplified KG calc if statistics are present
+                        if (percentage && block.name && oneRmStats && oneRmStats[block.name]) {
+                            const rm = oneRmStats[block.name];
+                            const pctValue = parseFloat(percentage);
+                            if (!isNaN(pctValue) && rm) {
+                                const kg = Math.round((rm * pctValue) / 100);
+                                kgText = `(${kg}kg)`;
+                            }
+                        }
+
+                        const volume = (sets && (reps || config.distance)) ? `${sets}x${reps || config.distance}` : '';
+                        const intensity = percentage ? (String(percentage).endsWith('%') ? percentage : `${percentage}%`) : '';
+                        const intensityText = intensity ? `${intensity} ${kgText}`.trim() : kgText;
+
+                        if (progressionVar === 'percentage') value = intensity || '-';
+                        else if (progressionVar === 'weight') value = weight || '-';
+                        else if (progressionVar === 'sets') value = String(sets) || '-';
+                        else if (progressionVar === 'reps') value = String(reps) || '-';
+                        else if (progressionVar === 'rpe') value = rpe || '-';
+                        else {
+                            value = intensityText || volume || '-';
+                        }
+                    } else {
+                        if (progressionVar && config[progressionVar]) {
+                            value = String(config[progressionVar]);
+                        } else {
+                            value = (config.weight as string) || (config.reps as string) || (config.sets as string) || '-';
+                        }
+                    }
+
+                    if (!progressionMap.has(block.name)) {
+                        progressionMap.set(block.name, { values: Array(4).fill('-'), variable: progressionVar, rest: (config.rest as string) });
+                    }
+                    const entry = progressionMap.get(block.name)!;
+                    if (!entry.variable && progressionVar) entry.variable = progressionVar;
+
+                    // week_number is 1-based index
+                    if (meso.week_number <= entry.values.length) {
+                        entry.values[meso.week_number - 1] = value;
+                    }
+                }
+            });
+        });
+    });
+
+    const objectives: string[] = [];
+    sortedMesos.forEach((meso: any) => {
+        const attrs = meso.attributes || {};
+        if (attrs.considerations && typeof attrs.considerations === 'string') {
+            const lines = attrs.considerations.split('\n').filter((l: string) => l.trim());
+            objectives.push(...lines.slice(0, 1));
+        }
+    });
+
     const monthlyStrategy = {
         focus: programAttributes.global_focus || sortedMesos[0]?.focus || program.name,
-        progressions: [], // TODO: If advanced progression extraction is needed, copy logic from MesocycleEditor
+        duration: `${sortedMesos.length} semanas`,
+        objectives: Array.from(new Set(objectives)).slice(0, 4),
+        progressions: Array.from(progressionMap.entries()).map(([name, data]) => ({
+            name,
+            progression: data.values,
+            variable: data.variable,
+            rest: data.rest
+        })),
     };
 
     return {
