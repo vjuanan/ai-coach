@@ -423,7 +423,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                     <div className="space-y-3">
                         <div
                             className={`flex items-center justify-between px-1 cursor-pointer rounded-lg py-1 transition-colors ${isActiveInBuilder && (blockBuilderSection === 'main' || !blockBuilderSection)
-                                ? 'bg-slate-100 dark:bg-slate-800'
+                                ? 'bg-indigo-50 dark:bg-indigo-900/20'
                                 : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
                                 }`}
                             onClick={(e) => {
@@ -432,14 +432,14 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                             }}
                         >
                             <h4 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isActiveInBuilder && (blockBuilderSection === 'main' || !blockBuilderSection)
-                                ? 'text-cv-text-primary'
+                                ? 'text-indigo-700 dark:text-indigo-300'
                                 : 'text-cv-text-tertiary'
                                 }`}>
                                 <Dumbbell size={12} />
                                 Entrenamiento
                             </h4>
                             <div className={`h-px flex-1 ml-3 ${isActiveInBuilder && (blockBuilderSection === 'main' || !blockBuilderSection)
-                                ? 'bg-slate-300 dark:bg-slate-600'
+                                ? 'bg-indigo-200 dark:bg-indigo-800'
                                 : 'bg-slate-100 dark:bg-slate-700/50'
                                 }`} />
                         </div>
