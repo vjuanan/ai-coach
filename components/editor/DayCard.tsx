@@ -420,7 +420,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                     </div>
 
                     {/* MAIN WORKOUT SECTION */}
-                    <div className="space-y-3">
+                    <div className="space-y-3 mt-6">
                         <div
                             className={`flex items-center justify-between px-1 cursor-pointer rounded-lg py-1 transition-colors ${isActiveInBuilder && (blockBuilderSection === 'main' || !blockBuilderSection)
                                 ? 'bg-indigo-50 dark:bg-indigo-900/20'
