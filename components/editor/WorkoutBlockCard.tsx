@@ -216,7 +216,7 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                     <div className="flex flex-col gap-2 min-h-[1.25rem]">
                         <div className="flex items-center gap-2 flex-wrap">
                             {format && (
-                                <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold text-[10px] px-1.5 py-0.5 rounded leading-none tracking-wide uppercase">{formatLabels[format] || format}</span>
+                                <span className="bg-gray-100 dark:bg-gray-800 text-slate-500 dark:text-slate-400 font-bold text-[10px] px-1.5 py-0.5 rounded leading-none tracking-wide uppercase">{formatLabels[format] || format}</span>
                             )}
                             {metaText && (
                                 <span className="text-xs text-cv-text-secondary font-semibold">{metaText}</span>
@@ -291,12 +291,12 @@ export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
                 {...listeners}
                 {...attributes}
                 className={`
-                    group/block relative bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm cursor-grab active:cursor-grabbing touch-none
+                    group/block relative bg-white dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 cursor-grab active:cursor-grabbing touch-none
                     transition-all duration-150
                     ${blockStyle.color}
                     ${!isBeingDragged && !isSelected ? blockStyle.hoverClass : ''}
                     ${isSelected ? 'ring-2 ring-cv-accent' : ''}
-                    ${isBeingDragged ? 'opacity-50 scale-95 shadow-none' : ''}
+                    ${isBeingDragged ? 'opacity-50 scale-95' : ''}
                 `}
                 onClick={(e) => {
                     e.stopPropagation();
