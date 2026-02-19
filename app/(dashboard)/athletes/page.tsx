@@ -353,31 +353,29 @@ export default function AthletesPage() {
             <Topbar
                 title=""
                 actions={
-                    actions = {
-                    < div className="flex items-center gap-1.5">
-                {selectedAthletes.size > 0 && (
-                    <button
-                        onClick={handleBulkDelete}
-                        disabled={isBulkDeleting}
-                        className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors mr-2"
-                    >
-                        {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
-                        Eliminar ({selectedAthletes.size})
-                    </button>
-                )}
-                <div className="flex items-center gap-2 px-2 text-slate-500">
-                    <User size={20} />
-                    <span className="font-medium text-sm">{filteredAthletes.length}</span>
-                </div>
-                <button
-                    onClick={() => setShowAddModal(true)}
-                    className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
-                    title="Añadir Atleta"
-                >
-                    <Plus size={20} />
-                </button>
-            </div>
-                }
+                    <div className="flex items-center gap-1.5">
+                        {selectedAthletes.size > 0 && (
+                            <button
+                                onClick={handleBulkDelete}
+                                disabled={isBulkDeleting}
+                                className="bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors mr-2"
+                            >
+                                {isBulkDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                                Eliminar ({selectedAthletes.size})
+                            </button>
+                        )}
+                        <div className="flex items-center gap-2 px-2 text-slate-500">
+                            <User size={20} />
+                            <span className="font-medium text-sm">{filteredAthletes.length}</span>
+                        </div>
+                        <button
+                            onClick={() => setShowAddModal(true)}
+                            className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
+                            title="Añadir Atleta"
+                        >
+                            <Plus size={20} />
+                        </button>
+                    </div>
                 }
             />
             <div className="w-full px-6 pt-2">

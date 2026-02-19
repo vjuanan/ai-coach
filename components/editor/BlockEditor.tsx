@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useEditorStore } from '@/lib/store';
 import { useExerciseCache } from '@/hooks/useExerciseCache';
 import { SmartExerciseInput } from './SmartExerciseInput';
+import { ExerciseEditModal } from './ExerciseEditModal';
 import { EmomEditor } from './methodologies/EmomEditor';
 import { CircuitEditor } from './methodologies/AmrapEditor';
 import { TabataEditor } from './methodologies/TabataEditor';
@@ -88,6 +89,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     const [loading, setLoading] = useState(trainingMethodologies.length === 0);
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
     const [showProgressionSelector, setShowProgressionSelector] = useState(false);
+    const [showEditExerciseModal, setShowEditExerciseModal] = useState(false);
     const firstInputRef = useRef<HTMLInputElement>(null);
 
     // Check if current exercise has distance tracking (for progression selector)
@@ -483,13 +485,35 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 />
                             </div>
 
-                            <SmartExerciseInput
-                                value={block.name || ''}
-                                onChange={(val) => updateBlock(blockId, { name: val || null })}
-                                placeholder="Buscar ejercicio en la biblioteca..."
-                                className="cv-input"
-                                inputRef={firstInputRef}
-                            />
+
+
+                            <div className="flex gap-2">
+                                <div className="flex-1">
+                                    <SmartExerciseInput
+                                        value={block.name || ''}
+                                        onChange={(val) => updateBlock(blockId, { name: val || null })}
+                                        placeholder="Buscar ejercicio en la biblioteca..."
+                                        className="cv-input"
+                                        inputRef={firstInputRef}
+                                    />
+                                </div>
+                                {block.name && searchLocal(block.name).find(e => e.name === block.name) && (
+                                    <button
+                                        onClick={() => setShowEditExerciseModal(true)}
+                                        className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors border border-slate-200"
+                                        title="Editar detalles del ejercicio"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            {/* We use a pencil icon, but let's reuse one from lucide if available or import it */}
+                                            {/* Since we didn't import Pencil, using component approach or adding import */}
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                                <path d="m15 5 4 4" />
+                                            </svg>
+                                        </div>
+                                    </button>
+                                )}
+                            </div>
 
                             {/* Validation Warning */}
                             {block.name && block.name.trim().length > 0 && !searchLocal(block.name).find(e => e.name.toLowerCase() === block.name?.toLowerCase()) && (
@@ -497,6 +521,22 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                     <AlertCircle size={12} />
                                     <span>Selecciona un ejercicio válido de la lista para continuar</span>
                                 </p>
+                            )}
+
+                            {/* Edit Modal */}
+                            {block.name && (
+                                <ExerciseEditModal
+                                    isOpen={showEditExerciseModal}
+                                    onClose={() => setShowEditExerciseModal(false)}
+                                    exercise={searchLocal(block.name).find(e => e.name === block.name)}
+                                    onSuccess={(updatedExercise) => {
+                                        // Update block name if changed
+                                        if (updatedExercise.name !== block.name) {
+                                            updateBlock(blockId, { name: updatedExercise.name });
+                                        }
+                                        // Force UI refresh handled by cache hook, but key change might be good if needed
+                                    }}
+                                />
                             )}
                         </div>
                     )

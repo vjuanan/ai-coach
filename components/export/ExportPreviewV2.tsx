@@ -819,7 +819,7 @@ export function ExportPreview({
                                     margin: 0,
                                     fontFamily: 'Georgia, serif'
                                 }}>
-                                    "{missionText}"
+                                    &quot;{missionText}&quot;
                                 </p>
                             </div>
                         )}

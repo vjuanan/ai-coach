@@ -1,6 +1,6 @@
 'use client';
-// Force rebuild: 2026-02-11T12:00:00
-console.log("BLOCK BUILDER PANEL LOADING - CHECK VERSION");
+// Force rebuild: 2026-02-19T14:45:00
+console.log("BLOCK BUILDER PANEL LOADING - STRICT FILTERING APPLIED");
 
 
 import { useEditorStore } from '@/lib/store';
@@ -20,7 +20,7 @@ import {
     Plus,
     Target
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { BlockType, WorkoutFormat, WorkoutConfig } from '@/lib/supabase/types';
 import { SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -156,14 +156,28 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
     const [showQuickAdd, setShowQuickAdd] = useState(false);
 
     // Find the current day to show added blocks
-    let currentDay = null;
-    for (const meso of mesocycles) {
-        const found = meso.days.find(d => d.id === dayId);
-        if (found) {
-            currentDay = found;
-            break;
-        }
-    }
+    const currentDay = mesocycles
+        .flatMap(m => m.days)
+        .find(d => d.id === dayId);
+
+    // Calculate visible blocks based on current section
+    const visibleBlocks = useMemo(() => {
+        if (!currentDay) return [];
+
+        return [...currentDay.blocks]
+            .filter(b => {
+                const isWarmupBlock = b.section === 'warmup' || b.type === 'warmup';
+
+                if (blockBuilderSection === 'warmup') {
+                    // If in Warmup section, ONLY show warmup blocks
+                    return isWarmupBlock;
+                } else {
+                    // If in Main/Training section, ONLY show non-warmup blocks
+                    return !isWarmupBlock;
+                }
+            })
+            .sort((a, b) => a.order_index - b.order_index);
+    }, [currentDay, blockBuilderSection]);
 
     const handleDeleteBlock = (e: React.MouseEvent, block: { id: string; type: string; format: string | null; config: Record<string, unknown> }) => {
         e.stopPropagation();
@@ -191,20 +205,44 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
             };
         }
 
-        // Use the current section from store, or default to main
-        // This ensures new blocks are added to the visible section
-        addBlock(dayId, type, format, undefined, false, initialConfig as any, blockBuilderSection || 'main');
+        // IMPORTANT: Use blockBuilderSection explicitly to ensure correct placement
+        // If blockBuilderSection is null (shouldn't be in this view), default to 'main'
+        const targetSection = blockBuilderSection || 'main';
+
+        addBlock(dayId, type, format, undefined, false, initialConfig as any, targetSection);
     };
 
     return (
         <div className="h-full flex flex-col bg-white dark:bg-cv-bg-secondary">
+            {/* Header / Context Indicator */}
+            <div className={`
+                flex-shrink-0 px-4 py-3 border-b border-slate-200 dark:border-slate-700 
+                flex items-center justify-between
+                ${blockBuilderSection === 'warmup' ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : 'bg-white dark:bg-cv-bg-secondary'}
+            `}>
+                <div className="flex items-center gap-2">
+                    {blockBuilderSection === 'warmup' ? (
+                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                            <Flame size={18} />
+                            <h3 className="text-sm font-bold uppercase tracking-wider">Calentamiento</h3>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2 text-cv-text-primary">
+                            <Dumbbell size={18} />
+                            <h3 className="text-sm font-bold uppercase tracking-wider">Entrenamiento</h3>
+                        </div>
+                    )}
+                </div>
+                <div className="text-xs text-cv-text-tertiary">
+                    {visibleBlocks.length} bloques
+                </div>
+            </div>
+
             {/* Main Content - Split into Block Selector and Speed Editor */}
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Column - Block Type Selector */}
                 <div className="w-[240px] flex-shrink-0 border-r border-slate-200 dark:border-slate-700 overflow-y-auto bg-slate-50/50 dark:bg-cv-bg-tertiary/50">
                     <div className="p-3">
-
-
                         <p className="text-[10px] font-bold uppercase tracking-wider text-cv-text-tertiary mb-2 px-1">
                             Tipos de Bloque
                         </p>
@@ -250,66 +288,34 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                         <div className="flex-shrink-0 px-3 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary relative z-20 flex items-center gap-3">
                             <div className="flex-1 flex items-center gap-3 overflow-x-auto pb-2 pt-2 pl-1 no-scrollbar" style={{ isolation: 'isolate' }}>
                                 <SortableContext
-                                    items={[...currentDay.blocks]
-                                        .filter(b => {
-                                            const isWarmupBlock = b.section === 'warmup' || b.type === 'warmup';
-                                            // Strict check: If we are in warmup section, SHOW warmup blocks.
-                                            // If we are in ANY other section (main, cooldown, or null), SHOW non-warmup blocks.
-                                            if (blockBuilderSection === 'warmup') {
-                                                return isWarmupBlock;
-                                            } else {
-                                                return !isWarmupBlock;
-                                            }
-                                        })
-                                        .sort((a, b) => a.order_index - b.order_index)
-                                        .map(b => `builder-${b.id}`)}
+                                    items={visibleBlocks.map(b => `builder-${b.id}`)}
                                     strategy={horizontalListSortingStrategy}
                                 >
-                                    {[...currentDay.blocks]
-                                        .filter(b => {
-                                            const isWarmupBlock = b.section === 'warmup' || b.type === 'warmup';
-                                            if (blockBuilderSection === 'warmup') {
-                                                return isWarmupBlock;
-                                            } else {
-                                                return !isWarmupBlock;
-                                            }
-                                        })
-                                        .length > 0 ? (
-                                        [...currentDay.blocks]
-                                            .filter(b => {
-                                                const isWarmupBlock = b.section === 'warmup' || b.type === 'warmup';
-                                                if (blockBuilderSection === 'warmup') {
-                                                    return isWarmupBlock;
-                                                } else {
-                                                    return !isWarmupBlock;
-                                                }
-                                            })
-                                            .sort((a, b) => a.order_index - b.order_index)
-                                            .map((block, index) => {
-                                                const isActive = selectedBlockId === block.id;
-                                                const blockOption = blockTypeOptions.find(o => o.type === block.type);
-                                                const Icon = blockOption?.icon || Dumbbell;
+                                    {visibleBlocks.length > 0 ? (
+                                        visibleBlocks.map((block) => {
+                                            const isActive = selectedBlockId === block.id;
+                                            const blockOption = blockTypeOptions.find(o => o.type === block.type);
+                                            const Icon = blockOption?.icon || Dumbbell;
 
-                                                return (
-                                                    <SortableBuilderItem key={block.id} id={`builder-${block.id}`} isActive={isActive}>
-                                                        <div
-                                                            onClick={(e) => {
-                                                                // Prevent click if we were dragging (handled by dnd-kit mostly, but good practice)
-                                                                selectBlock(block.id);
-                                                            }}
-                                                            className={`
+                                            return (
+                                                <SortableBuilderItem key={block.id} id={`builder-${block.id}`} isActive={isActive}>
+                                                    <div
+                                                        onClick={(e) => {
+                                                            selectBlock(block.id);
+                                                        }}
+                                                        className={`
                                                             group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left min-w-[150px] cursor-pointer
                                                             ${isActive
-                                                                    ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-lg ring-2 ring-cv-accent/40 z-20'
-                                                                    : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-500 hover:z-30'
-                                                                }
+                                                                ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-lg ring-2 ring-cv-accent/40 z-20'
+                                                                : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-500 hover:z-30'
+                                                            }
                                                             `}
-                                                            style={!isActive ? { '--hover-shadow': blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)' } as React.CSSProperties : undefined}
-                                                        >
-                                                            {/* Delete Trash Button - Visible on Hover - Minimalist Style */}
-                                                            <button
-                                                                onClick={(e) => handleDeleteBlock(e, block)}
-                                                                className="
+                                                        style={!isActive ? { '--hover-shadow': blockOption?.glowColor || 'rgba(134, 196, 163, 0.5)' } as React.CSSProperties : undefined}
+                                                    >
+                                                        {/* Delete Trash Button - Visible on Hover - Minimalist Style */}
+                                                        <button
+                                                            onClick={(e) => handleDeleteBlock(e, block)}
+                                                            className="
                                                                 absolute top-1.5 right-1.5 
                                                                 w-6 h-6 
                                                                 rounded-full 
@@ -319,39 +325,39 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                                 transition-all duration-200 
                                                                 z-50
                                                                 "
-                                                                title="Eliminar bloque"
-                                                                onPointerDown={(e) => e.stopPropagation()} // Prevent drag start on delete button
-                                                            >
-                                                                <Trash2 size={13} strokeWidth={2.5} />
-                                                            </button>
+                                                            title="Eliminar bloque"
+                                                            onPointerDown={(e) => e.stopPropagation()} // Prevent drag start on delete button
+                                                        >
+                                                            <Trash2 size={13} strokeWidth={2.5} />
+                                                        </button>
 
-                                                            <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'
-                                                                }`}>
-                                                                <Icon size={14} />
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className={`text-xs font-semibold truncate ${isActive ? 'text-cv-text-primary' : 'text-cv-text-secondary'}`}>
-                                                                    {block.name || blockOption?.label || "Sin nombre"}
+                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'
+                                                            }`}>
+                                                            <Icon size={14} />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className={`text-xs font-semibold truncate ${isActive ? 'text-cv-text-primary' : 'text-cv-text-secondary'}`}>
+                                                                {block.name || blockOption?.label || "Sin nombre"}
+                                                            </p>
+                                                            <div className="flex items-center gap-1">
+                                                                <p className="text-[10px] text-cv-text-tertiary truncate">
+                                                                    {block.format}
                                                                 </p>
-                                                                <div className="flex items-center gap-1">
-                                                                    <p className="text-[10px] text-cv-text-tertiary truncate">
-                                                                        {block.format}
-                                                                    </p>
-                                                                    {/* Progression Indicator */}
-                                                                    {Boolean((block as any).progression_id) && (
-                                                                        <div className="w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0 text-cv-accent bg-cv-accent/10">
-                                                                            <Link size={8} />
-                                                                        </div>
-                                                                    )}
-                                                                </div>
+                                                                {/* Progression Indicator */}
+                                                                {Boolean((block as any).progression_id) && (
+                                                                    <div className="w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0 text-cv-accent bg-cv-accent/10">
+                                                                        <Link size={8} />
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
-                                                    </SortableBuilderItem>
-                                                );
-                                            })
+                                                    </div>
+                                                </SortableBuilderItem>
+                                            );
+                                        })
                                     ) : (
                                         <div className="text-xs text-cv-text-tertiary italic px-2">
-                                            No hay bloques
+                                            No hay bloques en {blockBuilderSection === 'warmup' ? 'calentamiento' : 'entrenamiento'}
                                         </div>
                                     )}
                                 </SortableContext>
@@ -483,4 +489,3 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
         </div>
     );
 }
-// Trigger redeploy Thu Feb  5 16:59:45 -03 2026

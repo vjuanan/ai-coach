@@ -1929,6 +1929,12 @@ export async function updateExercise(id: string, exerciseData: Partial<{
     description?: string;
     video_url?: string;
     subcategory?: string;
+    tracking_parameters?: {
+        distance?: boolean;
+        time?: boolean;
+        weight?: boolean;
+        reps?: boolean;
+    };
 }>) {
     const supabase = createServerClient();
 

@@ -57,9 +57,20 @@ export function useExerciseCache() {
         }).slice(0, 50); // Limit results for performance
     };
 
+    const refresh = () => {
+        setIsLoading(true);
+        getAllExercisesLight().then(data => {
+            globalExerciseCache = data || [];
+            if (globalFetchPromise) globalFetchPromise = Promise.resolve(globalExerciseCache);
+            setExercises(globalExerciseCache);
+            setIsLoading(false);
+        });
+    };
+
     return {
         exercises,
         searchLocal,
-        isLoading
+        isLoading,
+        refresh
     };
 }
