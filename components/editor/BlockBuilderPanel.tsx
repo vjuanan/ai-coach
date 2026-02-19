@@ -1,10 +1,12 @@
 'use client';
 // Force rebuild: 2026-02-19T14:45:00
-console.log("BLOCK BUILDER PANEL LOADING - STRICT FILTERING APPLIED");
+console.log("BLOCK BUILDER PANEL LOADING - CONFIRMATION DIALOG APPLIED");
 
 
 import { useEditorStore } from '@/lib/store';
 import { BlockEditor } from './BlockEditor';
+import { useExerciseCache } from '@/hooks/useExerciseCache'; // Import for validation
+import { useBlockValidator } from '@/hooks/useBlockValidator';
 import {
     X,
     Flame,
@@ -18,7 +20,9 @@ import {
     Trash2,
     Link,
     Plus,
-    Target
+    Target,
+    AlertCircle,
+    AlertTriangle
 } from 'lucide-react';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import type { BlockType, WorkoutFormat, WorkoutConfig } from '@/lib/supabase/types';
@@ -32,11 +36,15 @@ function SortableBuilderItem({ id, children, isActive }: { id: string; children:
 
     useEffect(() => {
         if (isActive && localRef.current) {
-            localRef.current.scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest',
-                inline: 'center'
-            });
+            // Add a small delay to ensure DOM and layout are ready
+            const timer = setTimeout(() => {
+                localRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest',
+                    inline: 'center'
+                });
+            }, 100);
+            return () => clearTimeout(timer);
         }
     }, [isActive]);
 
@@ -76,6 +84,15 @@ const blockTypeOptions: {
     icon: React.ElementType;
 }[] = [
 
+        {
+            type: 'warmup',
+            label: 'Calentamiento',
+            description: 'Movilidad y activación',
+            color: 'text-orange-600 dark:text-orange-400',
+            bgColor: 'bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50',
+            glowColor: 'rgba(234, 88, 12, 0.7)',
+            icon: Flame
+        },
         {
             type: 'strength_linear',
             label: 'Classic',
@@ -149,7 +166,6 @@ export const isBlockEmpty = (block: { type: string; format: string | null; confi
         case 'accessory':
         case 'skill':
         case 'finisher': {
-            // Check 'movements' (new standard) and 'exercises' (legacy)
             const movements = config.movements as unknown[] || [];
             const exercises = config.exercises as unknown[] || [];
             const notes = config.notes as string;
@@ -170,6 +186,14 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
     const [showQuickAdd, setShowQuickAdd] = useState(false);
+    const { searchLocal } = useExerciseCache();
+    const { validateBlock } = useBlockValidator();
+
+    // State for discarding incomplete block confirmation
+    const [showConfirmDiscard, setShowConfirmDiscard] = useState(false);
+    const [pendingBlockType, setPendingBlockType] = useState<BlockType | null>(null);
+    const [blockToDiscardId, setBlockToDiscardId] = useState<string | null>(null);
+
 
     // Find the current day to show added blocks
     const currentDay = mesocycles
@@ -205,7 +229,40 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
         }
     };
 
+    // Helper to check if a block is COMPLETE (Safe to leave without warning)
+    // Replaced by useBlockValidator hook
+    const isBlockComplete = (block: any): boolean => {
+        const { isValid } = validateBlock(block);
+        return isValid;
+    };
+
     const handleAddBlock = (type: BlockType) => {
+        // CHECK 1: Is there a currently selected block?
+        if (selectedBlockId) {
+            // Find the full block object
+            const currentBlock = currentDay?.blocks.find(b => b.id === selectedBlockId);
+
+            if (currentBlock) {
+                // CHECK 2: Is it empty? If so, just delete it silently (auto-cleanup)
+                if (isBlockEmpty(currentBlock)) {
+                    deleteBlock(currentBlock.id);
+                    // Continue to add...
+                }
+                // CHECK 3: Is it INCOMPLETE? If so, warn user.
+                else if (!isBlockComplete(currentBlock)) {
+                    setPendingBlockType(type);
+                    setBlockToDiscardId(currentBlock.id);
+                    setShowConfirmDiscard(true);
+                    return; // STOP HERE
+                }
+                // Else: It is complete. Safe to just add new block below/after it.
+            }
+        }
+
+        performAddBlock(type);
+    };
+
+    const performAddBlock = (type: BlockType) => {
         const option = blockTypeOptions.find(o => o.type === type);
         // Default to "STANDARD" (Series x Reps) for all structured blocks
         // Only free_text remains without a format
@@ -228,31 +285,21 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
         addBlock(dayId, type, format, undefined, false, initialConfig as any, targetSection);
     };
 
+
+
+    const confirmDiscardAndAdd = () => {
+        if (blockToDiscardId && pendingBlockType) {
+            deleteBlock(blockToDiscardId);
+            performAddBlock(pendingBlockType);
+            setShowConfirmDiscard(false);
+            setBlockToDiscardId(null);
+            setPendingBlockType(null);
+        }
+    };
+
     return (
         <div className="h-full flex flex-col bg-white dark:bg-cv-bg-secondary">
-            {/* Header / Context Indicator */}
-            <div className={`
-                flex-shrink-0 px-4 py-3 border-b border-slate-200 dark:border-slate-700 
-                flex items-center justify-between
-                ${blockBuilderSection === 'warmup' ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : 'bg-white dark:bg-cv-bg-secondary'}
-            `}>
-                <div className="flex items-center gap-2">
-                    {blockBuilderSection === 'warmup' ? (
-                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
-                            <Flame size={18} />
-                            <h3 className="text-sm font-bold uppercase tracking-wider">Calentamiento</h3>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-2 text-cv-text-primary">
-                            <Dumbbell size={18} />
-                            <h3 className="text-sm font-bold uppercase tracking-wider">Entrenamiento</h3>
-                        </div>
-                    )}
-                </div>
-                <div className="text-xs text-cv-text-tertiary">
-                    {visibleBlocks.length} bloques
-                </div>
-            </div>
+
 
             {/* Main Content - Split into Block Selector and Speed Editor */}
             <div className="flex-1 flex overflow-hidden">
@@ -317,6 +364,21 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                 <SortableBuilderItem key={block.id} id={`builder-${block.id}`} isActive={isActive}>
                                                     <div
                                                         onClick={(e) => {
+                                                            // STRICT VALIDATION ON SWITCH
+                                                            // If currently selected block is incomplete, PREVENT switching
+                                                            if (selectedBlockId && selectedBlockId !== block.id) {
+                                                                const currentBlock = currentDay?.blocks.find(b => b.id === selectedBlockId);
+                                                                if (currentBlock) {
+                                                                    const { isValid } = validateBlock(currentBlock as any);
+                                                                    if (!isValid && !isBlockEmpty(currentBlock)) {
+                                                                        // Show dialog to user: Finish or Discard
+                                                                        setPendingBlockType(null); // Not adding new, just switching
+                                                                        setBlockToDiscardId(currentBlock.id);
+                                                                        setShowConfirmDiscard(true);
+                                                                        return;
+                                                                    }
+                                                                }
+                                                            }
                                                             selectBlock(block.id);
                                                         }}
                                                         className={`
@@ -464,7 +526,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                 </div>
             </div>
 
-            {/* Confirmation Dialog for Non-Empty Blocks */}
+            {/* Confirmation Dialog for Non-Empty Blocks (DELETE) */}
             {showConfirmDelete && blockToDelete && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl max-w-sm w-full overflow-hidden border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200">
@@ -496,6 +558,45 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                     className="px-4 py-2 text-sm bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
                                 >
                                     Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Confirmation Dialog for INCOMPLETE Blocks (DISCARD & SWITCH) */}
+            {showConfirmDiscard && blockToDiscardId && pendingBlockType && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl max-w-sm w-full overflow-hidden border border-amber-200 dark:border-amber-800 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-5">
+                            <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mb-4 mx-auto text-amber-500">
+                                <AlertTriangle size={24} />
+                            </div>
+                            <h3 className="text-lg font-bold text-center text-cv-text-primary mb-2">
+                                ¿Descartar bloque incompleto?
+                            </h3>
+                            <p className="text-sm text-center text-cv-text-secondary mb-6">
+                                El bloque actual no está completo. Si cambias de tipo ahora, perderás los datos actuales. <br /><br />
+                                <span className="font-semibold text-cv-text-primary">¿Deseas descartarlo y continuar?</span>
+                            </p>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => {
+                                        setShowConfirmDiscard(false);
+                                        setBlockToDiscardId(null);
+                                        setPendingBlockType(null);
+                                    }}
+                                    className="px-4 py-2.5 text-sm text-cv-text-primary bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 font-semibold rounded-lg transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={confirmDiscardAndAdd}
+                                    className="px-4 py-2.5 text-sm bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition-colors shadow-lg shadow-amber-500/20"
+                                >
+                                    Sí, Descartar
                                 </button>
                             </div>
                         </div>

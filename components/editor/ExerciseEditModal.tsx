@@ -30,11 +30,13 @@ export function ExerciseEditModal({ isOpen, onClose, exercise, onSuccess }: Exer
     const [videoUrl, setVideoUrl] = useState('');
     const [description, setDescription] = useState('');
 
+
     // Tracking Parameters
+    const [trackSets, setTrackSets] = useState(true); // Default true
     const [trackDistance, setTrackDistance] = useState(false);
     const [trackTime, setTrackTime] = useState(false);
-    const [trackWeight, setTrackWeight] = useState(false);
-    const [trackReps, setTrackReps] = useState(false);
+    const [trackWeight, setTrackWeight] = useState(true); // Default true
+    const [trackReps, setTrackReps] = useState(true); // Default true
 
     // Helpers for array fields
     const [equipmentInput, setEquipmentInput] = useState('');
@@ -51,11 +53,22 @@ export function ExerciseEditModal({ isOpen, onClose, exercise, onSuccess }: Exer
             setVideoUrl(exercise.video_url || '');
             setDescription(exercise.description || '');
 
-            const tp = exercise.tracking_parameters || {};
-            setTrackDistance(!!tp.distance);
-            setTrackTime(!!tp.time);
-            setTrackWeight(!!tp.weight);
-            setTrackReps(!!tp.reps);
+            const tp = exercise.tracking_parameters;
+            if (tp) {
+                setTrackSets(tp.sets !== false); // Default true if undefined
+                setTrackDistance(!!tp.distance);
+                setTrackTime(!!tp.time);
+                setTrackWeight(!!tp.weight);
+                setTrackReps(tp.reps !== false); // Default true if undefined (unless distance is true?)
+            } else {
+                // Smart Defaults based on Category
+                const isCardio = exercise.category === 'Monostructural' || exercise.category === 'Conditioning';
+                setTrackSets(true);
+                setTrackDistance(isCardio);
+                setTrackTime(isCardio);
+                setTrackWeight(!isCardio);
+                setTrackReps(!isCardio);
+            }
         }
     }, [exercise, isOpen]);
 
@@ -96,6 +109,7 @@ export function ExerciseEditModal({ isOpen, onClose, exercise, onSuccess }: Exer
                 video_url: videoUrl || undefined,
                 description: description || undefined,
                 tracking_parameters: {
+                    sets: trackSets,
                     distance: trackDistance,
                     time: trackTime,
                     weight: trackWeight,
@@ -118,6 +132,25 @@ export function ExerciseEditModal({ isOpen, onClose, exercise, onSuccess }: Exer
             setLoading(false);
         }
     };
+
+    const ToggleButton = ({ label, checked, onChange, icon }: { label: string, checked: boolean, onChange: (v: boolean) => void, icon?: any }) => (
+        <button
+            type="button"
+            onClick={() => onChange(!checked)}
+            className={`flex items-center justify-between p-3 rounded-lg border transition-all w-full text-left group ${checked
+                    ? 'bg-cv-accent/10 border-cv-accent text-cv-accent ring-1 ring-cv-accent/20'
+                    : 'bg-white border-gray-200 hover:border-gray-300 text-gray-600'
+                }`}
+        >
+            <span className="text-sm font-medium flex items-center gap-2">
+                {icon}
+                {label}
+            </span>
+            <div className={`w-8 h-4 rounded-full transition-colors relative ${checked ? 'bg-cv-accent' : 'bg-gray-300'}`}>
+                <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${checked ? 'translate-x-4' : 'translate-x-0'}`} />
+            </div>
+        </button>
+    );
 
     return (
         <Modal
@@ -180,46 +213,12 @@ export function ExerciseEditModal({ isOpen, onClose, exercise, onSuccess }: Exer
                             Parámetros de Seguimiento <span className="text-xs font-normal text-cv-text-tertiary normal-case">(Define qué inputs aparecen en el editor)</span>
                         </h4>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${trackWeight ? 'bg-cv-accent/5 border-cv-accent/30 ring-1 ring-cv-accent/20' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
-                                <input
-                                    type="checkbox"
-                                    checked={trackWeight}
-                                    onChange={(e) => setTrackWeight(e.target.checked)}
-                                    className="w-4 h-4 text-cv-accent rounded focus:ring-cv-accent"
-                                />
-                                <span className="text-sm font-medium text-gray-700">Peso / Carga</span>
-                            </label>
-
-                            <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${trackReps ? 'bg-cv-accent/5 border-cv-accent/30 ring-1 ring-cv-accent/20' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
-                                <input
-                                    type="checkbox"
-                                    checked={trackReps}
-                                    onChange={(e) => setTrackReps(e.target.checked)}
-                                    className="w-4 h-4 text-cv-accent rounded focus:ring-cv-accent"
-                                />
-                                <span className="text-sm font-medium text-gray-700">Repeticiones</span>
-                            </label>
-
-                            <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${trackDistance ? 'bg-cv-accent/5 border-cv-accent/30 ring-1 ring-cv-accent/20' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
-                                <input
-                                    type="checkbox"
-                                    checked={trackDistance}
-                                    onChange={(e) => setTrackDistance(e.target.checked)}
-                                    className="w-4 h-4 text-cv-accent rounded focus:ring-cv-accent"
-                                />
-                                <span className="text-sm font-medium text-gray-700">Distancia</span>
-                            </label>
-
-                            <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${trackTime ? 'bg-cv-accent/5 border-cv-accent/30 ring-1 ring-cv-accent/20' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
-                                <input
-                                    type="checkbox"
-                                    checked={trackTime}
-                                    onChange={(e) => setTrackTime(e.target.checked)}
-                                    className="w-4 h-4 text-cv-accent rounded focus:ring-cv-accent"
-                                />
-                                <span className="text-sm font-medium text-gray-700">Tiempo</span>
-                            </label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <ToggleButton label="Series" checked={trackSets} onChange={setTrackSets} />
+                            <ToggleButton label="Repeticiones" checked={trackReps} onChange={setTrackReps} />
+                            <ToggleButton label="Peso / Carga" checked={trackWeight} onChange={setTrackWeight} />
+                            <ToggleButton label="Distancia" checked={trackDistance} onChange={setTrackDistance} />
+                            <ToggleButton label="Tiempo" checked={trackTime} onChange={setTrackTime} />
                         </div>
                     </div>
 

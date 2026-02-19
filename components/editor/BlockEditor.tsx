@@ -46,6 +46,7 @@ import { TableInputWithPresets } from './TableInputWithPresets';
 import { InputCard } from './InputCard';
 import { useAthleteRm } from '@/hooks/useAthleteRm';
 import { useAthleteBenchmarks } from '@/hooks/useAthleteBenchmarks'; // New Hook
+import { useBlockValidator } from '@/hooks/useBlockValidator';
 import type { BlockType, WorkoutFormat, WorkoutConfig, TrainingMethodology, TrainingMethodologyFormField } from '@/lib/supabase/types';
 
 interface SeriesDetail {
@@ -91,6 +92,9 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     const [showProgressionSelector, setShowProgressionSelector] = useState(false);
     const [showEditExerciseModal, setShowEditExerciseModal] = useState(false);
     const firstInputRef = useRef<HTMLInputElement>(null);
+
+    // Validation Hook
+    const { validateBlock } = useBlockValidator();
 
     // Check if current exercise has distance tracking (for progression selector)
     const { searchLocal } = useExerciseCache();
@@ -275,76 +279,9 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         finisher: 'Finisher'
     };
 
-    // Validation Logic - Simplified: just need a name (or content for free_text)
-    const validateBlock = (): boolean => {
-        if (!block) return false;
-
-        // For free_text, require content
-        if (block.type === 'free_text') {
-            const config = block.config || {};
-            return Boolean(config.content);
-        }
-
-        // For Strength (Classic), require name + sets + reps + intensity + rest
-        if (block.type === 'strength_linear') {
-            if (!block.name || block.name.trim().length === 0) return false;
-            // Strict validation: must match an exercise in cache
-            const match = searchLocal(block.name).find(e => e.name.toLowerCase() === block.name?.toLowerCase());
-            if (!match) return false;
-
-            // Field completeness: sets, reps, at least one intensity, rest
-            const cfg = block.config || {};
-            const hasSets = cfg.sets && Number(cfg.sets) > 0;
-            const hasReps = cfg.reps && String(cfg.reps).trim().length > 0;
-            const hasIntensity = (cfg.weight && String(cfg.weight).trim().length > 0) ||
-                (cfg.percentage && Number(cfg.percentage) > 0) ||
-                (cfg.rpe && Number(cfg.rpe) > 0) ||
-                (cfg.rir !== undefined && cfg.rir !== null && cfg.rir !== '');
-            const hasRest = cfg.rest && String(cfg.rest).trim().length > 0;
-
-            return !!(hasSets && hasReps && hasIntensity && hasRest);
-        }
-
-        // For structured blocks (Metcon, Warmup, etc), require a methodology (format) AND valid movements
-        // The block name is optional/hidden for these types.
-        if (['metcon_structured', 'warmup', 'accessory', 'skill', 'finisher'].includes(block.type)) {
-            if (!block.format) return false;
-
-            // Validate Movements
-            // They can be distinct shapes in config, usually 'movements'
-            const movements = block.config.movements as any[] || [];
-
-            // If no movements, it might be valid if it's just a placeholder or text-based, 
-            // BUT user wants strictness. If there ARE movements, they MUST be valid.
-            // If the list is empty, we might allow it (or user might want at least one?)
-            // Let's assume: If you type a movement, it must be valid. 
-            // If you leave it empty, maybe that's okay? Or should we force at least one?
-            // "EN TODOS TIENE QUE ESTAR BLOQUEADO" -> implied: if I type "BA", block it.
-
-            if (movements.length > 0) {
-                for (const m of movements) {
-                    let name = '';
-                    if (typeof m === 'string') name = m;
-                    else if (typeof m === 'object' && m && 'name' in m) name = (m as any).name;
-
-                    // Strictly require non-empty name and valid exercise
-                    if (!name || name.trim().length === 0) return false;
-
-                    const match = searchLocal(name).find(e => e.name.toLowerCase() === name.toLowerCase());
-                    if (!match) return false;
-                }
-                return true;
-            }
-
-            // Require at least one movement
-            return false;
-        }
-
-        // Default fallback
-        return true;
-    };
-
-    const isValid = validateBlock();
+    // Validation Logic - Using Hook
+    // Cast block to any because the hook expects a specific shape that matches checks but Typescript might be strict about exact nullable types
+    const { isValid, missingFields } = block ? validateBlock(block as any) : { isValid: false, missingFields: [] };
 
     return (
         <div className="flex flex-col h-full bg-white dark:bg-cv-bg-secondary relative">
@@ -749,6 +686,22 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     </button>
                 </div>
 
+                {/* Validation Errors Display */}
+                {!isValid && missingFields.length > 0 && (
+                    <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-lg p-3 text-xs animate-in slide-in-from-bottom-2 fade-in">
+                        <p className="font-semibold text-amber-600 mb-1 flex items-center gap-1.5">
+                            <AlertCircle size={14} />
+                            Faltan datos requeridos:
+                        </p>
+                        <ul className="list-disc pl-5 space-y-0.5 text-amber-700/80 dark:text-amber-500/80">
+                            {missingFields.map((field, idx) => (
+                                // eslint-disable-next-line react/no-array-index-key
+                                <li key={idx}>{field}</li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
             </div >
         </div >
     );
@@ -1013,6 +966,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
     const { searchLocal } = useExerciseCache();
     const exercise = blockName ? searchLocal(blockName).find(e => e.name === blockName) : null;
     const showDistance = exercise?.tracking_parameters?.distance === true;
+    const showSets = exercise?.tracking_parameters?.sets !== false;
 
     // Toggles
     const [intensityType, setIntensityType] = useState<'% 1RM' | 'RPE' | 'Weight'>((config.rpe && !config.percentage ? 'RPE' : '% 1RM'));
@@ -1146,26 +1100,28 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
 
                 {/* 1. SERIES */}
-                <InputCard
-                    label="SERIES"
-                    value={config.sets as string | number}
-                    onChange={(val) => handleGlobalChange('sets', val)}
-                    type="number"
-                    icon={Layers}
-                    presets={[3, 4, 5]}
-                    headerAction={
-                        <button
-                            onClick={() => setShowBreakdown(!showBreakdown)}
-                            className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded transition-colors ${showBreakdown
-                                ? 'bg-cv-accent text-white'
-                                : 'bg-slate-100 dark:bg-slate-800 text-cv-text-tertiary hover:text-cv-accent'
-                                }`}
-                        >
-                            <span>DESGLOSAR</span>
-                            {showBreakdown ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                        </button>
-                    }
-                />
+                {showSets && (
+                    <InputCard
+                        label="SERIES"
+                        value={config.sets as string | number}
+                        onChange={(val) => handleGlobalChange('sets', val)}
+                        type="number"
+                        icon={Layers}
+                        presets={[3, 4, 5]}
+                        headerAction={
+                            <button
+                                onClick={() => setShowBreakdown(!showBreakdown)}
+                                className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded transition-colors ${showBreakdown
+                                    ? 'bg-cv-accent text-white'
+                                    : 'bg-slate-100 dark:bg-slate-800 text-cv-text-tertiary hover:text-cv-accent'
+                                    }`}
+                            >
+                                <span>DESGLOSAR</span>
+                                {showBreakdown ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                            </button>
+                        }
+                    />
+                )}
 
                 {/* 2. REPS / DISTANCE */}
                 {showDistance ? (

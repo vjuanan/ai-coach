@@ -1934,6 +1934,7 @@ export async function updateExercise(id: string, exerciseData: Partial<{
         time?: boolean;
         weight?: boolean;
         reps?: boolean;
+        sets?: boolean;
     };
 }>) {
     const supabase = createServerClient();

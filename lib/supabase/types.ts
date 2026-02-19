@@ -201,6 +201,7 @@ export interface Exercise {
         time?: boolean;
         weight?: boolean;
         reps?: boolean;
+        sets?: boolean;
     } | null;
     aliases?: string[] | null;
     created_at: string;
