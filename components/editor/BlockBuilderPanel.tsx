@@ -83,62 +83,70 @@ const blockTypeOptions: {
     description: string;
     color: string;
     bgColor: string;
+    glowColor: string;
     icon: React.ElementType;
 }[] = [
         {
             type: 'warmup',
             label: 'Calentamiento',
             description: 'Movilidad y activación',
-            color: UNIFORM_COLOR,
-            bgColor: UNIFORM_BG,
+            color: 'text-orange-600 dark:text-orange-400',
+            bgColor: 'bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50',
+            glowColor: 'rgba(249, 115, 22, 0.5)',
             icon: Flame
         },
         {
             type: 'strength_linear',
             label: 'Classic',
             description: 'Series, reps y porcentajes',
-            color: UNIFORM_COLOR,
-            bgColor: UNIFORM_BG,
+            color: 'text-slate-600 dark:text-slate-300',
+            bgColor: 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700',
+            glowColor: 'rgba(148, 163, 184, 0.5)',
             icon: Dumbbell
         },
         {
             type: 'metcon_structured',
             label: 'MetCon',
             description: 'AMRAP, EMOM, For Time',
-            color: UNIFORM_COLOR,
-            bgColor: UNIFORM_BG,
+            color: 'text-sky-600 dark:text-sky-400',
+            bgColor: 'bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50',
+            glowColor: 'rgba(14, 165, 233, 0.5)',
             icon: Zap
         },
         {
             type: 'accessory',
             label: 'Accesorio',
             description: 'Trabajo complementario',
-            color: UNIFORM_COLOR,
-            bgColor: UNIFORM_BG,
+            color: 'text-violet-600 dark:text-violet-400',
+            bgColor: 'bg-violet-50 dark:bg-violet-900/30 hover:bg-violet-100 dark:hover:bg-violet-900/50',
+            glowColor: 'rgba(139, 92, 246, 0.5)',
             icon: ListOrdered
         },
         {
             type: 'skill',
             label: 'Habilidad',
             description: 'Práctica técnica',
-            color: UNIFORM_COLOR,
-            bgColor: UNIFORM_BG,
+            color: 'text-indigo-600 dark:text-indigo-400',
+            bgColor: 'bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50',
+            glowColor: 'rgba(99, 102, 241, 0.5)',
             icon: Sparkles
         },
         {
             type: 'free_text',
             label: 'Texto Libre',
             description: 'Notas y comentarios',
-            color: UNIFORM_COLOR,
-            bgColor: UNIFORM_BG,
+            color: 'text-slate-500 dark:text-slate-400',
+            bgColor: 'bg-slate-50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800/50',
+            glowColor: 'rgba(100, 116, 139, 0.5)',
             icon: FileText
         },
         {
             type: 'finisher',
             label: 'Finisher',
             description: 'Dropsets, Rest-Pause, etc',
-            color: UNIFORM_COLOR,
-            bgColor: UNIFORM_BG,
+            color: 'text-slate-500 dark:text-slate-400',
+            bgColor: 'bg-slate-50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800/50',
+            glowColor: 'rgba(100, 116, 139, 0.5)',
             icon: Target
         },
     ];
@@ -313,20 +321,34 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                     <button
                                         key={option.type}
                                         onClick={() => handleAddBlock(option.type)}
-                                        className={`w-full relative flex items-center gap-3 p-3 rounded-xl transition-colors duration-150 ${option.bgColor} group`}
+                                        className={`w-full relative flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${option.bgColor} hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-lg group`}
+                                        style={{ '--glow-color': option.glowColor } as React.CSSProperties}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.boxShadow = `0 4px 20px -5px ${option.glowColor}`;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.boxShadow = '';
+                                        }}
                                     >
-                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500">
-                                            <Icon size={18} />
+                                        <div className={`
+                                            w-10 h-10 rounded-lg flex items-center justify-center 
+                                            bg-white dark:bg-slate-800 shadow-sm
+                                            ${option.color}
+                                            group-hover:scale-110 transition-transform duration-300
+                                        `}>
+                                            <Icon size={20} />
                                         </div>
-                                        <div className="text-left flex-1 pr-8">
-                                            <p className="font-medium text-sm text-cv-text-secondary">{option.label}</p>
-                                            <p className="text-[10px] text-cv-text-tertiary">{option.description}</p>
+                                        <div className="flex-1 text-left">
+                                            <div className="font-semibold text-cv-text-primary group-hover:text-cv-accent transition-colors">
+                                                {option.label}
+                                            </div>
+                                            <div className="text-xs text-cv-text-secondary line-clamp-1">
+                                                {option.description}
+                                            </div>
                                         </div>
 
-                                        {/* Hover Add Indicator */}
-                                        <div className="absolute top-1/2 -translate-y-1/2 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                                            <Plus size={14} className="text-slate-400" />
-                                        </div>
+                                        {/* Hover Glow Effect */}
+                                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 pointer-events-none" />
                                     </button>
                                 );
                             })}
@@ -406,8 +428,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                             <Trash2 size={13} strokeWidth={2.5} />
                                                         </button>
 
-                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400'
-                                                            }`}>
+                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : `${blockOption?.bgColor} ${blockOption?.color}`}`}>
                                                             <Icon size={14} />
                                                         </div>
                                                         <div className="flex-1 min-w-0 overflow-hidden pr-6">
@@ -482,7 +503,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                             }}
                                                             className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left group"
                                                         >
-                                                            <div className="w-7 h-7 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 transition-colors">
+                                                            <div className={`w-7 h-7 rounded-md flex items-center justify-center transition-colors ${option?.bgColor} ${option?.color}`}>
                                                                 <Icon size={14} />
                                                             </div>
                                                             <div>
