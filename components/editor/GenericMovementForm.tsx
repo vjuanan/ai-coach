@@ -54,7 +54,8 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
     // - Rounds: Only for Metcon/HIIT, but NEVER for STANDARD
     // - Sets: Only for Strength/Standard
     // - If no methodology selected (undefined), show NEITHER
-    const showRounds = isMetconLike && !isStandard;
+    // - [NEW] Warmup blocks ALWAYS show Rounds (for circuit rounds)
+    const showRounds = (isMetconLike && !isStandard) || isWarmUp;
     const showGlobalSets = (methodology?.code === 'SUPER_SET' || methodology?.code === 'GIANT_SET');
     const showSetsPerMovement = (isStrengthLike || isStandard) && !showGlobalSets;
 
