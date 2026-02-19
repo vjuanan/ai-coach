@@ -83,7 +83,6 @@ const blockTypeOptions: {
     description: string;
     color: string;
     bgColor: string;
-    glowColor: string;
     icon: React.ElementType;
 }[] = [
         {
@@ -92,16 +91,14 @@ const blockTypeOptions: {
             description: 'Movilidad y activación',
             color: 'text-orange-600 dark:text-orange-400',
             bgColor: 'bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50',
-            glowColor: 'rgba(249, 115, 22, 0.5)',
             icon: Flame
         },
         {
             type: 'strength_linear',
             label: 'Classic',
             description: 'Series, reps y porcentajes',
-            color: 'text-slate-600 dark:text-slate-300',
-            bgColor: 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700',
-            glowColor: 'rgba(148, 163, 184, 0.5)',
+            color: 'text-rose-600 dark:text-rose-400',
+            bgColor: 'bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50',
             icon: Dumbbell
         },
         {
@@ -110,7 +107,6 @@ const blockTypeOptions: {
             description: 'AMRAP, EMOM, For Time',
             color: 'text-sky-600 dark:text-sky-400',
             bgColor: 'bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50',
-            glowColor: 'rgba(14, 165, 233, 0.5)',
             icon: Zap
         },
         {
@@ -119,7 +115,6 @@ const blockTypeOptions: {
             description: 'Trabajo complementario',
             color: 'text-violet-600 dark:text-violet-400',
             bgColor: 'bg-violet-50 dark:bg-violet-900/30 hover:bg-violet-100 dark:hover:bg-violet-900/50',
-            glowColor: 'rgba(139, 92, 246, 0.5)',
             icon: ListOrdered
         },
         {
@@ -128,7 +123,6 @@ const blockTypeOptions: {
             description: 'Práctica técnica',
             color: 'text-indigo-600 dark:text-indigo-400',
             bgColor: 'bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50',
-            glowColor: 'rgba(99, 102, 241, 0.5)',
             icon: Sparkles
         },
         {
@@ -137,16 +131,14 @@ const blockTypeOptions: {
             description: 'Notas y comentarios',
             color: 'text-slate-500 dark:text-slate-400',
             bgColor: 'bg-slate-50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800/50',
-            glowColor: 'rgba(100, 116, 139, 0.5)',
             icon: FileText
         },
         {
             type: 'finisher',
             label: 'Finisher',
             description: 'Dropsets, Rest-Pause, etc',
-            color: 'text-slate-500 dark:text-slate-400',
-            bgColor: 'bg-slate-50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800/50',
-            glowColor: 'rgba(100, 116, 139, 0.5)',
+            color: 'text-amber-600 dark:text-amber-400',
+            bgColor: 'bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50',
             icon: Target
         },
     ];
@@ -321,34 +313,24 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                     <button
                                         key={option.type}
                                         onClick={() => handleAddBlock(option.type)}
-                                        className={`w-full relative flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${option.bgColor} hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-lg group`}
-                                        style={{ '--glow-color': option.glowColor } as React.CSSProperties}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.boxShadow = `0 4px 20px -5px ${option.glowColor}`;
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.boxShadow = '';
-                                        }}
+                                        className={`w-full relative flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${option.bgColor} hover:scale-[1.02] hover:shadow-md group`}
                                     >
                                         <div className={`
                                             w-10 h-10 rounded-lg flex items-center justify-center 
                                             bg-white dark:bg-slate-800 shadow-sm
                                             ${option.color}
-                                            group-hover:scale-110 transition-transform duration-300
+                                            group-hover:scale-105 transition-transform duration-200
                                         `}>
                                             <Icon size={20} />
                                         </div>
                                         <div className="flex-1 text-left">
-                                            <div className="font-semibold text-cv-text-primary group-hover:text-cv-accent transition-colors">
+                                            <div className="font-semibold text-cv-text-primary transition-colors">
                                                 {option.label}
                                             </div>
                                             <div className="text-xs text-cv-text-secondary line-clamp-1">
                                                 {option.description}
                                             </div>
                                         </div>
-
-                                        {/* Hover Glow Effect */}
-                                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 pointer-events-none" />
                                     </button>
                                 );
                             })}
