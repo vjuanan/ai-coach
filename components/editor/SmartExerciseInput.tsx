@@ -25,7 +25,7 @@ export function SmartExerciseInput({
     inputRef,
     onSelect
 }: SmartExerciseInputProps) {
-    const [query, setQuery] = useState(value);
+    const [query, setQuery] = useState(typeof value === 'string' ? value : '');
     const [results, setResults] = useState<any[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);

@@ -25,13 +25,19 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
         if (savedItems && Array.isArray(savedItems)) return savedItems;
 
         // Fallback backward compatibility
-        const oldMovements = (config.movements as string[]) || [];
+        const oldMovements = (config.movements as any[]) || [];
         if (oldMovements.length > 0) {
-            return oldMovements.map(m => ({
-                id: crypto.randomUUID(),
-                exercise: m,
-                reps: ''
-            }));
+            return oldMovements.map(m => {
+                let exerciseName = '';
+                if (typeof m === 'string') exerciseName = m;
+                else if (typeof m === 'object' && m && 'name' in m) exerciseName = m.name;
+
+                return {
+                    id: crypto.randomUUID(),
+                    exercise: exerciseName,
+                    reps: ''
+                };
+            });
         }
 
         return [{ id: crypto.randomUUID(), exercise: '', reps: '' }];
