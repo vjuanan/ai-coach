@@ -188,6 +188,9 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
     const [pendingBlockType, setPendingBlockType] = useState<BlockType | null>(null);
     const [blockToDiscardId, setBlockToDiscardId] = useState<string | null>(null);
 
+    // State for Rich Tooltip
+    const [hoveredBlock, setHoveredBlock] = useState<{ block: any, rect: DOMRect } | null>(null);
+
 
     // Find the current day to show added blocks
     const currentDay = mesocycles
@@ -376,7 +379,13 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                             }
                                                             `}
                                                         style={undefined}
-                                                        title={block.name || blockOption?.label || "Sin nombre"}
+                                                        onMouseEnter={(e) => {
+                                                            setHoveredBlock({
+                                                                block,
+                                                                rect: e.currentTarget.getBoundingClientRect()
+                                                            });
+                                                        }}
+                                                        onMouseLeave={() => setHoveredBlock(null)}
                                                     >
                                                         {/* Delete Trash Button - Visible on Hover - Minimalist Style */}
                                                         <button
@@ -401,12 +410,12 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                             }`}>
                                                             <Icon size={14} />
                                                         </div>
-                                                        <div className="flex-1 min-w-0 overflow-hidden">
+                                                        <div className="flex-1 min-w-0 overflow-hidden pr-6">
                                                             <p className={`text-xs font-semibold truncate ${isActive ? 'text-cv-text-primary' : 'text-cv-text-secondary'}`}>
                                                                 {block.name || blockOption?.label || "Sin nombre"}
                                                             </p>
                                                             <div className="flex items-center gap-1">
-                                                                <p className="text-[10px] text-cv-text-tertiary truncate">
+                                                                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate font-medium">
                                                                     {block.format}
                                                                 </p>
                                                                 {/* Progression Indicator */}
@@ -553,44 +562,115 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                 </div>
             )}
 
-            {/* Confirmation Dialog for INCOMPLETE Blocks (DISCARD & SWITCH) */}
-            {showConfirmDiscard && blockToDiscardId && pendingBlockType && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl max-w-sm w-full overflow-hidden border border-amber-200 dark:border-amber-800 animate-in fade-in zoom-in-95 duration-200">
-                        <div className="p-5">
-                            <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mb-4 mx-auto text-amber-500">
-                                <AlertTriangle size={24} />
-                            </div>
-                            <h3 className="text-lg font-bold text-center text-cv-text-primary mb-2">
-                                ¿Descartar bloque incompleto?
-                            </h3>
-                            <p className="text-sm text-center text-cv-text-secondary mb-6">
-                                El bloque actual no está completo. Si cambias de tipo ahora, perderás los datos actuales. <br /><br />
-                                <span className="font-semibold text-cv-text-primary">¿Deseas descartarlo y continuar?</span>
-                            </p>
+            {/* Rich Tooltip Portal */}
+            <BlockTooltip hoverState={hoveredBlock} />
+        </div>
+    );
+}
 
-                            <div className="grid grid-cols-2 gap-3">
-                                <button
-                                    onClick={() => {
-                                        setShowConfirmDiscard(false);
-                                        setBlockToDiscardId(null);
-                                        setPendingBlockType(null);
-                                    }}
-                                    className="px-4 py-2.5 text-sm text-cv-text-primary bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 font-semibold rounded-lg transition-colors"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    onClick={confirmDiscardAndAdd}
-                                    className="px-4 py-2.5 text-sm bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition-colors shadow-lg shadow-amber-500/20"
-                                >
-                                    Sí, Descartar
-                                </button>
-                            </div>
-                        </div>
+// Rich Tooltip Component
+function BlockTooltip({ hoverState }: { hoverState: { block: any, rect: DOMRect } | null }) {
+    if (!hoverState) return null;
+
+    const { block, rect } = hoverState;
+    const config = block.config || {};
+
+    // Determine content based on block type
+    let content = null;
+    let title = block.name || "Sin nombre";
+    let subtitle = block.format || block.type;
+
+    // Helper to format list of movements
+    const renderMovementList = (movements: any[]) => {
+        if (!movements || movements.length === 0) return <p className="text-xs text-slate-400 italic">Sin ejercicios</p>;
+        return (
+            <div className="flex flex-col gap-1 mt-1">
+                {movements.slice(0, 5).map((m: any, idx: number) => (
+                    <div key={idx} className="flex items-center gap-1.5 text-xs text-slate-300">
+                        <div className="w-1 h-1 rounded-full bg-cv-accent flex-shrink-0" />
+                        <span className="truncate">{m.name || m.exercise?.name || "Ejercicio"}</span>
+                    </div>
+                ))}
+                {movements.length > 5 && (
+                    <p className="text-[10px] text-slate-500 pl-2.5">
+                        +{movements.length - 5} más...
+                    </p>
+                )}
+            </div>
+        );
+    };
+
+    if (block.type === 'strength_linear') {
+        const sets = config.sets || '-';
+        const reps = config.reps || '-';
+        const load = config.percentage ? `${config.percentage}%` : (config.weight ? `${config.weight}kg` : '-');
+
+        content = (
+            <div className="flex flex-col gap-2">
+                <div className="grid grid-cols-3 gap-2 text-center bg-white/5 rounded p-1.5">
+                    <div>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">Series</p>
+                        <p className="font-semibold text-white">{sets}</p>
+                    </div>
+                    <div>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">Reps</p>
+                        <p className="font-semibold text-white">{reps}</p>
+                    </div>
+                    <div>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">Carga</p>
+                        <p className="font-semibold text-white">{load}</p>
                     </div>
                 </div>
-            )}
+                {config.exercise && (
+                    <p className="text-xs text-cv-accent font-medium mt-1">
+                        {config.exercise.name}
+                    </p>
+                )}
+            </div>
+        );
+    } else if (block.type === 'metcon_structured') {
+        content = (
+            <div className="flex flex-col gap-1.5">
+                {config.time_cap && (
+                    <div className="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-400/10 px-2 py-1 rounded w-fit mb-1">
+                        <Sparkles size={10} />
+                        <span>Time Cap: {config.time_cap}</span>
+                    </div>
+                )}
+                {renderMovementList(config.movements)}
+            </div>
+        );
+    } else if (['warmup', 'accessory', 'skill', 'finisher'].includes(block.type)) {
+        // Try to find movements list in known locations
+        const movements = config.movements || config.exercises || [];
+        content = renderMovementList(movements);
+    } else if (block.type === 'free_text') {
+        content = (
+            <p className="text-xs text-slate-300 italic line-clamp-4">
+                {config.content || "Sin contenido"}
+            </p>
+        );
+    }
+
+    return (
+        <div
+            className="fixed z-[100] max-w-[220px] w-max bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl rounded-xl p-3 text-left animate-in fade-in zoom-in-95 duration-150 pointer-events-none"
+            style={{
+                top: rect.top - 8,
+                left: rect.left + rect.width / 2,
+                transform: 'translate(-50%, -100%)',
+            }}
+        >
+            <div className="mb-2 border-b border-white/10 pb-2">
+                <p className="font-semibold text-white text-sm leading-tight mb-0.5">{title}</p>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider">{subtitle}</p>
+            </div>
+            {content}
+
+            {/* Arrow */}
+            <div
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-slate-900/95"
+            />
         </div>
     );
 }
