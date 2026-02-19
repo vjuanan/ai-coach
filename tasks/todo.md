@@ -40,3 +40,9 @@
 - [x] Add truncation for long names
 - [x] Add hover tooltip
 - [x] Verify on production (screenshot captured)
+
+## Block Builder UI Refinements
+- [x] Fix block name overlap with delete button (add padding)
+- [x] Increase contrast of block subtitle (type/format)
+- [x] Implement rich tooltip for full block details on hover
+- [x] Verify UI changes locally and on production

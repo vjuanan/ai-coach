@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useEditorStore } from '@/lib/store';
-import { WorkoutBlockCard } from './WorkoutBlockCard';
+import { WorkoutBlockCardV2 } from './WorkoutBlockCardV2';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 import { Plus, Moon, MoreHorizontal, Sun, Target, Trash2, Copy, Flame, Dumbbell } from 'lucide-react';
 import type { BlockType, WorkoutFormat } from '@/lib/supabase/types';
@@ -399,7 +399,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                         {warmupBlocks.length > 0 ? (
                             <div className="space-y-3">
                                 {[...warmupBlocks].sort((a, b) => a.order_index - b.order_index).map(block => (
-                                    <WorkoutBlockCard key={block.id} block={block} />
+                                    <WorkoutBlockCardV2 key={block.id} block={block} />
                                 ))}
                             </div>
                         ) : (
@@ -447,7 +447,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                         {mainBlocks.length > 0 ? (
                             <div className="space-y-3">
                                 {[...mainBlocks].sort((a, b) => a.order_index - b.order_index).map(block => (
-                                    <WorkoutBlockCard key={block.id} block={block} />
+                                    <WorkoutBlockCardV2 key={block.id} block={block} />
                                 ))}
                             </div>
                         ) : (

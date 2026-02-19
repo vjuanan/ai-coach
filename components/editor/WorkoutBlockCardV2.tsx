@@ -23,7 +23,7 @@ interface DraftWorkoutBlock {
     section?: 'warmup' | 'main' | 'cooldown';
 }
 
-interface WorkoutBlockCardProps {
+interface WorkoutBlockCardV2Props {
     block: DraftWorkoutBlock;
 }
 
@@ -54,7 +54,7 @@ const formatLabels: Record<string, string> = {
     'For Time': 'Por Tiempo',
 };
 
-export function WorkoutBlockCard({ block }: WorkoutBlockCardProps) {
+export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
     const { selectBlock, selectedBlockId, deleteBlock, deleteProgression, duplicateBlock, enterBlockBuilder, draggedBlockId } = useEditorStore();
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);

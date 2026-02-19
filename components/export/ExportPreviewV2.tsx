@@ -471,16 +471,32 @@ const DaySection = ({
                         }}>
                             Warm Up
                         </div>
-                        {warmupBlocks.map((block, i) => (
-                            <div key={i} style={{
-                                fontSize: '13px',
-                                color: theme.c.textMuted,
-                                marginBottom: '4px',
-                                lineHeight: '1.5'
-                            }}>
-                                • {block.content.filter(c => c.trim()).join(' + ')}
-                            </div>
-                        ))}
+                        {warmupBlocks.map((block, i) => {
+                            const rounds = block.config?.rounds as string | number | undefined;
+                            return (
+                                <div key={i}>
+                                    {rounds && (
+                                        <div style={{
+                                            fontSize: '12px',
+                                            fontWeight: '600',
+                                            color: theme.c.text,
+                                            marginBottom: '2px',
+                                            marginTop: i > 0 ? '8px' : '0'
+                                        }}>
+                                            {rounds} {String(rounds) === '1' ? 'Vuelta' : 'Vueltas'}:
+                                        </div>
+                                    )}
+                                    <div style={{
+                                        fontSize: '13px',
+                                        color: theme.c.textMuted,
+                                        marginBottom: '4px',
+                                        lineHeight: '1.5'
+                                    }}>
+                                        • {block.content.filter(c => c.trim()).join(' + ')}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
 
