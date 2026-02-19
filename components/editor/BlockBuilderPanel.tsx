@@ -83,6 +83,7 @@ const blockTypeOptions: {
     description: string;
     color: string;
     bgColor: string;
+    glowColor: string;
     icon: React.ElementType;
 }[] = [
         {
@@ -91,46 +92,52 @@ const blockTypeOptions: {
             description: 'Movilidad y activación',
             color: 'text-orange-600 dark:text-orange-400',
             bgColor: 'bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50',
+            glowColor: 'rgba(234, 88, 12, 0.7)',
             icon: Flame
         },
         {
             type: 'strength_linear',
             label: 'Classic',
             description: 'Series, reps y porcentajes',
-            color: 'text-rose-600 dark:text-rose-400',
-            bgColor: 'bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50',
+            color: 'text-red-600 dark:text-red-400',
+            bgColor: 'bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50',
+            glowColor: 'rgba(239, 68, 68, 0.7)',
             icon: Dumbbell
         },
         {
             type: 'metcon_structured',
             label: 'MetCon',
             description: 'AMRAP, EMOM, For Time',
-            color: 'text-sky-600 dark:text-sky-400',
-            bgColor: 'bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50',
+            color: 'text-cv-accent',
+            bgColor: 'bg-teal-50 dark:bg-teal-900/30 hover:bg-teal-100 dark:hover:bg-teal-900/50',
+            glowColor: 'rgba(134, 196, 163, 0.8)',
             icon: Zap
         },
         {
             type: 'accessory',
             label: 'Accesorio',
             description: 'Trabajo complementario',
-            color: 'text-violet-600 dark:text-violet-400',
-            bgColor: 'bg-violet-50 dark:bg-violet-900/30 hover:bg-violet-100 dark:hover:bg-violet-900/50',
+            color: 'text-purple-600 dark:text-purple-400',
+            bgColor: 'bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50',
+            glowColor: 'rgba(168, 85, 247, 0.7)',
             icon: ListOrdered
         },
         {
             type: 'skill',
             label: 'Habilidad',
             description: 'Práctica técnica',
-            color: 'text-indigo-600 dark:text-indigo-400',
-            bgColor: 'bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50',
+            color: 'text-blue-600 dark:text-blue-400',
+            bgColor: 'bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50',
+            glowColor: 'rgba(59, 130, 246, 0.7)',
             icon: Sparkles
         },
         {
             type: 'free_text',
             label: 'Texto Libre',
             description: 'Notas y comentarios',
-            color: 'text-slate-500 dark:text-slate-400',
-            bgColor: 'bg-slate-50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800/50',
+            color: 'text-slate-600 dark:text-slate-400',
+            bgColor: 'bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800',
+            glowColor: 'rgba(100, 116, 139, 0.5)',
             icon: FileText
         },
         {
@@ -139,6 +146,7 @@ const blockTypeOptions: {
             description: 'Dropsets, Rest-Pause, etc',
             color: 'text-amber-600 dark:text-amber-400',
             bgColor: 'bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50',
+            glowColor: 'rgba(217, 119, 6, 0.7)',
             icon: Target
         },
     ];
@@ -313,23 +321,26 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                     <button
                                         key={option.type}
                                         onClick={() => handleAddBlock(option.type)}
-                                        className={`w-full relative flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${option.bgColor} hover:scale-[1.02] hover:shadow-md group`}
+                                        className={`w-full relative flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${option.bgColor} group hover:scale-[1.01] hover:-translate-y-0.5`}
+                                        style={{ '--glow-color': option.glowColor } as React.CSSProperties}
+                                        onMouseEnter={(e) => {
+                                            (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px -2px ${option.glowColor}`;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                                        }}
                                     >
-                                        <div className={`
-                                            w-10 h-10 rounded-lg flex items-center justify-center 
-                                            bg-white dark:bg-slate-800 shadow-sm
-                                            ${option.color}
-                                            group-hover:scale-105 transition-transform duration-200
-                                        `}>
-                                            <Icon size={20} />
+                                        <div className={`w-9 h-9 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm ${option.color}`}>
+                                            <Icon size={18} />
                                         </div>
-                                        <div className="flex-1 text-left">
-                                            <div className="font-semibold text-cv-text-primary transition-colors">
-                                                {option.label}
-                                            </div>
-                                            <div className="text-xs text-cv-text-secondary line-clamp-1">
-                                                {option.description}
-                                            </div>
+                                        <div className="text-left flex-1 pr-12">
+                                            <p className="font-semibold text-sm text-cv-text-primary">{option.label}</p>
+                                            <p className="text-[10px] text-cv-text-tertiary">{option.description}</p>
+                                        </div>
+
+                                        {/* Hover Add Indicator */}
+                                        <div className="absolute top-1/2 -translate-y-1/2 right-3 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-white/50 dark:bg-black/20 p-1.5 rounded-full backdrop-blur-sm scale-90 group-hover:scale-100 shadow-sm border border-black/5 dark:border-white/10">
+                                            <Plus size={14} className="text-cv-text-primary" />
                                         </div>
                                     </button>
                                 );
@@ -410,7 +421,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                             <Trash2 size={13} strokeWidth={2.5} />
                                                         </button>
 
-                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : `${blockOption?.bgColor} ${blockOption?.color}`}`}>
+                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'}`}>
                                                             <Icon size={14} />
                                                         </div>
                                                         <div className="flex-1 min-w-0 overflow-hidden pr-6">
@@ -485,7 +496,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                             }}
                                                             className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left group"
                                                         >
-                                                            <div className={`w-7 h-7 rounded-md flex items-center justify-center transition-colors ${option?.bgColor} ${option?.color}`}>
+                                                            <div className={`w-7 h-7 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center ${option.color} group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors`}>
                                                                 <Icon size={14} />
                                                             </div>
                                                             <div>

@@ -1,7 +1,14 @@
-# Todo List - Fixing Export Cues & Warmup
+# Plan: Standardize Block Display in Weekly Viewer
 
-- [x] Fix Warmup Search: Remove `overflow-hidden` from `GenericMovementForm` <!-- id: 0 -->
-- [x] Implement Block Validation: Add `useBlockValidator` for strict exercise checking <!-- id: 1 -->
-- [x] Fix Strength Cues Export: Refactor `MesocycleEditor` to use `prepareProgramForExport` <!-- id: 2 -->
-- [x] Update Export Helpers: Add `progression_id` and strategy logic <!-- id: 3 -->
-- [x] Verify Fix: Deploy to production and verified logic via code review <!-- id: 4 -->
+## Goal
+Make all block types in the weekly viewer match the visual format of the first provided image. The target format is:
+1. Light, uppercase, small text at the top indicating the block type/name.
+2. A main row with the specific stimulus in bold (potentially with a pill badge).
+3. The content/exercises listed below.
+
+## Steps
+- [ ] Identify the component responsible for rendering these blocks in the weekly viewer.
+- [ ] Analyze the current rendering logic for different block types.
+- [ ] Refactor the rendering logic.
+- [ ] Apply the fix and push.
+- [ ] Verify the changes by checking the UI and taking screenshots in the production URL.
