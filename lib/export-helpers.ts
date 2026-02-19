@@ -302,6 +302,7 @@ export function prepareProgramForExport(program: any, exercisesCues?: Record<str
                         cue: exerciseCue || (b.config as any)?.notes || '', // Fallback to notes if no library cue (or if user manually added notes)
                         format: (b.config as any)?.format || (b.config as any)?.methodology || null,
                         rest: (b.config as any)?.rest || null,
+                        progression_id: b.progression_id || null,
                     };
                 })
             }))

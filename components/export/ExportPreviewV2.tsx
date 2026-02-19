@@ -30,6 +30,7 @@ interface WorkoutBlock {
     cue?: string;
     format?: string;
     rest?: string | null;
+    progression_id?: string | null;
 }
 
 interface DayData {
@@ -551,7 +552,7 @@ const MinimalistProgression = ({
 
     // Also scan weeks for exercises that might not be in strategy but are main lifts
     weeks.forEach(w => w.days.forEach(d => d.blocks.forEach(b => {
-        if (b.type === 'strength_linear' && b.name) exercises.add(b.name);
+        if (b.type === 'strength_linear' && b.name && b.progression_id) exercises.add(b.name);
     })));
 
     const exerciseList = Array.from(exercises).sort();

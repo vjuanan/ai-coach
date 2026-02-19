@@ -920,4 +920,5 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             </div>
         </DndContext>
     );
+}
 
