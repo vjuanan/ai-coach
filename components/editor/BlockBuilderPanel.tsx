@@ -191,6 +191,8 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
             };
         }
 
+        // Use the current section from store, or default to main
+        // This ensures new blocks are added to the visible section
         addBlock(dayId, type, format, undefined, false, initialConfig as any, blockBuilderSection || 'main');
     };
 
@@ -250,9 +252,14 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                 <SortableContext
                                     items={[...currentDay.blocks]
                                         .filter(b => {
-                                            const isWarmup = b.section === 'warmup' || b.type === 'warmup';
-                                            const targetIsWarmup = blockBuilderSection === 'warmup';
-                                            return targetIsWarmup ? isWarmup : !isWarmup;
+                                            const isWarmupBlock = b.section === 'warmup' || b.type === 'warmup';
+                                            // Strict check: If we are in warmup section, SHOW warmup blocks.
+                                            // If we are in ANY other section (main, cooldown, or null), SHOW non-warmup blocks.
+                                            if (blockBuilderSection === 'warmup') {
+                                                return isWarmupBlock;
+                                            } else {
+                                                return !isWarmupBlock;
+                                            }
                                         })
                                         .sort((a, b) => a.order_index - b.order_index)
                                         .map(b => `builder-${b.id}`)}
@@ -260,16 +267,22 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                 >
                                     {[...currentDay.blocks]
                                         .filter(b => {
-                                            const isWarmup = b.section === 'warmup' || b.type === 'warmup';
-                                            const targetIsWarmup = blockBuilderSection === 'warmup';
-                                            return targetIsWarmup ? isWarmup : !isWarmup;
+                                            const isWarmupBlock = b.section === 'warmup' || b.type === 'warmup';
+                                            if (blockBuilderSection === 'warmup') {
+                                                return isWarmupBlock;
+                                            } else {
+                                                return !isWarmupBlock;
+                                            }
                                         })
                                         .length > 0 ? (
                                         [...currentDay.blocks]
                                             .filter(b => {
-                                                const isWarmup = b.section === 'warmup' || b.type === 'warmup';
-                                                const targetIsWarmup = blockBuilderSection === 'warmup';
-                                                return targetIsWarmup ? isWarmup : !isWarmup;
+                                                const isWarmupBlock = b.section === 'warmup' || b.type === 'warmup';
+                                                if (blockBuilderSection === 'warmup') {
+                                                    return isWarmupBlock;
+                                                } else {
+                                                    return !isWarmupBlock;
+                                                }
                                             })
                                             .sort((a, b) => a.order_index - b.order_index)
                                             .map((block, index) => {
