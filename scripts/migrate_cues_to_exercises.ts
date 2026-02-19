@@ -1,3 +1,4 @@
+
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -8,13 +9,14 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '../.env.local') });
 
 /**
- * Migration Script: Add cue column to exercises table + Populate cues from Antopanti program
+ * Migration Script: Populate descriptions with cues from Antopanti program
+ * 
+ * PIVOT: Using `description` column instead of `cue` column to avoid schema migration blockers.
  * 
  * This script:
- * 1. Adds `cue` column to exercises table (if not exists)
- * 2. Extracts cues from Antopanti program blocks (config.notes and movement strings)
- * 3. Updates exercises with their respective cues
- * 4. Strips "Cue:" prefixed text from config.notes in workout_blocks, keeping non-cue notes
+ * 1. Extract cues from Antopanti program blocks.
+ * 2. Updates `exercises.description` with these cues.
+ * 3. Strips "Cue:" prefixed text from config.notes in workout_blocks.
  */
 
 // Exercise → Cue mapping (extracted from create_rutina_antopanti.ts)
@@ -74,25 +76,27 @@ async function run() {
         auth: { persistSession: false }
     });
 
-    console.log('🔧 Step 1: Adding cue column to exercises table (Skipping, assumed done)...');
+    console.log('🔧 Step 1: Using existing `description` column for cues (No schema change needed).');
 
-    console.log('\n🏋️ Step 2: Populating cues for exercises...');
+    console.log('\n🏋️ Step 2: Populating descriptions for exercises...');
 
     let updated = 0;
     let skipped = 0;
 
     for (const [exerciseName, cue] of Object.entries(EXERCISE_CUES)) {
         // Try exact match first
-        let { data: exercises } = await supabase
+        let { data: exercises, error: qError } = await supabase
             .from('exercises')
-            .select('id, name, cue')
+            .select('id, name, description')
             .eq('name', exerciseName);
+
+        if (qError) console.log(`   ❌ Query error for ${exerciseName}:`, qError.message);
 
         if (!exercises || exercises.length === 0) {
             // Try case-insensitive
             const { data: ilikeExercises } = await supabase
                 .from('exercises')
-                .select('id, name, cue')
+                .select('id, name, description')
                 .ilike('name', exerciseName);
 
             exercises = ilikeExercises;
@@ -102,7 +106,7 @@ async function run() {
             // Try aliases
             const { data: byAlias } = await supabase
                 .from('exercises')
-                .select('id, name, cue')
+                .select('id, name, description')
                 .contains('aliases', [exerciseName]);
 
             exercises = byAlias;
@@ -116,9 +120,11 @@ async function run() {
         }
 
         for (const ex of exercises) {
+            // Overwrite description with cue
             const { error } = await supabase.from('exercises')
-                .update({ cue })
+                .update({ description: cue })
                 .eq('id', ex.id);
+
             if (!error) {
                 console.log(`   ✅ ${ex.name} → "${cue.substring(0, 50)}${cue.length > 50 ? '...' : ''}"`);
                 updated++;
@@ -146,14 +152,10 @@ async function run() {
             if (!config?.notes || typeof config.notes !== 'string') continue;
 
             const notes = config.notes as string;
-            // Pattern: Remove "Cue: ..." from notes
-            // Could be "Superserie A. Cue: ..." or just "Cue: ..."
             const cuePattern = /\s*(?:\.?\s*)?Cue:\s*.+$/i;
             if (!cuePattern.test(notes)) continue;
 
             const cleanedNotes = notes.replace(cuePattern, '').trim();
-
-            // Also handle case where "Intento de pull up estricta. Cue: ..."
             const finalNotes = cleanedNotes || '';
 
             if (finalNotes !== notes) {

@@ -262,7 +262,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
     const exercisesCues = useMemo(() => {
         const map: Record<string, string> = {};
         exercises.forEach(ex => {
-            if (ex.cue) map[ex.name] = ex.cue;
+            if (ex.description) map[ex.name] = ex.description;
         });
         return map;
     }, [exercises]);

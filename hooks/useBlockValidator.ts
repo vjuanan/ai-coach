@@ -100,6 +100,24 @@ export const useBlockValidator = () => {
                 }
                 if (!allMovementsValid) {
                     missingFields.push('Movimientos válidos (nombres no vacíos)');
+                } else if (block.type === 'warmup' || block.type === 'accessory') {
+                    // Strict validation for Warmup/Accessory
+                    let allStrictValid = true;
+                    for (const m of movements) {
+                        let name = '';
+                        if (typeof m === 'string') name = m;
+                        else if (typeof m === 'object' && m && 'name' in m) name = (m as any).name;
+
+                        // Check cache
+                        const match = searchLocal(name).find(e => e.name.toLowerCase() === name.toLowerCase());
+                        if (!match) {
+                            allStrictValid = false;
+                            break;
+                        }
+                    }
+                    if (!allStrictValid) {
+                        missingFields.push('Todos los ejercicios deben ser de la biblioteca');
+                    }
                 }
             }
 

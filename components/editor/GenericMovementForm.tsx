@@ -176,7 +176,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
     // Wait, I need to update the props of MovementCard first in the same file.
 
     return (
-        <div className={`rounded-xl border transition-all duration-200 overflow-hidden
+        <div className={`rounded-xl border transition-all duration-200
             ${isValid
                 ? 'bg-slate-50/50 dark:bg-cv-bg-secondary/50 border-slate-200 dark:border-slate-700'
                 : 'bg-slate-50 dark:bg-slate-800/50 border-transparent'
@@ -184,12 +184,12 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
         >
             {/* ... Header ... */}
             {/* Header: Exercise Name & Actions */}
-            <div className="p-3 flex gap-3 items-center border-b border-slate-100 dark:border-slate-800/50">
+            <div className="p-3 flex gap-3 items-center border-b border-slate-100 dark:border-slate-800/50 rounded-t-xl">
                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-500">
                     {index + 1}
                 </div>
 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 z-10"> {/* Added z-index for search */}
                     <SmartExerciseInput
                         value={movement.name}
                         onChange={(val) => onChange({ name: val })}
@@ -211,7 +211,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
 
             {/* Inputs Grid - Only if Valid */}
             {isValid && (
-                <div className="p-3 bg-white dark:bg-cv-bg-secondary space-y-3">
+                <div className="p-3 bg-white dark:bg-cv-bg-secondary space-y-3 rounded-b-xl">
                     {/* Metrics Grid (4 columns) */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {/* 1. Series (Sets) - CONDITIONALLY SHOWN */}
