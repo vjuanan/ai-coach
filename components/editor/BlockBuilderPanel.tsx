@@ -91,8 +91,8 @@ const blockTypeOptions: {
             label: 'Calentamiento',
             description: 'Movilidad y activación',
             color: 'text-orange-600 dark:text-orange-400',
-            bgColor: 'bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50',
-            glowColor: 'rgba(234, 88, 12, 0.7)',
+            bgColor: 'bg-orange-100 dark:bg-orange-900/40 hover:bg-orange-200 dark:hover:bg-orange-900/60',
+            glowColor: 'rgba(234, 88, 12, 0.85)',
             icon: Flame
         },
         {
@@ -100,8 +100,8 @@ const blockTypeOptions: {
             label: 'Classic',
             description: 'Series, reps y porcentajes',
             color: 'text-red-600 dark:text-red-400',
-            bgColor: 'bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50',
-            glowColor: 'rgba(239, 68, 68, 0.7)',
+            bgColor: 'bg-red-100 dark:bg-red-900/40 hover:bg-red-200 dark:hover:bg-red-900/60',
+            glowColor: 'rgba(239, 68, 68, 0.85)',
             icon: Dumbbell
         },
         {
@@ -109,8 +109,8 @@ const blockTypeOptions: {
             label: 'MetCon',
             description: 'AMRAP, EMOM, For Time',
             color: 'text-cv-accent',
-            bgColor: 'bg-teal-50 dark:bg-teal-900/30 hover:bg-teal-100 dark:hover:bg-teal-900/50',
-            glowColor: 'rgba(134, 196, 163, 0.8)',
+            bgColor: 'bg-teal-100 dark:bg-teal-900/40 hover:bg-teal-200 dark:hover:bg-teal-900/60',
+            glowColor: 'rgba(134, 196, 163, 0.9)',
             icon: Zap
         },
         {
@@ -118,8 +118,8 @@ const blockTypeOptions: {
             label: 'Accesorio',
             description: 'Trabajo complementario',
             color: 'text-purple-600 dark:text-purple-400',
-            bgColor: 'bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50',
-            glowColor: 'rgba(168, 85, 247, 0.7)',
+            bgColor: 'bg-purple-100 dark:bg-purple-900/40 hover:bg-purple-200 dark:hover:bg-purple-900/60',
+            glowColor: 'rgba(168, 85, 247, 0.85)',
             icon: ListOrdered
         },
         {
@@ -127,8 +127,8 @@ const blockTypeOptions: {
             label: 'Habilidad',
             description: 'Práctica técnica',
             color: 'text-blue-600 dark:text-blue-400',
-            bgColor: 'bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50',
-            glowColor: 'rgba(59, 130, 246, 0.7)',
+            bgColor: 'bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-900/60',
+            glowColor: 'rgba(59, 130, 246, 0.85)',
             icon: Sparkles
         },
         {
@@ -136,8 +136,8 @@ const blockTypeOptions: {
             label: 'Texto Libre',
             description: 'Notas y comentarios',
             color: 'text-slate-600 dark:text-slate-400',
-            bgColor: 'bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800',
-            glowColor: 'rgba(100, 116, 139, 0.5)',
+            bgColor: 'bg-slate-200 dark:bg-slate-800/60 hover:bg-slate-300 dark:hover:bg-slate-800',
+            glowColor: 'rgba(100, 116, 139, 0.7)',
             icon: FileText
         },
         {
@@ -145,8 +145,8 @@ const blockTypeOptions: {
             label: 'Finisher',
             description: 'Dropsets, Rest-Pause, etc',
             color: 'text-amber-600 dark:text-amber-400',
-            bgColor: 'bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50',
-            glowColor: 'rgba(217, 119, 6, 0.7)',
+            bgColor: 'bg-amber-100 dark:bg-amber-900/40 hover:bg-amber-200 dark:hover:bg-amber-900/60',
+            glowColor: 'rgba(217, 119, 6, 0.85)',
             icon: Target
         },
     ];
