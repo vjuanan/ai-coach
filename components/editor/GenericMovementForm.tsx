@@ -218,12 +218,13 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                         {showSets && (
                             <InputCard
                                 label="SERIES"
-                                value={movement.sets as string}
+                                value={movement.sets as string | number}
                                 onChange={(val) => onChange({ sets: val })}
-                                type="number-text"
+                                type="number"
                                 icon={RotateCcw} // Reusing same icon, or could use Layers/Clone
                                 presets={[2, 3, 4]}
                                 placeholder="3"
+                                isInvalid={!movement.sets}
                             />
                         )}
 
@@ -238,16 +239,18 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                                 presets={['200m', '400m', '800m', '1km']}
                                 placeholder="400m"
                                 isDistance
+                                isInvalid={!movement.distance}
                             />
                         ) : (
                             <InputCard
                                 label="REPETICIONES"
-                                value={(movement.reps || movement.quantity) as string}
+                                value={(movement.reps || movement.quantity) as string | number}
                                 onChange={(val) => onChange({ reps: val, quantity: val })} // sync both
-                                type="number-text"
+                                type="number"
                                 icon={Repeat}
                                 presets={[8, 10, 12, 15]}
                                 placeholder="10"
+                                isInvalid={!(movement.reps || movement.quantity)}
                             />
                         )}
 
@@ -255,16 +258,17 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                         {!isWarmUp && (
                             <InputCard
                                 label="INTENSIDAD / RPE"
-                                value={(movement.rpe || movement.weight) as string}
+                                value={(movement.rpe || movement.weight) as string | number}
                                 onChange={(val) => {
                                     // Simple heuristic: if number < 11, assume RPE.
                                     if (typeof val === 'number' && val <= 10) onChange({ rpe: val, weight: undefined });
                                     else onChange({ weight: val ? String(val) : undefined, rpe: undefined });
                                 }}
-                                type="text"
+                                type="number"
                                 icon={Flame}
                                 presets={[7, 8, 9]}
                                 placeholder="RPE 8"
+                                isInvalid={!movement.rpe && !movement.weight}
                             />
                         )}
 
@@ -274,10 +278,11 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                                 label="DESCANSO"
                                 value={movement.rest as string}
                                 onChange={(val) => onChange({ rest: val })}
-                                type="text"
+                                type="time"
                                 icon={Clock}
                                 presets={['0:00', '0:30', '1:00']}
-                                placeholder="-"
+                                placeholder="00:00"
+                                isInvalid={!movement.rest}
                             />
                         )}
                     </div>

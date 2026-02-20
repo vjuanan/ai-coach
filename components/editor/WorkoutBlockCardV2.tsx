@@ -186,9 +186,9 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
                                     {calculatedWeight} kg
                                 </span>
                             )}
-                            {!calculatedWeight && weight && (
+                            {!calculatedWeight && weight && !isNaN(parseFloat(String(weight))) && (
                                 <span className="text-cv-text-secondary font-normal text-xs bg-slate-100 dark:bg-slate-800 px-1 rounded">
-                                    {weight} kg
+                                    {parseFloat(String(weight))} kg
                                 </span>
                             )}
                         </div>

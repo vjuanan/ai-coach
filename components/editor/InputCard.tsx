@@ -6,7 +6,7 @@ interface InputCardProps {
     subLabel?: string;
     value: string | number;
     onChange: (val: any) => void;
-    type?: 'number' | 'text' | 'number-text';
+    type?: 'number' | 'text' | 'number-text' | 'time';
     icon?: LucideIcon;
     presets?: (string | number)[];
     placeholder?: string;
@@ -14,6 +14,7 @@ interface InputCardProps {
     isDistance?: boolean;
     defaultValue?: string | number;
     badge?: string;
+    isInvalid?: boolean; // Highlight in red if required but missing
 }
 
 export function InputCard({
@@ -28,7 +29,8 @@ export function InputCard({
     headerAction,
     isDistance,
     defaultValue,
-    badge
+    badge,
+    isInvalid
 }: InputCardProps) {
 
     // Apply default value when field is empty
@@ -38,13 +40,51 @@ export function InputCard({
         }
     }, []);
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let val = e.target.value;
+
+        if (type === 'number') {
+            // Strictly numbers
+            val = val.replace(/[^0-9.]/g, '');
+            onChange(val === '' ? '' : Number(val));
+        } else if (type === 'time') {
+            // Strictly mm:ss or m:ss
+            val = val.replace(/[^0-9:]/g, '');
+            // Auto-format logic: if they paste numbers, try to colon it, else just let them type the colon
+            onChange(val);
+        } else {
+            onChange(val);
+        }
+    };
+
+    const handleBlur = () => {
+        if (type === 'time' && value && typeof value === 'string') {
+            // Hard enforce format on blur to ensure it looks like MM:SS
+            let val = value.replace(/[^0-9]/g, '');
+            if (val.length > 0) {
+                if (val.length <= 2) {
+                    onChange(`0:${val.padStart(2, '0')}`);
+                } else {
+                    const sec = val.slice(-2);
+                    const min = val.slice(0, -2);
+                    onChange(`${min}:${sec}`);
+                }
+            }
+        }
+    };
+
     return (
-        <div className="bg-white dark:bg-cv-bg-secondary rounded-xl border border-slate-200 dark:border-slate-700 p-3 flex flex-col gap-2 shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden">
+        <div className={`rounded-xl border p-3 flex flex-col gap-2 shadow-sm transition-all group relative overflow-hidden
+            ${isInvalid
+                ? 'bg-red-50/50 dark:bg-red-900/10 border-red-500 shadow-red-500/20'
+                : 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700 hover:shadow-md'
+            }`}
+        >
             {/* Header */}
             <div className="flex items-center justify-between z-10">
                 <div className="flex items-center gap-1.5">
-                    {Icon && <Icon size={14} className="text-cv-text-tertiary group-hover:text-cv-accent transition-colors" />}
-                    <span className="text-[10px] uppercase tracking-wider font-bold text-cv-text-tertiary group-hover:text-cv-text-secondary transition-colors">
+                    {Icon && <Icon size={14} className={`${isInvalid ? 'text-red-500' : 'text-cv-text-tertiary group-hover:text-cv-accent'} transition-colors`} />}
+                    <span className={`text-[10px] uppercase tracking-wider font-bold ${isInvalid ? 'text-red-600' : 'text-cv-text-tertiary group-hover:text-cv-text-secondary'} transition-colors`}>
                         {label}
                     </span>
                 </div>
@@ -56,13 +96,12 @@ export function InputCard({
                 <input
                     type={type === 'number' ? 'number' : 'text'}
                     value={value || ''}
-                    onChange={(e) => {
-                        const val = e.target.value;
-                        if (type === 'number') onChange(val ? Number(val) : '');
-                        else onChange(val);
-                    }}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
                     placeholder={placeholder || '-'}
-                    className="bg-transparent border-none p-0 text-3xl font-bold text-cv-text-primary placeholder:text-slate-200 dark:placeholder:text-slate-700 text-center w-full focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className={`bg-transparent border-none p-0 text-3xl font-bold text-center w-full focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+                        ${isInvalid ? 'text-red-600 placeholder:text-red-300' : 'text-cv-text-primary placeholder:text-slate-200 dark:placeholder:text-slate-700'}
+                    `}
                 />
                 {isDistance && <span className="text-sm font-medium text-cv-text-tertiary">meters</span>}
                 {label === '% 1RM' && <span className="text-sm font-medium text-cv-text-tertiary">%</span>}
