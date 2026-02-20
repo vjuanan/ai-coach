@@ -1,14 +1,26 @@
-# Plan: Standardize Block Display in Weekly Viewer
+# Rutina Antopanti SUPREMA
 
 ## Goal
-Make all block types in the weekly viewer match the visual format of the first provided image. The target format is:
-1. Light, uppercase, small text at the top indicating the block type/name.
-2. A main row with the specific stimulus in bold (potentially with a pill badge).
-3. The content/exercises listed below.
+Crear el programa "Rutina Antopanti SUPREMA" de 4 semanas, implementado completamente a través del Block Builder, probando y solucionando cualquier fallo o limitación que surja en el camino.
 
-## Steps
-- [ ] Identify the component responsible for rendering these blocks in the weekly viewer.
-- [ ] Analyze the current rendering logic for different block types.
-- [ ] Refactor the rendering logic.
-- [ ] Apply the fix and push.
-- [ ] Verify the changes by checking the UI and taking screenshots in the production URL.
+## Execution Plan
+- [ ] **Setup & Verification**
+  - [ ] Revisar ejercicios en base de datos. Agregar alias y editar cues según descripciones.
+  - [ ] Confirmar que no haya datos basura en nombres de ejercicios.
+- [ ] **Semana 1**
+  - [ ] Día 1 — Glúteo & Pierna (Fuerza)
+  - [ ] Día 2 — Upper Body + Pull-Up
+  - [ ] Día 3 — Full Body Mix
+  - [ ] Día 4 — Cardio & Tono (Metabólico)
+- [ ] **Semana 2**
+  - [ ] Día 1 al Día 4 (Progresiones de peso/repeticiones)
+- [ ] **Semana 3**
+  - [ ] Día 1 al Día 4 (Aumentos de series y peso)
+- [ ] **Semana 4**
+  - [ ] Día 1 al Día 4 (Intentos pesados, AMRAPs, incrementos finales)
+- [ ] **Fixing Bugs**
+  - [ ] Reparar errores encontrados en front/Block Builder durante la carga.
+  - [ ] Push a GitHub si se cambió código.
+- [ ] **Review on Production**
+  - [ ] Validar con capturas de pantalla desde `https://aicoach.epnstore.com.ar/`.
+  - [ ] Asegurarse de que el Visor Global muestre resultados idénticos a los planeados.

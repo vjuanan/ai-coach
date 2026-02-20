@@ -142,10 +142,17 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
             case 'strength_linear': {
                 const sets = config.sets as number;
                 const reps = config.reps as string;
+                const distance = config.distance as string;
                 const percentage = config.percentage as string;
+                const weight = config.weight as string | number;
+                const rpe = config.rpe as string | number;
 
-                if (sets || reps) {
-                    primaryMetric = `${sets || 0} × ${reps || 0}`;
+                if (sets || reps || distance) {
+                    if (distance) {
+                        primaryMetric = `${sets || 0} × ${distance}`;
+                    } else {
+                        primaryMetric = `${sets || 0} × ${reps || 0}`;
+                    }
                 }
 
                 // Calculate weight for preview
@@ -161,7 +168,7 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
                     }
                 }
 
-                if (percentage || calculatedWeight !== null) {
+                if (percentage || calculatedWeight !== null || weight || rpe) {
                     secondaryMetric = (
                         <div className="flex items-center gap-1">
                             {percentage && (
@@ -169,9 +176,19 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
                                     @ {percentage}% RM
                                 </span>
                             )}
+                            {rpe && !percentage && (
+                                <span className="text-orange-500 bg-orange-50 dark:bg-orange-900/20 px-1 rounded text-xs font-medium">
+                                    RPE {rpe}
+                                </span>
+                            )}
                             {calculatedWeight !== null && (
                                 <span className="text-cv-text-secondary font-normal text-xs bg-slate-100 dark:bg-slate-800 px-1 rounded">
                                     {calculatedWeight} kg
+                                </span>
+                            )}
+                            {!calculatedWeight && weight && (
+                                <span className="text-cv-text-secondary font-normal text-xs bg-slate-100 dark:bg-slate-800 px-1 rounded">
+                                    {weight} kg
                                 </span>
                             )}
                         </div>

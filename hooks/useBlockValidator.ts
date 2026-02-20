@@ -38,9 +38,11 @@ export const useBlockValidator = () => {
                 missingFields.push('Series');
             }
 
-            // Reps
-            if (!config.reps || String(config.reps).trim().length === 0) {
-                missingFields.push('Repeticiones');
+            // Reps or Distance
+            const hasReps = config.reps && String(config.reps).trim().length > 0;
+            const hasDistance = config.distance && String(config.distance).trim().length > 0;
+            if (!hasReps && !hasDistance) {
+                missingFields.push('Repeticiones o Distancia');
             }
 
             // Intensity (Weight/Percentage/RPE/RIR) - At least one
