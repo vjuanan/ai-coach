@@ -34,14 +34,14 @@ const UNIFORM_BLOCK_STYLE = {
 };
 
 const blockTypeStyles: Record<string, { color: string; label: string; hoverClass: string }> = {
-    warmup: { color: 'border-l-4 border-l-orange-300 dark:border-l-orange-700', label: 'Calentamiento', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
-    strength_linear: { color: 'border-l-4 border-l-red-300 dark:border-l-red-700', label: 'Fuerza', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
-    metcon_structured: { color: 'border-l-4 border-l-teal-300 dark:border-l-teal-700', label: 'MetCon', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
-    metcon: { color: 'border-l-4 border-l-teal-300 dark:border-l-teal-700', label: 'MetCon', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
-    accessory: { color: 'border-l-4 border-l-purple-300 dark:border-l-purple-700', label: 'Accesorio', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
-    skill: { color: 'border-l-4 border-l-blue-300 dark:border-l-blue-700', label: 'Habilidad', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
-    free_text: { color: 'border-l-4 border-l-slate-300 dark:border-l-slate-600', label: 'Notas', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
-    finisher: { color: 'border-l-4 border-l-amber-300 dark:border-l-amber-700', label: 'Finisher', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
+    warmup: { color: UNIFORM_BLOCK_STYLE.color, label: 'Calentamiento', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
+    strength_linear: { color: UNIFORM_BLOCK_STYLE.color, label: 'Fuerza', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
+    metcon_structured: { color: UNIFORM_BLOCK_STYLE.color, label: 'MetCon', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
+    metcon: { color: UNIFORM_BLOCK_STYLE.color, label: 'MetCon', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
+    accessory: { color: UNIFORM_BLOCK_STYLE.color, label: 'Accesorio', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
+    skill: { color: UNIFORM_BLOCK_STYLE.color, label: 'Habilidad', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
+    free_text: { color: UNIFORM_BLOCK_STYLE.color, label: 'Notas', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
+    finisher: { color: UNIFORM_BLOCK_STYLE.color, label: 'Finisher', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
 };
 
 const formatLabels: Record<string, string> = {
@@ -170,24 +170,24 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
 
                 if (percentage || calculatedWeight !== null || weight || rpe) {
                     secondaryMetric = (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5 text-xs text-cv-text-secondary">
                             {percentage && (
-                                <span className="text-cv-accent bg-cv-accent/5 px-1 rounded text-xs">
+                                <span>
                                     @ {percentage}% RM
                                 </span>
                             )}
                             {rpe && !percentage && (
-                                <span className="text-orange-500 bg-orange-50 dark:bg-orange-900/20 px-1 rounded text-xs font-medium">
-                                    RPE {rpe}
+                                <span>
+                                    @ RPE {rpe}
                                 </span>
                             )}
                             {calculatedWeight !== null && (
-                                <span className="text-cv-text-secondary font-normal text-xs bg-slate-100 dark:bg-slate-800 px-1 rounded">
+                                <span>
                                     {calculatedWeight} kg
                                 </span>
                             )}
                             {!calculatedWeight && weight && !isNaN(parseFloat(String(weight))) && (
-                                <span className="text-cv-text-secondary font-normal text-xs bg-slate-100 dark:bg-slate-800 px-1 rounded">
+                                <span>
                                     {parseFloat(String(weight))} kg
                                 </span>
                             )}
@@ -292,24 +292,23 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
         const extraCount = exerciseList.length - displayLimit;
 
         if (!pillText && !primaryMetric && !secondaryMetric && visibleExercises.length === 0 && !footerText) {
-            return <div className="min-h-[1.25rem]" />;
+            return <div className="min-h-[1rem]" />;
         }
 
         return (
-            <div className="flex flex-col gap-2 min-h-[1.25rem] mt-1">
+            <div className="flex flex-col gap-1 min-h-[1rem] mt-0.5">
                 {/* Main Row: Pill + Metric + SubMetric */}
                 {(pillText || primaryMetric || secondaryMetric) && (
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
                         {pillText && (
                             <span
-                                className="font-bold text-[10px] px-1.5 py-0.5 rounded leading-none tracking-wide uppercase"
-                                style={{ backgroundColor: '#f1f5f9', color: '#64748b' }}
+                                className="font-bold text-[10px] px-1.5 py-0.5 rounded leading-none tracking-wide uppercase bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700"
                             >
                                 {pillText}
                             </span>
                         )}
                         {primaryMetric && (
-                            <span className="text-sm text-cv-text-primary font-bold">
+                            <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">
                                 {primaryMetric}
                             </span>
                         )}
@@ -319,28 +318,28 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
 
                 {/* Body: Exercises */}
                 {visibleExercises.length > 0 && (
-                    <div className="flex flex-col gap-1 pl-0.5">
+                    <div className="flex flex-col gap-0.5 px-1 bg-slate-50/50 dark:bg-slate-800/20 py-1.5 rounded-md border-l-2 border-slate-200 dark:border-slate-700">
                         {visibleExercises.map((ex, i) => (
                             <div key={i} className="text-xs grid grid-cols-[min-content_1fr] items-baseline gap-2">
                                 {ex.reps ? (
                                     <>
-                                        <span className="font-bold text-cv-text-primary whitespace-nowrap text-right min-w-[2ch]">
+                                        <span className="font-bold text-slate-600 dark:text-slate-400 whitespace-nowrap text-right min-w-[2ch]">
                                             {ex.reps}
                                         </span>
-                                        <span className="text-cv-text-secondary truncate">
+                                        <span className="text-slate-500 dark:text-slate-400 truncate">
                                             {ex.name}
                                         </span>
                                     </>
                                 ) : (
-                                    <span className="text-cv-text-secondary truncate col-span-2 flex items-center gap-1.5">
-                                        {isListType && <span className="text-[10px] opacity-50">•</span>}
+                                    <span className="text-slate-500 dark:text-slate-400 truncate col-span-2 flex items-center gap-1.5">
+                                        <span className="text-[10px] opacity-40">•</span>
                                         {ex.name}
                                     </span>
                                 )}
                             </div>
                         ))}
                         {extraCount > 0 && (
-                            <div className="text-xs italic text-cv-text-tertiary pl-[3px]">
+                            <div className="text-[10px] italic text-slate-400 pl-[14px]">
                                 + {extraCount} más
                             </div>
                         )}
@@ -349,7 +348,7 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
 
                 {/* Footer: Notes / Rest */}
                 {footerText && (
-                    <div className="text-xs text-cv-text-tertiary">
+                    <div className="text-[11px] text-slate-400 mt-0.5">
                         {footerText}
                     </div>
                 )}
@@ -387,28 +386,28 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
                 }}
             >
                 {/* Card Inner Content */}
-                <div className="p-2">
+                <div className="p-1.5 px-2">
                     {/* Drag Handle - Visual indicator */}
                     <div
-                        className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-40 group-hover/block:opacity-100 transition-opacity rounded-l-lg"
+                        className="absolute left-0 top-0 bottom-0 w-5 flex items-center justify-center opacity-40 group-hover/block:opacity-100 transition-opacity rounded-l-lg"
                     >
                         <GripVertical size={12} className="text-cv-text-tertiary" />
                     </div>
 
                     {/* Content */}
-                    <div className="pl-4">
-                        <div className="flex items-center justify-between mb-1">
+                    <div className="pl-3">
+                        <div className="flex items-center justify-between mb-0.5">
                             <div className="flex items-center gap-2">
-                                <span className="text-2xs uppercase tracking-wider text-cv-text-tertiary font-medium">
+                                <span className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">
                                     {block.name || blockStyle.label}
                                 </span>
 
                                 {block.progression_id && (
                                     <div
-                                        className="flex items-center gap-1 bg-indigo-50 dark:bg-indigo-900/20 px-1.5 py-0.5 rounded text-[10px] font-medium text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/30"
+                                        className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-[9px] font-medium text-slate-500 border border-slate-200 dark:border-slate-700"
                                         title="Parte de una progresión"
                                     >
-                                        <Link size={10} className="stroke-[2.5]" />
+                                        <Link size={8} className="stroke-[2.5]" />
                                         <span>Progresión</span>
                                     </div>
                                 )}
@@ -418,17 +417,17 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
                             <div className="flex items-center gap-1 opacity-0 group-hover/block:opacity-100 transition-opacity">
                                 <button
                                     onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id); }}
-                                    className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-cv-accent transition-all duration-200 hover:scale-110 hover:shadow-sm"
+                                    className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-cv-accent transition-all duration-200 hover:scale-110 hover:shadow-sm"
                                     title="Duplicar"
                                 >
-                                    <Copy size={13} />
+                                    <Copy size={12} />
                                 </button>
                                 <button
                                     onClick={handleDelete}
-                                    className="p-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition-all duration-200 hover:scale-110 hover:shadow-sm group/delete"
+                                    className="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition-all duration-200 hover:scale-110 hover:shadow-sm group/delete"
                                     title="Eliminar bloque"
                                 >
-                                    <Trash2 size={14} className="group-hover/delete:stroke-[2.5]" />
+                                    <Trash2 size={13} className="group-hover/delete:stroke-[2.5]" />
                                 </button>
                             </div>
                         </div>
