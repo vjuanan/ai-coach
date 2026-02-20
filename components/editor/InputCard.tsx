@@ -51,14 +51,20 @@ export function InputCard({
 
         if (type === 'number') {
             // Strictly numbers
-            val = val.replace(/[^0-9.]/g, '');
-            setLocalValue(val);
-            onChange(val === '' ? '' : Number(val));
+            const numericVal = val.replace(/[^0-9.]/g, '');
+            if (val !== numericVal) {
+                e.target.value = numericVal; // Force DOM override sync
+            }
+            setLocalValue(numericVal);
+            onChange(numericVal === '' ? '' : Number(numericVal));
         } else if (type === 'time') {
-            // Strictly mm:ss or m:ss
-            val = val.replace(/[^0-9:]/g, '');
-            setLocalValue(val);
-            onChange(val);
+            // Strictly numbers and colon
+            const timeVal = val.replace(/[^0-9:]/g, '');
+            if (val !== timeVal) {
+                e.target.value = timeVal; // Force DOM override sync
+            }
+            setLocalValue(timeVal);
+            onChange(timeVal);
         } else {
             setLocalValue(val);
             onChange(val);
@@ -72,11 +78,11 @@ export function InputCard({
             if (val.length > 0) {
                 let formatted = '';
                 if (val.length <= 2) {
-                    formatted = `0:${val.padStart(2, '0')}`;
+                    formatted = `00:${val.padStart(2, '0')}`;
                 } else {
                     const sec = val.slice(-2);
                     const min = val.slice(0, -2);
-                    formatted = `${min}:${sec}`;
+                    formatted = `${min.padStart(2, '0')}:${sec}`;
                 }
                 setLocalValue(formatted);
                 onChange(formatted);

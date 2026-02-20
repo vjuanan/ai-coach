@@ -1119,6 +1119,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         type="number"
                         icon={Layers}
                         presets={[3, 4, 5]}
+                        isInvalid={!config.sets}
                         headerAction={
                             <button
                                 onClick={() => setShowBreakdown(!showBreakdown)}
@@ -1146,16 +1147,18 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         presets={['200m', '400m', '800m']}
                         placeholder="400m"
                         isDistance
+                        isInvalid={!config.distance}
                     />
                 ) : (
                     <InputCard
                         label="REPETICIONES"
-                        value={config.reps as string}
+                        value={config.reps as string | number}
                         onChange={(val) => handleGlobalChange('reps', val)}
-                        type="number-text" // Allow ranges like 5-8
+                        type="number" // Strictly numbers
                         icon={Repeat}
                         presets={[8, 10, 12]}
                         placeholder="10"
+                        isInvalid={!config.reps}
                     />
                 )}
 
@@ -1170,6 +1173,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     type="number"
                     icon={intensityType === '% 1RM' ? Percent : Flame}
                     presets={intensityType === '% 1RM' ? [70, 75, 80] : [8, 9, 10]}
+                    isInvalid={intensityType === '% 1RM' ? !config.percentage : !config.rpe}
                     headerAction={
                         <button
                             onClick={() => setIntensityType(prev => prev === '% 1RM' ? 'RPE' : '% 1RM')}
@@ -1186,10 +1190,11 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     label="DESCANSO"
                     value={config.rest as string}
                     onChange={(val) => handleGlobalChange('rest', val)}
-                    type="text"
+                    type="time" // strictly time format MM:SS
                     icon={Clock}
                     presets={['1:30', '2:00', '3:00']}
-                    placeholder="2:00"
+                    placeholder="00:00"
+                    isInvalid={!config.rest}
                 />
 
             </div>
