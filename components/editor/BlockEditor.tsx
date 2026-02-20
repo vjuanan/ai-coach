@@ -1295,16 +1295,16 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                 </div>
 
                 {/* Notes Input - Takes remaining space */}
-                <div className="flex-1 min-w-[140px] relative group">
-                    <div className="absolute top-2.5 left-3 text-slate-400 group-focus-within:text-cv-accent transition-colors">
-                        <FileText size={14} />
+                <div className="flex-1 min-w-[140px] relative group h-11">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cv-accent transition-colors pointer-events-none flex items-center justify-center">
+                        <FileText size={18} strokeWidth={2} />
                     </div>
-                    <textarea
+                    <input
+                        type="text"
                         value={(config.notes as string) || ''}
                         onChange={(e) => onChange('notes', e.target.value)}
                         placeholder="Notas técnicas (opcional)..."
-                        className="w-full h-full min-h-[44px] pl-9 pr-3 py-2.5 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-xl text-xs leading-snug text-cv-text-primary placeholder:text-slate-400 focus:ring-0 focus:border-cv-accent transition-all resize-none overflow-hidden"
-                        style={{ fieldSizing: 'content' } as React.CSSProperties} // Modern CSS to auto-grow
+                        className="w-full h-full pl-[34px] pr-3 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-cv-text-primary placeholder:text-slate-400 focus:ring-0 focus:border-cv-accent focus:ring-1 focus:ring-cv-accent/20 transition-all m-0"
                     />
                 </div>
             </div>
