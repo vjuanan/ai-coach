@@ -34,14 +34,14 @@ const UNIFORM_BLOCK_STYLE = {
 };
 
 const blockTypeStyles: Record<string, { color: string; label: string; hoverClass: string }> = {
-    warmup: { color: UNIFORM_BLOCK_STYLE.color, label: 'Calentamiento', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
-    strength_linear: { color: UNIFORM_BLOCK_STYLE.color, label: 'Fuerza', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
-    metcon_structured: { color: UNIFORM_BLOCK_STYLE.color, label: 'MetCon', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
-    metcon: { color: UNIFORM_BLOCK_STYLE.color, label: 'MetCon', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
-    accessory: { color: UNIFORM_BLOCK_STYLE.color, label: 'Accesorio', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
-    skill: { color: UNIFORM_BLOCK_STYLE.color, label: 'Habilidad', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
-    free_text: { color: UNIFORM_BLOCK_STYLE.color, label: 'Notas', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
-    finisher: { color: UNIFORM_BLOCK_STYLE.color, label: 'Finisher', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
+    warmup: { color: 'border-l-4 border-l-orange-300 dark:border-l-orange-700', label: 'Calentamiento', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
+    strength_linear: { color: 'border-l-4 border-l-red-300 dark:border-l-red-700', label: 'Fuerza', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
+    metcon_structured: { color: 'border-l-4 border-l-teal-300 dark:border-l-teal-700', label: 'MetCon', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
+    metcon: { color: 'border-l-4 border-l-teal-300 dark:border-l-teal-700', label: 'MetCon', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
+    accessory: { color: 'border-l-4 border-l-purple-300 dark:border-l-purple-700', label: 'Accesorio', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
+    skill: { color: 'border-l-4 border-l-blue-300 dark:border-l-blue-700', label: 'Habilidad', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
+    free_text: { color: 'border-l-4 border-l-slate-300 dark:border-l-slate-600', label: 'Notas', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
+    finisher: { color: 'border-l-4 border-l-amber-300 dark:border-l-amber-700', label: 'Finisher', hoverClass: UNIFORM_BLOCK_STYLE.hoverClass },
 };
 
 const formatLabels: Record<string, string> = {
