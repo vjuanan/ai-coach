@@ -275,17 +275,18 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
             const match = searchLocal(block.name).find(e => e.name.toLowerCase() === block.name?.toLowerCase());
             if (!match) return false;
 
-            // Field completeness: sets, reps, at least one intensity, rest
+            // Field completeness: sets, reps/distance, at least one intensity, rest
             const cfg = block.config || {};
             const hasSets = cfg.sets && Number(cfg.sets) > 0;
             const hasReps = cfg.reps && String(cfg.reps).trim().length > 0;
+            const hasDistance = cfg.distance && String(cfg.distance).trim().length > 0;
             const hasIntensity = (cfg.weight && String(cfg.weight).trim().length > 0) ||
                 (cfg.percentage && Number(cfg.percentage) > 0) ||
                 (cfg.rpe && Number(cfg.rpe) > 0) ||
                 (cfg.rir !== undefined && cfg.rir !== null && cfg.rir !== '');
             const hasRest = cfg.rest && String(cfg.rest).trim().length > 0;
 
-            return !!(hasSets && hasReps && hasIntensity && hasRest);
+            return !!(hasSets && (hasReps || hasDistance) && hasIntensity && hasRest);
         }
         if (block.type === 'warmup') {
             // Warmups: need format (from column OR config) and at least one movement (freeform text OK)
