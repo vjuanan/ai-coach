@@ -34,14 +34,14 @@ const UNIFORM_BLOCK_STYLE = {
 };
 
 const blockTypeStyles: Record<string, { color: string; label: string; hoverClass: string }> = {
-    warmup: { color: 'border-l-4 border-l-orange-500 dark:border-l-orange-400', label: 'Calentamiento', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
-    strength_linear: { color: 'border-l-4 border-l-red-500 dark:border-l-red-400', label: 'Fuerza', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
-    metcon_structured: { color: 'border-l-4 border-l-teal-500 dark:border-l-teal-400', label: 'MetCon', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
-    metcon: { color: 'border-l-4 border-l-teal-500 dark:border-l-teal-400', label: 'MetCon', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
-    accessory: { color: 'border-l-4 border-l-purple-500 dark:border-l-purple-400', label: 'Accesorio', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
-    skill: { color: 'border-l-4 border-l-blue-500 dark:border-l-blue-400', label: 'Habilidad', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
-    free_text: { color: 'border-l-4 border-l-slate-400 dark:border-l-slate-500', label: 'Notas', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
-    finisher: { color: 'border-l-4 border-l-amber-500 dark:border-l-amber-400', label: 'Finisher', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
+    warmup: { color: 'border-l-4 border-l-orange-300 dark:border-l-orange-700', label: 'Calentamiento', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
+    strength_linear: { color: 'border-l-4 border-l-red-300 dark:border-l-red-700', label: 'Fuerza', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
+    metcon_structured: { color: 'border-l-4 border-l-teal-300 dark:border-l-teal-700', label: 'MetCon', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
+    metcon: { color: 'border-l-4 border-l-teal-300 dark:border-l-teal-700', label: 'MetCon', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
+    accessory: { color: 'border-l-4 border-l-purple-300 dark:border-l-purple-700', label: 'Accesorio', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
+    skill: { color: 'border-l-4 border-l-blue-300 dark:border-l-blue-700', label: 'Habilidad', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
+    free_text: { color: 'border-l-4 border-l-slate-300 dark:border-l-slate-600', label: 'Notas', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
+    finisher: { color: 'border-l-4 border-l-amber-300 dark:border-l-amber-700', label: 'Finisher', hoverClass: 'hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-none' },
 };
 
 const formatLabels: Record<string, string> = {

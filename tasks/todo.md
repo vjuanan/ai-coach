@@ -19,8 +19,10 @@ Crear el programa "Rutina Antopanti SUPREMA" de 4 semanas, implementado completa
 - [ ] **Semana 4**
   - [ ] Día 1 al Día 4 (Intentos pesados, AMRAPs, incrementos finales)
 - [ ] **Fixing Bugs**
-  - [ ] Reparar errores encontrados en front/Block Builder durante la carga.
-  - [ ] Push a GitHub si se cambió código.
+  - [x] Aumentar intensidad de colores de los Bloques en Block Builder.
+  - [x] Corregir `ReferenceError` ("useState is not defined") en `InputCard.tsx`.
+  - [ ] Reparar otros errores encontrados en front/Block Builder durante la carga.
+  - [x] Push a GitHub si se cambió código.
 - [ ] **Review on Production**
   - [ ] Validar con capturas de pantalla desde `https://aicoach.epnstore.com.ar/`.
   - [ ] Asegurarse de que el Visor Global muestre resultados idénticos a los planeados.
