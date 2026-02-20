@@ -20,9 +20,12 @@ Crear el programa "Rutina Antopanti SUPREMA" de 4 semanas, implementado completa
   - [ ] Día 1 al Día 4 (Intentos pesados, AMRAPs, incrementos finales)
 - [ ] **Fixing Bugs**
   - [x] Aumentar intensidad de colores de los Bloques en Block Builder.
+  - [x] Suavizar el color de las franjas laterales de los bloques en el visor semanal para igualarlo al fondo de los botones del Block Builder.
   - [x] Corregir `ReferenceError` ("useState is not defined") en `InputCard.tsx`.
   - [ ] Reparar otros errores encontrados en front/Block Builder durante la carga.
   - [x] Push a GitHub si se cambió código.
 - [ ] **Review on Production**
   - [ ] Validar con capturas de pantalla desde `https://aicoach.epnstore.com.ar/`.
   - [ ] Asegurarse de que el Visor Global muestre resultados idénticos a los planeados.
+- [x] Corregir estilo del input de Notas en Block Editor: un solo renglón, icono centrado y tipografía/icono más grandes.
+- [x] Unificar formato de WorkoutBlockCardV2 (quitar fondos, verde, negrita grande) a texto simple.

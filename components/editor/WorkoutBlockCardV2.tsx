@@ -170,7 +170,7 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
 
                 if (percentage || calculatedWeight !== null || weight || rpe) {
                     secondaryMetric = (
-                        <div className="flex items-center gap-1.5 text-xs text-cv-text-secondary">
+                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-normal">
                             {percentage && (
                                 <span>
                                     @ {percentage}% RM
@@ -296,19 +296,19 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
         }
 
         return (
-            <div className="flex flex-col gap-1 min-h-[1rem] mt-0.5">
+            <div className="flex flex-col gap-0.5 min-h-[1rem] mt-0.5">
                 {/* Main Row: Pill + Metric + SubMetric */}
                 {(pillText || primaryMetric || secondaryMetric) && (
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
                         {pillText && (
                             <span
-                                className="font-bold text-[10px] px-1.5 py-0.5 rounded leading-none tracking-wide uppercase bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700"
+                                className="font-medium text-[10px] px-1.5 py-0.5 rounded leading-none tracking-wide uppercase bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700"
                             >
                                 {pillText}
                             </span>
                         )}
                         {primaryMetric && (
-                            <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
                                 {primaryMetric}
                             </span>
                         )}
@@ -318,28 +318,28 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
 
                 {/* Body: Exercises */}
                 {visibleExercises.length > 0 && (
-                    <div className="flex flex-col gap-0.5 px-1 bg-slate-50/50 dark:bg-slate-800/20 py-1.5 rounded-md border-l-2 border-slate-200 dark:border-slate-700">
+                    <div className="flex flex-col gap-0 text-slate-500 dark:text-slate-400">
                         {visibleExercises.map((ex, i) => (
-                            <div key={i} className="text-xs grid grid-cols-[min-content_1fr] items-baseline gap-2">
+                            <div key={i} className="text-[11px] grid grid-cols-[min-content_1fr] items-baseline gap-2">
                                 {ex.reps ? (
                                     <>
-                                        <span className="font-bold text-slate-600 dark:text-slate-400 whitespace-nowrap text-right min-w-[2ch]">
+                                        <span className="whitespace-nowrap text-right min-w-[2ch]">
                                             {ex.reps}
                                         </span>
-                                        <span className="text-slate-500 dark:text-slate-400 truncate">
+                                        <span className="truncate">
                                             {ex.name}
                                         </span>
                                     </>
                                 ) : (
-                                    <span className="text-slate-500 dark:text-slate-400 truncate col-span-2 flex items-center gap-1.5">
-                                        <span className="text-[10px] opacity-40">•</span>
+                                    <span className="truncate col-span-2 flex items-center gap-1.5">
+                                        <span className="text-[9px] opacity-40">•</span>
                                         {ex.name}
                                     </span>
                                 )}
                             </div>
                         ))}
                         {extraCount > 0 && (
-                            <div className="text-[10px] italic text-slate-400 pl-[14px]">
+                            <div className="text-[10px] italic opacity-70 pl-[14px]">
                                 + {extraCount} más
                             </div>
                         )}
@@ -348,7 +348,7 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
 
                 {/* Footer: Notes / Rest */}
                 {footerText && (
-                    <div className="text-[11px] text-slate-400 mt-0.5">
+                    <div className="text-[10px] text-slate-400 mt-0.5">
                         {footerText}
                     </div>
                 )}
@@ -386,7 +386,7 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
                 }}
             >
                 {/* Card Inner Content */}
-                <div className="p-1.5 px-2">
+                <div className="p-1 px-1.5">
                     {/* Drag Handle - Visual indicator */}
                     <div
                         className="absolute left-0 top-0 bottom-0 w-5 flex items-center justify-center opacity-40 group-hover/block:opacity-100 transition-opacity rounded-l-lg"
