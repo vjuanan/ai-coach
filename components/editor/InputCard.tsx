@@ -32,6 +32,12 @@ export function InputCard({
     badge,
     isInvalid
 }: InputCardProps) {
+    const [localValue, setLocalValue] = useState<string>(value !== undefined && value !== null ? String(value) : '');
+
+    // Sync from props
+    useEffect(() => {
+        setLocalValue(value !== undefined && value !== null ? String(value) : '');
+    }, [value]);
 
     // Apply default value when field is empty
     useEffect(() => {
@@ -46,29 +52,34 @@ export function InputCard({
         if (type === 'number') {
             // Strictly numbers
             val = val.replace(/[^0-9.]/g, '');
+            setLocalValue(val);
             onChange(val === '' ? '' : Number(val));
         } else if (type === 'time') {
             // Strictly mm:ss or m:ss
             val = val.replace(/[^0-9:]/g, '');
-            // Auto-format logic: if they paste numbers, try to colon it, else just let them type the colon
+            setLocalValue(val);
             onChange(val);
         } else {
+            setLocalValue(val);
             onChange(val);
         }
     };
 
     const handleBlur = () => {
-        if (type === 'time' && value && typeof value === 'string') {
+        if (type === 'time' && localValue && typeof localValue === 'string') {
             // Hard enforce format on blur to ensure it looks like MM:SS
-            let val = value.replace(/[^0-9]/g, '');
+            let val = localValue.replace(/[^0-9]/g, '');
             if (val.length > 0) {
+                let formatted = '';
                 if (val.length <= 2) {
-                    onChange(`0:${val.padStart(2, '0')}`);
+                    formatted = `0:${val.padStart(2, '0')}`;
                 } else {
                     const sec = val.slice(-2);
                     const min = val.slice(0, -2);
-                    onChange(`${min}:${sec}`);
+                    formatted = `${min}:${sec}`;
                 }
+                setLocalValue(formatted);
+                onChange(formatted);
             }
         }
     };
@@ -94,8 +105,8 @@ export function InputCard({
             {/* Input Area */}
             <div className="flex items-baseline justify-center gap-1 my-1 z-10">
                 <input
-                    type={type === 'number' ? 'number' : 'text'}
-                    value={value || ''}
+                    type="text" // Always use text to perfectly control rendering and block native behavior
+                    value={localValue}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     placeholder={placeholder || '-'}
