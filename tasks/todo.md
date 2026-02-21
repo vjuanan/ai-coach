@@ -8,7 +8,7 @@
 - [x] 4. Ocultar los inputs de "Series" cuando hay "Vueltas" activas (se puede usar un switch o condicional basado en la presencia de Vueltas).
 - [x] 5. Mover el componente de "Notas" del ejercicio a la derecha de los inputs (Series/Reps), en lugar de abajo.
 - [x] 6. Eliminar el bloque final de notas general del bloque (como ya hay notas por cada ejercicio).
-- [/] 7. Verificar con screenshots en el frontend (`https://aicoach.epnstore.com.ar` o local con validación posterior).
+- [x] 7. Verificar con screenshots en el frontend (`https://aicoach.epnstore.com.ar` o local con validación posterior).
 
 ## Notas
 - Los módulos principales a modificar parecen ser `BlockBuilderPanel`, la tarjeta del ejercicio (`ExerciseDraggableCard` o similar) y `BlockEditor`.
