@@ -224,7 +224,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
 
             {/* Header - Only show when NOT in builder mode */}
             {!shouldHideHeader && (
-                <div className="relative z-10 flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
+                <div className="relative z-10 flex items-center justify-between mb-2 pb-2 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex-1 cursor-pointer" onClick={() => enterBlockBuilder(day.id)}>
                         <h3 className="text-base font-bold text-cv-text-primary">{dayName}</h3>
                         {activeStimulus && (
@@ -368,7 +368,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
             />
 
             {/* Split Content with Single SortableContext */}
-            <div className="flex-1 overflow-y-auto -m-4 p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto -mx-4 -mb-4 px-4 pb-4 space-y-4">
                 <SortableContext items={allBlockIds} strategy={verticalListSortingStrategy}>
 
                     {/* WARM UP SECTION */}
@@ -420,7 +420,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                     </div>
 
                     {/* MAIN WORKOUT SECTION */}
-                    <div className="space-y-1.5 mt-2">
+                    <div className="space-y-1.5 mt-0">
                         <div
                             className={`flex items-center justify-between px-1 cursor-pointer rounded-lg py-1 transition-colors ${isActiveInBuilder && (blockBuilderSection === 'main' || !blockBuilderSection)
                                 ? 'bg-indigo-50 dark:bg-indigo-900/20'
