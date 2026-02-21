@@ -325,10 +325,10 @@ const ExerciseRow = ({
             backgroundColor: theme.c.bgAlt, // White card
             border: `1.5px solid ${theme.c.border}`, // Pinkish border #FBCFE8
             borderRadius: '12px',
-            padding: '20px',
+            padding: '16px', // Reduced for mobile
             display: 'flex',
             flexDirection: 'column',
-            boxShadow: 'none' // Remove shadow to match the clean look
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)' // Sutil shadow for depth
         }}>
             {/* Top Section: Title & Cues */}
             <div style={{ marginBottom: '16px' }}>
@@ -337,10 +337,10 @@ const ExerciseRow = ({
                     display: 'flex',
                     alignItems: 'baseline',
                     gap: '10px',
-                    marginBottom: '6px'
+                    marginBottom: '4px'
                 }}>
                     <span style={{
-                        fontSize: '28px', // Match the design, slightly larger
+                        fontSize: '30px', // Bold stand-out
                         fontWeight: '900', // Black
                         color: theme.c.accentMuted, // Standard Pink, slightly deeper
                         letterSpacing: '-1px'
@@ -348,10 +348,11 @@ const ExerciseRow = ({
                         {index}
                     </span>
                     <span style={{
-                        fontSize: '18px',
+                        fontSize: '16px',
                         fontWeight: '800', // ExtraBold
                         color: theme.c.text, // Dark Text
-                        letterSpacing: '0px'
+                        letterSpacing: '0px',
+                        lineHeight: '1.2'
                     }}>
                         {displayName}
                     </span>
@@ -487,12 +488,12 @@ const DaySection = ({
     let exIdx = 1;
 
     return (
-        <div style={{ paddingBottom: '40px', breakInside: 'avoid' }}>
+        <div style={{ paddingBottom: '32px', breakInside: 'avoid' }}>
             {/* ═══════════════════ DAY HEADER (Full Bleed) ═══════════════════ */}
             <div style={{
-                marginBottom: '24px',
-                backgroundColor: theme.c.headerBg, // Burgundy
-                padding: '16px 48px', // Match global padding
+                marginBottom: '20px',
+                background: `linear-gradient(135deg, ${theme.c.headerBg}, #3B0A1A)`, // Burgundy con sutil gradiente a más oscuro
+                padding: '16px 24px', // Match global mobile padding
                 display: 'flex',
                 alignItems: 'baseline',
                 justifyContent: 'space-between',
@@ -515,7 +516,7 @@ const DaySection = ({
             </div>
 
             {/* Exercises Container (Inner padding) */}
-            <div style={{ padding: '0 48px' }}>
+            <div style={{ padding: '0 24px' }}>
                 {/* ═══════════════════ WARMUP (Activación as Pills) ═══════════════════ */}
                 {hasWarmup && (
                     <div style={{
@@ -864,7 +865,7 @@ export function ExportPreview({
 
                 {/* Toolbar */}
                 <div className="flex items-center justify-between px-5 py-2.5 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
-                    <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Export Preview v2.2</h2> {/* Added version to verify reload */}
+                    <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Export Preview v2.3</h2> {/* Added version to verify reload */}
                     <div className="flex items-center gap-2.5">
                         <select
                             value={currentThemeId}
@@ -904,7 +905,7 @@ export function ExportPreview({
                         id="export-container"
                         ref={exportRef}
                         style={{
-                            width: '794px', // Tamaño A4 estándar
+                            width: '430px', // Tamaño Mobile (iPhone Pro Max aprox)
                             margin: '0 auto',
                             backgroundColor: theme.c.bgAlt, // Fondo blanco puro para la tarjeta principal
                             boxSizing: 'border-box',
@@ -914,7 +915,7 @@ export function ExportPreview({
                         }}
                     >
                         {/* ═══════════════════ HEADER (ANTOPANTI REDESIGN) ═══════════════════ */}
-                        <div style={{ padding: '60px 48px 32px' }}>
+                        <div style={{ padding: '40px 24px 24px' }}>
                             {/* Top row: Client Name & Badge */}
                             <div style={{
                                 display: 'flex',
@@ -938,7 +939,8 @@ export function ExportPreview({
                                     fontSize: '12px',
                                     fontWeight: '800',
                                     textTransform: 'uppercase',
-                                    letterSpacing: '0.5px'
+                                    letterSpacing: '0.5px',
+                                    boxShadow: '0 0 15px rgba(245, 158, 11, 0.25)' // Glow sutil dorado
                                 }}>
                                     GOLD EDITION
                                 </span>
@@ -946,9 +948,9 @@ export function ExportPreview({
 
                             {/* Main Title */}
                             <h1 style={{
-                                fontSize: '46px',
+                                fontSize: '38px',
                                 fontWeight: '900', // Black
-                                margin: '0 0 16px 0',
+                                margin: '0 0 12px 0',
                                 color: theme.c.headerBg, // Burgundy
                                 letterSpacing: '-1.5px',
                                 lineHeight: '1.05',
@@ -968,7 +970,7 @@ export function ExportPreview({
 
                             {/* Program Subtitle / Focus */}
                             <div style={{
-                                fontSize: '16px',
+                                fontSize: '14px',
                                 color: theme.c.accent, // Magenta
                                 fontWeight: '800',
                                 textTransform: 'uppercase',
@@ -976,7 +978,7 @@ export function ExportPreview({
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                marginBottom: '32px'
+                                marginBottom: '28px'
                             }}>
                                 <span>✨</span>
                                 <span>FASE {weeks.length}: {programName}</span>
@@ -988,30 +990,34 @@ export function ExportPreview({
                                     display: 'flex',
                                     borderTop: `1px solid ${theme.c.borderSoft}`, // Borde sutil gris/rosa
                                     borderBottom: `1px solid ${theme.c.borderSoft}`,
-                                    padding: '16px 0',
-                                    marginBottom: '32px'
+                                    padding: '12px 0',
+                                    marginBottom: '24px'
                                 }}>
                                     {weeks.map((week, idx) => (
                                         <div key={idx} style={{
                                             flex: 1,
                                             textAlign: 'center',
+                                            padding: '0 2px',
                                             borderRight: idx < weeks.length - 1 ? `1px solid ${theme.c.borderSoft}` : 'none'
                                         }}>
                                             <div style={{
-                                                fontSize: '13px',
+                                                fontSize: '11px',
                                                 fontWeight: '800',
                                                 color: theme.c.badge, // Gold
-                                                marginBottom: '6px',
+                                                marginBottom: '4px',
                                                 textTransform: 'uppercase'
                                             }}>
                                                 SEM {week.weekNumber}
                                             </div>
                                             <div style={{
-                                                fontSize: '12px',
+                                                fontSize: '10px',
                                                 color: theme.c.textMuted,
-                                                fontWeight: '600'
+                                                fontWeight: '600',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis'
                                             }}>
-                                                {getWeekDateRange(week.weekNumber, weekDateRanges) || `Semana ${idx + 1}`}
+                                                {getWeekDateRange(week.weekNumber, weekDateRanges) || `Sem ${idx + 1}`}
                                             </div>
                                         </div>
                                     ))}
@@ -1023,23 +1029,23 @@ export function ExportPreview({
                         {missionText && (
                             <div style={{
                                 backgroundColor: theme.c.accentSoft, // Fondo rosado muy claro
-                                padding: '32px 48px', // Sangrado completo, padding interno coincidente con el resto
+                                padding: '24px 24px', // Sangrado Mobile
                             }}>
                                 <div style={{
                                     backgroundColor: theme.c.bgAlt,
                                     borderLeft: `6px solid ${theme.c.badge}`, // Thick gold left border
-                                    padding: '24px',
+                                    padding: '20px',
                                     borderRadius: '8px',
                                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
                                 }}>
                                     <h3 style={{
-                                        fontSize: '18px',
+                                        fontSize: '16px',
                                         fontWeight: '900',
                                         color: theme.c.accent, // Magenta
-                                        margin: '0 0 12px 0',
+                                        margin: '0 0 10px 0',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '10px'
+                                        gap: '8px'
                                     }}>
                                         <span>🏆</span> MISIÓN: {monthlyStrategy?.focus ? String(monthlyStrategy.focus).toUpperCase() : '¡VAMOS POR TODO!'}
                                     </h3>
@@ -1065,26 +1071,26 @@ export function ExportPreview({
                             <div style={{
                                 flex: 1,
                                 backgroundColor: theme.c.bgAlt, // White block 
-                                padding: '32px 48px', // Same margins as the standard padding
+                                padding: '24px 16px', // Scaled down padding for Mobile
                                 textAlign: 'center',
                                 borderRight: `1px solid ${theme.c.borderSoft}`, // Separator
                                 borderBottom: `1px solid ${theme.c.borderSoft}`
                             }}>
                                 <div style={{
-                                    fontSize: '28px',
+                                    fontSize: '22px',
                                     fontWeight: '900',
                                     color: theme.c.headerBg, // Burgundy text
-                                    marginBottom: '6px',
+                                    marginBottom: '4px',
                                     letterSpacing: '-1px'
                                 }}>
                                     2&apos; a 3&apos; MIN
                                 </div>
                                 <div style={{
-                                    fontSize: '12px',
+                                    fontSize: '10px',
                                     fontWeight: '800',
                                     color: theme.c.accentMuted, // Pink
                                     textTransform: 'uppercase',
-                                    letterSpacing: '1px'
+                                    letterSpacing: '0.5px'
                                 }}>
                                     PAUSA LARGA (FUERZA)
                                 </div>
@@ -1093,25 +1099,25 @@ export function ExportPreview({
                             <div style={{
                                 flex: 1,
                                 backgroundColor: theme.c.bgAlt, // White
-                                padding: '32px 48px',
+                                padding: '24px 16px',
                                 textAlign: 'center',
                                 borderBottom: `1px solid ${theme.c.borderSoft}`
                             }}>
                                 <div style={{
-                                    fontSize: '28px',
+                                    fontSize: '22px',
                                     fontWeight: '900',
                                     color: theme.c.headerBg,
-                                    marginBottom: '6px',
+                                    marginBottom: '4px',
                                     letterSpacing: '-1px'
                                 }}>
                                     60&quot; a 90 SEG
                                 </div>
                                 <div style={{
-                                    fontSize: '12px',
+                                    fontSize: '10px',
                                     fontWeight: '800',
                                     color: theme.c.accentMuted,
                                     textTransform: 'uppercase',
-                                    letterSpacing: '1px'
+                                    letterSpacing: '0.5px'
                                 }}>
                                     PAUSA CORTA (ACCESORIOS)
                                 </div>
@@ -1129,7 +1135,7 @@ export function ExportPreview({
                           La progresión en el tiempo (Semana 1, 2, 3, 4) se muestra ahora dentro de cada ExerciseRow.
                         */}
                         {weeks.length > 0 && (
-                            <div style={{ marginBottom: '60px', breakInside: 'avoid' }}>
+                            <div style={{ marginBottom: '32px', breakInside: 'avoid' }}>
                                 {weeks[0].days.map((day, dIndex) => (
                                     <DaySection
                                         key={dIndex}
@@ -1142,6 +1148,32 @@ export function ExportPreview({
                             </div>
                         )}
 
+                        {/* ═══════════════════ FOOTER WATERMARK ═══════════════════ */}
+                        <div style={{
+                            padding: '32px 24px',
+                            textAlign: 'center',
+                            backgroundColor: theme.c.bgAlt,
+                            borderTop: `1px solid ${theme.c.borderSoft}`
+                        }}>
+                            <div style={{
+                                fontSize: '11px',
+                                fontWeight: '900',
+                                color: theme.c.badge,
+                                textTransform: 'uppercase',
+                                letterSpacing: '2px',
+                                marginBottom: '6px'
+                            }}>
+                                POWERED BY AI COACH
+                            </div>
+                            <div style={{
+                                fontSize: '13px',
+                                color: theme.c.textMuted,
+                                fontWeight: '600',
+                                fontStyle: 'italic'
+                            }}>
+                                Para {clientInfo.name}
+                            </div>
+                        </div>
                         {/* ═══════════════════ FOOTER ═══════════════════ */}
                         <div style={{
                             marginTop: '60px',

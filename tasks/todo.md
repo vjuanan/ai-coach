@@ -23,4 +23,15 @@
 - [x] Grid de progresión: Flexbox con 4 columnas, fondo rosa pálido `#FFF5F8` (sin bordes obvios), "SEM X" en dorado pequeño, valores en negro.
 
 ## Fase 5: Finisher
-- [x] Finisher: Fondo granate/rosado (`#7E1231`), bordes redondeados de `8px`, texto blanco. Etiqueta destacada dorada "FINISHER".
+- [x] Background burgundy (`#5B0F2A`) y border-radius `12px` u `8px`.
+- [x] Etiqueta dorada "FINISHER".
+- [x] Texto del circuito en blanco (`#ffffff`).
+
+### Fase 6: Formato Móvil y Detalles Creativos Premium
+- [ ] Convertir contenedor de A4 (`794px`) a diseño Mobile (`480px` de ancho).
+- [ ] Ajustar todos los paddings globales y locales (de `48px` a `24px` o `32px` máximo).
+- [ ] Escalar las tipografías masivas para el nuevo layout (ej. Título de 46px a 36px).
+- [ ] Añadir gradientes sutiles al fondo del encabezado de Título y Días (ej: `linear-gradient` en Burgundy).
+- [ ] Implementar un efecto "glow" o sombra difuminada en la etiqueta de `GOLD EDITION` y los números de los ejercicios.
+- [ ] Asegurarse de que el diseño de `Semanas` y `Pausas` acomode bien el espacio reducido sin verse asfixiado.
+- [ ] Añadir una marca de agua/pie de página premium ("Powered by AI Coach" o similar) al final del bloque exportado.
