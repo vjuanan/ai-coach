@@ -1,31 +1,14 @@
-# Rutina Antopanti SUPREMA
+# AI Coach - Mejoras en Bloque de Calentamiento
 
-## Goal
-Crear el programa "Rutina Antopanti SUPREMA" de 4 semanas, implementado completamente a través del Block Builder, probando y solucionando cualquier fallo o limitación que surja en el camino.
+## Tareas
 
-## Execution Plan
-- [ ] **Setup & Verification**
-  - [ ] Revisar ejercicios en base de datos. Agregar alias y editar cues según descripciones.
-  - [ ] Confirmar que no haya datos basura en nombres de ejercicios.
-- [ ] **Semana 1**
-  - [ ] Día 1 — Glúteo & Pierna (Fuerza)
-  - [ ] Día 2 — Upper Body + Pull-Up
-  - [ ] Día 3 — Full Body Mix
-  - [ ] Día 4 — Cardio & Tono (Metabólico)
-- [ ] **Semana 2**
-  - [ ] Día 1 al Día 4 (Progresiones de peso/repeticiones)
-- [ ] **Semana 3**
-  - [ ] Día 1 al Día 4 (Aumentos de series y peso)
-- [ ] **Semana 4**
-  - [ ] Día 1 al Día 4 (Intentos pesados, AMRAPs, incrementos finales)
-- [ ] **Fixing Bugs**
-  - [x] Aumentar intensidad de colores de los Bloques en Block Builder.
-  - [x] Suavizar el color de las franjas laterales de los bloques en el visor semanal para igualarlo al fondo de los botones del Block Builder.
-  - [x] Corregir `ReferenceError` ("useState is not defined") en `InputCard.tsx`.
-  - [ ] Reparar otros errores encontrados en front/Block Builder durante la carga.
-  - [x] Push a GitHub si se cambió código.
-- [ ] **Review on Production**
-  - [ ] Validar con capturas de pantalla desde `https://aicoach.epnstore.com.ar/`.
-  - [ ] Asegurarse de que el Visor Global muestre resultados idénticos a los planeados.
-- [x] Corregir estilo del input de Notas en Block Editor: un solo renglón, icono centrado y tipografía/icono más grandes.
-- [x] Unificar formato de WorkoutBlockCardV2 (quitar fondos, verde, negrita grande) a texto simple.
+- [x] 1. Ajustar metodologías de entrenamiento para ocupar todo el ancho de la pantalla (`flex-1` o `w-full` en el contenedor de los botones).
+- [x] 2. Ocultar la opción "Progresión" SÓLO en bloques de tipo Calentamiento (Warmup).
+- [x] 3. Reducir el tamaño de los inputs de "Vueltas" (Rondas), "Series" y "Repeticiones".
+- [x] 4. Ocultar los inputs de "Series" cuando hay "Vueltas" activas (se puede usar un switch o condicional basado en la presencia de Vueltas).
+- [x] 5. Mover el componente de "Notas" del ejercicio a la derecha de los inputs (Series/Reps), en lugar de abajo.
+- [x] 6. Eliminar el bloque final de notas general del bloque (como ya hay notas por cada ejercicio).
+- [/] 7. Verificar con screenshots en el frontend (`https://aicoach.epnstore.com.ar` o local con validación posterior).
+
+## Notas
+- Los módulos principales a modificar parecen ser `BlockBuilderPanel`, la tarjeta del ejercicio (`ExerciseDraggableCard` o similar) y `BlockEditor`.

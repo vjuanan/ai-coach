@@ -91,7 +91,7 @@ export function InputCard({
     };
 
     return (
-        <div className={`rounded-xl border p-3 flex flex-col gap-2 shadow-sm transition-all group relative overflow-hidden
+        <div className={`rounded-xl border p-2.5 flex flex-col gap-2 shadow-sm transition-all group relative overflow-hidden
             ${isInvalid
                 ? 'bg-red-50/50 dark:bg-red-900/10 border-red-500 shadow-red-500/20'
                 : 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700 hover:shadow-md'
@@ -116,7 +116,7 @@ export function InputCard({
                     onChange={handleChange}
                     onBlur={handleBlur}
                     placeholder={placeholder || '-'}
-                    className={`bg-transparent border-none p-0 text-3xl font-bold text-center w-full focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+                    className={`bg-transparent border-none p-0 text-2xl font-bold text-center w-full focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
                         ${isInvalid ? 'text-red-600 placeholder:text-red-300' : 'text-cv-text-primary placeholder:text-slate-200 dark:placeholder:text-slate-700'}
                     `}
                 />

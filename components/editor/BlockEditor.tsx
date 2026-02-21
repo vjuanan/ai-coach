@@ -300,15 +300,17 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 Metodología de Entrenamiento
                             </label>
 
-                            {/* Progression Toggle - Now here for structured blocks */}
-                            <ProgressionSettings
-                                blockId={blockId}
-                                progressionId={block.progression_id}
-                                showSelector={showProgressionSelector}
-                                setShowSelector={setShowProgressionSelector}
-                                onToggle={toggleBlockProgression}
-                                showDistance={false}
-                            />
+                            {/* Progression Toggle - Not for warmup */}
+                            {block.type !== 'warmup' && (
+                                <ProgressionSettings
+                                    blockId={blockId}
+                                    progressionId={block.progression_id}
+                                    showSelector={showProgressionSelector}
+                                    setShowSelector={setShowProgressionSelector}
+                                    onToggle={toggleBlockProgression}
+                                    showDistance={false}
+                                />
+                            )}
                         </div>
 
                         {
@@ -340,7 +342,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                                         }
                                                     }}
                                                     className={`
-                                                    flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border
+                                                    flex-1 justify-center items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border flex
                                                     ${isExpanded
                                                             ? 'bg-cv-accent text-white border-cv-accent shadow-md scale-105'
                                                             : hasSelectedItem
@@ -642,17 +644,19 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 </div>
                             </div>
                         ) : (
-                            <div>
-                                <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                                    Notas
-                                </label>
-                                <textarea
-                                    value={(config.notes as string) || ''}
-                                    onChange={(e) => handleConfigChange('notes', e.target.value)}
-                                    placeholder="Focus on quality, tempo, etc."
-                                    className="cv-input min-h-[60px] resize-none"
-                                />
-                            </div>
+                            block.type !== 'warmup' ? (
+                                <div>
+                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">
+                                        Notas
+                                    </label>
+                                    <textarea
+                                        value={(config.notes as string) || ''}
+                                        onChange={(e) => handleConfigChange('notes', e.target.value)}
+                                        placeholder="Focus on quality, tempo, etc."
+                                        className="cv-input min-h-[60px] resize-none"
+                                    />
+                                </div>
+                            ) : null
                         )
                     )
                 }

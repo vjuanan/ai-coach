@@ -49,15 +49,16 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
     const isStandard = methodology?.code === 'STANDARD';
 
     const isWarmUp = blockType === 'warmup';
+    const [warmupMode, setWarmupMode] = useState<'rounds' | 'sets'>('rounds');
 
     // Strict display rules:
     // - Rounds: Only for Metcon/HIIT, but NEVER for STANDARD
     // - Sets: Only for Strength/Standard
     // - If no methodology selected (undefined), show NEITHER
-    // - [NEW] Warmup blocks ALWAYS show Rounds (for circuit rounds)
-    const showRounds = (isMetconLike && !isStandard) || isWarmUp;
+    // - [NEW] Warmup blocks ALWAYS show Rounds OR Sets mutually exclusive
+    const showRounds = (isMetconLike && !isStandard) || (isWarmUp && warmupMode === 'rounds');
     const showGlobalSets = (methodology?.code === 'SUPER_SET' || methodology?.code === 'GIANT_SET');
-    const showSetsPerMovement = (isStrengthLike || isStandard) && !showGlobalSets;
+    const showSetsPerMovement = ((isStrengthLike || isStandard) && !showGlobalSets) || (isWarmUp && warmupMode === 'sets');
 
     const movements = parseMovements((config.movements as unknown[]) || []);
     const rounds = (config.rounds as string) || '';
@@ -84,6 +85,29 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+            {isWarmUp && (
+                <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg w-fit">
+                    <button
+                        onClick={() => setWarmupMode('rounds')}
+                        className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${warmupMode === 'rounds'
+                                ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
+                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                            }`}
+                    >
+                        Por Vueltas
+                    </button>
+                    <button
+                        onClick={() => setWarmupMode('sets')}
+                        className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${warmupMode === 'sets'
+                                ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
+                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                            }`}
+                    >
+                        Por Series
+                    </button>
+                </div>
+            )}
+
             {/* 1. Global Rounds/Sets Input - Only if methodology supports it */}
             {(showRounds || showGlobalSets) && (
                 <div className="max-w-md"> {/* Limited width */}
@@ -211,9 +235,9 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
 
             {/* Inputs Grid - Only if Valid */}
             {isValid && (
-                <div className="p-3 bg-white dark:bg-cv-bg-secondary space-y-3 rounded-b-xl">
-                    {/* Metrics Grid (4 columns) */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="p-3 bg-white dark:bg-cv-bg-secondary rounded-b-xl flex flex-col lg:flex-row gap-3">
+                    {/* Metrics Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 flex-1">
                         {/* 1. Series (Sets) - CONDITIONALLY SHOWN */}
                         {showSets && (
                             <InputCard
@@ -287,8 +311,8 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                         )}
                     </div>
 
-                    {/* Notes (Full Width) */}
-                    <div className="bg-slate-50 dark:bg-cv-bg-tertiary/30 rounded-xl border border-slate-100 dark:border-slate-800 p-2 flex flex-col group focus-within:ring-1 ring-cv-accent/50 transition-all">
+                    {/* Notes (Right Side / Full Width on mobile) */}
+                    <div className="bg-slate-50 dark:bg-cv-bg-tertiary/30 rounded-xl border border-slate-100 dark:border-slate-800 p-2 flex flex-col group focus-within:ring-1 ring-cv-accent/50 transition-all w-full lg:w-1/3 min-h-[80px]">
                         <div className="flex items-center gap-1.5 mb-1">
                             <FileText size={12} className="text-cv-text-tertiary" />
                             <span className="text-[9px] uppercase font-bold text-cv-text-tertiary">Notas</span>
@@ -297,8 +321,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                             value={movement.notes || movement.description || ''}
                             onChange={(e) => onChange({ notes: e.target.value, description: e.target.value })}
                             placeholder="Notas técnicas..."
-                            className="w-full min-h-[40px] bg-transparent border-none p-0 text-xs text-cv-text-primary placeholder:text-slate-300 focus:ring-0 resize-none"
-                            rows={1}
+                            className="w-full h-full bg-transparent border-none p-0 text-xs text-cv-text-primary placeholder:text-slate-300 focus:ring-0 resize-none flex-1"
                         />
                     </div>
                 </div>
