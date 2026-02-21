@@ -318,162 +318,174 @@ const ExerciseRow = ({
     // If we have less than 4, pad it out for a clean 4-column look or just map what we have
     const displayProg = progWeeks.length > 0 ? progWeeks : [];
 
-    // Render Logic
+    // Render Logic -> Ultra-Compact Horizontal Layout
     return (
         <div style={{
-            marginBottom: '16px',
+            marginBottom: '12px',
             backgroundColor: theme.c.bgAlt, // White card
-            border: 'none', // Removed solid border for a cleaner float effect
-            borderRadius: '16px', // Softer radius
-            padding: '16px 20px', // Adjusted padding
+            border: 'none',
+            borderRadius: '14px',
+            padding: '14px 16px', // Tighter padding
             display: 'flex',
-            flexDirection: 'column',
-            boxShadow: '0 8px 24px rgba(248, 113, 157, 0.08)' // Soft pinkish elegant shadow
+            flexDirection: 'row', // HORIZONTAL LAYOUT
+            gap: '14px',
+            boxShadow: '0 8px 16px rgba(248, 113, 157, 0.06)' // Softer tighter shadow
         }}>
-            {/* Top Section: Title & Cues */}
-            <div style={{ marginBottom: '12px' }}>
-                {/* Number + Title Inline */}
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    marginBottom: '8px'
+            {/* Left Column: Number */}
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                paddingTop: '2px' // Align visually with text
+            }}>
+                <span style={{
+                    fontSize: '36px', // Big number
+                    fontWeight: '900', // Black
+                    background: `linear-gradient(135deg, ${theme.c.accent}, ${theme.c.accentMuted})`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    letterSpacing: '-1.5px',
+                    lineHeight: '1',
+                    textShadow: '0 2px 10px rgba(248, 113, 157, 0.15)' // Subtle Glow
                 }}>
-                    <span style={{
-                        fontSize: '34px', // Título número muy notorio
-                        fontWeight: '900', // Black
-                        background: `linear-gradient(135deg, ${theme.c.accent}, ${theme.c.accentMuted})`,
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        letterSpacing: '-1.5px',
-                        lineHeight: '1',
-                        textShadow: '0 2px 10px rgba(248, 113, 157, 0.2)' // Glow sutil
-                    }}>
-                        {index}
-                    </span>
-                    <span style={{
-                        fontSize: '17px',
-                        fontWeight: '800',
-                        color: theme.c.text,
-                        letterSpacing: '-0.3px',
-                        lineHeight: '1.2'
-                    }}>
-                        {displayName}
-                    </span>
-                </div>
-
-                {/* Cues / Description */}
-                <div> {/* Removed the paddingLeft: 32px to kill the empty white space */}
-                    {block.cue && (
-                        <div style={{
-                            fontSize: '12.5px',
-                            fontStyle: 'italic',
-                            color: theme.c.textMuted,
-                            lineHeight: '1.4',
-                            opacity: 0.85,
-                            borderLeft: `2px solid ${theme.c.border}`,
-                            paddingLeft: '10px',
-                            marginLeft: '2px', // Slight visual alignment
-                            marginBottom: '4px'
-                        }}>
-                            {block.cue}
-                        </div>
-                    )}
-
-                    {/* MetCon / Text Blocks - Simplified */}
-                    {struct?.text && (
-                        <div style={{
-                            marginTop: '6px',
-                            fontSize: '13px',
-                            lineHeight: '1.5',
-                            color: theme.c.textMuted,
-                            whiteSpace: 'pre-line',
-                        }}>
-                            {struct.text}
-                        </div>
-                    )}
-
-                    {/* Legacy Content */}
-                    {!struct && block.content && block.content.length > 0 && (
-                        <div style={{
-                            marginTop: '6px',
-                            fontSize: '13px',
-                            color: theme.c.textMuted,
-                            lineHeight: '1.5',
-                        }}>
-                            {block.content.map((line, i) => (
-                                <div key={i}>• {line}</div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                    {index}
+                </span>
             </div>
 
-            {/* Progression Details Box */}
-            {(!struct?.text && block.type !== 'free_text') && (
-                <div> {/* Removed paddingLeft to maintain full width */}
-                    {showInlineProgression && displayProg.length > 0 ? (
-                        <div style={{
-                            display: 'flex',
-                            width: '100%',
-                            backgroundColor: theme.c.accentSoft, // Pale pink `#FFF5F8`
-                            borderRadius: '10px', // Unify into a single container
-                            overflow: 'hidden',
-                            border: `1px solid ${theme.c.borderSoft}`
-                        }}>
-                            {/* Horizontal 4-column Grid Inside Single Container */}
-                            {displayProg.map((val, idx) => {
-                                return (
-                                    <div key={idx} style={{
-                                        flex: 1, // Distribute evenly
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        padding: '10px 4px', // More compact
-                                        borderRight: idx < displayProg.length - 1 ? `1px solid ${theme.c.borderSoft}` : 'none'
-                                    }}>
-                                        <div style={{
-                                            fontSize: '10px',
-                                            fontWeight: '800',
-                                            color: theme.c.badge, // Gold `#EAB308`
-                                            textTransform: 'uppercase',
-                                            marginBottom: '4px',
-                                            opacity: 0.9
-                                        }}>
-                                            SEM {idx + 1}
-                                        </div>
-                                        <div style={{
-                                            fontSize: '13.5px', // slightly bigger text relative to container
-                                            fontWeight: '700', // Bold
-                                            color: theme.c.text, // Black
-                                            textAlign: 'center',
-                                            lineHeight: '1.1'
-                                        }}>
-                                            {val || '-'}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        prescriptionText && (
+            {/* Right Column: Title, Cues, & Progression */}
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                flex: 1, // Take remaining width
+                minWidth: 0 // Prevent text overflow
+            }}>
+                {/* Title */}
+                <span style={{
+                    fontSize: '16px',
+                    fontWeight: '800',
+                    color: theme.c.text,
+                    letterSpacing: '-0.3px',
+                    lineHeight: '1.2',
+                    marginBottom: '4px'
+                }}>
+                    {displayName}
+                </span>
+
+                {/* Cues / Description */}
+                {(block.cue || struct?.text || (!struct && block.content && block.content.length > 0)) && (
+                    <div style={{ marginBottom: '8px' }}>
+                        {block.cue && (
                             <div style={{
-                                backgroundColor: theme.c.accentSoft,
-                                borderRadius: '8px',
-                                padding: '10px 14px',
-                                fontSize: '13px',
-                                color: theme.c.text,
-                                fontWeight: '700',
-                                display: 'inline-block',
+                                fontSize: '12.5px',
+                                fontStyle: 'italic',
+                                color: theme.c.textMuted,
+                                lineHeight: '1.4',
+                                opacity: 0.85,
+                                borderLeft: `2px solid ${theme.c.border}`,
+                                paddingLeft: '8px',
+                                marginLeft: '2px', // Slight visual alignment
+                                marginBottom: '2px'
+                            }}>
+                                {block.cue}
+                            </div>
+                        )}
+
+                        {/* MetCon / Text Blocks - Simplified */}
+                        {struct?.text && (
+                            <div style={{
+                                marginTop: '4px',
+                                fontSize: '12.5px',
+                                lineHeight: '1.4',
+                                color: theme.c.textMuted,
+                                whiteSpace: 'pre-line',
+                            }}>
+                                {struct.text}
+                            </div>
+                        )}
+
+                        {/* Legacy Content */}
+                        {!struct && block.content && block.content.length > 0 && (
+                            <div style={{
+                                marginTop: '4px',
+                                fontSize: '12.5px',
+                                color: theme.c.textMuted,
+                                lineHeight: '1.4',
+                            }}>
+                                {block.content.map((line, i) => (
+                                    <div key={i}>• {line}</div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Progression Details Box */}
+                {(!struct?.text && block.type !== 'free_text') && (
+                    <div style={{ marginTop: 'auto' }}> {/* Push to bottom if needed */}
+                        {showInlineProgression && displayProg.length > 0 ? (
+                            <div style={{
+                                display: 'flex',
+                                width: '100%',
+                                backgroundColor: theme.c.accentSoft, // Pale pink `#FFF5F8`
+                                borderRadius: '8px', // Slightly sharper for inner elements
+                                overflow: 'hidden',
                                 border: `1px solid ${theme.c.borderSoft}`
                             }}>
-                                {prescriptionText}
+                                {/* Horizontal 4-column Grid Inside Single Container */}
+                                {displayProg.map((val, idx) => {
+                                    return (
+                                        <div key={idx} style={{
+                                            flex: 1, // Distribute evenly
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            padding: '8px 2px', // Ultra compact
+                                            borderRight: idx < displayProg.length - 1 ? `1px solid ${theme.c.borderSoft}` : 'none'
+                                        }}>
+                                            <div style={{
+                                                fontSize: '9.5px',
+                                                fontWeight: '800',
+                                                color: theme.c.badge, // Gold `#EAB308`
+                                                textTransform: 'uppercase',
+                                                marginBottom: '2px',
+                                                opacity: 0.9
+                                            }}>
+                                                SEM {idx + 1}
+                                            </div>
+                                            <div style={{
+                                                fontSize: '13px', // slightly bigger text relative to container
+                                                fontWeight: '700', // Bold
+                                                color: theme.c.text, // Black
+                                                textAlign: 'center',
+                                                lineHeight: '1.1'
+                                            }}>
+                                                {val || '-'}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
-                        )
-                    )}
-                </div>
-            )}
+                        ) : (
+                            prescriptionText && (
+                                <div style={{
+                                    backgroundColor: theme.c.accentSoft,
+                                    borderRadius: '8px',
+                                    padding: '8px 12px',
+                                    fontSize: '12.5px',
+                                    color: theme.c.text,
+                                    fontWeight: '700',
+                                    display: 'inline-block',
+                                    border: `1px solid ${theme.c.borderSoft}`
+                                }}>
+                                    {prescriptionText}
+                                </div>
+                            )
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
@@ -875,7 +887,7 @@ export function ExportPreview({
 
                 {/* Toolbar */}
                 <div className="flex items-center justify-between px-5 py-2.5 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
-                    <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Export Preview v2.4</h2> {/* Added version to verify reload */}
+                    <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Export Preview v2.5</h2> {/* Added version to verify reload */}
                     <div className="flex items-center gap-2.5">
                         <select
                             value={currentThemeId}

@@ -44,4 +44,13 @@
   - Añadir un "accent-bar" (borde izquierdo sólido colorido) de `4px` en cada tarjeta.
 - [ ] Mejorar el diseño del Número del Ejercicio (Ej: añadirle un muy leve `text-shadow` o pasarlo a un color Magenta más profundo con estilo de fuente extra-black).
 - [ ] Compactar el grid de "SEM X": reducir `padding` en las celdas y quizás darles un fondo con leve gradiente o borde suave top/bottom para estructurar.
-- [ ] Achicar tipografías de elementos secundarios (ej. Cues, instrucciones) ligeramente para mejorar la jerarquía en móvil.
+- [x] Achicar tipografías de elementos secundarios (ej. Cues, instrucciones) ligeramente para mejorar la jerarquía en móvil.
+
+### Fase 8: Iteración Fina de Rediseño (Layout Lateral + Ultra Compacto)
+*Problema detectado:* La lectura sigue siendo muy vertical (Número -> Título -> Cue -> Semanas), lo cual alarga la tarjeta y genera aire a los costados del número gigante.
+**Plan de Acción:**
+- [ ] **Rediseño del Layout Superior (Flex Horizontal):** Colocar el "Número Gigante" a la izquierda, y a su derecha (en la misma línea vertical) apilar el Título y la Descripción (Cue). Esto ahorrará muchísimo espacio vertical y llenará el hueco a la derecha del número.
+- [ ] **Título del Ejercicio:** Asegurarnos de que tenga un tamaño legible pero no desproporcionado (ej. 16px font-black).
+- [ ] **Separación Vertical:** Reducir el gap o margin bottom entre el contenido superior y la grilla de semanas.
+- [ ] **Grilla de Semanas Mínima:** En lugar de `SEM 1` en naranja sobre el valor, ponerlo al lado o hacerlo súper apaisado para perder menos altura (ej: una tablita ultra condensada).
+- [ ] **Bordes del Contenedor de Ejercicio:** Acentuar el "floating card" usando un padding de 12px constante alrededor y bordes un poco más filosos (ej: borderRadius 12px en vez de 16px). Opcionalmente añadir un borde izquierdo sólido (`border-left: 4px solid PINK`) como línea de intensidad.
