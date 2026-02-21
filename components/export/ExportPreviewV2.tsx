@@ -236,7 +236,7 @@ const THEMES: Record<string, ExportTheme> = {
             rowOdd: '#FFFFFF',
             headerBg: '#5B0F2A', // Deep burgundy DÍA headers
             dayBg: '#FFFFFF',
-            badge: '#EAB308', // Gold solid font (was text #F59E0B, back off slightly for label #EAB308)
+            badge: '#F59E0B', // Gold solid font (was text #F59E0B, back off slightly for label #EAB308)
             badgeText: '#FFFFFF',
             cueBg: '#FFFFFF',
             cueText: '#4B5563',
@@ -340,7 +340,7 @@ const ExerciseRow = ({
                     marginBottom: '6px'
                 }}>
                     <span style={{
-                        fontSize: '22px', // Match the design, not huge
+                        fontSize: '28px', // Match the design, slightly larger
                         fontWeight: '900', // Black
                         color: theme.c.accentMuted, // Standard Pink, slightly deeper
                         letterSpacing: '-1px'
@@ -864,7 +864,7 @@ export function ExportPreview({
 
                 {/* Toolbar */}
                 <div className="flex items-center justify-between px-5 py-2.5 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
-                    <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Export Preview v2.1</h2> {/* Added version to verify reload */}
+                    <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Export Preview v2.2</h2> {/* Added version to verify reload */}
                     <div className="flex items-center gap-2.5">
                         <select
                             value={currentThemeId}
@@ -975,29 +975,21 @@ export function ExportPreview({
                                 letterSpacing: '1px',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px'
+                                gap: '8px',
+                                marginBottom: '32px'
                             }}>
                                 <span>✨</span>
                                 <span>FASE {weeks.length}: {programName}</span>
                             </div>
-                        </div>
 
-                        {/* ═══════════════════ BLOQUE DE SANGRADO (Misión y Pausas) ═══════════════════ */}
-                        <div style={{
-                            backgroundColor: theme.c.accentSoft, // Fondo rosado muy claro
-                            padding: '32px 48px 40px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '24px'
-                        }}>
-                            {/* Weeks Tabular Layout */}
+                            {/* ═══════════════════ WEEKS TABULAR LAYOUT (White background, above bleed) ═══════════════════ */}
                             {weeks.length > 0 && (
                                 <div style={{
                                     display: 'flex',
-                                    borderTop: `1px solid ${theme.c.borderSoft}`, // Borde sutil
+                                    borderTop: `1px solid ${theme.c.borderSoft}`, // Borde sutil gris/rosa
                                     borderBottom: `1px solid ${theme.c.borderSoft}`,
                                     padding: '16px 0',
-                                    marginBottom: '8px'
+                                    marginBottom: '32px'
                                 }}>
                                     {weeks.map((week, idx) => (
                                         <div key={idx} style={{
@@ -1025,16 +1017,20 @@ export function ExportPreview({
                                     ))}
                                 </div>
                             )}
+                        </div>
 
-                            {/* ═══════════════════ MISSION ═══════════════════ */}
-                            {missionText && (
+                        {/* ═══════════════════ BLOQUE DE SANGRADO (Solo Misión) ═══════════════════ */}
+                        {missionText && (
+                            <div style={{
+                                backgroundColor: theme.c.accentSoft, // Fondo rosado muy claro
+                                padding: '32px 48px', // Sangrado completo, padding interno coincidente con el resto
+                            }}>
                                 <div style={{
                                     backgroundColor: theme.c.bgAlt,
                                     borderLeft: `6px solid ${theme.c.badge}`, // Thick gold left border
                                     padding: '24px',
-                                    borderRadius: '4px',
-                                    marginBottom: '24px',
-                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
+                                    borderRadius: '8px',
+                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
                                 }}>
                                     <h3 style={{
                                         fontSize: '18px',
@@ -1058,71 +1054,69 @@ export function ExportPreview({
                                         {missionText}
                                     </p>
                                 </div>
-                            )}
+                            </div>
+                        )}
 
-                            {/* ═══════════════════ PAUSE INFO / SUMMARY TABLE ═══════════════════ */}
+                        {/* ═══════════════════ PAUSE INFO / SUMMARY TABLE (Full Bleed White) ═══════════════════ */}
+                        <div style={{
+                            display: 'flex',
+                        }}>
+                            {/* Pausa Larga */}
                             <div style={{
-                                display: 'flex',
-                                gap: '4px', // Split effect
+                                flex: 1,
+                                backgroundColor: theme.c.bgAlt, // White block 
+                                padding: '32px 48px', // Same margins as the standard padding
+                                textAlign: 'center',
+                                borderRight: `1px solid ${theme.c.borderSoft}`, // Separator
+                                borderBottom: `1px solid ${theme.c.borderSoft}`
                             }}>
-                                {/* Pausa Larga */}
                                 <div style={{
-                                    flex: 1,
-                                    backgroundColor: theme.c.bgAlt, // White block since the background is already pink
-                                    padding: '24px',
-                                    textAlign: 'center',
-                                    borderRadius: '8px',
-                                    boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
+                                    fontSize: '28px',
+                                    fontWeight: '900',
+                                    color: theme.c.headerBg, // Burgundy text
+                                    marginBottom: '6px',
+                                    letterSpacing: '-1px'
                                 }}>
-                                    <div style={{
-                                        fontSize: '28px',
-                                        fontWeight: '900',
-                                        color: theme.c.headerBg, // Burgundy text
-                                        marginBottom: '6px',
-                                        letterSpacing: '-1px'
-                                    }}>
-                                        2&apos; a 3&apos; MIN
-                                    </div>
-                                    <div style={{
-                                        fontSize: '11px',
-                                        fontWeight: '800',
-                                        color: theme.c.accentMuted, // Pink
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '1px'
-                                    }}>
-                                        PAUSA LARGA (FUERZA)
-                                    </div>
+                                    2&apos; a 3&apos; MIN
                                 </div>
-                                {/* Pausa Corta */}
                                 <div style={{
-                                    flex: 1,
-                                    backgroundColor: theme.c.bgAlt, // White
-                                    padding: '24px',
-                                    textAlign: 'center',
-                                    borderRadius: '8px',
-                                    boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
+                                    fontSize: '12px',
+                                    fontWeight: '800',
+                                    color: theme.c.accentMuted, // Pink
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1px'
                                 }}>
-                                    <div style={{
-                                        fontSize: '28px',
-                                        fontWeight: '900',
-                                        color: theme.c.headerBg,
-                                        marginBottom: '6px',
-                                        letterSpacing: '-1px'
-                                    }}>
-                                        60&quot; a 90 SEG
-                                    </div>
-                                    <div style={{
-                                        fontSize: '11px',
-                                        fontWeight: '800',
-                                        color: theme.c.accentMuted,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '1px'
-                                    }}>
-                                        PAUSA CORTA (ACCESORIOS)
-                                    </div>
+                                    PAUSA LARGA (FUERZA)
                                 </div>
                             </div>
-                        </div> {/* Closes BLOQUE DE SANGRADO */}
+                            {/* Pausa Corta */}
+                            <div style={{
+                                flex: 1,
+                                backgroundColor: theme.c.bgAlt, // White
+                                padding: '32px 48px',
+                                textAlign: 'center',
+                                borderBottom: `1px solid ${theme.c.borderSoft}`
+                            }}>
+                                <div style={{
+                                    fontSize: '28px',
+                                    fontWeight: '900',
+                                    color: theme.c.headerBg,
+                                    marginBottom: '6px',
+                                    letterSpacing: '-1px'
+                                }}>
+                                    60&quot; a 90 SEG
+                                </div>
+                                <div style={{
+                                    fontSize: '12px',
+                                    fontWeight: '800',
+                                    color: theme.c.accentMuted,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1px'
+                                }}>
+                                    PAUSA CORTA (ACCESORIOS)
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Summary table logic continues below */}
                         {theme.id !== 'anto' && (
