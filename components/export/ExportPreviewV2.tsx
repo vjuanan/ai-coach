@@ -875,7 +875,7 @@ export function ExportPreview({
 
                 {/* Toolbar */}
                 <div className="flex items-center justify-between px-5 py-2.5 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
-                    <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Export Preview v2.3</h2> {/* Added version to verify reload */}
+                    <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Export Preview v2.4</h2> {/* Added version to verify reload */}
                     <div className="flex items-center gap-2.5">
                         <select
                             value={currentThemeId}
