@@ -296,7 +296,7 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
         }
 
         return (
-            <div className="flex flex-col gap-0.5 min-h-[1rem] mt-0.5">
+            <div className="flex flex-col gap-0.5 min-h-[1rem]">
                 {/* Main Row: Pill + Metric + SubMetric */}
                 {(pillText || primaryMetric || secondaryMetric) && (
                     <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
@@ -386,7 +386,7 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
                 }}
             >
                 {/* Card Inner Content */}
-                <div className="p-1 px-1.5">
+                <div className="py-0.5 px-1.5">
                     {/* Drag Handle - Visual indicator */}
                     <div
                         className="absolute left-0 top-0 bottom-0 w-5 flex items-center justify-center opacity-40 group-hover/block:opacity-100 transition-opacity rounded-l-lg"
@@ -396,7 +396,7 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
 
                     {/* Content */}
                     <div className="pl-3">
-                        <div className="flex items-center justify-between mb-0.5">
+                        <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <span className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">
                                     {block.name || blockStyle.label}

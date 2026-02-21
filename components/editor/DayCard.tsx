@@ -397,7 +397,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                         </div>
 
                         {warmupBlocks.length > 0 ? (
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 {[...warmupBlocks].sort((a, b) => a.order_index - b.order_index).map(block => (
                                     <WorkoutBlockCardV2 key={block.id} block={block} />
                                 ))}
@@ -433,19 +433,19 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                         >
                             <h4 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isActiveInBuilder && (blockBuilderSection === 'main' || !blockBuilderSection)
                                 ? 'text-indigo-700 dark:text-indigo-300'
-                                : 'text-cv-text-tertiary'
+                                : 'text-indigo-600 dark:text-indigo-400'
                                 }`}>
                                 <Dumbbell size={12} />
                                 Entrenamiento
                             </h4>
                             <div className={`h-px flex-1 ml-3 ${isActiveInBuilder && (blockBuilderSection === 'main' || !blockBuilderSection)
                                 ? 'bg-indigo-200 dark:bg-indigo-800'
-                                : 'bg-slate-100 dark:bg-slate-700/50'
+                                : 'bg-indigo-100 dark:bg-indigo-900/30'
                                 }`} />
                         </div>
 
                         {mainBlocks.length > 0 ? (
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 {[...mainBlocks].sort((a, b) => a.order_index - b.order_index).map(block => (
                                     <WorkoutBlockCardV2 key={block.id} block={block} />
                                 ))}
