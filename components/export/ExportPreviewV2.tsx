@@ -218,6 +218,30 @@ const THEMES: Record<string, ExportTheme> = {
             cueText: '#67e8f9',
             warmupBg: 'rgba(6, 182, 212, 0.05)',
         }
+    },
+    anto: {
+        id: 'anto',
+        label: 'Antopanti Gold',
+        c: {
+            bg: '#F3F4F6', // Outer gray background
+            bgAlt: '#FFFFFF', // Inner white card
+            text: '#0F172A', // Main dark text
+            textMuted: '#475569', // Muted dark gray text
+            accent: '#D81B60', // Magenta numbers
+            accentSoft: '#FDF2F5', // Pink light background
+            accentMuted: '#F472B6', // Standard pink
+            border: '#FCE7F3', // Soft pink border
+            borderSoft: '#F3F4F6', // Inner dividers
+            rowEven: '#FFFFFF',
+            rowOdd: '#FFFFFF',
+            headerBg: '#5B0F2A', // Burgundy DÍA headers
+            dayBg: '#FFFFFF',
+            badge: '#EAB308', // Gold accents
+            badgeText: '#FFFFFF',
+            cueBg: '#FFFFFF',
+            cueText: '#475569',
+            warmupBg: '#FFFFFF',
+        }
     }
 };
 
@@ -262,7 +286,7 @@ const getBlockDisplayName = (block: WorkoutBlock): string => {
     return map[block.type] || block.type;
 };
 
-// -- EXERCISE ROW (Redesigned - True Minimalist) --
+// -- EXERCISE ROW (Redesigned - Antopanti Card) --
 const ExerciseRow = ({
     block, index, theme, monthlyStrategy
 }: {
@@ -276,9 +300,9 @@ const ExerciseRow = ({
     if (!struct && (!block.content || block.content.length === 0)) return null;
 
     const hasProgression = getProgressionForBlock(block.name || '', monthlyStrategy);
-    const showInlineProgression = hasProgression && !isConstantProgression(hasProgression.progression);
+    const showInlineProgression = hasProgression && hasProgression.progression.some(p => p && p !== '-');
 
-    // Build minimalist prescription string
+    // Build minimalist prescription string (fallback)
     const parts = [];
     if (struct) {
         if (struct.sets) parts.push(`${struct.sets} series`);
@@ -292,113 +316,144 @@ const ExerciseRow = ({
     // Render Logic
     return (
         <div style={{
-            padding: '16px 0', // Vertical spacing only
-            borderBottom: `1px solid ${theme.c.borderSoft}`, // Subtle divider
+            marginBottom: '16px',
+            backgroundColor: theme.c.bgAlt, // White card
+            border: `1.5px solid ${theme.c.border}`, // Pinkish border usually
+            borderRadius: '12px',
+            padding: '20px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '4px'
+            gap: '16px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
         }}>
-            {/* Top Line: Name + Index */}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
-                <span style={{
-                    fontSize: '12px',
-                    color: theme.c.textMuted,
-                    width: '20px',
-                    fontFamily: 'monospace',
-                    opacity: 0.5
+            {/* Top Section: Number + Header + Cues */}
+            <div style={{ display: 'flex', gap: '16px' }}>
+                {/* Huge Number */}
+                <div style={{
+                    fontSize: '42px',
+                    fontWeight: '900',
+                    color: theme.c.accent, // Magenta
+                    lineHeight: '1',
+                    fontStyle: 'italic',
+                    letterSpacing: '-2px',
+                    minWidth: '40px',
+                    textAlign: 'center'
                 }}>
-                    {index < 10 ? `0${index}` : index}
-                </span>
-                <span style={{
-                    fontSize: '15px',
-                    fontWeight: '600', // Semi-bold for name only
-                    color: theme.c.text,
-                    letterSpacing: '-0.2px',
-                    flex: 1
-                }}>
-                    {displayName}
-                </span>
+                    {index}
+                </div>
+
+                {/* Header & Cues */}
+                <div style={{ flex: 1, paddingTop: '4px' }}>
+                    <div style={{
+                        fontSize: '16px',
+                        fontWeight: '800',
+                        color: theme.c.text,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        marginBottom: '6px'
+                    }}>
+                        {displayName}
+                    </div>
+
+                    {/* Cues */}
+                    {block.cue && (
+                        <div style={{
+                            fontSize: '13px',
+                            fontStyle: 'italic',
+                            color: theme.c.textMuted,
+                            lineHeight: '1.5',
+                            fontWeight: '500'
+                        }}>
+                            {block.cue}
+                        </div>
+                    )}
+
+                    {/* MetCon / Text Blocks - Simplified */}
+                    {struct?.text && (
+                        <div style={{
+                            marginTop: '8px',
+                            fontSize: '14px',
+                            lineHeight: '1.6',
+                            color: theme.c.text,
+                            whiteSpace: 'pre-line',
+                        }}>
+                            {struct.text}
+                        </div>
+                    )}
+
+                    {/* Legacy Content */}
+                    {!struct && block.content && block.content.length > 0 && (
+                        <div style={{
+                            marginTop: '8px',
+                            fontSize: '14px',
+                            color: theme.c.textMuted,
+                            lineHeight: '1.6',
+                        }}>
+                            {block.content.map((line, i) => (
+                                <div key={i}>• {line}</div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
 
-            {/* Prescription Line - Clean Text */}
-            {struct && !struct.text && prescriptionText && (
-                <div style={{
-                    marginLeft: '32px',
-                    fontSize: '13px',
-                    color: theme.c.textMuted,
-                    fontWeight: '400',
-                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
-                }}>
-                    {prescriptionText}
-                </div>
-            )}
-
-            {/* MetCon / Text Blocks - Simplified */}
-            {struct?.text && (
-                <div style={{
-                    marginTop: '8px',
-                    marginLeft: '32px',
-                    fontSize: '13px',
-                    lineHeight: '1.6',
-                    color: theme.c.text,
-                    whiteSpace: 'pre-line',
-                    paddingLeft: '12px',
-                    borderLeft: `2px solid ${theme.c.borderSoft}`
-                }}>
-                    {struct.text}
-                </div>
-            )}
-
-            {/* Legacy Content */}
-            {!struct && block.content && block.content.length > 0 && (
-                <div style={{
-                    marginTop: '4px',
-                    marginLeft: '32px',
-                    fontSize: '13px',
-                    color: theme.c.textMuted,
-                    lineHeight: '1.6',
-                }}>
-                    {block.content.map((line, i) => (
-                        <div key={i}>• {line}</div>
-                    ))}
-                </div>
-            )}
-
-            {/* Notes / Cues - Very Subtle */}
-            {block.cue && (
-                <div style={{
-                    marginTop: '4px',
-                    marginLeft: '32px',
-                    fontSize: '12px',
-                    fontStyle: 'italic',
-                    color: theme.c.textMuted,
-                    opacity: 0.7
-                }}>
-                    {block.cue}
-                </div>
-            )}
-
-            {/* Inline Progression - Text Only, No Cards */}
-            {showInlineProgression && hasProgression && (
-                <div style={{
-                    marginTop: '6px',
-                    marginLeft: '32px',
-                    fontSize: '11px',
-                    color: theme.c.textMuted,
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '12px',
-                    opacity: 0.9
-                }}>
-                    {hasProgression.progression.map((val, idx) => {
-                        if (!val || val === '-') return null;
-                        return (
-                            <span key={idx} style={{ display: 'inline-flex', gap: '4px' }}>
-                                <span style={{ fontWeight: '600', opacity: 0.7 }}>S{idx + 1}:</span>
-                                <span>{val}</span>
-                            </span>
-                        );
-                    })}
+            {/* Progression Details Box (The 4 Weeks matrix or the single prescription) */}
+            {(!struct?.text && block.type !== 'free_text') && (
+                <div style={{ marginLeft: '56px' }}> {/* Align with text, skipping the huge number */}
+                    {showInlineProgression && hasProgression ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {hasProgression.progression.map((val, idx) => {
+                                if (!val || val === '-') return null;
+                                return (
+                                    <div key={idx} style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        backgroundColor: theme.c.accentSoft, // Very light pink
+                                        borderRadius: '6px',
+                                        padding: '8px 12px',
+                                        gap: '12px'
+                                    }}>
+                                        <div style={{
+                                            fontSize: '11px',
+                                            fontWeight: '800',
+                                            color: theme.c.badge, // Gold
+                                            textTransform: 'uppercase',
+                                            width: '50px' // Fixed width for alignment
+                                        }}>
+                                            SEM {idx + 1}
+                                        </div>
+                                        <div style={{
+                                            width: '2px',
+                                            height: '14px',
+                                            backgroundColor: theme.c.border,
+                                            borderRadius: '1px'
+                                        }} />
+                                        <div style={{
+                                            fontSize: '14px',
+                                            fontWeight: '600',
+                                            color: theme.c.text
+                                        }}>
+                                            {val}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        prescriptionText && (
+                            <div style={{
+                                backgroundColor: theme.c.accentSoft, // Very light pink
+                                borderRadius: '6px',
+                                padding: '10px 16px',
+                                fontSize: '13px',
+                                color: theme.c.text,
+                                fontWeight: '600',
+                                display: 'inline-block'
+                            }}>
+                                {prescriptionText}
+                            </div>
+                        )
+                    )}
                 </div>
             )}
         </div>
@@ -426,74 +481,78 @@ const DaySection = ({
 
     return (
         <div style={{ marginBottom: '40px', breakInside: 'avoid' }}>
-            {/* Day Header - Clean, No Box */}
+            {/* ═══════════════════ DAY HEADER (Redesigned) ═══════════════════ */}
             <div style={{
-                marginBottom: '16px',
-                borderBottom: `2px solid ${theme.c.text}`,
-                paddingBottom: '8px',
+                marginBottom: '20px',
+                backgroundColor: theme.c.headerBg, // Burgundy
+                padding: '16px 20px',
                 display: 'flex',
-                alignItems: 'baseline',
-                justifyContent: 'space-between'
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                color: '#FFFFFF' // Force white text on burgundy background
             }}>
                 <span style={{
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    color: theme.c.text,
-                    letterSpacing: '-0.5px'
-                }}>
-                    {day.name}
-                </span>
-                <span style={{
-                    fontSize: '11px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    color: theme.c.textMuted
+                    fontSize: '22px',
+                    fontWeight: '900', // Black
+                    letterSpacing: '-0.5px',
+                    textTransform: 'uppercase'
                 }}>
                     DÍA {dayIndex}
                 </span>
+                <span style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    textAlign: 'right'
+                }}>
+                    {day.name}
+                </span>
             </div>
 
-            {/* Exercises Container - Open, No Border */}
+            {/* Exercises Container */}
             <div>
-                {/* Warmup - Subtle Text Block */}
+                {/* ═══════════════════ WARMUP (Activación as Pills) ═══════════════════ */}
                 {hasWarmup && (
                     <div style={{
-                        marginBottom: '20px',
+                        marginBottom: '24px',
                         paddingBottom: '16px',
                         borderBottom: `1px solid ${theme.c.borderSoft}`
                     }}>
-                        <div style={{
-                            fontSize: '11px',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1px',
-                            color: theme.c.accent,
-                            marginBottom: '8px',
-                            fontWeight: '700'
-                        }}>
-                            Warm Up
-                        </div>
                         {warmupBlocks.map((block, i) => {
                             const rounds = block.config?.rounds as string | number | undefined;
+                            const movements = block.content.filter(c => c.trim());
                             return (
-                                <div key={i}>
-                                    {rounds && (
-                                        <div style={{
-                                            fontSize: '12px',
-                                            fontWeight: '600',
-                                            color: theme.c.text,
-                                            marginBottom: '2px',
-                                            marginTop: i > 0 ? '8px' : '0'
-                                        }}>
-                                            {rounds} {String(rounds) === '1' ? 'Vuelta' : 'Vueltas'}:
-                                        </div>
-                                    )}
+                                <div key={i} style={{ marginBottom: i < warmupBlocks.length - 1 ? '16px' : '0' }}>
                                     <div style={{
                                         fontSize: '13px',
-                                        color: theme.c.textMuted,
-                                        marginBottom: '4px',
-                                        lineHeight: '1.5'
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '1px',
+                                        color: theme.c.badge, // Gold
+                                        marginBottom: '12px',
+                                        fontWeight: '800',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px'
                                     }}>
-                                        • {block.content.filter(c => c.trim()).join(' + ')}
+                                        <span>⚡</span>
+                                        <span>ACTIVACIÓN {rounds ? `(${rounds} VUELTAS)` : ''}</span>
+                                    </div>
+                                    <div style={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: '10px'
+                                    }}>
+                                        {movements.map((mov, mIdx) => (
+                                            <div key={mIdx} style={{
+                                                backgroundColor: theme.c.accentSoft, // Very light pink/gray
+                                                padding: '8px 16px',
+                                                borderRadius: '20px',
+                                                fontSize: '13px',
+                                                color: theme.c.textMuted,
+                                                fontWeight: '600'
+                                            }}>
+                                                {mov}
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             );
@@ -507,22 +566,73 @@ const DaySection = ({
                     return <ExerciseRow key={i} block={block} index={idx} theme={theme} monthlyStrategy={monthlyStrategy} />;
                 })}
 
-                {/* Finisher */}
-                {hasCooldown && cooldownBlocks.map((block, i) => (
-                    <div key={`cd-${i}`} style={{ marginTop: '20px' }}>
-                        <div style={{
-                            fontSize: '11px',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1px',
-                            color: theme.c.accent,
-                            marginBottom: '8px',
-                            fontWeight: '700'
+                {/* ═══════════════════ FINISHER (Redesigned) ═══════════════════ */}
+                {hasCooldown && cooldownBlocks.map((block, i) => {
+                    // Si el finisher no tiene estructura/contenido, no lo renderizamos con caja
+                    if (!block.structure && (!block.content || block.content.length === 0)) return null;
+
+                    return (
+                        <div key={`cd-${i}`} style={{
+                            marginTop: '24px',
+                            backgroundColor: theme.c.headerBg, // Burgundy background
+                            borderRadius: '8px',
+                            padding: '16px 20px',
+                            color: '#FFFFFF'
                         }}>
-                            Finisher
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                marginBottom: '12px'
+                            }}>
+                                <span style={{
+                                    backgroundColor: theme.c.badge, // Gold badge
+                                    color: theme.c.headerBg,
+                                    padding: '4px 10px',
+                                    borderRadius: '4px',
+                                    fontSize: '11px',
+                                    fontWeight: '900',
+                                    letterSpacing: '1px'
+                                }}>
+                                    FINISHER
+                                </span>
+                                <span style={{
+                                    fontSize: '16px',
+                                    fontWeight: '800',
+                                    textTransform: 'uppercase'
+                                }}>
+                                    {block.name || 'Finisher'}
+                                </span>
+                            </div>
+
+                            {/* Contenido del finisher en texto claro */}
+                            {block.structure?.text ? (
+                                <div style={{
+                                    fontSize: '14px',
+                                    lineHeight: '1.6',
+                                    color: '#FFFFFF',
+                                    opacity: 0.9,
+                                    whiteSpace: 'pre-line'
+                                }}>
+                                    {block.structure.text}
+                                </div>
+                            ) : (
+                                block.content && block.content.length > 0 && (
+                                    <div style={{
+                                        fontSize: '14px',
+                                        lineHeight: '1.6',
+                                        color: '#FFFFFF',
+                                        opacity: 0.9
+                                    }}>
+                                        {block.content.map((line, idx) => (
+                                            <div key={idx}>• {line}</div>
+                                        ))}
+                                    </div>
+                                )
+                            )}
                         </div>
-                        <ExerciseRow block={block} index={exIdx++} theme={theme} monthlyStrategy={monthlyStrategy} />
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
@@ -658,7 +768,7 @@ export function ExportPreview({
     const exportRef = useRef<HTMLDivElement>(null);
     const [isExporting, setIsExporting] = useState(false);
     const [exportFormat, setExportFormat] = useState<'png' | 'pdf'>('png');
-    const [currentThemeId, setCurrentThemeId] = useState<string>('white');
+    const [currentThemeId, setCurrentThemeId] = useState<string>('anto');
 
     const theme = THEMES[currentThemeId] || THEMES.white;
 
@@ -780,106 +890,221 @@ export function ExportPreview({
                             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
                         }}
                     >
-                        {/* ═══════════════════ HEADER ═══════════════════ */}
-                        <div style={{
-                            textAlign: 'center',
-                            marginBottom: '40px',
-                            paddingBottom: '20px',
-                            borderBottom: `1px solid ${theme.c.borderSoft}`
-                        }}>
+                        {/* ═══════════════════ HEADER (ANTOPANTI REDESIGN) ═══════════════════ */}
+                        <div style={{ marginBottom: '32px' }}>
+                            {/* Top row: Client Name & Badge */}
                             <div style={{
-                                fontSize: '10px',
-                                textTransform: 'uppercase',
-                                letterSpacing: '3px',
-                                color: theme.c.accent,
-                                fontWeight: '700',
-                                marginBottom: '12px'
-                            }}>
-                                Program Design
-                            </div>
-                            <h1 style={{
-                                fontSize: '28px',
-                                fontWeight: '300', // Very light
-                                margin: '0 0 12px 0',
-                                color: theme.c.text,
-                                letterSpacing: '-0.5px',
-                                lineHeight: '1.2',
-                            }}>
-                                {programName}
-                            </h1>
-                            <div style={{
-                                fontSize: '13px',
-                                color: theme.c.textMuted,
-                                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
                                 display: 'flex',
-                                justifyContent: 'center',
-                                gap: '24px',
-                                alignItems: 'center'
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                marginBottom: '16px'
                             }}>
-                                <span>{clientInfo.name}</span>
-                                <span style={{ width: '4px', height: '4px', backgroundColor: theme.c.border, borderRadius: '50%' }} />
-                                <span>{monthlyStrategy?.focus || 'General'}</span>
-                                <span style={{ width: '4px', height: '4px', backgroundColor: theme.c.border, borderRadius: '50%' }} />
-                                <span>{coachName}</span>
+                                <span style={{
+                                    fontSize: '18px',
+                                    color: theme.c.accentMuted || theme.c.textMuted,
+                                    fontStyle: 'italic',
+                                    fontWeight: '600'
+                                }}>
+                                    Para {clientInfo.name}
+                                </span>
+                                <span style={{
+                                    border: `1.5px solid ${theme.c.badge}`,
+                                    color: theme.c.badge,
+                                    padding: '4px 12px',
+                                    borderRadius: '20px',
+                                    fontSize: '11px',
+                                    fontWeight: '800',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1px'
+                                }}>
+                                    GOLD EDITION
+                                </span>
                             </div>
+
+                            {/* Main Title */}
+                            <h1 style={{
+                                fontSize: '42px',
+                                fontWeight: '900', // Black
+                                margin: '0 0 16px 0',
+                                color: theme.c.headerBg, // Burgundy
+                                letterSpacing: '-1px',
+                                lineHeight: '1.1',
+                                textTransform: 'uppercase'
+                            }}>
+                                PLAN DE<br />ENTRENAMIENTO
+                            </h1>
+
+                            {/* Gold Divider Line */}
+                            <div style={{
+                                width: '48px',
+                                height: '5px',
+                                backgroundColor: theme.c.badge,
+                                borderRadius: '3px',
+                                marginBottom: '16px'
+                            }} />
+
+                            {/* Program Subtitle / Focus */}
+                            <div style={{
+                                fontSize: '15px',
+                                color: theme.c.accent, // Magenta
+                                fontWeight: '800',
+                                textTransform: 'uppercase',
+                                letterSpacing: '1.5px',
+                                marginBottom: '24px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}>
+                                <span>✨</span>
+                                <span>FASE {weeks.length}: {programName}</span>
+                            </div>
+
+                            {/* Weeks Tabular Layout */}
+                            {weeks.length > 0 && (
+                                <div style={{
+                                    display: 'flex',
+                                    borderTop: `1px solid ${theme.c.borderSoft}`,
+                                    borderBottom: `1px solid ${theme.c.borderSoft}`,
+                                    marginBottom: '24px'
+                                }}>
+                                    {weeks.map((week, idx) => (
+                                        <div key={idx} style={{
+                                            flex: 1,
+                                            padding: '12px 8px',
+                                            textAlign: 'center',
+                                            borderRight: idx < weeks.length - 1 ? `1px solid ${theme.c.borderSoft}` : 'none'
+                                        }}>
+                                            <div style={{
+                                                fontSize: '12px',
+                                                fontWeight: '800',
+                                                color: theme.c.badge, // Gold
+                                                marginBottom: '4px',
+                                                textTransform: 'uppercase'
+                                            }}>
+                                                SEM {week.weekNumber}
+                                            </div>
+                                            <div style={{
+                                                fontSize: '11px',
+                                                color: theme.c.textMuted,
+                                                fontWeight: '600'
+                                            }}>
+                                                {getWeekDateRange(week.weekNumber, weekDateRanges) || `Semana ${idx + 1}`}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
-                        {/* ═══════════════════ MISSION (always shown) ═══════════════════ */}
+                        {/* ═══════════════════ MISSION ═══════════════════ */}
                         {missionText && (
                             <div style={{
                                 backgroundColor: theme.c.bgAlt,
-                                padding: '20px 24px',
-                                borderRadius: '2px', // Sharper corners for minimalism
-                                marginBottom: '40px',
-                                textAlign: 'center'
+                                border: `2px solid ${theme.c.borderSoft}`,
+                                borderLeft: `6px solid ${theme.c.badge}`, // Thick gold left border
+                                padding: '24px',
+                                borderRadius: '4px',
+                                marginBottom: '24px',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
                             }}>
+                                <h3 style={{
+                                    fontSize: '18px',
+                                    fontWeight: '900',
+                                    color: theme.c.accent, // Magenta
+                                    margin: '0 0 12px 0',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '10px'
+                                }}>
+                                    <span>🏆</span> MISIÓN: {monthlyStrategy?.focus ? String(monthlyStrategy.focus).toUpperCase() : '¡VAMOS POR TODO!'}
+                                </h3>
                                 <p style={{
-                                    fontSize: '13px',
+                                    fontSize: '14px',
                                     lineHeight: '1.6',
                                     fontStyle: 'italic',
-                                    color: theme.c.text,
+                                    color: theme.c.textMuted,
                                     margin: 0,
-                                    fontFamily: 'Georgia, serif'
+                                    fontWeight: '500' // slightly thicker than normal
                                 }}>
-                                    &quot;{missionText}&quot;
+                                    {missionText}
                                 </p>
                             </div>
                         )}
 
-                        {/* ═══════════════════ SUMMARY TABLE (Redesigned) ═══════════════════ */}
-                        <MinimalistProgression weeks={weeks} monthlyStrategy={monthlyStrategy} theme={theme} />
-
-                        {/* ═══════════════════ WEEKS ═══════════════════ */}
-                        {weeks.map((week, wIndex) => (
-                            <div key={wIndex} style={{ marginBottom: '60px', breakInside: 'avoid' }}>
-                                {/* Week Header - Minimalist Line */}
+                        {/* ═══════════════════ PAUSE INFO / SUMMARY TABLE ═══════════════════ */}
+                        <div style={{
+                            display: 'flex',
+                            gap: '2px', // Thin gap for the split effect
+                            marginBottom: '32px',
+                            backgroundColor: theme.c.borderSoft, // the gap color
+                            borderRadius: '4px',
+                            overflow: 'hidden'
+                        }}>
+                            {/* Pausa Larga */}
+                            <div style={{
+                                flex: 1,
+                                backgroundColor: theme.c.accentSoft,
+                                padding: '20px',
+                                textAlign: 'center'
+                            }}>
                                 <div style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '16px',
-                                    marginBottom: '30px',
-                                    paddingTop: '20px',
-                                    borderTop: wIndex > 0 ? `1px dashed ${theme.c.borderSoft}` : 'none',
+                                    fontSize: '24px',
+                                    fontWeight: '900',
+                                    color: theme.c.headerBg, // Burgundy text
+                                    marginBottom: '4px'
                                 }}>
-                                    <div style={{
-                                        fontSize: '12px',
-                                        fontWeight: '700',
-                                        color: theme.c.text,
-                                    }}>
-                                        SEMANA {week.weekNumber}
-                                    </div>
-                                    <div style={{ flex: 1, height: '1px', backgroundColor: theme.c.borderSoft }} />
-                                    <div style={{
-                                        fontSize: '10px',
-                                        color: theme.c.textMuted,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '1px'
-                                    }}>
-                                        {getWeekDateRange(week.weekNumber, weekDateRanges) || 'Fase 1'}
-                                    </div>
+                                    2&apos; a 3&apos; MIN
                                 </div>
+                                <div style={{
+                                    fontSize: '11px',
+                                    fontWeight: '800',
+                                    color: theme.c.accentMuted, // Pink
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1px'
+                                }}>
+                                    PAUSA LARGA (FUERZA)
+                                </div>
+                            </div>
+                            {/* Pausa Corta */}
+                            <div style={{
+                                flex: 1,
+                                backgroundColor: theme.c.accentSoft,
+                                padding: '20px',
+                                textAlign: 'center'
+                            }}>
+                                <div style={{
+                                    fontSize: '24px',
+                                    fontWeight: '900',
+                                    color: theme.c.headerBg,
+                                    marginBottom: '4px'
+                                }}>
+                                    60&quot; a 90 SEG
+                                </div>
+                                <div style={{
+                                    fontSize: '11px',
+                                    fontWeight: '800',
+                                    color: theme.c.accentMuted,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1px'
+                                }}>
+                                    PAUSA CORTA (ACCESORIOS)
+                                </div>
+                            </div>
+                        </div>
 
-                                {week.days.map((day, dIndex) => (
+                        {/* Summary table logic continues below */}
+                        {theme.id !== 'anto' && (
+                            <MinimalistProgression weeks={weeks} monthlyStrategy={monthlyStrategy} theme={theme} />
+                        )}
+
+                        {/* ═══════════════════ DAYS ITERATION (Antopanti Integrated Layout) ═══════════════════ */}
+                        {/* 
+                          En el diseño Antopanti, solo renderizamos la estructura base (típicamente de la Semana 1).
+                          La progresión en el tiempo (Semana 1, 2, 3, 4) se muestra ahora dentro de cada ExerciseRow.
+                        */}
+                        {weeks.length > 0 && (
+                            <div style={{ marginBottom: '60px', breakInside: 'avoid' }}>
+                                {weeks[0].days.map((day, dIndex) => (
                                     <DaySection
                                         key={dIndex}
                                         day={day}
@@ -889,7 +1114,7 @@ export function ExportPreview({
                                     />
                                 ))}
                             </div>
-                        ))}
+                        )}
 
                         {/* ═══════════════════ FOOTER ═══════════════════ */}
                         <div style={{

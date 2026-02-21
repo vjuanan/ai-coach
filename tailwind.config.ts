@@ -28,6 +28,20 @@ const config: Config = {
                     'text-secondary': '#475569', // Slate 600
                     'text-tertiary': '#94A3B8', // Slate 400
                 },
+                // Antopanti Redesign Theme
+                'anto': {
+                    'burgundy': '#5B0F2A', // Headers and dark sections
+                    'burgundy-muted': '#8B1A47', // Lighter burgundy for secondary dark headers
+                    'gold': '#EAB308', // Gold/Yellow accents and dividers
+                    'gold-light': '#FEF08A', // Muted gold
+                    'magenta': '#D81B60', // Big numbers and bold highlights
+                    'pink': '#F472B6', // Standard pink
+                    'pink-light': '#FDF2F5', // Background for rep/set tables
+                    'pink-border': '#FCE7F3', // Soft borders
+                    'bg': '#F3F4F6', // Outer gray background
+                    'text-main': '#0F172A', // Main dark text
+                    'text-muted': '#475569', // Muted dark gray text
+                },
             },
             fontFamily: {
                 sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
