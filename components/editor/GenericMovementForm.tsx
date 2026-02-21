@@ -58,7 +58,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
     // - [NEW] Warmup blocks ALWAYS show Rounds OR Sets mutually exclusive
     const showRounds = (isMetconLike && !isStandard) || (isWarmUp && warmupMode === 'rounds');
     const showGlobalSets = (methodology?.code === 'SUPER_SET' || methodology?.code === 'GIANT_SET');
-    const showSetsPerMovement = ((isStrengthLike || isStandard) && !showGlobalSets) || (isWarmUp && warmupMode === 'sets');
+    const showSetsPerMovement = (!isWarmUp && (isStrengthLike || isStandard) && !showGlobalSets) || (isWarmUp && warmupMode === 'sets');
 
     const movements = parseMovements((config.movements as unknown[]) || []);
     const rounds = (config.rounds as string) || '';
@@ -90,8 +90,8 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                     <button
                         onClick={() => setWarmupMode('rounds')}
                         className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${warmupMode === 'rounds'
-                                ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
-                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                            ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
+                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                             }`}
                     >
                         Por Vueltas
@@ -99,8 +99,8 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                     <button
                         onClick={() => setWarmupMode('sets')}
                         className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${warmupMode === 'sets'
-                                ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
-                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                            ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
+                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                             }`}
                     >
                         Por Series
