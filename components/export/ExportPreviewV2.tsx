@@ -323,35 +323,39 @@ const ExerciseRow = ({
         <div style={{
             marginBottom: '16px',
             backgroundColor: theme.c.bgAlt, // White card
-            border: `1.5px solid ${theme.c.border}`, // Pinkish border #FBCFE8
-            borderRadius: '12px',
-            padding: '16px', // Reduced for mobile
+            border: 'none', // Removed solid border for a cleaner float effect
+            borderRadius: '16px', // Softer radius
+            padding: '16px 20px', // Adjusted padding
             display: 'flex',
             flexDirection: 'column',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)' // Sutil shadow for depth
+            boxShadow: '0 8px 24px rgba(248, 113, 157, 0.08)' // Soft pinkish elegant shadow
         }}>
             {/* Top Section: Title & Cues */}
-            <div style={{ marginBottom: '16px' }}>
+            <div style={{ marginBottom: '12px' }}>
                 {/* Number + Title Inline */}
                 <div style={{
                     display: 'flex',
-                    alignItems: 'baseline',
-                    gap: '10px',
-                    marginBottom: '4px'
+                    alignItems: 'center',
+                    gap: '12px',
+                    marginBottom: '8px'
                 }}>
                     <span style={{
-                        fontSize: '30px', // Bold stand-out
+                        fontSize: '34px', // Título número muy notorio
                         fontWeight: '900', // Black
-                        color: theme.c.accentMuted, // Standard Pink, slightly deeper
-                        letterSpacing: '-1px'
+                        background: `linear-gradient(135deg, ${theme.c.accent}, ${theme.c.accentMuted})`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        letterSpacing: '-1.5px',
+                        lineHeight: '1',
+                        textShadow: '0 2px 10px rgba(248, 113, 157, 0.2)' // Glow sutil
                     }}>
                         {index}
                     </span>
                     <span style={{
-                        fontSize: '16px',
-                        fontWeight: '800', // ExtraBold
-                        color: theme.c.text, // Dark Text
-                        letterSpacing: '0px',
+                        fontSize: '17px',
+                        fontWeight: '800',
+                        color: theme.c.text,
+                        letterSpacing: '-0.3px',
                         lineHeight: '1.2'
                     }}>
                         {displayName}
@@ -359,14 +363,18 @@ const ExerciseRow = ({
                 </div>
 
                 {/* Cues / Description */}
-                <div style={{ paddingLeft: '32px' }}> {/* Indent to align with text, bypassing number */}
+                <div> {/* Removed the paddingLeft: 32px to kill the empty white space */}
                     {block.cue && (
                         <div style={{
-                            fontSize: '13px',
+                            fontSize: '12.5px',
                             fontStyle: 'italic',
-                            color: theme.c.textMuted, // Gray #6B7280
-                            lineHeight: '1.5',
-                            opacity: 0.9
+                            color: theme.c.textMuted,
+                            lineHeight: '1.4',
+                            opacity: 0.85,
+                            borderLeft: `2px solid ${theme.c.border}`,
+                            paddingLeft: '10px',
+                            marginLeft: '2px', // Slight visual alignment
+                            marginBottom: '4px'
                         }}>
                             {block.cue}
                         </div>
@@ -375,7 +383,7 @@ const ExerciseRow = ({
                     {/* MetCon / Text Blocks - Simplified */}
                     {struct?.text && (
                         <div style={{
-                            marginTop: '4px',
+                            marginTop: '6px',
                             fontSize: '13px',
                             lineHeight: '1.5',
                             color: theme.c.textMuted,
@@ -388,7 +396,7 @@ const ExerciseRow = ({
                     {/* Legacy Content */}
                     {!struct && block.content && block.content.length > 0 && (
                         <div style={{
-                            marginTop: '4px',
+                            marginTop: '6px',
                             fontSize: '13px',
                             color: theme.c.textMuted,
                             lineHeight: '1.5',
@@ -401,18 +409,20 @@ const ExerciseRow = ({
                 </div>
             </div>
 
-            {/* Progression Details Box (The 4 Weeks matrix or the single prescription) */}
+            {/* Progression Details Box */}
             {(!struct?.text && block.type !== 'free_text') && (
-                <div style={{ paddingLeft: '32px' }}> {/* Keep indentation */}
+                <div> {/* Removed paddingLeft to maintain full width */}
                     {showInlineProgression && displayProg.length > 0 ? (
                         <div style={{
                             display: 'flex',
-                            gap: '8px',
-                            width: '100%'
+                            width: '100%',
+                            backgroundColor: theme.c.accentSoft, // Pale pink `#FFF5F8`
+                            borderRadius: '10px', // Unify into a single container
+                            overflow: 'hidden',
+                            border: `1px solid ${theme.c.borderSoft}`
                         }}>
-                            {/* Horizontal 4-column Grid */}
+                            {/* Horizontal 4-column Grid Inside Single Container */}
                             {displayProg.map((val, idx) => {
-                                // Muestra las cajas, incluso si están vacías, para mantener el grid estable si hay 4
                                 return (
                                     <div key={idx} style={{
                                         flex: 1, // Distribute evenly
@@ -420,26 +430,25 @@ const ExerciseRow = ({
                                         flexDirection: 'column',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        backgroundColor: theme.c.accentSoft, // Pale pink `#FFF5F8`
-                                        borderRadius: '6px',
-                                        padding: '12px 6px', // Padding similar to reference
-                                        minHeight: '52px' // Ensure uniform height
+                                        padding: '10px 4px', // More compact
+                                        borderRight: idx < displayProg.length - 1 ? `1px solid ${theme.c.borderSoft}` : 'none'
                                     }}>
                                         <div style={{
-                                            fontSize: '11px',
+                                            fontSize: '10px',
                                             fontWeight: '800',
                                             color: theme.c.badge, // Gold `#EAB308`
                                             textTransform: 'uppercase',
-                                            marginBottom: '6px'
+                                            marginBottom: '4px',
+                                            opacity: 0.9
                                         }}>
                                             SEM {idx + 1}
                                         </div>
                                         <div style={{
-                                            fontSize: '13px',
-                                            fontWeight: '700', // Bold/SemiBold
+                                            fontSize: '13.5px', // slightly bigger text relative to container
+                                            fontWeight: '700', // Bold
                                             color: theme.c.text, // Black
                                             textAlign: 'center',
-                                            lineHeight: '1.2'
+                                            lineHeight: '1.1'
                                         }}>
                                             {val || '-'}
                                         </div>
@@ -451,12 +460,13 @@ const ExerciseRow = ({
                         prescriptionText && (
                             <div style={{
                                 backgroundColor: theme.c.accentSoft,
-                                borderRadius: '6px',
-                                padding: '10px 16px',
+                                borderRadius: '8px',
+                                padding: '10px 14px',
                                 fontSize: '13px',
                                 color: theme.c.text,
-                                fontWeight: '600',
-                                display: 'inline-block'
+                                fontWeight: '700',
+                                display: 'inline-block',
+                                border: `1px solid ${theme.c.borderSoft}`
                             }}>
                                 {prescriptionText}
                             </div>
@@ -907,7 +917,7 @@ export function ExportPreview({
                         style={{
                             width: '430px', // Tamaño Mobile (iPhone Pro Max aprox)
                             margin: '0 auto',
-                            backgroundColor: theme.c.bgAlt, // Fondo blanco puro para la tarjeta principal
+                            backgroundColor: '#FCFAFB', // Off-white/very light gray to make the white cards pop
                             boxSizing: 'border-box',
                             color: theme.c.text,
                             fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
@@ -915,7 +925,7 @@ export function ExportPreview({
                         }}
                     >
                         {/* ═══════════════════ HEADER (ANTOPANTI REDESIGN) ═══════════════════ */}
-                        <div style={{ padding: '40px 24px 24px' }}>
+                        <div style={{ padding: '40px 24px 24px', backgroundColor: theme.c.bgAlt }}>
                             {/* Top row: Client Name & Badge */}
                             <div style={{
                                 display: 'flex',
@@ -989,9 +999,7 @@ export function ExportPreview({
                                 <div style={{
                                     display: 'flex',
                                     borderTop: `1px solid ${theme.c.borderSoft}`, // Borde sutil gris/rosa
-                                    borderBottom: `1px solid ${theme.c.borderSoft}`,
-                                    padding: '12px 0',
-                                    marginBottom: '24px'
+                                    padding: '24px 0 0 0', // Sólo margin top ya que abajo limitará con el bleed
                                 }}>
                                     {weeks.map((week, idx) => (
                                         <div key={idx} style={{

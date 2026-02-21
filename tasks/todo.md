@@ -28,10 +28,20 @@
 - [x] Texto del circuito en blanco (`#ffffff`).
 
 ### Fase 6: Formato Móvil y Detalles Creativos Premium
-- [ ] Convertir contenedor de A4 (`794px`) a diseño Mobile (`480px` de ancho).
-- [ ] Ajustar todos los paddings globales y locales (de `48px` a `24px` o `32px` máximo).
-- [ ] Escalar las tipografías masivas para el nuevo layout (ej. Título de 46px a 36px).
-- [ ] Añadir gradientes sutiles al fondo del encabezado de Título y Días (ej: `linear-gradient` en Burgundy).
-- [ ] Implementar un efecto "glow" o sombra difuminada en la etiqueta de `GOLD EDITION` y los números de los ejercicios.
-- [ ] Asegurarse de que el diseño de `Semanas` y `Pausas` acomode bien el espacio reducido sin verse asfixiado.
-- [ ] Añadir una marca de agua/pie de página premium ("Powered by AI Coach" o similar) al final del bloque exportado.
+- [x] Convertir contenedor de A4 (`794px`) a diseño Mobile (`430px` de ancho).
+- [x] Ajustar todos los paddings globales y locales (de `48px` a `24px` o `32px` máximo).
+- [x] Escalar las tipografías masivas para el nuevo layout (ej. Título de 46px a 36px/38px, Pausas, Ejercicios).
+- [x] Añadir gradientes sutiles al fondo del encabezado de Título y Días (ej: `linear-gradient` en Burgundy).
+- [x] Implementar un efecto "glow" o sombra difuminada en la etiqueta de `GOLD EDITION` y los números de los ejercicios.
+- [x] Asegurarse de que el diseño de `Semanas` y `Pausas` acomode bien el espacio reducido sin verse asfixiado (flex y tipografía reducida).
+- [x] Añadir una marca de agua/pie de página premium ("Powered by AI Coach" o similar) al final del bloque exportado.
+
+### Fase 7: Refinamiento Creativo y Reducción de Espacios (Mobile)
+- [ ] Cambiar el fondo del contenedor principal (detrás de los ejercicios) a un gris/rosa extra-claro (`#FCFAFB`) para que las tarjetas blancas resalten.
+- [ ] Ajustar la tarjeta de ejercicio (`ExerciseRow`):
+  - Reducir `padding` de `16px` a `12px` y `marginBottom` a `12px` para quitar aire.
+  - Eliminar el borde perimetral (`border`) y cambiar a una sombra más estilizada y elegante (`box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05)`).
+  - Añadir un "accent-bar" (borde izquierdo sólido colorido) de `4px` en cada tarjeta.
+- [ ] Mejorar el diseño del Número del Ejercicio (Ej: añadirle un muy leve `text-shadow` o pasarlo a un color Magenta más profundo con estilo de fuente extra-black).
+- [ ] Compactar el grid de "SEM X": reducir `padding` en las celdas y quizás darles un fondo con leve gradiente o borde suave top/bottom para estructurar.
+- [ ] Achicar tipografías de elementos secundarios (ej. Cues, instrucciones) ligeramente para mejorar la jerarquía en móvil.
