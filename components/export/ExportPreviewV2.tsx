@@ -223,24 +223,24 @@ const THEMES: Record<string, ExportTheme> = {
         id: 'anto',
         label: 'Antopanti Gold',
         c: {
-            bg: '#F3F4F6', // Outer gray background
-            bgAlt: '#FFFFFF', // Inner white card
-            text: '#0F172A', // Main dark text
-            textMuted: '#475569', // Muted dark gray text
-            accent: '#D81B60', // Magenta numbers
-            accentSoft: '#FDF2F5', // Pink light background
-            accentMuted: '#F472B6', // Standard pink
-            border: '#FCE7F3', // Soft pink border
-            borderSoft: '#F3F4F6', // Inner dividers
+            bg: '#E2E4E9', // Outer solid gray background
+            bgAlt: '#FFFFFF', // Inner pure white card
+            text: '#111827', // Main black/darkest gray text
+            textMuted: '#6B7280', // Medium gray for cues/subtitles
+            accent: '#F8719D', // Magenta/pink for numbers & titles
+            accentSoft: '#FFF5F8', // Very light pink for backgrounds/pills/grids
+            accentMuted: '#F472B6', // Standard deeper pink
+            border: '#FBCFE8', // Soft pink edge for cards
+            borderSoft: '#FFE4E6', // Very subtle pink border
             rowEven: '#FFFFFF',
             rowOdd: '#FFFFFF',
-            headerBg: '#5B0F2A', // Burgundy DÍA headers
+            headerBg: '#5B0F2A', // Deep burgundy DÍA headers
             dayBg: '#FFFFFF',
-            badge: '#EAB308', // Gold accents
+            badge: '#EAB308', // Gold solid font (was text #F59E0B, back off slightly for label #EAB308)
             badgeText: '#FFFFFF',
             cueBg: '#FFFFFF',
-            cueText: '#475569',
-            warmupBg: '#FFFFFF',
+            cueText: '#4B5563',
+            warmupBg: '#FFF5F8',
         }
     }
 };
@@ -313,56 +313,59 @@ const ExerciseRow = ({
     }
     const prescriptionText = parts.join('  ·  ');
 
+    // Default to 4 weeks for the progression grid if available
+    const progWeeks = hasProgression?.progression || [];
+    // If we have less than 4, pad it out for a clean 4-column look or just map what we have
+    const displayProg = progWeeks.length > 0 ? progWeeks : [];
+
     // Render Logic
     return (
         <div style={{
             marginBottom: '16px',
             backgroundColor: theme.c.bgAlt, // White card
-            border: `1.5px solid ${theme.c.border}`, // Pinkish border usually
+            border: `1.5px solid ${theme.c.border}`, // Pinkish border #FBCFE8
             borderRadius: '12px',
             padding: '20px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+            boxShadow: 'none' // Remove shadow to match the clean look
         }}>
-            {/* Top Section: Number + Header + Cues */}
-            <div style={{ display: 'flex', gap: '16px' }}>
-                {/* Huge Number */}
+            {/* Top Section: Title & Cues */}
+            <div style={{ marginBottom: '16px' }}>
+                {/* Number + Title Inline */}
                 <div style={{
-                    fontSize: '42px',
-                    fontWeight: '900',
-                    color: theme.c.accent, // Magenta
-                    lineHeight: '1',
-                    fontStyle: 'italic',
-                    letterSpacing: '-2px',
-                    minWidth: '40px',
-                    textAlign: 'center'
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: '10px',
+                    marginBottom: '6px'
                 }}>
-                    {index}
-                </div>
-
-                {/* Header & Cues */}
-                <div style={{ flex: 1, paddingTop: '4px' }}>
-                    <div style={{
-                        fontSize: '16px',
-                        fontWeight: '800',
-                        color: theme.c.text,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                        marginBottom: '6px'
+                    <span style={{
+                        fontSize: '22px', // Match the design, not huge
+                        fontWeight: '900', // Black
+                        color: theme.c.accentMuted, // Standard Pink, slightly deeper
+                        letterSpacing: '-1px'
+                    }}>
+                        {index}
+                    </span>
+                    <span style={{
+                        fontSize: '18px',
+                        fontWeight: '800', // ExtraBold
+                        color: theme.c.text, // Dark Text
+                        letterSpacing: '0px'
                     }}>
                         {displayName}
-                    </div>
+                    </span>
+                </div>
 
-                    {/* Cues */}
+                {/* Cues / Description */}
+                <div style={{ paddingLeft: '32px' }}> {/* Indent to align with text, bypassing number */}
                     {block.cue && (
                         <div style={{
                             fontSize: '13px',
                             fontStyle: 'italic',
-                            color: theme.c.textMuted,
+                            color: theme.c.textMuted, // Gray #6B7280
                             lineHeight: '1.5',
-                            fontWeight: '500'
+                            opacity: 0.9
                         }}>
                             {block.cue}
                         </div>
@@ -371,10 +374,10 @@ const ExerciseRow = ({
                     {/* MetCon / Text Blocks - Simplified */}
                     {struct?.text && (
                         <div style={{
-                            marginTop: '8px',
-                            fontSize: '14px',
-                            lineHeight: '1.6',
-                            color: theme.c.text,
+                            marginTop: '4px',
+                            fontSize: '13px',
+                            lineHeight: '1.5',
+                            color: theme.c.textMuted,
                             whiteSpace: 'pre-line',
                         }}>
                             {struct.text}
@@ -384,10 +387,10 @@ const ExerciseRow = ({
                     {/* Legacy Content */}
                     {!struct && block.content && block.content.length > 0 && (
                         <div style={{
-                            marginTop: '8px',
-                            fontSize: '14px',
+                            marginTop: '4px',
+                            fontSize: '13px',
                             color: theme.c.textMuted,
-                            lineHeight: '1.6',
+                            lineHeight: '1.5',
                         }}>
                             {block.content.map((line, i) => (
                                 <div key={i}>• {line}</div>
@@ -399,41 +402,45 @@ const ExerciseRow = ({
 
             {/* Progression Details Box (The 4 Weeks matrix or the single prescription) */}
             {(!struct?.text && block.type !== 'free_text') && (
-                <div style={{ marginLeft: '56px' }}> {/* Align with text, skipping the huge number */}
-                    {showInlineProgression && hasProgression ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            {hasProgression.progression.map((val, idx) => {
-                                if (!val || val === '-') return null;
+                <div style={{ paddingLeft: '32px' }}> {/* Keep indentation */}
+                    {showInlineProgression && displayProg.length > 0 ? (
+                        <div style={{
+                            display: 'flex',
+                            gap: '8px',
+                            width: '100%'
+                        }}>
+                            {/* Horizontal 4-column Grid */}
+                            {displayProg.map((val, idx) => {
+                                // Muestra las cajas, incluso si están vacías, para mantener el grid estable si hay 4
                                 return (
                                     <div key={idx} style={{
+                                        flex: 1, // Distribute evenly
                                         display: 'flex',
+                                        flexDirection: 'column',
                                         alignItems: 'center',
-                                        backgroundColor: theme.c.accentSoft, // Very light pink
+                                        justifyContent: 'center',
+                                        backgroundColor: theme.c.accentSoft, // Pale pink `#FFF5F8`
                                         borderRadius: '6px',
-                                        padding: '8px 12px',
-                                        gap: '12px'
+                                        padding: '12px 6px', // Padding similar to reference
+                                        minHeight: '52px' // Ensure uniform height
                                     }}>
                                         <div style={{
                                             fontSize: '11px',
                                             fontWeight: '800',
-                                            color: theme.c.badge, // Gold
+                                            color: theme.c.badge, // Gold `#EAB308`
                                             textTransform: 'uppercase',
-                                            width: '50px' // Fixed width for alignment
+                                            marginBottom: '6px'
                                         }}>
                                             SEM {idx + 1}
                                         </div>
                                         <div style={{
-                                            width: '2px',
-                                            height: '14px',
-                                            backgroundColor: theme.c.border,
-                                            borderRadius: '1px'
-                                        }} />
-                                        <div style={{
-                                            fontSize: '14px',
-                                            fontWeight: '600',
-                                            color: theme.c.text
+                                            fontSize: '13px',
+                                            fontWeight: '700', // Bold/SemiBold
+                                            color: theme.c.text, // Black
+                                            textAlign: 'center',
+                                            lineHeight: '1.2'
                                         }}>
-                                            {val}
+                                            {val || '-'}
                                         </div>
                                     </div>
                                 );
@@ -442,7 +449,7 @@ const ExerciseRow = ({
                     ) : (
                         prescriptionText && (
                             <div style={{
-                                backgroundColor: theme.c.accentSoft, // Very light pink
+                                backgroundColor: theme.c.accentSoft,
                                 borderRadius: '6px',
                                 padding: '10px 16px',
                                 fontSize: '13px',
@@ -480,27 +487,26 @@ const DaySection = ({
     let exIdx = 1;
 
     return (
-        <div style={{ marginBottom: '40px', breakInside: 'avoid' }}>
-            {/* ═══════════════════ DAY HEADER (Redesigned) ═══════════════════ */}
+        <div style={{ paddingBottom: '40px', breakInside: 'avoid' }}>
+            {/* ═══════════════════ DAY HEADER (Full Bleed) ═══════════════════ */}
             <div style={{
-                marginBottom: '20px',
+                marginBottom: '24px',
                 backgroundColor: theme.c.headerBg, // Burgundy
-                padding: '16px 20px',
+                padding: '16px 48px', // Match global padding
                 display: 'flex',
-                alignItems: 'center',
+                alignItems: 'baseline',
                 justifyContent: 'space-between',
                 color: '#FFFFFF' // Force white text on burgundy background
             }}>
                 <span style={{
-                    fontSize: '22px',
+                    fontSize: '24px',
                     fontWeight: '900', // Black
                     letterSpacing: '-0.5px',
-                    textTransform: 'uppercase'
                 }}>
                     DÍA {dayIndex}
                 </span>
                 <span style={{
-                    fontSize: '14px',
+                    fontSize: '15px',
                     fontWeight: '600',
                     textAlign: 'right'
                 }}>
@@ -508,14 +514,14 @@ const DaySection = ({
                 </span>
             </div>
 
-            {/* Exercises Container */}
-            <div>
+            {/* Exercises Container (Inner padding) */}
+            <div style={{ padding: '0 48px' }}>
                 {/* ═══════════════════ WARMUP (Activación as Pills) ═══════════════════ */}
                 {hasWarmup && (
                     <div style={{
-                        marginBottom: '24px',
-                        paddingBottom: '16px',
-                        borderBottom: `1px solid ${theme.c.borderSoft}`
+                        marginBottom: '32px',
+                        paddingBottom: '24px',
+                        borderBottom: `1px solid ${theme.c.borderSoft}` // Subtle divider
                     }}>
                         {warmupBlocks.map((block, i) => {
                             const rounds = block.config?.rounds as string | number | undefined;
@@ -527,7 +533,7 @@ const DaySection = ({
                                         textTransform: 'uppercase',
                                         letterSpacing: '1px',
                                         color: theme.c.badge, // Gold
-                                        marginBottom: '12px',
+                                        marginBottom: '16px',
                                         fontWeight: '800',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -539,16 +545,17 @@ const DaySection = ({
                                     <div style={{
                                         display: 'flex',
                                         flexWrap: 'wrap',
-                                        gap: '10px'
+                                        gap: '12px'
                                     }}>
                                         {movements.map((mov, mIdx) => (
                                             <div key={mIdx} style={{
-                                                backgroundColor: theme.c.accentSoft, // Very light pink/gray
-                                                padding: '8px 16px',
-                                                borderRadius: '20px',
+                                                backgroundColor: theme.c.accentSoft, // Pale pink `#FFF5F8`
+                                                border: `1px solid ${theme.c.borderSoft}`, // Extremely pale border `#FFE4E6`
+                                                padding: '6px 16px',
+                                                borderRadius: '999px', // Pill shape
                                                 fontSize: '13px',
-                                                color: theme.c.textMuted,
-                                                fontWeight: '600'
+                                                color: theme.c.cueText, // Gray `#4B5563`
+                                                fontWeight: '500' // Better readability, not too thin
                                             }}>
                                                 {mov}
                                             </div>
@@ -574,61 +581,76 @@ const DaySection = ({
                     return (
                         <div key={`cd-${i}`} style={{
                             marginTop: '24px',
-                            backgroundColor: theme.c.headerBg, // Burgundy background
-                            borderRadius: '8px',
-                            padding: '16px 20px',
-                            color: '#FFFFFF'
+                            backgroundColor: '#7E1231', // Brighter burgundy according to reference
+                            borderRadius: '12px',
+                            padding: '24px',
+                            color: '#FFFFFF',
+                            boxShadow: '0 4px 12px rgba(91, 15, 42, 0.15)'
                         }}>
                             <div style={{
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '12px',
-                                marginBottom: '12px'
+                                marginBottom: '16px'
                             }}>
                                 <span style={{
                                     backgroundColor: theme.c.badge, // Gold badge
-                                    color: theme.c.headerBg,
+                                    color: '#000000', // Black text specifically for Gold Finisher pill
                                     padding: '4px 10px',
-                                    borderRadius: '4px',
-                                    fontSize: '11px',
+                                    borderRadius: '6px',
+                                    fontSize: '12px',
                                     fontWeight: '900',
                                     letterSpacing: '1px'
                                 }}>
                                     FINISHER
                                 </span>
                                 <span style={{
-                                    fontSize: '16px',
+                                    fontSize: '18px',
                                     fontWeight: '800',
-                                    textTransform: 'uppercase'
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
                                 }}>
-                                    {block.name || 'Finisher'}
+                                    {getBlockDisplayName(block)}
                                 </span>
                             </div>
 
-                            {/* Contenido del finisher en texto claro */}
-                            {block.structure?.text ? (
+                            {/* Legacy Content (List text) */}
+                            {block.content && block.content.length > 0 && (
                                 <div style={{
                                     fontSize: '14px',
                                     lineHeight: '1.6',
-                                    color: '#FFFFFF',
-                                    opacity: 0.9,
+                                    opacity: 0.95,
+                                    fontWeight: '400'
+                                }}>
+                                    {block.content.map((c, i) => (
+                                        <div key={i}>{c}</div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Metcon Structure Text - If used */}
+                            {block.structure?.text && (
+                                <div style={{
+                                    fontSize: '14px',
+                                    lineHeight: '1.6',
+                                    opacity: 0.95,
+                                    fontWeight: '400',
                                     whiteSpace: 'pre-line'
                                 }}>
                                     {block.structure.text}
                                 </div>
-                            ) : (
-                                block.content && block.content.length > 0 && (
-                                    <div style={{
-                                        fontSize: '14px',
-                                        lineHeight: '1.6',
-                                        color: '#FFFFFF',
-                                        opacity: 0.9
-                                    }}>
-                                        {block.content.map((line, idx) => (
-                                            <div key={idx}>• {line}</div>
-                                        ))}
-                                    </div>
-                                )
+                            )}
+
+                            {/* Cues mapping for Finisher */}
+                            {block.cue && (
+                                <div style={{
+                                    marginTop: '12px',
+                                    fontSize: '13px',
+                                    fontStyle: 'italic',
+                                    opacity: 0.8
+                                }}>
+                                    {block.cue}
+                                </div>
                             )}
                         </div>
                     );
@@ -876,22 +898,23 @@ export function ExportPreview({
                 </div>
 
                 {/* Preview scroll area */}
+                ```
                 <div className="flex-1 overflow-y-auto bg-gray-100/60 dark:bg-zinc-950/50 p-4">
                     <div
                         id="export-container"
                         ref={exportRef}
                         style={{
-                            width: '600px', // INCREASED WIDTH
+                            width: '794px', // Tamaño A4 estándar
                             margin: '0 auto',
-                            backgroundColor: theme.c.bg,
-                            padding: '60px 48px', // HIGH FASHION PADDING
+                            backgroundColor: theme.c.bgAlt, // Fondo blanco puro para la tarjeta principal
                             boxSizing: 'border-box',
                             color: theme.c.text,
-                            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                            fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                            overflow: 'hidden',
                         }}
                     >
                         {/* ═══════════════════ HEADER (ANTOPANTI REDESIGN) ═══════════════════ */}
-                        <div style={{ marginBottom: '32px' }}>
+                        <div style={{ padding: '60px 48px 32px' }}>
                             {/* Top row: Client Name & Badge */}
                             <div style={{
                                 display: 'flex',
@@ -901,21 +924,21 @@ export function ExportPreview({
                             }}>
                                 <span style={{
                                     fontSize: '18px',
-                                    color: theme.c.accentMuted || theme.c.textMuted,
+                                    color: theme.c.accentMuted,
                                     fontStyle: 'italic',
-                                    fontWeight: '600'
+                                    fontWeight: '500' // Semi-bold soft
                                 }}>
                                     Para {clientInfo.name}
                                 </span>
                                 <span style={{
                                     border: `1.5px solid ${theme.c.badge}`,
                                     color: theme.c.badge,
-                                    padding: '4px 12px',
-                                    borderRadius: '20px',
-                                    fontSize: '11px',
+                                    padding: '6px 16px',
+                                    borderRadius: '24px',
+                                    fontSize: '12px',
                                     fontWeight: '800',
                                     textTransform: 'uppercase',
-                                    letterSpacing: '1px'
+                                    letterSpacing: '0.5px'
                                 }}>
                                     GOLD EDITION
                                 </span>
@@ -923,12 +946,12 @@ export function ExportPreview({
 
                             {/* Main Title */}
                             <h1 style={{
-                                fontSize: '42px',
+                                fontSize: '46px',
                                 fontWeight: '900', // Black
                                 margin: '0 0 16px 0',
                                 color: theme.c.headerBg, // Burgundy
-                                letterSpacing: '-1px',
-                                lineHeight: '1.1',
+                                letterSpacing: '-1.5px',
+                                lineHeight: '1.05',
                                 textTransform: 'uppercase'
                             }}>
                                 PLAN DE<br />ENTRENAMIENTO
@@ -936,21 +959,20 @@ export function ExportPreview({
 
                             {/* Gold Divider Line */}
                             <div style={{
-                                width: '48px',
-                                height: '5px',
+                                width: '64px',
+                                height: '6px',
                                 backgroundColor: theme.c.badge,
                                 borderRadius: '3px',
-                                marginBottom: '16px'
+                                marginBottom: '20px'
                             }} />
 
                             {/* Program Subtitle / Focus */}
                             <div style={{
-                                fontSize: '15px',
+                                fontSize: '16px',
                                 color: theme.c.accent, // Magenta
                                 fontWeight: '800',
                                 textTransform: 'uppercase',
-                                letterSpacing: '1.5px',
-                                marginBottom: '24px',
+                                letterSpacing: '1px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px'
@@ -958,33 +980,42 @@ export function ExportPreview({
                                 <span>✨</span>
                                 <span>FASE {weeks.length}: {programName}</span>
                             </div>
+                        </div>
 
+                        {/* ═══════════════════ BLOQUE DE SANGRADO (Misión y Pausas) ═══════════════════ */}
+                        <div style={{
+                            backgroundColor: theme.c.accentSoft, // Fondo rosado muy claro
+                            padding: '32px 48px 40px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '24px'
+                        }}>
                             {/* Weeks Tabular Layout */}
                             {weeks.length > 0 && (
                                 <div style={{
                                     display: 'flex',
-                                    borderTop: `1px solid ${theme.c.borderSoft}`,
+                                    borderTop: `1px solid ${theme.c.borderSoft}`, // Borde sutil
                                     borderBottom: `1px solid ${theme.c.borderSoft}`,
-                                    marginBottom: '24px'
+                                    padding: '16px 0',
+                                    marginBottom: '8px'
                                 }}>
                                     {weeks.map((week, idx) => (
                                         <div key={idx} style={{
                                             flex: 1,
-                                            padding: '12px 8px',
                                             textAlign: 'center',
                                             borderRight: idx < weeks.length - 1 ? `1px solid ${theme.c.borderSoft}` : 'none'
                                         }}>
                                             <div style={{
-                                                fontSize: '12px',
+                                                fontSize: '13px',
                                                 fontWeight: '800',
                                                 color: theme.c.badge, // Gold
-                                                marginBottom: '4px',
+                                                marginBottom: '6px',
                                                 textTransform: 'uppercase'
                                             }}>
                                                 SEM {week.weekNumber}
                                             </div>
                                             <div style={{
-                                                fontSize: '11px',
+                                                fontSize: '12px',
                                                 color: theme.c.textMuted,
                                                 fontWeight: '600'
                                             }}>
@@ -994,103 +1025,104 @@ export function ExportPreview({
                                     ))}
                                 </div>
                             )}
-                        </div>
 
-                        {/* ═══════════════════ MISSION ═══════════════════ */}
-                        {missionText && (
-                            <div style={{
-                                backgroundColor: theme.c.bgAlt,
-                                border: `2px solid ${theme.c.borderSoft}`,
-                                borderLeft: `6px solid ${theme.c.badge}`, // Thick gold left border
-                                padding: '24px',
-                                borderRadius: '4px',
-                                marginBottom: '24px',
-                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
-                            }}>
-                                <h3 style={{
-                                    fontSize: '18px',
-                                    fontWeight: '900',
-                                    color: theme.c.accent, // Magenta
-                                    margin: '0 0 12px 0',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '10px'
+                            {/* ═══════════════════ MISSION ═══════════════════ */}
+                            {missionText && (
+                                <div style={{
+                                    backgroundColor: theme.c.bgAlt,
+                                    borderLeft: `6px solid ${theme.c.badge}`, // Thick gold left border
+                                    padding: '24px',
+                                    borderRadius: '4px',
+                                    marginBottom: '24px',
+                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
                                 }}>
-                                    <span>🏆</span> MISIÓN: {monthlyStrategy?.focus ? String(monthlyStrategy.focus).toUpperCase() : '¡VAMOS POR TODO!'}
-                                </h3>
-                                <p style={{
-                                    fontSize: '14px',
-                                    lineHeight: '1.6',
-                                    fontStyle: 'italic',
-                                    color: theme.c.textMuted,
-                                    margin: 0,
-                                    fontWeight: '500' // slightly thicker than normal
-                                }}>
-                                    {missionText}
-                                </p>
-                            </div>
-                        )}
+                                    <h3 style={{
+                                        fontSize: '18px',
+                                        fontWeight: '900',
+                                        color: theme.c.accent, // Magenta
+                                        margin: '0 0 12px 0',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '10px'
+                                    }}>
+                                        <span>🏆</span> MISIÓN: {monthlyStrategy?.focus ? String(monthlyStrategy.focus).toUpperCase() : '¡VAMOS POR TODO!'}
+                                    </h3>
+                                    <p style={{
+                                        fontSize: '14px',
+                                        lineHeight: '1.6',
+                                        fontStyle: 'italic',
+                                        color: theme.c.textMuted,
+                                        margin: 0,
+                                        fontWeight: '500' // slightly thicker than normal
+                                    }}>
+                                        {missionText}
+                                    </p>
+                                </div>
+                            )}
 
-                        {/* ═══════════════════ PAUSE INFO / SUMMARY TABLE ═══════════════════ */}
-                        <div style={{
-                            display: 'flex',
-                            gap: '2px', // Thin gap for the split effect
-                            marginBottom: '32px',
-                            backgroundColor: theme.c.borderSoft, // the gap color
-                            borderRadius: '4px',
-                            overflow: 'hidden'
-                        }}>
-                            {/* Pausa Larga */}
+                            {/* ═══════════════════ PAUSE INFO / SUMMARY TABLE ═══════════════════ */}
                             <div style={{
-                                flex: 1,
-                                backgroundColor: theme.c.accentSoft,
-                                padding: '20px',
-                                textAlign: 'center'
+                                display: 'flex',
+                                gap: '4px', // Split effect
                             }}>
+                                {/* Pausa Larga */}
                                 <div style={{
-                                    fontSize: '24px',
-                                    fontWeight: '900',
-                                    color: theme.c.headerBg, // Burgundy text
-                                    marginBottom: '4px'
+                                    flex: 1,
+                                    backgroundColor: theme.c.bgAlt, // White block since the background is already pink
+                                    padding: '24px',
+                                    textAlign: 'center',
+                                    borderRadius: '8px',
+                                    boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
                                 }}>
-                                    2&apos; a 3&apos; MIN
+                                    <div style={{
+                                        fontSize: '28px',
+                                        fontWeight: '900',
+                                        color: theme.c.headerBg, // Burgundy text
+                                        marginBottom: '6px',
+                                        letterSpacing: '-1px'
+                                    }}>
+                                        2&apos; a 3&apos; MIN
+                                    </div>
+                                    <div style={{
+                                        fontSize: '11px',
+                                        fontWeight: '800',
+                                        color: theme.c.accentMuted, // Pink
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '1px'
+                                    }}>
+                                        PAUSA LARGA (FUERZA)
+                                    </div>
                                 </div>
+                                {/* Pausa Corta */}
                                 <div style={{
-                                    fontSize: '11px',
-                                    fontWeight: '800',
-                                    color: theme.c.accentMuted, // Pink
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '1px'
+                                    flex: 1,
+                                    backgroundColor: theme.c.bgAlt, // White
+                                    padding: '24px',
+                                    textAlign: 'center',
+                                    borderRadius: '8px',
+                                    boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
                                 }}>
-                                    PAUSA LARGA (FUERZA)
+                                    <div style={{
+                                        fontSize: '28px',
+                                        fontWeight: '900',
+                                        color: theme.c.headerBg,
+                                        marginBottom: '6px',
+                                        letterSpacing: '-1px'
+                                    }}>
+                                        60&quot; a 90 SEG
+                                    </div>
+                                    <div style={{
+                                        fontSize: '11px',
+                                        fontWeight: '800',
+                                        color: theme.c.accentMuted,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '1px'
+                                    }}>
+                                        PAUSA CORTA (ACCESORIOS)
+                                    </div>
                                 </div>
                             </div>
-                            {/* Pausa Corta */}
-                            <div style={{
-                                flex: 1,
-                                backgroundColor: theme.c.accentSoft,
-                                padding: '20px',
-                                textAlign: 'center'
-                            }}>
-                                <div style={{
-                                    fontSize: '24px',
-                                    fontWeight: '900',
-                                    color: theme.c.headerBg,
-                                    marginBottom: '4px'
-                                }}>
-                                    60&quot; a 90 SEG
-                                </div>
-                                <div style={{
-                                    fontSize: '11px',
-                                    fontWeight: '800',
-                                    color: theme.c.accentMuted,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '1px'
-                                }}>
-                                    PAUSA CORTA (ACCESORIOS)
-                                </div>
-                            </div>
-                        </div>
+                        </div> {/* Closes BLOQUE DE SANGRADO */}
 
                         {/* Summary table logic continues below */}
                         {theme.id !== 'anto' && (
