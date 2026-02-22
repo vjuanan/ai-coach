@@ -158,16 +158,41 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
 
         if (source) {
+            let targetDayId: string | null = null;
+            if (target) {
+                targetDayId = target.day.id;
+
+                // Boundary validation: prevent mixing of categories
+                const sourceIsWarmup = source.block.section === 'warmup' || source.block.type === 'warmup';
+                const targetIsWarmup = target.block.section === 'warmup' || target.block.type === 'warmup';
+
+                if (sourceIsWarmup !== targetIsWarmup) {
+                    setDraggedBlock(null);
+                    setDropTarget(null);
+                    return; // Prevent action if dropped on incompatible category
+                }
+            } else if (over.id.toString().startsWith('day-')) {
+                targetDayId = over.id.toString().replace('day-', '');
+            }
+
+            // Helper to get visually correct ordered IDs
+            const getVisualOrderIds = (blocks: any[]) => {
+                const warmupBlocks = blocks.filter(b => b.section === 'warmup' || b.type === 'warmup');
+                const mainBlocks = blocks.filter(b => !(b.section === 'warmup' || b.type === 'warmup'));
+
+                return [
+                    ...[...warmupBlocks].sort((a, b) => a.order_index - b.order_index),
+                    ...[...mainBlocks].sort((a, b) => a.order_index - b.order_index)
+                ].map(b => b.id);
+            };
+
             // CASE 1: Reordering within the same day (Dropped on another block)
             if (target && source.day.id === target.day.id) {
                 const dayId = source.day.id;
-                const currentOrderIds = [...source.day.blocks]
-                    .sort((a, b) => a.order_index - b.order_index)
-                    .map(b => b.id);
+                const currentOrderIds = getVisualOrderIds(source.day.blocks);
 
                 const oldIndex = currentOrderIds.indexOf(activeId);
                 const newIndex = currentOrderIds.indexOf(overId);
-
 
                 if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
                     const newOrderIds = arrayMove(currentOrderIds, oldIndex, newIndex);
@@ -178,33 +203,24 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                 return;
             }
 
-            // CASE 2: Dropped on a Day Container (could be same day or different day)
-            let targetDayId: string | null = null;
-            if (over.id.toString().startsWith('day-')) {
-                targetDayId = over.id.toString().replace('day-', '');
-            }
-
+            // CASE 2: Dropped on a Day Container or a Block in a DIFFERENT day
             if (targetDayId) {
                 if (source.day.id === targetDayId) {
-                    // Dropped on the SAME day container -> Move to end? 
-                    // Or better: do nothing if we want strictly sortable behavior.
-                    // But if user drags to empty space in day, we should probably append to end.
-                    // Let's rely on SortableContext to handle the "gap" and if dropped on container, 
-                    // it implies we moved it out of the sortable list? No.
-                    // If we drop on the container, it usually means we dragged "past" the last item.
-
-                    const currentOrderIds = [...source.day.blocks]
-                        .sort((a, b) => a.order_index - b.order_index)
-                        .map(b => b.id);
-
+                    // Dropped on empty space of the SAME day container -> Move to end of category
+                    const currentOrderIds = getVisualOrderIds(source.day.blocks);
                     const oldIndex = currentOrderIds.indexOf(activeId);
-                    const newIndex = currentOrderIds.length - 1; // Move to end
+
+                    const sourceIsWarmup = source.block.section === 'warmup' || source.block.type === 'warmup';
+                    let newIndex = currentOrderIds.length - 1;
+                    if (sourceIsWarmup) {
+                        const warmupCount = source.day.blocks.filter((b: any) => b.section === 'warmup' || b.type === 'warmup').length;
+                        newIndex = Math.max(0, warmupCount - 1);
+                    }
 
                     if (oldIndex !== -1 && oldIndex !== newIndex) {
                         const newOrderIds = arrayMove(currentOrderIds, oldIndex, newIndex);
                         useEditorStore.getState().reorderBlocks(targetDayId, newOrderIds);
                     }
-
                 } else {
                     // Moving block to a DIFFERENT day
                     moveBlockToDay(activeId, targetDayId);

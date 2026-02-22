@@ -1,5 +1,8 @@
-# Todo Plan
-- [ ] Investigate why the avatar/profile circle is missing on the Home page.
-- [ ] Check `DashboardShell` or Header component for avatar presence or rendering conditions.
-- [ ] Fix the code to display the avatar correctly.
-- [ ] Verify the fix visually using screenshots on the production or local setup (wait, user says "NUNCA utilices la versión local" and "abriendo la URL de produccion", but I am fixing code locally first. I'll need to push the fix and verify via prod URL).
+# Todo Plan: Fix Drag and Drop
+- [x] Investigate `onDragEnd` logic in `MesocycleEditor` (or related components).
+- [x] Fix the issue where blocks cannot be moved from one day to another.
+- [x] Enforce category rules: blocks from "ENTRENAMIENTO" cannot be dropped in "CALENTAMIENTO" and vice versa.
+- [x] Ensure drag and drop within the same day still works.
+- [ ] Verify changes locally.
+- [ ] Push to GitHub to deploy to production.
+- [ ] Open production URL and verify with screenshots.

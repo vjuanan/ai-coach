@@ -188,9 +188,10 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
     // Warning: Visual split + Single SortableContext works for reordering, 
     // but dragging between sections won't update the section property automatically without store changes.
     // For now, this provides the structure.
-    const allBlockIds = [...warmupBlocks, ...mainBlocks]
-        .sort((a, b) => a.order_index - b.order_index)
-        .map(b => b.id);
+    const sortedWarmupBlocks = [...warmupBlocks].sort((a, b) => a.order_index - b.order_index);
+    const sortedMainBlocks = [...mainBlocks].sort((a, b) => a.order_index - b.order_index);
+
+    const allBlockIds = [...sortedWarmupBlocks, ...sortedMainBlocks].map(b => b.id);
 
     return (
         <div

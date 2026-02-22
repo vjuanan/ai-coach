@@ -85,43 +85,45 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-            {isWarmUp && (
-                <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg w-fit">
-                    <button
-                        onClick={() => setWarmupMode('rounds')}
-                        className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${warmupMode === 'rounds'
-                            ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-                            }`}
-                    >
-                        Por Vueltas
-                    </button>
-                    <button
-                        onClick={() => setWarmupMode('sets')}
-                        className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${warmupMode === 'sets'
-                            ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-                            }`}
-                    >
-                        Por Series
-                    </button>
-                </div>
-            )}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                {isWarmUp && (
+                    <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg w-fit shrink-0">
+                        <button
+                            onClick={() => setWarmupMode('rounds')}
+                            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${warmupMode === 'rounds'
+                                ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
+                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                                }`}
+                        >
+                            Por Vueltas
+                        </button>
+                        <button
+                            onClick={() => setWarmupMode('sets')}
+                            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${warmupMode === 'sets'
+                                ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
+                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                                }`}
+                        >
+                            Por Series
+                        </button>
+                    </div>
+                )}
 
-            {/* 1. Global Rounds/Sets Input - Only if methodology supports it */}
-            {(showRounds || showGlobalSets) && (
-                <div className="max-w-md"> {/* Limited width */}
-                    <InputCard
-                        label={showRounds ? "RONDAS / VUELTAS" : "SERIES"}
-                        value={showRounds ? rounds : globalSets}
-                        onChange={(val) => onChange(showRounds ? 'rounds' : 'sets', val)}
-                        type="text"
-                        icon={RotateCcw}
-                        placeholder={showRounds ? "Ej: 3, 4, 5" : "3"}
-                        presets={[2, 3, 4, 5]}
-                    />
-                </div>
-            )}
+                {/* 1. Global Rounds/Sets Input - Only if methodology supports it */}
+                {(showRounds || showGlobalSets) && (
+                    <div className="max-w-md w-full"> {/* Limited width */}
+                        <InputCard
+                            label={showRounds ? "RONDAS / VUELTAS" : "SERIES"}
+                            value={showRounds ? rounds : globalSets}
+                            onChange={(val) => onChange(showRounds ? 'rounds' : 'sets', val)}
+                            type="text"
+                            icon={RotateCcw}
+                            placeholder={showRounds ? "Ej: 3, 4, 5" : "3"}
+                            presets={[2, 3, 4, 5]}
+                        />
+                    </div>
+                )}
+            </div>
 
             {/* 2. Movements List */}
             <div>
