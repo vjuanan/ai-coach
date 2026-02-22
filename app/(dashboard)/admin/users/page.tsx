@@ -236,11 +236,7 @@ export default function AdminUsersPage() {
                                 Eliminar ({selectedUsers.size})
                             </button>
                         )}
-                        <div className="flex items-center gap-2 px-2 text-slate-500">
-                            <Users size={20} />
-                            <span className="font-medium text-sm">{filteredProfiles.length}</span>
-                        </div>
-                        <span className="hidden sm:inline-block text-xs text-slate-400 font-mono">v1.3</span>
+
                         <button
                             onClick={() => setIsCreateOpen(true)}
                             className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"

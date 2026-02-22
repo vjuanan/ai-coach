@@ -297,10 +297,7 @@ export default function GymsPage() {
                                 Eliminar ({selectedGyms.size})
                             </button>
                         )}
-                        <div className="flex items-center gap-2 px-2 text-slate-500">
-                            <Building2 size={20} />
-                            <span className="font-medium text-sm">{filteredGyms.length}</span>
-                        </div>
+
                         <button
                             onClick={() => setShowAddModal(true)}
                             className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200"

@@ -162,12 +162,12 @@ export default function LoginPage() {
 
                         <div className="text-center mt-6">
                             <p className="text-sm text-gray-400">
-                                ¿Nueva franquicia?{' '}
+                                ¿Nuevo?{' '}
                                 <a
                                     href="/auth/signup"
                                     className="text-cv-accent hover:text-emerald-300 font-semibold transition-colors"
                                 >
-                                    Solicitar alta
+                                    Registrate
                                 </a>
                             </p>
                         </div>
