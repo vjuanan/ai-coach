@@ -1,11 +1,7 @@
-# Todo Plan: Layout Fix for Exercise Input Cards
+# Tareas
 
-## Plan
-- [x] Locate `InputCard.tsx` and `GenericMovementForm.tsx`.
-- [x] Move presets to the side of the input field in `InputCard`.
-- [x] Reduce vertical padding in `GenericMovementForm` (`MovementCard`).
-- [ ] Push to GitHub and deploy to production.
-- [ ] Verify visually with screenshots in `https://aicoach.epnstore.com.ar`.
+- [ ] Remover "v1.3" y los iconos de usuarios/notificaciones sobrepuestos del Topbar
+- [ ] Verificar la interfaz actualizada del Topbar para confirmar que se ve bien
 
-## Revision
-- (A completar al finalizar)
+## Revisión
+- (A completar después de verificar)
