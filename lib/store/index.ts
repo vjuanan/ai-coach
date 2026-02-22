@@ -128,7 +128,7 @@ interface EditorState {
     selectPrevBlock: () => void;
     selectNextDayFirstBlock: () => void;
     selectPrevDayFirstBlock: () => void;
-    moveBlockToDay: (blockId: string, targetDayId: string) => void;
+    moveBlockToDay: (blockId: string, targetDayId: string, insertAtIndex?: number) => void;
     moveProgressionToDay: (progressionId: string, targetDayNumber: number) => void;
     markAsClean: () => void;
     copyDayToFutureWeeks: (dayId: string) => void;
@@ -942,7 +942,7 @@ export const useEditorStore = create<EditorState>()(
                 set({ mesocycles: updatedMesocycles, hasUnsavedChanges: true });
             },
 
-            moveBlockToDay: (blockId, targetDayId) => {
+            moveBlockToDay: (blockId, targetDayId, insertAtIndex) => {
                 const { mesocycles } = get();
 
                 let movedBlock: DraftWorkoutBlock | null = null;
@@ -965,22 +965,33 @@ export const useEditorStore = create<EditorState>()(
 
                 if (!movedBlock) return;
 
-                // Second pass: add to target day
+                // Second pass: add to target day at the specified position
                 const updatedMesocycles = withRemovedBlock.map(meso => ({
                     ...meso,
                     days: meso.days.map(day => {
                         if (day.id === targetDayId) {
+                            const newBlock = {
+                                ...movedBlock!,
+                                day_id: targetDayId,
+                                isDirty: true,
+                            };
+                            let newBlocks: DraftWorkoutBlock[];
+                            if (insertAtIndex !== undefined && insertAtIndex >= 0 && insertAtIndex <= day.blocks.length) {
+                                // Insert at specific position
+                                newBlocks = [
+                                    ...day.blocks.slice(0, insertAtIndex),
+                                    newBlock,
+                                    ...day.blocks.slice(insertAtIndex),
+                                ];
+                            } else {
+                                // Append to end (default)
+                                newBlocks = [...day.blocks, newBlock];
+                            }
+                            // Re-index all blocks
+                            newBlocks = newBlocks.map((b, idx) => ({ ...b, order_index: idx }));
                             return {
                                 ...day,
-                                blocks: [
-                                    ...day.blocks,
-                                    {
-                                        ...movedBlock!,
-                                        day_id: targetDayId,
-                                        order_index: day.blocks.length,
-                                        isDirty: true,
-                                    },
-                                ],
+                                blocks: newBlocks,
                                 isDirty: true,
                             };
                         }

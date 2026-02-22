@@ -223,7 +223,17 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                     }
                 } else {
                     // Moving block to a DIFFERENT day
-                    moveBlockToDay(activeId, targetDayId);
+                    // Compute insertion index based on where the block was dropped
+                    let insertAtIndex: number | undefined = undefined;
+                    if (target) {
+                        // Dropped ON a specific block in the target day — insert at that block's visual position
+                        const targetVisualOrder = getVisualOrderIds(target.day.blocks);
+                        const targetIdx = targetVisualOrder.indexOf(overId);
+                        if (targetIdx !== -1) {
+                            insertAtIndex = targetIdx;
+                        }
+                    }
+                    moveBlockToDay(activeId, targetDayId, insertAtIndex);
                 }
             }
         }
