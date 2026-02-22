@@ -420,71 +420,69 @@ const ExerciseRow = ({
                     </div>
                 )}
 
-                {/* Progression Details Box */}
-                {(!struct?.text && block.type !== 'free_text') && (
-                    <div style={{ marginTop: 'auto' }}> {/* Push to bottom if needed */}
-                        {showInlineProgression && displayProg.length > 0 ? (
+                {/* Progression Details Box or Empty State Fallback (e.g for "Superserie A") */}
+                <div style={{ marginTop: '4px' }}>
+                    {showInlineProgression && displayProg.length > 0 ? (
+                        <div style={{
+                            display: 'flex',
+                            width: '100%',
+                            backgroundColor: theme.c.accentSoft,
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            border: `1px solid ${theme.c.borderSoft}`
+                        }}>
+                            {/* Horizontal 4-column Grid Inside Single Container */}
+                            {displayProg.map((val, idx) => {
+                                return (
+                                    <div key={idx} style={{
+                                        flex: 1, // Distribute evenly
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        padding: '8px 2px', // Ultra compact
+                                        borderRight: idx < displayProg.length - 1 ? `1px solid ${theme.c.borderSoft}` : 'none'
+                                    }}>
+                                        <div style={{
+                                            fontSize: '9.5px',
+                                            fontWeight: '800',
+                                            color: theme.c.badge, // Gold `#EAB308`
+                                            textTransform: 'uppercase',
+                                            marginBottom: '2px',
+                                            opacity: 0.9
+                                        }}>
+                                            SEM {idx + 1}
+                                        </div>
+                                        <div style={{
+                                            fontSize: '13px', // slightly bigger text relative to container
+                                            fontWeight: '700', // Bold
+                                            color: theme.c.text, // Black
+                                            textAlign: 'center',
+                                            lineHeight: '1.1'
+                                        }}>
+                                            {val || '-'}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        prescriptionText && (
                             <div style={{
-                                display: 'flex',
-                                width: '100%',
-                                backgroundColor: theme.c.accentSoft, // Pale pink `#FFF5F8`
-                                borderRadius: '8px', // Slightly sharper for inner elements
-                                overflow: 'hidden',
+                                backgroundColor: theme.c.accentSoft,
+                                borderRadius: '6px',
+                                padding: '6px 10px',
+                                fontSize: '12px',
+                                color: theme.c.text,
+                                fontWeight: '700',
+                                display: 'inline-block',
                                 border: `1px solid ${theme.c.borderSoft}`
                             }}>
-                                {/* Horizontal 4-column Grid Inside Single Container */}
-                                {displayProg.map((val, idx) => {
-                                    return (
-                                        <div key={idx} style={{
-                                            flex: 1, // Distribute evenly
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            padding: '8px 2px', // Ultra compact
-                                            borderRight: idx < displayProg.length - 1 ? `1px solid ${theme.c.borderSoft}` : 'none'
-                                        }}>
-                                            <div style={{
-                                                fontSize: '9.5px',
-                                                fontWeight: '800',
-                                                color: theme.c.badge, // Gold `#EAB308`
-                                                textTransform: 'uppercase',
-                                                marginBottom: '2px',
-                                                opacity: 0.9
-                                            }}>
-                                                SEM {idx + 1}
-                                            </div>
-                                            <div style={{
-                                                fontSize: '13px', // slightly bigger text relative to container
-                                                fontWeight: '700', // Bold
-                                                color: theme.c.text, // Black
-                                                textAlign: 'center',
-                                                lineHeight: '1.1'
-                                            }}>
-                                                {val || '-'}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                {prescriptionText}
                             </div>
-                        ) : (
-                            prescriptionText && (
-                                <div style={{
-                                    backgroundColor: theme.c.accentSoft,
-                                    borderRadius: '8px',
-                                    padding: '8px 12px',
-                                    fontSize: '12.5px',
-                                    color: theme.c.text,
-                                    fontWeight: '700',
-                                    display: 'inline-block',
-                                    border: `1px solid ${theme.c.borderSoft}`
-                                }}>
-                                    {prescriptionText}
-                                </div>
-                            )
-                        )}
-                    </div>
-                )}
+                        )
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -539,7 +537,7 @@ const DaySection = ({
 
             {/* Exercises Container (Inner padding) */}
             <div style={{ padding: '0 24px' }}>
-                {/* ═══════════════════ WARMUP (Activación as Pills) ═══════════════════ */}
+                {/* ═══════════════════ WARMUP (Activación as List) ═══════════════════ */}
                 {hasWarmup && (
                     <div style={{
                         marginBottom: '32px',
@@ -548,39 +546,43 @@ const DaySection = ({
                     }}>
                         {warmupBlocks.map((block, i) => {
                             const rounds = block.config?.rounds as string | number | undefined;
+                            const blockName = getBlockDisplayName(block);
+                            const isGenericActivacion = blockName.toLowerCase().includes('calentamiento') || blockName.toLowerCase().includes('activación');
                             const movements = block.content.filter(c => c.trim());
                             return (
-                                <div key={i} style={{ marginBottom: i < warmupBlocks.length - 1 ? '16px' : '0' }}>
+                                <div key={i} style={{ marginBottom: i < warmupBlocks.length - 1 ? '20px' : '0' }}>
                                     <div style={{
-                                        fontSize: '13px',
+                                        fontSize: '14px',
                                         textTransform: 'uppercase',
                                         letterSpacing: '1px',
                                         color: theme.c.badge, // Gold
-                                        marginBottom: '16px',
-                                        fontWeight: '800',
+                                        marginBottom: '12px',
+                                        fontWeight: '900',
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '6px'
                                     }}>
                                         <span>⚡</span>
-                                        <span>ACTIVACIÓN {rounds ? `(${rounds} VUELTAS)` : ''}</span>
+                                        <span>{isGenericActivacion ? 'ACTIVACIÓN' : blockName} {rounds ? `(${rounds} VUELTAS)` : ''}</span>
                                     </div>
                                     <div style={{
                                         display: 'flex',
-                                        flexWrap: 'wrap',
-                                        gap: '12px'
+                                        flexDirection: 'column',
+                                        gap: '8px'
                                     }}>
                                         {movements.map((mov, mIdx) => (
                                             <div key={mIdx} style={{
-                                                backgroundColor: theme.c.accentSoft, // Pale pink `#FFF5F8`
-                                                border: `1px solid ${theme.c.borderSoft}`, // Extremely pale border `#FFE4E6`
-                                                padding: '6px 16px',
-                                                borderRadius: '999px', // Pill shape
-                                                fontSize: '13px',
-                                                color: theme.c.cueText, // Gray `#4B5563`
-                                                fontWeight: '500' // Better readability, not too thin
+                                                fontSize: '13.5px',
+                                                color: theme.c.text,
+                                                fontWeight: '500', // Better readability
+                                                display: 'flex',
+                                                alignItems: 'flex-start',
+                                                gap: '8px',
+                                                borderLeft: `3px solid ${theme.c.accentSoft}`,
+                                                paddingLeft: '10px',
+                                                lineHeight: '1.4'
                                             }}>
-                                                {mov}
+                                                <span>{mov}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -887,7 +889,7 @@ export function ExportPreview({
 
                 {/* Toolbar */}
                 <div className="flex items-center justify-between px-5 py-2.5 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
-                    <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Export Preview v2.5</h2> {/* Added version to verify reload */}
+                    <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Export Preview v2.6</h2> {/* Added version to verify reload */}
                     <div className="flex items-center gap-2.5">
                         <select
                             value={currentThemeId}
@@ -1029,16 +1031,18 @@ export function ExportPreview({
                                             }}>
                                                 SEM {week.weekNumber}
                                             </div>
-                                            <div style={{
-                                                fontSize: '10px',
-                                                color: theme.c.textMuted,
-                                                fontWeight: '600',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis'
-                                            }}>
-                                                {getWeekDateRange(week.weekNumber, weekDateRanges) || `Sem ${idx + 1}`}
-                                            </div>
+                                            {getWeekDateRange(week.weekNumber, weekDateRanges) && (
+                                                <div style={{
+                                                    fontSize: '10px',
+                                                    color: theme.c.textMuted,
+                                                    fontWeight: '600',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
+                                                }}>
+                                                    {getWeekDateRange(week.weekNumber, weekDateRanges)}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -1046,7 +1050,7 @@ export function ExportPreview({
                         </div>
 
                         {/* ═══════════════════ BLOQUE DE SANGRADO (Solo Misión) ═══════════════════ */}
-                        {missionText && (
+                        {missionText && missionText.trim() !== '' && (
                             <div style={{
                                 backgroundColor: theme.c.accentSoft, // Fondo rosado muy claro
                                 padding: '24px 24px', // Sangrado Mobile
@@ -1065,9 +1069,10 @@ export function ExportPreview({
                                         margin: '0 0 10px 0',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '8px'
+                                        gap: '8px',
+                                        textTransform: 'uppercase'
                                     }}>
-                                        <span>🏆</span> MISIÓN: {monthlyStrategy?.focus ? String(monthlyStrategy.focus).toUpperCase() : '¡VAMOS POR TODO!'}
+                                        <span>🏆</span> OBJETIVO DEL MESOCICLO
                                     </h3>
                                     <p style={{
                                         fontSize: '14px',
@@ -1103,7 +1108,7 @@ export function ExportPreview({
                                     marginBottom: '4px',
                                     letterSpacing: '-1px'
                                 }}>
-                                    2&apos; a 3&apos; MIN
+                                    2&apos; a 3&apos;
                                 </div>
                                 <div style={{
                                     fontSize: '10px',
@@ -1130,7 +1135,7 @@ export function ExportPreview({
                                     marginBottom: '4px',
                                     letterSpacing: '-1px'
                                 }}>
-                                    60&quot; a 90 SEG
+                                    60&quot; a 90&quot;
                                 </div>
                                 <div style={{
                                     fontSize: '10px',
