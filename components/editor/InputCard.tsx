@@ -108,6 +108,12 @@ export function InputCard({
                 {headerAction}
             </div>
 
+            {badge && (
+                <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-cv-accent/10 border border-cv-accent/20 rounded-md text-[10px] font-bold text-cv-accent animate-in fade-in zoom-in duration-200 z-20">
+                    {badge}
+                </div>
+            )}
+
             {/* Content Container: Input + Presets */}
             <div className="flex items-center gap-2 z-10 flex-1 mt-1">
                 {/* Input Area */}
@@ -118,7 +124,7 @@ export function InputCard({
                         onChange={handleChange}
                         onBlur={handleBlur}
                         placeholder={placeholder || '-'}
-                        className={`bg-transparent border-none p-0 text-2xl font-bold text-center w-full focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+                        className={`bg-transparent border-none p-0 text-xl font-bold text-center w-full focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
                             ${isInvalid ? 'text-red-600 placeholder:text-red-300' : 'text-cv-text-primary placeholder:text-slate-200 dark:placeholder:text-slate-700'}
                         `}
                     />
