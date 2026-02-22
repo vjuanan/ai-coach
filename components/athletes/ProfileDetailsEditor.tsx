@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import {
     Calendar, Ruler, Weight, Target, MapPin, Clock, Activity,
-    MessageSquare, Phone, Edit2, Save, X, AlertCircle
+    MessageSquare, Phone, Edit2, Save, X, AlertCircle, Trophy
 } from 'lucide-react';
 import { updateAthleteProfile } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
@@ -24,8 +24,33 @@ interface ProfileDetailsProps {
         preferences?: string;
         whatsapp?: string;
         email?: string;
+        benchmarks?: Record<string, any>;
     };
     isEditable?: boolean;
+}
+
+const BENCHMARK_LABELS: Record<string, string> = {
+    snatch: 'Snatch',
+    cnj: 'C&J',
+    backSquat: 'Back Squat',
+    frontSquat: 'Front Squat',
+    deadlift: 'Deadlift',
+    clean: 'Clean',
+    strictPress: 'Strict Press',
+    benchPress: 'Bench Press',
+};
+
+const TIME_BENCHMARK_LABELS: Record<string, string> = {
+    franTime: 'Fran',
+    run1km: '1KM Run',
+    run5km: '5KM Run',
+};
+
+function formatTime(seconds: number | null | undefined): string | null {
+    if (!seconds) return null;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 export function ProfileDetailsEditor({ athleteId, initialData, isEditable = true }: ProfileDetailsProps) {
@@ -37,7 +62,16 @@ export function ProfileDetailsEditor({ athleteId, initialData, isEditable = true
     const handleSave = async () => {
         setIsLoading(true);
         try {
-            await updateAthleteProfile(athleteId, data);
+            // Map benchmarks into the shape expected by updateAthleteProfile
+            const saveData: any = { ...data };
+            if (data.benchmarks) {
+                const { snatch, cnj, backSquat, frontSquat, deadlift, clean, strictPress, benchPress, franTime, run1km, run5km, ...rest } = data.benchmarks;
+                saveData.oneRmStats = { snatch, cnj, backSquat, frontSquat, deadlift, clean, strictPress, benchPress };
+                if (franTime !== undefined) saveData.franTime = franTime;
+                if (run1km !== undefined) saveData.run1km = run1km;
+                if (run5km !== undefined) saveData.run5km = run5km;
+            }
+            await updateAthleteProfile(athleteId, saveData);
             setIsEditing(false);
             router.refresh();
         } catch (error) {
@@ -232,6 +266,80 @@ export function ProfileDetailsEditor({ athleteId, initialData, isEditable = true
                             </InputGroup>
                         )}
                     </div>
+
+                    {/* Benchmarks / RMs - Edit Mode */}
+                    <div className="md:col-span-2 space-y-4 border-t border-cv-border pt-4">
+                        <InputGroup icon={Trophy} label="Marcajes / RMs">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                {Object.entries(BENCHMARK_LABELS).map(([key, label]) => (
+                                    <div key={key}>
+                                        <label className="block text-2xs uppercase font-bold text-cv-text-tertiary mb-1">{label}</label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                className="w-full p-2 bg-cv-bg-tertiary border border-cv-border rounded-lg text-sm text-cv-text-primary focus:border-cv-accent outline-none"
+                                                placeholder="kg"
+                                                value={data.benchmarks?.[key] ?? ''}
+                                                onChange={(e) => handleChange('benchmarks', {
+                                                    ...data.benchmarks,
+                                                    [key]: e.target.value ? parseInt(e.target.value) : null
+                                                })}
+                                            />
+                                            <span className="absolute right-2 top-2.5 text-xs text-cv-text-tertiary">kg</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </InputGroup>
+                        <InputGroup icon={Clock} label="Tiempos">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                {Object.entries(TIME_BENCHMARK_LABELS).map(([key, label]) => {
+                                    const val = data.benchmarks?.[key];
+                                    const mins = val ? Math.floor(val / 60) : '';
+                                    const secs = val ? val % 60 : '';
+                                    return (
+                                        <div key={key}>
+                                            <label className="block text-2xs uppercase font-bold text-cv-text-tertiary mb-1">{label}</label>
+                                            <div className="flex items-center gap-1">
+                                                <input
+                                                    type="number"
+                                                    className="w-full p-2 bg-cv-bg-tertiary border border-cv-border rounded-lg text-sm text-center text-cv-text-primary focus:border-cv-accent outline-none"
+                                                    placeholder="Min"
+                                                    min={0}
+                                                    value={mins}
+                                                    onChange={(e) => {
+                                                        const m = parseInt(e.target.value) || 0;
+                                                        const s = (data.benchmarks?.[key] || 0) % 60;
+                                                        handleChange('benchmarks', {
+                                                            ...data.benchmarks,
+                                                            [key]: e.target.value === '' && secs === '' ? null : m * 60 + s
+                                                        });
+                                                    }}
+                                                />
+                                                <span className="text-cv-text-tertiary font-bold">:</span>
+                                                <input
+                                                    type="number"
+                                                    className="w-full p-2 bg-cv-bg-tertiary border border-cv-border rounded-lg text-sm text-center text-cv-text-primary focus:border-cv-accent outline-none"
+                                                    placeholder="Seg"
+                                                    min={0}
+                                                    max={59}
+                                                    value={secs === 0 && !mins ? '' : secs}
+                                                    onChange={(e) => {
+                                                        const s = parseInt(e.target.value) || 0;
+                                                        const m = Math.floor((data.benchmarks?.[key] || 0) / 60);
+                                                        handleChange('benchmarks', {
+                                                            ...data.benchmarks,
+                                                            [key]: e.target.value === '' && mins === '' ? null : m * 60 + s
+                                                        });
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </InputGroup>
+                    </div>
                 </div>
             </div>
         );
@@ -348,6 +456,43 @@ export function ProfileDetailsEditor({ athleteId, initialData, isEditable = true
                         <p className="text-cv-text-secondary text-sm whitespace-pre-wrap">
                             {Array.isArray(data.equipment) ? data.equipment.join(', ') : data.equipment}
                         </p>
+                    </div>
+                )}
+
+                {/* Benchmarks / RMs - View Mode */}
+                {data.benchmarks && Object.values(data.benchmarks).some(v => v != null) && (
+                    <div className="p-4 rounded-lg bg-cv-bg-tertiary border border-cv-border">
+                        <h4 className="text-sm font-bold text-cv-text-primary mb-3 flex items-center gap-2">
+                            <Trophy size={16} className="text-amber-500" />
+                            Marcajes / RMs
+                        </h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {Object.entries(BENCHMARK_LABELS).map(([key, label]) => {
+                                const val = data.benchmarks?.[key];
+                                if (!val) return null;
+                                return (
+                                    <div key={key} className="text-center p-2 rounded-lg bg-cv-bg-secondary/50">
+                                        <p className="text-2xs uppercase font-bold text-cv-text-tertiary">{label}</p>
+                                        <p className="text-lg font-bold text-cv-text-primary">{val}<span className="text-xs text-cv-text-tertiary ml-0.5">kg</span></p>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        {/* Time benchmarks */}
+                        {Object.entries(TIME_BENCHMARK_LABELS).some(([key]) => data.benchmarks?.[key]) && (
+                            <div className="grid grid-cols-3 gap-3 mt-3 pt-3 border-t border-cv-border">
+                                {Object.entries(TIME_BENCHMARK_LABELS).map(([key, label]) => {
+                                    const formatted = formatTime(data.benchmarks?.[key]);
+                                    if (!formatted) return null;
+                                    return (
+                                        <div key={key} className="text-center p-2 rounded-lg bg-cv-bg-secondary/50">
+                                            <p className="text-2xs uppercase font-bold text-cv-text-tertiary">{label}</p>
+                                            <p className="text-lg font-bold text-cv-text-primary">{formatted}</p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

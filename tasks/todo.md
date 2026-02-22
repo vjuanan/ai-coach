@@ -1,10 +1,7 @@
-# Todo Plan: Eliminar configuraciones no utilizadas del Perfil
+# Tareas
 
-## Plan
-- [x] Eliminar opción de Modo Oscuro de `SettingsForm.tsx`
-- [x] Eliminar información de Conexión de Supabase de `SettingsForm.tsx`
-- [x] Push a GitHub y deploy a producción.
-- [ ] Verificar visualmente con screenshots en `https://aicoach.epnstore.com.ar`.
+- [x] Remover "v1.3" y los iconos de usuarios/notificaciones sobrepuestos del Topbar
+- [x] Verificar la interfaz actualizada del Topbar para confirmar que se ve bien
 
-## Revision
-- (A completar al finalizar)después de verificar)
+## Revisión
+- ✅ Verificado en producción: topbar limpio, sin overlap, sin v1.3.

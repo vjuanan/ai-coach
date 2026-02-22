@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ProfileDetailsEditor } from '@/components/athletes/ProfileDetailsEditor';
+import { GymProfileEditor } from '@/components/settings/GymProfileEditor';
 
 interface SettingsFormProps {
     user: any;
@@ -32,21 +33,41 @@ export function SettingsForm({ user, initialProfile }: SettingsFormProps) {
         try {
             // 1. Update Profile in Database
             // We use spread to include all dynamic fields (athlete stats, etc)
-            const payload = {
+            const payload: any = {
                 full_name: profile.full_name,
                 whatsapp_number: profile.whatsapp_number,
-                birth_date: profile.birth_date,
-                height: profile.height,
-                weight: profile.weight,
-                main_goal: profile.main_goal,
-                training_place: profile.training_place,
-                days_per_week: profile.days_per_week,
-                minutes_per_session: profile.minutes_per_session,
-                experience_level: profile.experience_level,
-                injuries: profile.injuries,
-                training_preferences: profile.training_preferences,
-                equipment_list: profile.equipment_list
             };
+
+            // Add athlete-specific fields
+            if (profile.role === 'athlete') {
+                Object.assign(payload, {
+                    birth_date: profile.birth_date,
+                    height: profile.height,
+                    weight: profile.weight,
+                    main_goal: profile.main_goal,
+                    training_place: profile.training_place,
+                    days_per_week: profile.days_per_week,
+                    minutes_per_session: profile.minutes_per_session,
+                    experience_level: profile.experience_level,
+                    injuries: profile.injuries,
+                    training_preferences: profile.training_preferences,
+                    equipment_list: profile.equipment_list,
+                });
+            }
+
+            // Add gym-specific fields
+            if (profile.role === 'gym') {
+                Object.assign(payload, {
+                    gym_name: profile.gym_name,
+                    gym_type: profile.gym_type,
+                    gym_location: profile.gym_location,
+                    operating_hours: profile.operating_hours,
+                    member_count: profile.member_count,
+                    equipment_available: profile.equipment_available,
+                    contact_phone: profile.contact_phone,
+                    website_url: profile.website_url,
+                });
+            }
 
             const { error } = await supabase
                 .from('profiles')
@@ -231,7 +252,27 @@ export function SettingsForm({ user, initialProfile }: SettingsFormProps) {
                                     injuries: profile.injuries,
                                     preferences: profile.training_preferences,
                                     whatsapp: profile.whatsapp_number,
-                                    email: profile.email
+                                    email: profile.email,
+                                    benchmarks: profile.benchmarks,
+                                }}
+                            />
+                        </div>
+                    )}
+
+                    {/* Gym Specific Fields */}
+                    {profile.role === 'gym' && (
+                        <div className="h-fit">
+                            <GymProfileEditor
+                                userId={user.id}
+                                initialData={{
+                                    gym_name: profile.gym_name,
+                                    gym_type: profile.gym_type,
+                                    gym_location: profile.gym_location,
+                                    operating_hours: profile.operating_hours,
+                                    member_count: profile.member_count,
+                                    equipment_available: profile.equipment_available,
+                                    contact_phone: profile.contact_phone,
+                                    website_url: profile.website_url,
                                 }}
                             />
                         </div>
