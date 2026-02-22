@@ -91,7 +91,7 @@ export function InputCard({
     };
 
     return (
-        <div className={`rounded-xl border p-2.5 flex flex-col gap-2 shadow-sm transition-all group relative overflow-hidden
+        <div className={`rounded-xl border p-2 flex flex-col gap-1.5 shadow-sm transition-all group relative overflow-hidden
             ${isInvalid
                 ? 'bg-red-50/50 dark:bg-red-900/10 border-red-500 shadow-red-500/20'
                 : 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700 hover:shadow-md'
@@ -108,46 +108,43 @@ export function InputCard({
                 {headerAction}
             </div>
 
-            {/* Input Area */}
-            <div className="flex items-baseline justify-center gap-1 my-1 z-10">
-                <input
-                    type="text" // Always use text to perfectly control rendering and block native behavior
-                    value={localValue}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder={placeholder || '-'}
-                    className={`bg-transparent border-none p-0 text-2xl font-bold text-center w-full focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
-                        ${isInvalid ? 'text-red-600 placeholder:text-red-300' : 'text-cv-text-primary placeholder:text-slate-200 dark:placeholder:text-slate-700'}
-                    `}
-                />
-                {isDistance && <span className="text-sm font-medium text-cv-text-tertiary">meters</span>}
-                {label === '% 1RM' && <span className="text-sm font-medium text-cv-text-tertiary">%</span>}
-            </div>
-
-            {badge && (
-                <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-cv-accent/10 border border-cv-accent/20 rounded-md text-[10px] font-bold text-cv-accent animate-in fade-in zoom-in duration-200 z-20">
-                    {badge}
+            {/* Content Container: Input + Presets */}
+            <div className="flex items-center gap-2 z-10 flex-1 mt-1">
+                {/* Input Area */}
+                <div className="flex items-baseline justify-center gap-1 flex-1 min-w-0">
+                    <input
+                        type="text"
+                        value={localValue}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder={placeholder || '-'}
+                        className={`bg-transparent border-none p-0 text-2xl font-bold text-center w-full focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+                            ${isInvalid ? 'text-red-600 placeholder:text-red-300' : 'text-cv-text-primary placeholder:text-slate-200 dark:placeholder:text-slate-700'}
+                        `}
+                    />
+                    {isDistance && <span className="text-sm font-medium text-cv-text-tertiary">meters</span>}
+                    {label === '% 1RM' && <span className="text-sm font-medium text-cv-text-tertiary">%</span>}
                 </div>
-            )}
 
-            {/* Presets */}
-            <div className="flex items-center justify-center gap-1 z-10 mt-auto">
-                <div className="flex gap-1 flex-wrap justify-center w-full">
-                    {presets.map(preset => (
-                        <button
-                            key={preset}
-                            onClick={() => onChange(preset)}
-                            className={`
-                                flex-shrink-0 min-w-[36px] px-2 py-1 rounded-md text-[10px] font-semibold transition-all border whitespace-nowrap
-                                ${value == preset
-                                    ? 'bg-cv-accent text-white border-cv-accent'
-                                    : 'bg-slate-50 dark:bg-slate-800 text-cv-text-secondary border-slate-100 dark:border-slate-700 hover:border-cv-accent/30'}
-                            `}
-                        >
-                            {preset}
-                        </button>
-                    ))}
-                </div>
+                {/* Presets (On the Side) */}
+                {presets && presets.length > 0 && (
+                    <div className="flex-shrink-0 grid grid-cols-2 gap-1 border-l border-slate-100 dark:border-slate-800 pl-2">
+                        {presets.map(preset => (
+                            <button
+                                key={preset}
+                                onClick={() => onChange(preset)}
+                                className={`
+                                    flex items-center justify-center min-w-[32px] h-[24px] px-1 rounded-md text-[10px] font-semibold transition-all border
+                                    ${value == preset
+                                        ? 'bg-cv-accent text-white border-cv-accent'
+                                        : 'bg-slate-50 dark:bg-slate-800 text-cv-text-secondary border-slate-100 dark:border-slate-700 hover:border-cv-accent/30'}
+                                `}
+                            >
+                                {preset}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Background Decoration */}

@@ -210,7 +210,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
         >
             {/* ... Header ... */}
             {/* Header: Exercise Name & Actions */}
-            <div className="p-3 flex gap-3 items-center border-b border-slate-100 dark:border-slate-800/50 rounded-t-xl">
+            <div className="p-2.5 flex gap-3 items-center border-b border-slate-100 dark:border-slate-800/50 rounded-t-xl">
                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-500">
                     {index + 1}
                 </div>
@@ -237,9 +237,9 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
 
             {/* Inputs Grid - Only if Valid */}
             {isValid && (
-                <div className="p-3 bg-white dark:bg-cv-bg-secondary rounded-b-xl flex flex-col lg:flex-row gap-3">
+                <div className="p-2.5 bg-white dark:bg-cv-bg-secondary rounded-b-xl flex flex-col lg:flex-row gap-2.5">
                     {/* Metrics Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 flex-1">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 flex-1">
                         {/* 1. Series (Sets) - CONDITIONALLY SHOWN */}
                         {showSets && (
                             <InputCard
