@@ -11,6 +11,8 @@ import {
     Users, Globe, Phone, Settings, LogOut, Trophy
 } from 'lucide-react';
 import { refreshUserRoleReference } from '../auth/actions';
+import { LocationAutocomplete } from '@/components/shared/LocationAutocomplete';
+import { OperatingHoursModal } from '@/components/shared/OperatingHoursModal';
 
 // --- Step Components ---
 
@@ -35,9 +37,9 @@ const Step0RoleSelection = ({ onSelect, isLoading }: { onSelect: (role: 'coach' 
             <button
                 disabled={isLoading}
                 onClick={() => onSelect('gym')}
-                className="group p-8 border-2 border-gray-100 rounded-3xl hover:border-purple-500 hover:bg-purple-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50 h-full shadow-sm hover:shadow-md"
+                className="group p-8 border-2 border-gray-100 rounded-3xl hover:border-emerald-500 hover:bg-emerald-50 transition-all text-left flex flex-col gap-4 disabled:opacity-50 h-full shadow-sm hover:shadow-md"
             >
-                <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform shadow-inner">
+                <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform shadow-inner">
                     <Building2 size={28} />
                 </div>
                 <div>
@@ -573,7 +575,7 @@ export default function OnboardingPage() {
                             <InputLabel icon={Building2} label="Nombre de tu Gimnasio / Box" />
                             <input
                                 type="text"
-                                className="w-full p-4 text-xl border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                                className="w-full p-4 text-xl border-2 border-gray-200 rounded-xl focus:border-emerald-500 outline-none"
                                 placeholder="CrossFit Buenos Aires"
                                 value={gymData.gym_name}
                                 onChange={(e) => updateGymField('gym_name', e.target.value)}
@@ -590,7 +592,7 @@ export default function OnboardingPage() {
                                     <button
                                         key={opt.id}
                                         onClick={() => updateGymField('gym_type', opt.id)}
-                                        className={`p-4 rounded-xl text-left border-2 transition-all ${gymData.gym_type === opt.id ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-100 hover:bg-gray-50'}`}
+                                        className={`p-4 rounded-xl text-left border-2 transition-all ${gymData.gym_type === opt.id ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-100 hover:bg-gray-50'}`}
                                     >
                                         <span className="font-medium">{opt.label}</span>
                                     </button>
@@ -606,7 +608,7 @@ export default function OnboardingPage() {
                             <InputLabel icon={MapPin} label="Ubicación" />
                             <input
                                 type="text"
-                                className="w-full p-4 text-xl border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                                className="w-full p-4 text-xl border-2 border-gray-200 rounded-xl focus:border-emerald-500 outline-none"
                                 placeholder="Buenos Aires, Argentina"
                                 value={gymData.gym_location}
                                 onChange={(e) => updateGymField('gym_location', e.target.value)}
@@ -616,7 +618,7 @@ export default function OnboardingPage() {
                             <InputLabel icon={Clock} label="Horarios de Operación" />
                             <input
                                 type="text"
-                                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-emerald-500 outline-none"
                                 placeholder="Lun-Vie 6:00-22:00, Sáb 8:00-14:00"
                                 value={gymData.operating_hours}
                                 onChange={(e) => updateGymField('operating_hours', e.target.value)}
@@ -631,7 +633,7 @@ export default function OnboardingPage() {
                         <div className="flex justify-center items-center gap-8 py-8">
                             <button onClick={() => updateGymField('member_count', Math.max(1, gymData.member_count - 10))} className="w-14 h-14 rounded-full bg-gray-100 hover:bg-gray-200 text-2xl font-bold">-</button>
                             <div className="text-center">
-                                <span className="text-5xl font-bold text-purple-600">{gymData.member_count}</span>
+                                <span className="text-5xl font-bold text-emerald-600">{gymData.member_count}</span>
                                 <span className="text-gray-400 ml-2 text-xl">miembros</span>
                             </div>
                             <button onClick={() => updateGymField('member_count', gymData.member_count + 10)} className="w-14 h-14 rounded-full bg-gray-100 hover:bg-gray-200 text-2xl font-bold">+</button>
@@ -658,7 +660,7 @@ export default function OnboardingPage() {
                                 <label
                                     key={item.key}
                                     className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${gymData.equipment_available[item.key as keyof typeof gymData.equipment_available]
-                                        ? 'border-purple-500 bg-purple-50'
+                                        ? 'border-emerald-500 bg-emerald-50'
                                         : 'border-gray-100 hover:bg-gray-50'
                                         }`}
                                 >
@@ -669,7 +671,7 @@ export default function OnboardingPage() {
                                             ...gymData.equipment_available,
                                             [item.key]: e.target.checked
                                         })}
-                                        className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                                        className="w-5 h-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                                     />
                                     <span className="font-medium">{item.label}</span>
                                 </label>
@@ -684,7 +686,7 @@ export default function OnboardingPage() {
                             <InputLabel icon={Phone} label="Teléfono de Contacto" />
                             <input
                                 type="tel"
-                                className="w-full p-4 text-xl border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                                className="w-full p-4 text-xl border-2 border-gray-200 rounded-xl focus:border-emerald-500 outline-none"
                                 placeholder="+54 9 11 1234 5678"
                                 value={gymData.contact_phone}
                                 onChange={(e) => updateGymField('contact_phone', e.target.value)}
@@ -694,7 +696,7 @@ export default function OnboardingPage() {
                             <InputLabel icon={Globe} label="Sitio Web (opcional)" />
                             <input
                                 type="url"
-                                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-emerald-500 outline-none"
                                 placeholder="https://www.migym.com"
                                 value={gymData.website_url}
                                 onChange={(e) => updateGymField('website_url', e.target.value)}
@@ -706,8 +708,8 @@ export default function OnboardingPage() {
                 return (
                     <div className="text-center">
                         <InputLabel icon={Camera} label="Logo del Gimnasio" />
-                        <div className="w-40 h-40 bg-purple-50 rounded-2xl mx-auto mb-6 flex items-center justify-center border-4 border-dashed border-purple-200">
-                            <Upload className="text-purple-400 w-10 h-10" />
+                        <div className="w-40 h-40 bg-emerald-50 rounded-2xl mx-auto mb-6 flex items-center justify-center border-4 border-dashed border-emerald-200">
+                            <Upload className="text-emerald-400 w-10 h-10" />
                         </div>
                         <p className="text-gray-500 mb-6">Sube tu logo (opcional)</p>
                     </div>
@@ -740,7 +742,7 @@ export default function OnboardingPage() {
                         {/* Progress Bar */}
                         <div className="w-full bg-gray-200 rounded-full h-2">
                             <div
-                                className={`h-2 rounded-full transition-all duration-500 ease-out ${isGym ? 'bg-purple-600' : 'bg-blue-600'}`}
+                                className={`h-2 rounded-full transition-all duration-500 ease-out ${isGym ? 'bg-emerald-600' : 'bg-blue-600'}`}
                                 style={{ width: `${((step - 1) / (totalSteps - 1)) * 100}%` }}
                             ></div>
                         </div>
@@ -766,7 +768,7 @@ export default function OnboardingPage() {
                                     onClick={isGym ? nextGymStep : nextAthleteStep}
                                     disabled={isLoading || (isGym && step === 1 && !gymData.gym_name.trim())}
                                     className={`flex items-center gap-2 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg active:scale-95 disabled:opacity-50 ${isGym
-                                        ? 'bg-purple-600 hover:bg-purple-700 shadow-purple-600/20'
+                                        ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'
                                         : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'
                                         }`}
                                 >
