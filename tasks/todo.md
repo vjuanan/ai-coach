@@ -1,10 +1,11 @@
-# Expandir Listado de Equipamiento Completo
+# Rediseño de Colores del Sign-Up / Onboarding
 
 ## Tareas
+- [x] Reemplazar colores purple por emerald en `app/onboarding/page.tsx` (gym flow)
+- [x] Reemplazar colores purple en Step0 (role selection)  
+- [x] Hacer push y verificar en producción con screenshots
 
-- [x] Analizar archivos actuales (`onboarding/page.tsx`, `GymProfileEditor.tsx`)
-- [x] Investigar listado completo de equipamiento CrossFit
-- [/] Crear constantes compartidas con equipamiento organizado por categorías
-- [/] Actualizar `onboarding/page.tsx` — paso 4 (Equipamiento)
-- [/] Actualizar `GymProfileEditor.tsx` — sección Equipamiento en Settings
-- [ ] Push y verificar en producción con screenshots
+## Resultado
+- Commit `148d97a` — 15 ocurrencias de `purple` → `emerald` en `app/onboarding/page.tsx`
+- `app/auth/signup/page.tsx` no necesitó cambios (ya usaba green/emerald)
+- Zero referencias a `purple` confirmadas en ambos archivos

@@ -1411,6 +1411,119 @@ export async function getProfiles() {
     );
 }
 
+export async function updateAdminUserDetails(input: {
+    userId: string;
+    source: 'auth' | 'client_only';
+    fullName: string;
+    email: string;
+}) {
+    const supabase = createServerClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('No autenticado');
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        throw new Error('Forbidden: Admins only');
+    }
+
+    const normalizedFullName = input.fullName?.trim();
+    const normalizedEmail = input.email?.trim().toLowerCase();
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
+
+    if (!normalizedFullName) {
+        throw new Error('El nombre es obligatorio');
+    }
+
+    if (!normalizedEmail || !isValidEmail) {
+        throw new Error('El email no es válido');
+    }
+
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        throw new Error('Server Config Error: Missing Admin Key');
+    }
+
+    const adminSupabase = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
+    if (input.source === 'client_only') {
+        const { error: clientError } = await adminSupabase
+            .from('clients')
+            .update({
+                name: normalizedFullName,
+                email: normalizedEmail
+            })
+            .eq('id', input.userId);
+
+        if (clientError) {
+            throw new Error(clientError.message);
+        }
+    } else {
+        const { data: targetUser, error: targetUserError } = await adminSupabase.auth.admin.getUserById(input.userId);
+        if (targetUserError || !targetUser.user) {
+            throw new Error(targetUserError?.message || 'Usuario no encontrado');
+        }
+
+        const currentMetadata = targetUser.user.user_metadata || {};
+        const { error: authUpdateError } = await adminSupabase.auth.admin.updateUserById(input.userId, {
+            email: normalizedEmail,
+            email_confirm: true,
+            user_metadata: {
+                ...currentMetadata,
+                full_name: normalizedFullName
+            }
+        });
+
+        if (authUpdateError) {
+            const normalizedError = authUpdateError.message?.toLowerCase() || '';
+            if (
+                normalizedError.includes('already') ||
+                normalizedError.includes('already registered') ||
+                normalizedError.includes('already been registered') ||
+                normalizedError.includes('duplicate')
+            ) {
+                throw new Error('El email ya está en uso por otro usuario');
+            }
+            throw new Error(authUpdateError.message);
+        }
+
+        const { error: profileUpdateError } = await adminSupabase
+            .from('profiles')
+            .update({
+                full_name: normalizedFullName,
+                email: normalizedEmail,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', input.userId);
+
+        if (profileUpdateError) {
+            throw new Error(profileUpdateError.message);
+        }
+
+        const { error: clientsSyncError } = await adminSupabase
+            .from('clients')
+            .update({
+                name: normalizedFullName,
+                email: normalizedEmail
+            })
+            .eq('user_id', input.userId);
+
+        if (clientsSyncError) {
+            throw new Error(clientsSyncError.message);
+        }
+    }
+
+    revalidatePath('/admin/users');
+    return { success: true, message: 'Usuario actualizado correctamente' };
+}
+
 export async function updateUserRole(userId: string, newRole: 'coach' | 'athlete' | 'admin') {
     const supabase = createServerClient();
 

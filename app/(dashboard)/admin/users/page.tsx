@@ -3,20 +3,25 @@
 
 import { Topbar } from '@/components/app-shell/Topbar';
 
-import { getProfiles, updateUserRole, resetUserPassword, createUser, deleteUser, deleteClient } from '@/lib/actions';
+import {
+    getProfiles,
+    updateUserRole,
+    resetUserPassword,
+    createUser,
+    deleteUser,
+    deleteClient,
+    updateAdminUserDetails
+} from '@/lib/actions';
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
     Plus,
-    Users,
-    Shield,
     Lock,
     Loader2,
     CheckCircle2,
     AlertCircle,
-    MoreVertical,
-    UserPlus,
+    Pencil,
     X,
     ChevronDown,
     Trash2,
@@ -54,6 +59,15 @@ export default function AdminUsersPage() {
         fullName: '',
         password: '',
         role: 'athlete' as 'coach' | 'athlete' | 'admin'
+    });
+
+    // Edit Modal State
+    const [editingUser, setEditingUser] = useState<Profile | null>(null);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isSavingEdit, setIsSavingEdit] = useState(false);
+    const [editForm, setEditForm] = useState({
+        fullName: '',
+        email: ''
     });
 
     useEffect(() => {
@@ -219,6 +233,48 @@ export default function AdminUsersPage() {
         }
     }
 
+    function openEditModal(user: Profile) {
+        setEditingUser(user);
+        setEditForm({
+            fullName: user.full_name || '',
+            email: user.email || ''
+        });
+        setIsEditOpen(true);
+    }
+
+    function closeEditModal(force = false) {
+        if (isSavingEdit && !force) return;
+        setIsEditOpen(false);
+        setEditingUser(null);
+        setEditForm({ fullName: '', email: '' });
+    }
+
+    async function handleEditUser(e: React.FormEvent) {
+        e.preventDefault();
+        if (!editingUser) return;
+
+        setIsSavingEdit(true);
+        setMessage(null);
+
+        try {
+            const source = editingUser.source === 'client_only' ? 'client_only' : 'auth';
+            const res = await updateAdminUserDetails({
+                userId: editingUser.id,
+                source,
+                fullName: editForm.fullName,
+                email: editForm.email
+            });
+
+            setMessage({ text: res.message || 'Usuario actualizado correctamente', type: 'success' });
+            closeEditModal(true);
+            loadProfiles();
+        } catch (err: any) {
+            setMessage({ text: err.message || 'Error al actualizar usuario', type: 'error' });
+        } finally {
+            setIsSavingEdit(false);
+        }
+    }
+
     return (
 
         <>
@@ -339,32 +395,42 @@ export default function AdminUsersPage() {
                                                 </div>
                                             </td>
                                             <td className="p-4 text-right">
-                                                <button
-                                                    onClick={() => handlePasswordReset(user.id)}
-                                                    disabled={updatingId === user.id || user.source === 'client_only'}
-                                                    className={`p-2 rounded-lg transition-colors ${user.source === 'client_only'
-                                                        ? 'text-gray-300 cursor-not-allowed'
-                                                        : 'hover:bg-cv-bg-elevated text-cv-text-tertiary hover:text-cv-text-primary'}`}
-                                                    title={user.source === 'client_only' ? 'Sin cuenta de acceso (User Manual)' : 'Resetear Contraseña'}
-                                                >
-                                                    {updatingId === user.id ? (
-                                                        <Loader2 size={18} className="animate-spin" />
-                                                    ) : (
-                                                        <Lock size={18} />
-                                                    )}
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteUser(user.id)}
-                                                    disabled={updatingId === user.id}
-                                                    className="p-2 rounded-lg transition-colors hover:bg-red-500/10 text-cv-text-tertiary hover:text-red-500"
-                                                    title="Eliminar Usuario"
-                                                >
-                                                    {updatingId === user.id ? (
-                                                        <Loader2 size={18} className="animate-spin" />
-                                                    ) : (
-                                                        <Trash2 size={18} />
-                                                    )}
-                                                </button>
+                                                <div className="flex justify-end gap-1">
+                                                    <button
+                                                        onClick={() => openEditModal(user)}
+                                                        disabled={updatingId === user.id}
+                                                        className="p-2 rounded-lg transition-colors hover:bg-cv-bg-elevated text-cv-text-tertiary hover:text-cv-text-primary"
+                                                        title="Editar Usuario"
+                                                    >
+                                                        <Pencil size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handlePasswordReset(user.id)}
+                                                        disabled={updatingId === user.id || user.source === 'client_only'}
+                                                        className={`p-2 rounded-lg transition-colors ${user.source === 'client_only'
+                                                            ? 'text-gray-300 cursor-not-allowed'
+                                                            : 'hover:bg-cv-bg-elevated text-cv-text-tertiary hover:text-cv-text-primary'}`}
+                                                        title={user.source === 'client_only' ? 'Sin cuenta de acceso (User Manual)' : 'Resetear Contraseña'}
+                                                    >
+                                                        {updatingId === user.id ? (
+                                                            <Loader2 size={18} className="animate-spin" />
+                                                        ) : (
+                                                            <Lock size={18} />
+                                                        )}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteUser(user.id)}
+                                                        disabled={updatingId === user.id}
+                                                        className="p-2 rounded-lg transition-colors hover:bg-red-500/10 text-cv-text-tertiary hover:text-red-500"
+                                                        title="Eliminar Usuario"
+                                                    >
+                                                        {updatingId === user.id ? (
+                                                            <Loader2 size={18} className="animate-spin" />
+                                                        ) : (
+                                                            <Trash2 size={18} />
+                                                        )}
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -378,6 +444,65 @@ export default function AdminUsersPage() {
                         </div>
                     )}
                 </div>
+
+                {/* Edit User Modal */}
+                {isEditOpen && editingUser && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div className="bg-cv-bg-secondary rounded-xl shadow-xl w-full max-w-md border border-cv-border-subtle animate-in fade-in zoom-in-95 duration-200">
+                            <div className="p-6 border-b border-cv-border-subtle flex justify-between items-center">
+                                <h2 className="text-xl font-bold text-cv-text-primary">Editar Usuario</h2>
+                                <button onClick={() => closeEditModal()} className="text-cv-text-tertiary hover:text-cv-text-primary">
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <form onSubmit={handleEditUser} className="p-6 space-y-4">
+                                <div className="text-xs text-cv-text-tertiary">
+                                    Fuente:{' '}
+                                    <span className="font-semibold">
+                                        {editingUser.source === 'client_only' ? 'Manual' : 'Cuenta'}
+                                    </span>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-sm font-medium text-cv-text-secondary">Nombre Completo</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full p-2 rounded-lg bg-cv-bg-tertiary border border-cv-border-subtle text-cv-text-primary focus:outline-none focus:border-cv-accent"
+                                        value={editForm.fullName}
+                                        onChange={e => setEditForm({ ...editForm, fullName: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-sm font-medium text-cv-text-secondary">Email</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        className="w-full p-2 rounded-lg bg-cv-bg-tertiary border border-cv-border-subtle text-cv-text-primary focus:outline-none focus:border-cv-accent"
+                                        value={editForm.email}
+                                        onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                                    />
+                                </div>
+                                <div className="pt-4 flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => closeEditModal()}
+                                        className="cv-btn-secondary flex-1 justify-center"
+                                        disabled={isSavingEdit}
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSavingEdit}
+                                        className="cv-btn-primary flex-1 justify-center"
+                                    >
+                                        {isSavingEdit ? <Loader2 className="animate-spin" /> : 'Guardar Cambios'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
 
                 {/* Create User Modal */}
                 {isCreateOpen && (
