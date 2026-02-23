@@ -14,11 +14,242 @@ type Client = Database['public']['Tables']['clients']['Row'];
 // USER ROLE - For Sidebar SSR
 // ==========================================
 
-import { cookies } from 'next/headers';
+export type UserRole = 'admin' | 'coach' | 'athlete' | 'gym';
 
-export async function getUserRole(): Promise<'admin' | 'coach' | 'athlete'> {
-    const cookieStore = cookies();
+export interface AthleteAccessContext {
+    athleteClientId: string | null;
+    coach: {
+        profileId: string;
+        fullName: string | null;
+        email: string | null;
+        avatarUrl: string | null;
+        businessName: string | null;
+    } | null;
+    directGym: {
+        clientId: string;
+        name: string;
+        details: any;
+        email: string | null;
+        phone: string | null;
+    } | null;
+    coachGym: {
+        clientId: string;
+        name: string;
+        details: any;
+        email: string | null;
+        phone: string | null;
+    } | null;
+    effectiveGym: {
+        clientId: string;
+        name: string;
+        details: any;
+        email: string | null;
+        phone: string | null;
+    } | null;
+    visibility: {
+        showMyCoach: boolean;
+        showMyGym: boolean;
+        disableMyGymCard: boolean;
+        hideBothCards: boolean;
+        reason?: string;
+    };
+}
 
+export interface AthleteVisibleProgram {
+    id: string;
+    name: string;
+    description: string | null;
+    status: 'draft' | 'active' | 'archived';
+    updated_at: string | null;
+    source: 'athlete_direct' | 'gym_effective';
+    sourceLabel: 'Asignado a ti' | 'Asignado por tu gimnasio';
+    coachName: string | null;
+    clientName: string | null;
+}
+
+const EMPTY_ATHLETE_ACCESS_CONTEXT: AthleteAccessContext = {
+    athleteClientId: null,
+    coach: null,
+    directGym: null,
+    coachGym: null,
+    effectiveGym: null,
+    visibility: {
+        showMyCoach: false,
+        showMyGym: false,
+        disableMyGymCard: false,
+        hideBothCards: true,
+        reason: 'No se encontró un perfil de atleta válido.'
+    }
+};
+
+function createAdminDbClientOrFallback(fallbackClient: any) {
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return fallbackClient;
+    return createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+}
+
+async function resolveAthleteAccessContextInternal(userId: string, dbClient: any): Promise<AthleteAccessContext> {
+    const { data: athleteClient, error: athleteError } = await dbClient
+        .from('clients')
+        .select('id, coach_id, gym_id')
+        .eq('user_id', userId)
+        .eq('type', 'athlete')
+        .maybeSingle();
+
+    if (athleteError || !athleteClient) {
+        return {
+            ...EMPTY_ATHLETE_ACCESS_CONTEXT,
+            visibility: {
+                ...EMPTY_ATHLETE_ACCESS_CONTEXT.visibility,
+                reason: 'No existe cliente atleta asociado a este usuario.'
+            }
+        };
+    }
+
+    const athleteClientId = athleteClient.id as string;
+    const rawCoachId = athleteClient.coach_id as string | null;
+    const rawDirectGymId = athleteClient.gym_id as string | null;
+
+    let coach: AthleteAccessContext['coach'] = null;
+    let coachProfileId: string | null = null;
+    let legacyCoachRowId: string | null = null;
+
+    if (rawCoachId) {
+        const { data: coachProfile } = await dbClient
+            .from('profiles')
+            .select('id, full_name, email, avatar_url')
+            .eq('id', rawCoachId)
+            .maybeSingle();
+
+        if (coachProfile) {
+            coachProfileId = coachProfile.id;
+            coach = {
+                profileId: coachProfile.id,
+                fullName: coachProfile.full_name,
+                email: coachProfile.email,
+                avatarUrl: coachProfile.avatar_url,
+                businessName: null
+            };
+        } else {
+            const { data: legacyCoach } = await dbClient
+                .from('coaches')
+                .select('id, user_id, full_name, business_name')
+                .eq('id', rawCoachId)
+                .maybeSingle();
+
+            if (legacyCoach?.user_id) {
+                coachProfileId = legacyCoach.user_id;
+                legacyCoachRowId = legacyCoach.id;
+                const { data: mappedProfile } = await dbClient
+                    .from('profiles')
+                    .select('id, full_name, email, avatar_url')
+                    .eq('id', legacyCoach.user_id)
+                    .maybeSingle();
+
+                coach = {
+                    profileId: legacyCoach.user_id,
+                    fullName: mappedProfile?.full_name || legacyCoach.full_name || null,
+                    email: mappedProfile?.email || null,
+                    avatarUrl: mappedProfile?.avatar_url || null,
+                    businessName: legacyCoach.business_name || null
+                };
+            }
+        }
+
+        if (coachProfileId) {
+            const { data: coachBusiness } = await dbClient
+                .from('coaches')
+                .select('business_name')
+                .eq('user_id', coachProfileId)
+                .maybeSingle();
+
+            if (coach && coachBusiness?.business_name) {
+                coach.businessName = coachBusiness.business_name;
+            }
+        }
+    }
+
+    let directGym: AthleteAccessContext['directGym'] = null;
+    if (rawDirectGymId) {
+        const { data: directGymRow } = await dbClient
+            .from('clients')
+            .select('id, name, details, email, phone, type')
+            .eq('id', rawDirectGymId)
+            .maybeSingle();
+
+        if (directGymRow) {
+            directGym = {
+                clientId: directGymRow.id,
+                name: directGymRow.name,
+                details: directGymRow.details,
+                email: directGymRow.email,
+                phone: directGymRow.phone
+            };
+        }
+    }
+
+    let coachGym: AthleteAccessContext['coachGym'] = null;
+    if (coachProfileId || legacyCoachRowId) {
+        let coachGymQuery = dbClient
+            .from('clients')
+            .select('id, name, details, email, phone')
+            .eq('type', 'gym')
+            .limit(1)
+            .order('updated_at', { ascending: false });
+
+        if (coachProfileId && legacyCoachRowId) {
+            coachGymQuery = coachGymQuery.or(`coach_id.eq.${coachProfileId},coach_id.eq.${legacyCoachRowId}`);
+        } else if (coachProfileId) {
+            coachGymQuery = coachGymQuery.eq('coach_id', coachProfileId);
+        } else {
+            coachGymQuery = coachGymQuery.eq('coach_id', legacyCoachRowId!);
+        }
+
+        const { data: coachGymRows } = await coachGymQuery;
+        const coachGymRow = coachGymRows?.[0];
+
+        if (coachGymRow) {
+            coachGym = {
+                clientId: coachGymRow.id,
+                name: coachGymRow.name,
+                details: coachGymRow.details,
+                email: coachGymRow.email,
+                phone: coachGymRow.phone
+            };
+        }
+    }
+
+    // Conflict policy: coach gym has priority over direct gym.
+    const effectiveGym = coachGym || directGym;
+
+    const showMyCoach = !!coach;
+    const showMyGym = !!effectiveGym;
+    const disableMyGymCard = !!coach && !effectiveGym;
+    const hideBothCards = !showMyCoach && !showMyGym && !disableMyGymCard;
+
+    let reason: string | undefined;
+    if (hideBothCards) reason = 'No tienes coach ni gimnasio asignado.';
+    if (disableMyGymCard) reason = 'Tienes coach asignado, pero no hay gimnasio disponible.';
+
+    return {
+        athleteClientId,
+        coach,
+        directGym,
+        coachGym,
+        effectiveGym,
+        visibility: {
+            showMyCoach,
+            showMyGym,
+            disableMyGymCard,
+            hideBothCards,
+            reason
+        }
+    };
+}
+
+export async function getUserRole(): Promise<UserRole> {
     // FAST PATH: Read cached role from middleware cookie (no DB call!)
     // FAST PATH: Read cached role from middleware cookie (no DB call!)
     // DISABLE CACHE TEMPORARILY - DEBUGGING SIDEBAR ISSUE
@@ -44,7 +275,135 @@ export async function getUserRole(): Promise<'admin' | 'coach' | 'athlete'> {
         .eq('id', user.id)
         .single();
 
-    return (profile?.role as 'admin' | 'coach' | 'athlete') || 'coach';
+    return (profile?.role as UserRole) || 'coach';
+}
+
+export async function getAthleteAccessContext(): Promise<AthleteAccessContext> {
+    const supabase = createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return EMPTY_ATHLETE_ACCESS_CONTEXT;
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+
+    if (profile?.role !== 'athlete') {
+        return {
+            ...EMPTY_ATHLETE_ACCESS_CONTEXT,
+            visibility: {
+                ...EMPTY_ATHLETE_ACCESS_CONTEXT.visibility,
+                reason: 'El usuario autenticado no tiene rol atleta.'
+            }
+        };
+    }
+
+    const dbClient = createAdminDbClientOrFallback(supabase);
+    return resolveAthleteAccessContextInternal(user.id, dbClient);
+}
+
+export async function getAthleteVisiblePrograms(): Promise<AthleteVisibleProgram[]> {
+    const supabase = createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const context = await getAthleteAccessContext();
+    if (!context.athleteClientId) return [];
+
+    const allowedClientIds = [
+        context.athleteClientId,
+        context.effectiveGym?.clientId
+    ].filter((id): id is string => !!id);
+
+    if (allowedClientIds.length === 0) return [];
+
+    const dbClient = createAdminDbClientOrFallback(supabase);
+
+    const { data, error } = await dbClient
+        .from('programs')
+        .select('id, name, description, status, updated_at, client_id, client:client_id(name), coach:coaches(full_name)')
+        .eq('status', 'active')
+        .in('client_id', allowedClientIds)
+        .order('updated_at', { ascending: false });
+
+    if (error || !data) {
+        console.error('getAthleteVisiblePrograms error:', error);
+        return [];
+    }
+
+    return data.map((program: any) => {
+        const source = program.client_id === context.athleteClientId ? 'athlete_direct' : 'gym_effective';
+        return {
+            id: program.id,
+            name: program.name,
+            description: program.description,
+            status: program.status,
+            updated_at: program.updated_at,
+            source,
+            sourceLabel: source === 'athlete_direct' ? 'Asignado a ti' : 'Asignado por tu gimnasio',
+            coachName: Array.isArray(program.coach) ? program.coach[0]?.full_name || null : program.coach?.full_name || null,
+            clientName: Array.isArray(program.client) ? program.client[0]?.name || null : program.client?.name || null,
+        };
+    });
+}
+
+export async function getAthleteProgramForView(programId: string) {
+    const supabase = createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const context = await getAthleteAccessContext();
+    if (!context.athleteClientId) return null;
+
+    const allowedClientIds = [
+        context.athleteClientId,
+        context.effectiveGym?.clientId
+    ].filter((id): id is string => !!id);
+
+    const dbClient = createAdminDbClientOrFallback(supabase);
+
+    const { data: program, error: programError } = await dbClient
+        .from('programs')
+        .select('*, client:clients(*), coach:coaches(full_name)')
+        .eq('id', programId)
+        .maybeSingle();
+
+    if (programError || !program) return null;
+    if (!program.client_id || !allowedClientIds.includes(program.client_id)) return null;
+    if (program.status !== 'active') return null;
+
+    const { data: mesocycles, error: mesoError } = await dbClient
+        .from('mesocycles')
+        .select(`
+      *,
+      days (
+        *,
+        workout_blocks (*)
+      )
+    `)
+        .eq('program_id', programId)
+        .order('week_number', { ascending: true });
+
+    if (mesoError) {
+        console.error('getAthleteProgramForView mesocycles error:', mesoError);
+        return { program, mesocycles: [] };
+    }
+
+    const sortedMesocycles = (mesocycles || []).map((meso: any) => ({
+        ...meso,
+        days: (meso.days || [])
+            .sort((a: any, b: any) => a.day_number - b.day_number)
+            .map((day: any) => ({
+                ...day,
+                blocks: day.workout_blocks
+                    ? day.workout_blocks.sort((a: any, b: any) => a.order_index - b.order_index)
+                    : []
+            }))
+    }));
+
+    return { program, mesocycles: sortedMesocycles };
 }
 
 // ==========================================
@@ -84,7 +443,8 @@ export async function getDashboardStats() {
     // Get user profile and role
     let role: 'admin' | 'coach' | 'athlete' | 'gym' = 'coach';
     let userName = 'Coach';
-    let coachId: string | null = null;
+    let coachProfileId: string | null = null;
+    let coachRecordId: string | null = null;
 
     if (user) {
         const { data: profile } = await supabase
@@ -98,12 +458,13 @@ export async function getDashboardStats() {
 
         // Get coach_id for filtering if role is coach
         if (role === 'coach') {
+            coachProfileId = user.id;
             const { data: coach } = await supabase
                 .from('coaches')
                 .select('id')
                 .eq('user_id', user.id)
                 .single();
-            coachId = coach?.id || null;
+            coachRecordId = coach?.id || null;
         }
     }
 
@@ -133,15 +494,17 @@ export async function getDashboardStats() {
         // Athletes count
         isAdmin
             ? adminSupabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'athlete')
-            : adminSupabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'athlete').eq('coach_id', coachId!),
+            : adminSupabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'athlete').eq('coach_id', coachProfileId!),
         // Gyms count
         isAdmin
             ? adminSupabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'gym')
-            : adminSupabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'gym').eq('coach_id', coachId!),
+            : adminSupabase.from('clients').select('*', { count: 'exact', head: true }).eq('type', 'gym').eq('coach_id', coachProfileId!),
         // Programs count
         isAdmin
             ? adminSupabase.from('programs').select('*', { count: 'exact', head: true }).eq('status', 'active')
-            : adminSupabase.from('programs').select('*', { count: 'exact', head: true }).eq('status', 'active').eq('coach_id', coachId!),
+            : (coachRecordId
+                ? adminSupabase.from('programs').select('*', { count: 'exact', head: true }).eq('status', 'active').eq('coach_id', coachRecordId)
+                : Promise.resolve({ count: 0 } as any)),
         // Blocks count (always all for now)
         adminSupabase.from('workout_blocks').select('*', { count: 'exact', head: true })
     ]);
@@ -670,92 +1033,87 @@ export async function deletePrograms(programIds: string[]): Promise<{ success: b
 
 export async function getClients(type: 'athlete' | 'gym') {
     const supabase = createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
 
-    // Check for Service Key to potentially bypass RLS
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        try {
-            const adminSupabase = createSupabaseClient(
-                process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                process.env.SUPABASE_SERVICE_ROLE_KEY
-            );
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
 
-            // Get current user and check if admin
-            const { data: { user } } = await supabase.auth.getUser();
-            let isAdmin = false;
+    const role = (profile?.role as UserRole | null) || null;
+    const dbClient = createAdminDbClientOrFallback(supabase);
 
-            if (user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', user.id)
-                    .single();
-                isAdmin = profile?.role === 'admin';
-            }
+    let clientsQuery = dbClient
+        .from('clients')
+        .select('*')
+        .eq('type', type);
 
-            // We need to filter by Coach ID to mimic RLS.
-            // But first we need the coach ID of the current user.
-            let coachId;
-            if (!isAdmin) {
-                coachId = await ensureCoach(supabase); // Use user session to identify coach
-            }
-
-            // Fetch from clients table (manually created)
-            // Admin sees ALL clients, coaches see only their own
-            // REMOVED JOIN to avoid FK errors. Fetching separately.
-            let clientsQuery = adminSupabase
-                .from('clients')
-                .select('*')
-                .eq('type', type);
-
-            if (!isAdmin) {
-                clientsQuery = clientsQuery.eq('coach_id', coachId);
-            }
-
-            const { data: clientsData, error: clientsError } = await clientsQuery.order('name');
-
-            if (clientsError) {
-                console.error('getClients [Admin Bypass] Error:', clientsError);
-                return [];
-            }
-
-            if (!clientsData || clientsData.length === 0) return [];
-
-            // Manual Join with Coaches
-            const coachIds = Array.from(new Set(clientsData.map(c => c.coach_id).filter(id => id)));
-            let coachesMap: Record<string, any> = {};
-
-            if (coachIds.length > 0) {
-                const { data: coaches } = await adminSupabase
-                    .from('coaches')
-                    .select('id, full_name, business_name')
-                    .in('id', coachIds);
-
-                if (coaches) {
-                    coaches.forEach(c => {
-                        coachesMap[c.id] = c;
-                    });
-                }
-            }
-
-            return clientsData.map(client => ({
-                ...client,
-                coach: client.coach_id ? coachesMap[client.coach_id] : null
-            }));
-        } catch (err) {
-            console.error('getClients: Admin Bypass Failed', err);
-            // Fallback to normal
+    if (role !== 'admin') {
+        if (role === 'coach') {
+            clientsQuery = clientsQuery.eq('coach_id', user.id);
+        } else if (role === 'gym' || role === 'athlete') {
+            clientsQuery = clientsQuery.eq('user_id', user.id);
+        } else {
+            clientsQuery = clientsQuery.eq('id', '00000000-0000-0000-0000-000000000000');
         }
     }
 
-    // Fallback normal RLS
-    const { data, error } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('type', type)
-        .order('name');
+    const { data: clientsData, error: clientsError } = await clientsQuery.order('name');
 
-    if (error) return [];
-    return data;
+    if (clientsError) {
+        console.error('getClients error:', clientsError);
+        return [];
+    }
+    if (!clientsData || clientsData.length === 0) return [];
+
+    const coachProfileIds = Array.from(new Set(clientsData.map((c: any) => c.coach_id).filter((id: any): id is string => !!id)));
+    if (coachProfileIds.length === 0) return clientsData;
+
+    const { data: coachProfiles } = await dbClient
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', coachProfileIds);
+
+    const { data: coachBusinessRows } = await dbClient
+        .from('coaches')
+        .select('user_id, business_name')
+        .in('user_id', coachProfileIds);
+
+    const { data: legacyCoachRows } = await dbClient
+        .from('coaches')
+        .select('id, full_name, business_name')
+        .in('id', coachProfileIds);
+
+    const coachProfileMap: Record<string, any> = {};
+    (coachProfiles || []).forEach((item: any) => {
+        coachProfileMap[item.id] = item;
+    });
+
+    const coachBusinessMap: Record<string, string | null> = {};
+    (coachBusinessRows || []).forEach((item: any) => {
+        coachBusinessMap[item.user_id] = item.business_name;
+    });
+
+    const legacyCoachMap: Record<string, any> = {};
+    (legacyCoachRows || []).forEach((item: any) => {
+        legacyCoachMap[item.id] = item;
+    });
+
+    return clientsData.map((client: any) => ({
+        ...client,
+        coach: client.coach_id
+            ? {
+                full_name:
+                    coachProfileMap[client.coach_id]?.full_name ||
+                    coachProfileMap[client.coach_id]?.email ||
+                    legacyCoachMap[client.coach_id]?.full_name ||
+                    'Sin nombre',
+                business_name: coachBusinessMap[client.coach_id] || legacyCoachMap[client.coach_id]?.business_name || null
+            }
+            : null
+    }));
 }
 
 
@@ -1073,15 +1431,22 @@ export async function createClient(clientData: {
         }
         console.log('User Found:', user.id);
 
-        console.log('Ensuring Coach...');
-        const coachId = await ensureCoach(supabase);
-        console.log('Coach ID resolved:', coachId);
+        const { data: creatorProfile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle();
+
+        const defaultCoachProfileId =
+            creatorProfile?.role === 'coach' || creatorProfile?.role === 'admin'
+                ? user.id
+                : null;
 
         console.log('Inserting into clients table...');
 
         // Prepare row
         const row: any = {
-            coach_id: coachId,
+            coach_id: defaultCoachProfileId,
             type: clientData.type,
             name: clientData.name,
             email: clientData.email || null,
@@ -1299,6 +1664,47 @@ export async function assignClientToCoach(clientId: string, coachId: string) {
         throw new Error('Solo administradores pueden reasignar clientes');
     }
 
+    const { data: targetCoachProfile, error: coachProfileError } = await adminSupabase
+        .from('profiles')
+        .select('id, role')
+        .eq('id', coachId)
+        .maybeSingle();
+
+    if (coachProfileError || !targetCoachProfile) {
+        throw new Error('El coach seleccionado no existe');
+    }
+
+    if (!['coach', 'admin'].includes(targetCoachProfile.role || '')) {
+        throw new Error('Solo se puede asignar a usuarios con rol coach/admin');
+    }
+
+    const { data: targetClient, error: targetClientError } = await adminSupabase
+        .from('clients')
+        .select('id, type, coach_id')
+        .eq('id', clientId)
+        .maybeSingle();
+
+    if (targetClientError || !targetClient) {
+        throw new Error('Cliente no encontrado');
+    }
+
+    if (targetClient.type === 'gym') {
+        const { data: coachGyms, error: coachGymsError } = await adminSupabase
+            .from('clients')
+            .select('id')
+            .eq('type', 'gym')
+            .eq('coach_id', coachId);
+
+        if (coachGymsError) {
+            throw new Error('Error validando gimnasios del coach');
+        }
+
+        const otherGyms = (coachGyms || []).filter((item: any) => item.id !== clientId);
+        if (otherGyms.length > 0) {
+            throw new Error('Ese coach ya tiene un gimnasio asignado');
+        }
+    }
+
     // Update client's coach_id
     const { error } = await adminSupabase
         .from('clients')
@@ -1311,6 +1717,8 @@ export async function assignClientToCoach(clientId: string, coachId: string) {
     }
 
     revalidatePath('/admin/clients');
+    revalidatePath('/athletes');
+    revalidatePath('/gyms');
     return { success: true, message: 'Coach asignado correctamente' };
 }
 
@@ -1524,7 +1932,7 @@ export async function updateAdminUserDetails(input: {
     return { success: true, message: 'Usuario actualizado correctamente' };
 }
 
-export async function updateUserRole(userId: string, newRole: 'coach' | 'athlete' | 'admin') {
+export async function updateUserRole(userId: string, newRole: 'coach' | 'athlete' | 'admin' | 'gym') {
     const supabase = createServerClient();
 
     // Verify Admin
@@ -1555,6 +1963,49 @@ export async function updateUserRole(userId: string, newRole: 'coach' | 'athlete
         .eq('id', userId);
 
     if (error) throw new Error(error.message);
+
+    const { data: targetAuthUser } = await adminSupabase.auth.admin.getUserById(userId);
+    const existingMetadata = targetAuthUser?.user?.user_metadata || {};
+    await adminSupabase.auth.admin.updateUserById(userId, {
+        user_metadata: {
+            ...existingMetadata,
+            role: newRole
+        }
+    });
+
+    if (newRole === 'athlete' || newRole === 'gym') {
+        const { data: currentClient } = await adminSupabase
+            .from('clients')
+            .select('id')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (currentClient) {
+            await adminSupabase
+                .from('clients')
+                .update({ type: newRole })
+                .eq('id', currentClient.id);
+        } else {
+            const { data: targetProfile } = await adminSupabase
+                .from('profiles')
+                .select('full_name, email')
+                .eq('id', userId)
+                .maybeSingle();
+
+            await adminSupabase
+                .from('clients')
+                .insert({
+                    user_id: userId,
+                    coach_id: null,
+                    type: newRole,
+                    name: targetProfile?.full_name || targetProfile?.email || 'Usuario',
+                    email: targetProfile?.email || null,
+                    details: { source: 'updateUserRole', auto_created: true }
+                });
+        }
+    }
 
     revalidatePath('/admin/users');
     return { success: true };
@@ -1648,7 +2099,7 @@ export async function createUser(data: {
     email: string;
     password?: string;
     fullName: string;
-    role: 'coach' | 'athlete' | 'admin';
+    role: 'coach' | 'athlete' | 'admin' | 'gym';
 }) {
     const supabase = createServerClient();
 
@@ -1678,7 +2129,7 @@ export async function createUser(data: {
         email: data.email,
         password: data.password || 'tempPass123!', // Default temp password if not provided
         email_confirm: true,
-        user_metadata: { full_name: data.fullName }
+        user_metadata: { full_name: data.fullName, role: data.role }
     });
 
     if (createError) throw new Error(createError.message);
@@ -1700,6 +2151,38 @@ export async function createUser(data: {
         console.error('Error setting profile role:', profileError);
         // Don't throw, user is created. Just warn.
         return { success: true, message: 'Usuario creado, pero hubo un error asignando el rol. Por favor verifique.', userId: newUser.user.id };
+    }
+
+    if (data.role === 'athlete' || data.role === 'gym') {
+        const { data: existingClient } = await adminSupabase
+            .from('clients')
+            .select('id')
+            .eq('user_id', newUser.user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (existingClient) {
+            await adminSupabase
+                .from('clients')
+                .update({
+                    type: data.role,
+                    name: data.fullName,
+                    email: data.email
+                })
+                .eq('id', existingClient.id);
+        } else {
+            await adminSupabase
+                .from('clients')
+                .insert({
+                    user_id: newUser.user.id,
+                    coach_id: null,
+                    type: data.role,
+                    name: data.fullName,
+                    email: data.email,
+                    details: { source: 'createUser', auto_created: true }
+                });
+        }
     }
 
     revalidatePath('/admin/users');
@@ -2254,16 +2737,8 @@ export async function getCoachStatus() {
         return { hasCoach: true, isAthlete: false }; // Not an athlete, so warning doesn't apply
     }
 
-    // 2. Check if athlete has a client record with a valid coach that still exists
-    // The inner join on coaches ensures the coach record exists.
-    const { data: clientRecord } = await supabase
-        .from('clients')
-        .select('coach_id, coach:coaches!inner(id)')
-        .eq('user_id', user.id)
-        .single();
-
     return {
-        hasCoach: !!clientRecord,
+        hasCoach: !!(await getAthleteAccessContext()).coach,
         isAthlete: true
     };
 }

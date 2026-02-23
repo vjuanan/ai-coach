@@ -1,6 +1,6 @@
 
-import { getUserDashboardInfo } from '@/lib/actions';
-import { Dumbbell, Users, Building2, Shield, FileText } from 'lucide-react';
+import { getAthleteAccessContext, getUserDashboardInfo } from '@/lib/actions';
+import { Dumbbell, Users, Building2, Shield, UserCog, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Topbar } from '@/components/app-shell/Topbar';
@@ -15,6 +15,7 @@ export default async function DashboardPage() {
     }
 
     const { name, role } = userInfo;
+    const athleteContext = role === 'athlete' ? await getAthleteAccessContext() : null;
 
     return (
         <>
@@ -36,14 +37,46 @@ export default async function DashboardPage() {
 
                     {/* ATHLETE: Ver Programa */}
                     {role === 'athlete' && (
-                        <Link href="/athlete/dashboard" className="group bg-white p-12 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center text-center">
-                            <div className="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center text-emerald-500 mb-6 group-hover:scale-105 transition-transform">
-                                <Dumbbell size={36} />
-                            </div>
-                            <h3 className="text-2xl font-bold text-slate-800 mb-2">Ver mi Programa</h3>
-                            <p className="text-slate-400 mb-0">Accede a tus rutinas y registra tu progreso diaria.</p>
-                            <span className="mt-6 text-emerald-500 font-medium group-hover:underline">Ir al entrenamiento &rarr;</span>
-                        </Link>
+                        <>
+                            <Link href="/athlete/dashboard" className="group bg-white p-12 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center text-center">
+                                <div className="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center text-emerald-500 mb-6 group-hover:scale-105 transition-transform">
+                                    <Dumbbell size={36} />
+                                </div>
+                                <h3 className="text-2xl font-bold text-slate-800 mb-2">Ver mi Programa</h3>
+                                <p className="text-slate-400 mb-0">Accede a tus rutinas y registra tu progreso diaria.</p>
+                                <span className="mt-6 text-emerald-500 font-medium group-hover:underline">Ir al entrenamiento &rarr;</span>
+                            </Link>
+
+                            {athleteContext?.visibility.showMyCoach && (
+                                <Link href="/athlete/my-coach" className="group bg-white p-12 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center text-center">
+                                    <div className="w-20 h-20 bg-cyan-50 rounded-3xl flex items-center justify-center text-cyan-500 mb-6 group-hover:scale-105 transition-transform">
+                                        <UserCog size={36} />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-slate-800 mb-2">Mi Coach</h3>
+                                    <p className="text-slate-400 mb-0">Consulta el perfil de tu entrenador.</p>
+                                </Link>
+                            )}
+
+                            {athleteContext?.visibility.showMyGym && (
+                                <Link href="/athlete/my-gym" className="group bg-white p-12 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center text-center">
+                                    <div className="w-20 h-20 bg-purple-50 rounded-3xl flex items-center justify-center text-purple-500 mb-6 group-hover:scale-105 transition-transform">
+                                        <Building2 size={36} />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-slate-800 mb-2">Mi Gimnasio</h3>
+                                    <p className="text-slate-400 mb-0">Visualiza los datos de tu box/gimnasio.</p>
+                                </Link>
+                            )}
+
+                            {athleteContext?.visibility.disableMyGymCard && (
+                                <div className="group bg-slate-50 p-12 rounded-[2rem] border border-slate-200 flex flex-col items-center text-center opacity-80">
+                                    <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center text-slate-400 mb-6">
+                                        <Lock size={36} />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-slate-500 mb-2">Mi Gimnasio</h3>
+                                    <p className="text-slate-400 mb-0">No tienes un gimnasio asignado todavía.</p>
+                                </div>
+                            )}
+                        </>
                     )}
 
                     {/* GYM: Mi Gimnasio & Mis Atletas */}

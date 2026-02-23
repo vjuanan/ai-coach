@@ -247,7 +247,7 @@ export interface Profile {
     id: string;
     email: string | null;
     full_name: string | null;
-    role: 'coach' | 'athlete' | 'admin' | null;
+    role: 'coach' | 'athlete' | 'admin' | 'gym' | null;
     birth_date?: string | null;
     height?: number | null;
     weight?: number | null;
@@ -320,8 +320,7 @@ export interface Database {
             block_type: BlockType;
             workout_format: WorkoutFormat;
             exercise_category: ExerciseCategory;
-            user_role: 'coach' | 'athlete' | 'admin';
+            user_role: 'coach' | 'athlete' | 'admin' | 'gym';
         };
     };
 }
-

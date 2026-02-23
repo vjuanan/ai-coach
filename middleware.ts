@@ -190,8 +190,23 @@ export async function middleware(request: NextRequest) {
         // SCENARIO D: Coach Checks
         if (role === 'coach') {
             // Block access to Client/Gym Management (Admin territory)
-            if (path.startsWith('/gyms') || path.startsWith('/admin')) {
+            if (path.startsWith('/gyms') || path.startsWith('/admin') || path.startsWith('/athlete')) {
                 // Redirect to safe dashboard
+                return NextResponse.redirect(new URL('/', request.url));
+            }
+        }
+
+        // SCENARIO E: Gym Checks
+        if (role === 'gym') {
+            if (
+                path.startsWith('/admin') ||
+                path.startsWith('/programs') ||
+                path.startsWith('/templates') ||
+                path.startsWith('/editor') ||
+                path.startsWith('/knowledge') ||
+                path.startsWith('/exercises') ||
+                path.startsWith('/athlete')
+            ) {
                 return NextResponse.redirect(new URL('/', request.url));
             }
         }
@@ -201,7 +216,16 @@ export async function middleware(request: NextRequest) {
             // Strict: Athletes go to /athlete/dashboard, Profile, etc.
             // Block Coach/Admin routes
             // ALLOW '/' to access the new Home Page
-            if (path.startsWith('/programs') || path.startsWith('/athletes') || path.startsWith('/gyms')) {
+            if (
+                path.startsWith('/programs') ||
+                path.startsWith('/athletes') ||
+                path.startsWith('/gyms') ||
+                path.startsWith('/admin') ||
+                path.startsWith('/editor') ||
+                path.startsWith('/templates') ||
+                path.startsWith('/knowledge') ||
+                path.startsWith('/exercises')
+            ) {
                 return NextResponse.redirect(new URL('/athlete/dashboard', request.url));
             }
         }

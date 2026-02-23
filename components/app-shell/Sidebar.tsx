@@ -14,12 +14,15 @@ import {
     ChevronRight,
     Shield,
     BookOpen,
+    UserCog,
+    Lock,
 } from 'lucide-react';
 
 interface NavItem {
     label: string;
     href: string;
     icon: React.ReactNode;
+    disabled?: boolean;
 }
 
 // Unified nav items - Reverted to Original Nomenclature
@@ -37,14 +40,18 @@ const navItems: NavItem[] = [
 interface SidebarProps {
     /** Role passed from server - NO async loading, immediate render */
     role?: 'admin' | 'coach' | 'athlete' | 'gym';
+    athleteSidebar?: {
+        showMyCoach: boolean;
+        showMyGym: boolean;
+        disableMyGymCard: boolean;
+    } | null;
 }
 
-export function Sidebar({ role = 'coach' }: SidebarProps) {
+export function Sidebar({ role = 'coach', athleteSidebar = null }: SidebarProps) {
     const { isSidebarCollapsed, toggleSidebar } = useAppStore();
     const pathname = usePathname();
 
-    // Filter Items based on Role - role is passed from server, no loading state!
-    const filteredNavItems = navItems.filter(item => {
+    let filteredNavItems = navItems.filter(item => {
         if (role === 'admin') return true; // See all
 
         if (role === 'coach') {
@@ -53,11 +60,44 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
         }
 
         if (role === 'athlete') {
-            // Athletes only see dashboard
-            return item.href === '/';
+            return false;
+        }
+
+        if (role === 'gym') {
+            // Gym users: no admin, no editor/tooling sections
+            return !item.href.startsWith('/admin') &&
+                item.href !== '/programs' &&
+                item.href !== '/templates' &&
+                item.href !== '/knowledge' &&
+                item.href !== '/exercises';
         }
         return true; // Fallback: show item
     });
+
+    if (role === 'athlete') {
+        filteredNavItems = [{ label: 'Panel', href: '/', icon: <LayoutDashboard size={20} /> }];
+        if (athleteSidebar?.showMyCoach) {
+            filteredNavItems.push({
+                label: 'Mi Coach',
+                href: '/athlete/my-coach',
+                icon: <UserCog size={20} />
+            });
+        }
+        if (athleteSidebar?.showMyGym) {
+            filteredNavItems.push({
+                label: 'Mi Gimnasio',
+                href: '/athlete/my-gym',
+                icon: <Building2 size={20} />
+            });
+        } else if (athleteSidebar?.disableMyGymCard) {
+            filteredNavItems.push({
+                label: 'Mi Gimnasio',
+                href: '/athlete/my-gym',
+                icon: <Lock size={20} />,
+                disabled: true
+            });
+        }
+    }
 
     return (
         <aside
@@ -102,6 +142,26 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
                     const isActive = pathname === item.href ||
                         (item.href !== '/' && pathname.startsWith(item.href));
 
+                    if (item.disabled) {
+                        return (
+                            <div
+                                key={item.label}
+                                className={`
+                                    flex items-center gap-3 px-4 py-[11px] rounded-lg transition-all mb-1
+                                    ${isSidebarCollapsed ? 'justify-center' : ''}
+                                    text-slate-300 cursor-not-allowed
+                                `}
+                                title={isSidebarCollapsed ? item.label : 'Disponible cuando tengas gimnasio asignado'}
+                                aria-disabled="true"
+                            >
+                                {item.icon}
+                                {!isSidebarCollapsed && (
+                                    <span className="text-[14px]">{item.label}</span>
+                                )}
+                            </div>
+                        );
+                    }
+
                     return (
                         <Link
                             key={item.href}
@@ -138,5 +198,4 @@ export function Sidebar({ role = 'coach' }: SidebarProps) {
         </aside>
     );
 }
-
 

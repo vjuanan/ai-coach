@@ -10,10 +10,15 @@ import { useEffect, useState } from 'react';
 interface DashboardShellProps {
     children: React.ReactNode;
     /** Role from server - renders sidebar immediately without flash */
-    role: 'admin' | 'coach' | 'athlete';
+    role: 'admin' | 'coach' | 'athlete' | 'gym';
+    athleteSidebar?: {
+        showMyCoach: boolean;
+        showMyGym: boolean;
+        disableMyGymCard: boolean;
+    } | null;
 }
 
-export function DashboardShell({ children, role }: DashboardShellProps) {
+export function DashboardShell({ children, role, athleteSidebar = null }: DashboardShellProps) {
     const { isSidebarCollapsed } = useAppStore();
     const [status, setStatus] = useState<{ hasCoach: boolean; isAthlete: boolean } | null>(null);
 
@@ -23,7 +28,7 @@ export function DashboardShell({ children, role }: DashboardShellProps) {
 
     return (
         <div className="min-h-screen bg-white">
-            <Sidebar role={role} />
+            <Sidebar role={role} athleteSidebar={athleteSidebar} />
             <CommandPalette />
 
             <main

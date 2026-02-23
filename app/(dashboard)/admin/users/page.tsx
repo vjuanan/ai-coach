@@ -33,7 +33,7 @@ interface Profile {
     id: string;
     email: string;
     full_name: string;
-    role: 'coach' | 'athlete' | 'admin' | null;
+    role: 'coach' | 'athlete' | 'admin' | 'gym' | null;
     created_at: string;
     updated_at: string;
     source?: 'auth' | 'client_only';
@@ -58,7 +58,7 @@ export default function AdminUsersPage() {
         email: '',
         fullName: '',
         password: '',
-        role: 'athlete' as 'coach' | 'athlete' | 'admin'
+        role: 'athlete' as 'coach' | 'athlete' | 'admin' | 'gym'
     });
 
     // Edit Modal State
@@ -87,7 +87,7 @@ export default function AdminUsersPage() {
         }
     }
 
-    async function handleRoleUpdate(userId: string, newRole: 'coach' | 'athlete' | 'admin') {
+    async function handleRoleUpdate(userId: string, newRole: 'coach' | 'athlete' | 'admin' | 'gym') {
         if (!confirm(`¿Estás seguro de cambiar el rol a ${newRole}?`)) return;
 
         setUpdatingId(userId);
@@ -382,7 +382,7 @@ export default function AdminUsersPage() {
                                                         className={`bg-transparent text-sm font-medium border-none focus:ring-0 cursor-pointer py-1 px-2 rounded ${user.role === 'admin' ? 'text-purple-400 bg-purple-500/10' :
                                                             user.role === 'coach' ? 'text-blue-400 bg-blue-500/10' :
                                                                 user.role === 'athlete' ? 'text-green-400 bg-green-500/10' :
-                                                                    'text-yellow-400 bg-yellow-500/10'
+                                                                    user.role === 'gym' ? 'text-orange-400 bg-orange-500/10' : 'text-yellow-400 bg-yellow-500/10'
                                                             }`}
                                                         disabled={updatingId === user.id || user.source === 'client_only'}
                                                         title={user.source === 'client_only' ? 'Usuarios manuales no tienen rol de sistema' : 'Cambiar rol'}
@@ -390,6 +390,7 @@ export default function AdminUsersPage() {
                                                         <option value="" className="bg-cv-bg-primary">Sin Rol</option>
                                                         <option value="athlete" className="bg-cv-bg-primary">Atleta</option>
                                                         <option value="coach" className="bg-cv-bg-primary">Entrenador</option>
+                                                        <option value="gym" className="bg-cv-bg-primary">Gimnasio</option>
                                                         <option value="admin" className="bg-cv-bg-primary">Administrador</option>
                                                     </select>
                                                 </div>
@@ -555,6 +556,7 @@ export default function AdminUsersPage() {
                                         >
                                             <option value="athlete">Atleta</option>
                                             <option value="coach">Entrenador</option>
+                                            <option value="gym">Gimnasio</option>
                                             <option value="admin">Administrador</option>
                                         </select>
                                         <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary pointer-events-none" size={16} />
