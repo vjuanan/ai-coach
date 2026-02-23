@@ -65,6 +65,48 @@ const formatLabels: Record<string, string> = {
     '1_5_REPS': '1.5 Reps',
 };
 
+function getExerciseLabel(value: unknown): string {
+    if (typeof value === 'string') return value.trim();
+    if (!value || typeof value !== 'object') return '';
+
+    const record = value as Record<string, unknown>;
+    const nestedCandidates = [record.name, record.exercise, record.movement];
+
+    for (const candidate of nestedCandidates) {
+        if (typeof candidate === 'string') {
+            const normalized = candidate.trim();
+            if (normalized) return normalized;
+        }
+        if (candidate && typeof candidate === 'object') {
+            const nested = getExerciseLabel(candidate);
+            if (nested) return nested;
+        }
+    }
+
+    return '';
+}
+
+function getTargetLabel(entry: Record<string, unknown>): string {
+    if (typeof entry.reps === 'string' && entry.reps.trim()) return entry.reps.trim();
+    if (typeof entry.reps === 'number' && Number.isFinite(entry.reps)) return String(entry.reps);
+
+    const targetRaw = entry.targetValue;
+    const targetValue = typeof targetRaw === 'number'
+        ? targetRaw
+        : Number.parseFloat(String(targetRaw ?? ''));
+    if (!Number.isFinite(targetValue) || targetValue <= 0) return '';
+
+    const unitMap: Record<string, string> = {
+        reps: 'reps',
+        seconds: 's',
+        meters: 'm',
+        calories: 'cal',
+    };
+    const unitRaw = String(entry.targetUnit ?? '').toLowerCase();
+    const unit = unitMap[unitRaw] || unitRaw;
+    return unit ? `${targetValue} ${unit}` : `${targetValue}`;
+}
+
 export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
     const { selectBlock, selectedBlockId, deleteBlock, deleteProgression, duplicateBlock, enterBlockBuilder, draggedBlockId } = useEditorStore();
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
@@ -220,9 +262,9 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
             case 'metcon_structured': {
                 const rawFormat = block.format;
                 const format = normalizeMethodologyCode(rawFormat || '');
-                const items = (config as any).items as { exercise: string; reps: string }[] || [];
-                const slots = (config as any).slots as { label: string; movement: string; reps: string }[] || [];
-                const movements = config.movements as string[] || [];
+                const items = ((config as any).items as Record<string, unknown>[]) || [];
+                const slots = ((config as any).slots as Record<string, unknown>[]) || [];
+                const movements = (config.movements as unknown[]) || [];
                 const minutes = (config as any).minutes as number;
                 const rounds = (config as any).rounds as number;
                 const timeCap = (config as any).timeCap as number;
@@ -251,11 +293,22 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
 
                 // Build exercise list based on format
                 if (items.length > 0) {
-                    items.forEach(it => { if (it.exercise) exerciseList.push({ name: it.exercise, reps: it.reps }); });
+                    items.forEach((it) => {
+                        const name = getExerciseLabel(it.exercise ?? it.movement ?? it.name);
+                        if (!name) return;
+                        exerciseList.push({ name, reps: getTargetLabel(it) });
+                    });
                 } else if (slots.length > 0) {
-                    slots.forEach(s => { if (s.movement) exerciseList.push({ name: s.movement, reps: s.reps }); });
+                    slots.forEach((slot) => {
+                        const name = getExerciseLabel(slot.movement ?? slot.exercise ?? slot.name);
+                        if (!name) return;
+                        exerciseList.push({ name, reps: getTargetLabel(slot) });
+                    });
                 } else if (movements.length > 0) {
-                    movements.forEach(m => exerciseList.push({ name: m, reps: '' }));
+                    movements.forEach((movement) => {
+                        const name = getExerciseLabel(movement);
+                        if (name) exerciseList.push({ name, reps: '' });
+                    });
                 }
                 break;
             }
@@ -270,13 +323,13 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
                 }
 
                 // Check both 'exercises' (old?) and 'movements' (new generic form)
-                const items = (config.movements as any[]) || (config.exercises as string[]) || [];
+                const items = (config.movements as unknown[]) || (config.exercises as unknown[]) || [];
                 const notes = config.notes as string;
 
                 items.forEach(item => {
-                    const name = typeof item === 'string' ? item : item.name;
+                    const name = getExerciseLabel(item);
                     if (name) {
-                        exerciseList.push({ name: name, reps: '' }); // Reps in accessory are not strictly separated in standard view yet
+                        exerciseList.push({ name, reps: '' }); // Reps in accessory are not strictly separated in standard view yet
                     }
                 });
 

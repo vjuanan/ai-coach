@@ -594,6 +594,25 @@ function BlockTooltip({ hoverState }: { hoverState: { block: any, rect: DOMRect 
     let title = block.name || "Sin nombre";
     let subtitle = block.format || block.type;
 
+    const getMovementLabel = (value: unknown): string => {
+        if (typeof value === 'string') return value.trim();
+        if (!value || typeof value !== 'object') return '';
+
+        const record = value as Record<string, unknown>;
+        const candidates = [record.name, record.exercise, record.movement];
+        for (const candidate of candidates) {
+            if (typeof candidate === 'string') {
+                const normalized = candidate.trim();
+                if (normalized) return normalized;
+            }
+            if (candidate && typeof candidate === 'object') {
+                const nested = getMovementLabel(candidate);
+                if (nested) return nested;
+            }
+        }
+        return '';
+    };
+
     // Helper to format list of movements
     const renderMovementList = (movements: any[]) => {
         if (!movements || movements.length === 0) return <p className="text-xs text-slate-400 italic">Sin ejercicios</p>;
@@ -602,7 +621,7 @@ function BlockTooltip({ hoverState }: { hoverState: { block: any, rect: DOMRect 
                 {movements.slice(0, 5).map((m: any, idx: number) => (
                     <div key={idx} className="flex items-center gap-1.5 text-xs text-slate-300">
                         <div className="w-1 h-1 rounded-full bg-cv-accent flex-shrink-0" />
-                        <span className="truncate">{m.name || m.exercise?.name || "Ejercicio"}</span>
+                        <span className="truncate">{getMovementLabel(m) || "Ejercicio"}</span>
                     </div>
                 ))}
                 {movements.length > 5 && (

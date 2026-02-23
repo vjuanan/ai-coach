@@ -947,13 +947,29 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
 // ============================================
 interface MovementsListProps {
     label: string;
-    value: string[];
+    value: unknown[];
     onChange: (value: string[]) => void;
     help?: string;
 }
 
 function MovementsListField({ label, value, onChange, help }: MovementsListProps) {
-    const movements = value || [];
+    const toMovementText = (entry: unknown): string => {
+        if (typeof entry === 'string') return entry;
+        if (!entry || typeof entry !== 'object') return '';
+
+        const record = entry as Record<string, unknown>;
+        const candidates = [record.name, record.exercise, record.movement];
+        for (const candidate of candidates) {
+            if (typeof candidate === 'string') return candidate;
+            if (candidate && typeof candidate === 'object') {
+                const nested = toMovementText(candidate);
+                if (nested) return nested;
+            }
+        }
+        return '';
+    };
+
+    const movements = Array.isArray(value) ? value.map(toMovementText) : [];
 
     const addMovement = () => {
         onChange([...movements, '']);
