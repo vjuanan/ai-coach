@@ -157,6 +157,52 @@ export function GymDetailsEditor({ gymId, initialData, isEditable = true }: GymD
         </div>
     );
 
+    // VIEW MODE helpers (must be defined before conditional return for hooks rules)
+    const InfoRow = ({ label, value, icon: Icon, isLink = false }: { label: string, value: string | null | undefined, icon?: any, isLink?: boolean }) => {
+        if (!value) return null;
+        return (
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-cv-bg-tertiary/30 border border-transparent hover:border-cv-border transition-colors">
+                {Icon && <Icon size={18} className="text-cv-text-tertiary mt-0.5" />}
+                <div className="flex-1 overflow-hidden">
+                    <p className="text-xs font-semibold text-cv-text-tertiary uppercase mb-0.5">{label}</p>
+                    {isLink ? (
+                        <a href={value} target="_blank" rel="noopener noreferrer" className="text-cv-accent hover:underline truncate block">
+                            {value}
+                        </a>
+                    ) : (
+                        <p className="text-cv-text-primary font-medium truncate">{value}</p>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+    // Build equipment display for view mode
+    const equipmentDisplay = useMemo(() => {
+        const eq = data.equipment;
+        if (!eq) return null;
+
+        // If it's a structured object, build a nice display
+        if (typeof eq === 'object') {
+            return buildEquipmentSummary(eq as Record<string, boolean | number>);
+        }
+
+        // If string, try to parse as JSON
+        if (typeof eq === 'string') {
+            try {
+                const parsed = JSON.parse(eq);
+                if (typeof parsed === 'object' && parsed !== null) {
+                    return buildEquipmentSummary(parsed as Record<string, boolean | number>);
+                }
+            } catch {
+                // Plain text — return as-is
+                return eq;
+            }
+        }
+
+        return null;
+    }, [data.equipment]);
+
     if (isEditing) {
         return (
             <div className="cv-card space-y-6 border-2 border-cv-accent/20">
@@ -304,8 +350,8 @@ export function GymDetailsEditor({ gymId, initialData, isEditable = true }: GymD
                                                         <div
                                                             key={item.key}
                                                             className={`flex items-center gap-2 p-2 rounded-lg border transition-colors ${isActive
-                                                                    ? 'border-cv-accent/30 bg-cv-accent/5'
-                                                                    : 'border-transparent bg-cv-bg-tertiary/30 hover:bg-cv-bg-tertiary/60'
+                                                                ? 'border-cv-accent/30 bg-cv-accent/5'
+                                                                : 'border-transparent bg-cv-bg-tertiary/30 hover:bg-cv-bg-tertiary/60'
                                                                 }`}
                                                         >
                                                             <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
@@ -349,51 +395,6 @@ export function GymDetailsEditor({ gymId, initialData, isEditable = true }: GymD
     }
 
     // VIEW MODE
-    const InfoRow = ({ label, value, icon: Icon, isLink = false }: { label: string, value: string | null | undefined, icon?: any, isLink?: boolean }) => {
-        if (!value) return null;
-        return (
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-cv-bg-tertiary/30 border border-transparent hover:border-cv-border transition-colors">
-                {Icon && <Icon size={18} className="text-cv-text-tertiary mt-0.5" />}
-                <div className="flex-1 overflow-hidden">
-                    <p className="text-xs font-semibold text-cv-text-tertiary uppercase mb-0.5">{label}</p>
-                    {isLink ? (
-                        <a href={value} target="_blank" rel="noopener noreferrer" className="text-cv-accent hover:underline truncate block">
-                            {value}
-                        </a>
-                    ) : (
-                        <p className="text-cv-text-primary font-medium truncate">{value}</p>
-                    )}
-                </div>
-            </div>
-        );
-    };
-
-    // Build equipment display for view mode
-    const equipmentDisplay = useMemo(() => {
-        const eq = data.equipment;
-        if (!eq) return null;
-
-        // If it's a structured object, build a nice display
-        if (typeof eq === 'object') {
-            return buildEquipmentSummary(eq as Record<string, boolean | number>);
-        }
-
-        // If string, try to parse as JSON
-        if (typeof eq === 'string') {
-            try {
-                const parsed = JSON.parse(eq);
-                if (typeof parsed === 'object' && parsed !== null) {
-                    return buildEquipmentSummary(parsed as Record<string, boolean | number>);
-                }
-            } catch {
-                // Plain text — return as-is
-                return eq;
-            }
-        }
-
-        return null;
-    }, [data.equipment]);
-
     return (
         <div className="cv-card space-y-6">
             <div className="flex items-center justify-between border-b border-cv-border pb-4">
