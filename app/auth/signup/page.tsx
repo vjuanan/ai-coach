@@ -151,19 +151,9 @@ export default function SignUpPage() {
             {/* Content Container */}
             <div className="relative z-10 w-full max-w-md px-4 animate-in fade-in zoom-in-95 duration-700 slide-in-from-bottom-4">
 
-                {/* Logo & Brand */}
+                {/* Brand */}
                 <div className="flex flex-col items-center mb-8">
-                    <div className="relative group">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-cv-accent to-emerald-500 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-                        <div className="relative w-20 h-20 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center shadow-2xl ring-1 ring-white/20">
-                            <img
-                                src="/images/logo-white.png"
-                                alt="AI Coach Logo"
-                                className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
-                            />
-                        </div>
-                    </div>
-                    <div className="mt-6 text-center space-y-1">
+                    <div className="text-center space-y-1">
                         <h1 className="text-4xl font-bold text-white tracking-tight drop-shadow-lg">
                             Crear Cuenta
                         </h1>
