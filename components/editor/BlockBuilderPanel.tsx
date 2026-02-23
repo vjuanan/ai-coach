@@ -132,15 +132,6 @@ const blockTypeOptions: {
             icon: Sparkles
         },
         {
-            type: 'free_text',
-            label: 'Texto Libre',
-            description: 'Notas y comentarios',
-            color: 'text-slate-600 dark:text-slate-400',
-            bgColor: 'bg-slate-200 dark:bg-slate-800/60 hover:bg-slate-300 dark:hover:bg-slate-800',
-            glowColor: 'rgba(100, 116, 139, 0.7)',
-            icon: FileText
-        },
-        {
             type: 'finisher',
             label: 'Finisher',
             description: 'Dropsets, Rest-Pause, etc',
@@ -148,6 +139,15 @@ const blockTypeOptions: {
             bgColor: 'bg-amber-100 dark:bg-amber-900/40 hover:bg-amber-200 dark:hover:bg-amber-900/60',
             glowColor: 'rgba(217, 119, 6, 0.85)',
             icon: Target
+        },
+        {
+            type: 'free_text',
+            label: 'Texto Libre',
+            description: 'Notas y comentarios',
+            color: 'text-slate-600 dark:text-slate-400',
+            bgColor: 'bg-slate-200 dark:bg-slate-800/60 hover:bg-slate-300 dark:hover:bg-slate-800',
+            glowColor: 'rgba(100, 116, 139, 0.7)',
+            icon: FileText
         },
     ];
 
