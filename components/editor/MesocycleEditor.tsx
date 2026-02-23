@@ -49,6 +49,7 @@ import { GripVertical, AlertTriangle } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { calculateKgFromStats } from '@/hooks/useAthleteRm';
 import { useExerciseCache } from '@/hooks/useExerciseCache';
+import { useBlockValidator } from '@/hooks/useBlockValidator';
 import * as Popover from '@radix-ui/react-popover';
 
 interface MesocycleEditorProps {
@@ -282,8 +283,9 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
 
     const router = useRouter();
 
-    // Exercise Cache for validation and export cues
-    const { exercises, searchLocal } = useExerciseCache();
+    // Exercise cache for export cues
+    const { exercises } = useExerciseCache();
+    const { validateBlock } = useBlockValidator();
 
     // Build map of exercises cues for export
     const exercisesCues = useMemo(() => {
@@ -293,58 +295,9 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         });
         return map;
     }, [exercises]);
-    // Helper to validate a single block (duplicated logic from BlockEditor for safety)
-    const validateBlockContent = (block: any): boolean => {
-        if (block.type === 'strength_linear') {
-            if (!block.name || block.name.trim().length === 0) return false;
-            // Strict validation: must match an exercise in cache
-            const match = searchLocal(block.name).find(e => e.name.toLowerCase() === block.name?.toLowerCase());
-            if (!match) return false;
-
-            // Field completeness: sets, reps/distance, at least one intensity, rest
-            const cfg = block.config || {};
-            const hasSets = cfg.sets && Number(cfg.sets) > 0;
-            const hasReps = cfg.reps && String(cfg.reps).trim().length > 0;
-            const hasDistance = cfg.distance && String(cfg.distance).trim().length > 0;
-            const hasIntensity = (cfg.weight && String(cfg.weight).trim().length > 0) ||
-                (cfg.percentage && Number(cfg.percentage) > 0) ||
-                (cfg.rpe && Number(cfg.rpe) > 0) ||
-                (cfg.rir !== undefined && cfg.rir !== null && cfg.rir !== '');
-            const hasRest = cfg.rest && String(cfg.rest).trim().length > 0;
-
-            return !!(hasSets && (hasReps || hasDistance) && hasIntensity && hasRest);
-        }
-        if (block.type === 'warmup') {
-            // Warmups: need format (from column OR config) and at least one movement (freeform text OK)
-            const hasFormat = block.format || (block.config as any)?.format;
-            if (!hasFormat) return false;
-            const movements = (block.config as any)?.movements as any[] || [];
-            return movements.length > 0;
-        }
-        if (block.type === 'accessory') {
-            // Accessories: need format (from column OR config) and either movements OR sets/reps
-            const hasFormat = block.format || (block.config as any)?.format;
-            if (!hasFormat) return false;
-            const cfg = block.config || {};
-            const movements = cfg.movements as any[] || [];
-            const hasSetsReps = (cfg.sets && Number(cfg.sets) > 0) && (cfg.reps && String(cfg.reps).trim().length > 0);
-            return movements.length > 0 || !!hasSetsReps;
-        }
-        if (block.type === 'metcon_structured') {
-            // MetCons: need format (from column OR config) and at least one movement
-            const hasFormat = block.format || (block.config as any)?.format;
-            if (!hasFormat) return false;
-            const movements = (block.config as any)?.movements as any[] || [];
-            return movements.length > 0;
-        }
-        if (block.type === 'skill') {
-            const hasFormat = block.format || (block.config as any)?.format;
-            if (!hasFormat) return false;
-            const movements = (block.config as any)?.movements as any[] || [];
-            return movements.length > 0;
-        }
-        return true; // Other types like conditioning, finisher, free_text — auto-pass
-    };
+    const validateBlockContent = useCallback((block: any): boolean => {
+        return validateBlock(block).isValid;
+    }, [validateBlock]);
 
     // Handle Save & Exit with Validation
     // Generic Validation Helper
@@ -948,4 +901,3 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
         </DndContext>
     );
 }
-
