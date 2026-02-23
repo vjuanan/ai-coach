@@ -606,22 +606,16 @@ export default function OnboardingPage() {
                     <div className="space-y-6">
                         <div>
                             <InputLabel icon={MapPin} label="Ubicación" />
-                            <input
-                                type="text"
-                                className="w-full p-4 text-xl border-2 border-gray-200 rounded-xl focus:border-emerald-500 outline-none"
-                                placeholder="Buenos Aires, Argentina"
+                            <LocationAutocomplete
                                 value={gymData.gym_location}
-                                onChange={(e) => updateGymField('gym_location', e.target.value)}
+                                onChange={(val) => updateGymField('gym_location', val)}
                             />
                         </div>
                         <div>
                             <InputLabel icon={Clock} label="Horarios de Operación" />
-                            <input
-                                type="text"
-                                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-emerald-500 outline-none"
-                                placeholder="Lun-Vie 6:00-22:00, Sáb 8:00-14:00"
+                            <OperatingHoursModal
                                 value={gymData.operating_hours}
-                                onChange={(e) => updateGymField('operating_hours', e.target.value)}
+                                onChange={(val) => updateGymField('operating_hours', val)}
                             />
                         </div>
                     </div>

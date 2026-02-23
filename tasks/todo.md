@@ -1,7 +1,10 @@
-# Tareas
+# Expandir Listado de Equipamiento Completo
 
-- [x] Remover "v1.3" y los iconos de usuarios/notificaciones sobrepuestos del Topbar
-- [x] Verificar la interfaz actualizada del Topbar para confirmar que se ve bien
+## Tareas
 
-## Revisión
-- ✅ Verificado en producción: topbar limpio, sin overlap, sin v1.3.
+- [x] Analizar archivos actuales (`onboarding/page.tsx`, `GymProfileEditor.tsx`)
+- [x] Investigar listado completo de equipamiento CrossFit
+- [/] Crear constantes compartidas con equipamiento organizado por categorías
+- [/] Actualizar `onboarding/page.tsx` — paso 4 (Equipamiento)
+- [/] Actualizar `GymProfileEditor.tsx` — sección Equipamiento en Settings
+- [ ] Push y verificar en producción con screenshots
