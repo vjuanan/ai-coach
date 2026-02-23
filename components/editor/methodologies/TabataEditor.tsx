@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, Clock, RotateCw } from 'lucide-react';
 import { SmartExerciseInput } from '../SmartExerciseInput';
 import type { TabataConfig } from '@/lib/supabase/types';
@@ -30,12 +30,17 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
         return [''];
     });
 
+    const onChangeRef = useRef(onChange);
+    useEffect(() => {
+        onChangeRef.current = onChange;
+    }, [onChange]);
+
     useEffect(() => {
         // Update either 'movements' (array) or 'movement' (single string for internal compatibility)
         // We'll prefer saving as 'movements' array related logic if possible, but keeping 'movement' as the first one for simple cases.
-        onChange('movements', exercises);
-        onChange('movement', exercises[0] || '');
-    }, [exercises, onChange]);
+        onChangeRef.current('movements', exercises);
+        onChangeRef.current('movement', exercises[0] || '');
+    }, [exercises]);
 
     const addExercise = () => {
         setExercises(prev => [...prev, '']);

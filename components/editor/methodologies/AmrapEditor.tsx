@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, Clock, RotateCw } from 'lucide-react';
 import { SmartExerciseInput } from '../SmartExerciseInput';
 import type { AMRAPConfig, RFTConfig } from '@/lib/supabase/types';
@@ -43,17 +43,26 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
         return [{ id: crypto.randomUUID(), exercise: '', reps: '' }];
     });
 
+    const onChangeRef = useRef(onChange);
+    const onBatchChangeRef = useRef(onBatchChange);
+
     useEffect(() => {
-        if (onBatchChange) {
-            onBatchChange({
+        onChangeRef.current = onChange;
+        onBatchChangeRef.current = onBatchChange;
+    }, [onChange, onBatchChange]);
+
+    useEffect(() => {
+        const batchUpdater = onBatchChangeRef.current;
+        if (batchUpdater) {
+            batchUpdater({
                 items: items,
                 movements: items.map(i => i.exercise)
             });
         } else {
-            onChange('items', items);
-            onChange('movements', items.map(i => i.exercise));
+            onChangeRef.current('items', items);
+            onChangeRef.current('movements', items.map(i => i.exercise));
         }
-    }, [items, onBatchChange, onChange]);
+    }, [items]);
 
     const addItem = () => {
         setItems(prev => [...prev, { id: crypto.randomUUID(), exercise: '', reps: '' }]);

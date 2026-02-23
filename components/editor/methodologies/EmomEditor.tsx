@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, Clock, Repeat, ArrowRight } from 'lucide-react';
 import { SmartExerciseInput } from '../SmartExerciseInput';
 import type { EMOMConfig } from '@/lib/supabase/types';
@@ -48,12 +48,17 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
         return [{ id: crypto.randomUUID(), label: 'Minuto 1', movement: '', reps: '' }];
     });
 
+    const onChangeRef = useRef(onChange);
+    useEffect(() => {
+        onChangeRef.current = onChange;
+    }, [onChange]);
+
     // Update config when slots change
     useEffect(() => {
-        onChange('slots', slots);
+        onChangeRef.current('slots', slots);
         // Also sync 'movements' for backward compatibility or summary views
-        onChange('movements', slots.map(s => s.movement));
-    }, [slots, onChange]);
+        onChangeRef.current('movements', slots.map(s => s.movement));
+    }, [slots]);
 
     const addSlot = () => {
         setSlots(prev => [
