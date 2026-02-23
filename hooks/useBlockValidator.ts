@@ -1,13 +1,50 @@
 import { useExerciseCache } from '@/hooks/useExerciseCache';
-import type { BlockType } from '@/lib/supabase/types';
+import { useEditorStore } from '@/lib/store';
+import {
+    normalizeMethodologyCode,
+    normalizeTrainingMethodologies,
+} from '@/lib/training-methodologies';
 
 interface BlockValidationResult {
     isValid: boolean;
     missingFields: string[];
 }
 
+function isFilledText(value: unknown): boolean {
+    if (typeof value === 'string') return value.trim().length > 0;
+    if (typeof value === 'number') return true;
+    return value !== null && value !== undefined;
+}
+
+function isPositiveNumber(value: unknown): boolean {
+    if (typeof value === 'number') return Number.isFinite(value) && value > 0;
+    if (typeof value === 'string') {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) && parsed > 0;
+    }
+    return false;
+}
+
+function extractMovementNames(value: unknown): string[] {
+    if (!Array.isArray(value)) return [];
+
+    return value
+        .map((entry) => {
+            if (typeof entry === 'string') return entry.trim();
+            if (typeof entry === 'object' && entry !== null) {
+                if ('name' in entry && typeof (entry as any).name === 'string') return (entry as any).name.trim();
+                if ('movement' in entry && typeof (entry as any).movement === 'string') return (entry as any).movement.trim();
+                if ('exercise' in entry && typeof (entry as any).exercise === 'string') return (entry as any).exercise.trim();
+            }
+            return '';
+        })
+        .filter(Boolean);
+}
+
 export const useBlockValidator = () => {
     const { searchLocal } = useExerciseCache();
+    const { trainingMethodologies } = useEditorStore();
+    const methodologies = normalizeTrainingMethodologies(trainingMethodologies);
 
     const validateBlock = (block: {
         type: string;
@@ -20,124 +57,104 @@ export const useBlockValidator = () => {
         const config = block.config || {};
         const missingFields: string[] = [];
 
-        // 1. Strength Linear: Needs Name (Valid Exercise), Sets, Reps, Intensity, Rest
         if (block.type === 'strength_linear') {
-            // Exercise Name
             if (!block.name || block.name.trim().length === 0) {
                 missingFields.push('Nombre del Ejercicio');
             } else {
-                // Check cache for valid exercise
                 const match = searchLocal(block.name).find(e => e.name.toLowerCase() === block.name?.toLowerCase());
                 if (!match) {
-                    missingFields.push('Ejercicio Válido (Seleccionar de lista)');
+                    missingFields.push('Ejercicio valido (seleccionar de lista)');
                 }
             }
 
-            // Sets
-            if (!config.sets || Number(config.sets) <= 0) {
+            if (!isPositiveNumber(config.sets)) {
                 missingFields.push('Series');
             }
 
-            // Reps or Distance
-            const hasReps = config.reps && String(config.reps).trim().length > 0;
-            const hasDistance = config.distance && String(config.distance).trim().length > 0;
+            const hasReps = isFilledText(config.reps);
+            const hasDistance = isFilledText(config.distance);
             if (!hasReps && !hasDistance) {
                 missingFields.push('Repeticiones o Distancia');
             }
 
-            // Intensity (Weight/Percentage/RPE/RIR) - At least one
-            const hasIntensity = (config.weight && String(config.weight).trim().length > 0) ||
-                (config.percentage && Number(config.percentage) > 0) ||
-                (config.rpe && Number(config.rpe) > 0) ||
-                (config.rir !== undefined && config.rir !== null && config.rir !== '');
+            const hasIntensity =
+                isFilledText(config.weight) ||
+                isPositiveNumber(config.percentage) ||
+                isPositiveNumber(config.rpe) ||
+                isFilledText(config.rir);
 
             if (!hasIntensity) {
                 missingFields.push('Intensidad (Peso, %, RPE o RIR)');
             }
 
-            // Rest
-            if (!config.rest || String(config.rest).trim().length === 0) {
+            if (!isFilledText(config.rest)) {
                 missingFields.push('Descanso');
             }
-        }
-
-        // 2. Free Text: Needs content
-        else if (block.type === 'free_text') {
+        } else if (block.type === 'free_text') {
             const content = config.content as string;
             if (!content || content.trim().length === 0) {
                 missingFields.push('Contenido');
             }
-        }
-
-        // 3. Structured (Metcon, etc): Needs Format + At least one VALID movement
-        else if (['metcon_structured', 'warmup', 'accessory', 'skill', 'finisher'].includes(block.type)) {
-            // Methodology/Format
+        } else if (['metcon_structured', 'warmup', 'accessory', 'skill', 'finisher'].includes(block.type)) {
             if (!block.format) {
-                missingFields.push('Metodología (Formato)');
+                missingFields.push('Metodologia (Formato)');
             }
 
-            // Movements
-            const movements = config.movements as any[] || [];
-            if (movements.length === 0) {
-                missingFields.push('Al menos 1 movimiento');
-            } else {
-                // Verify all added movements are valid
-                let allMovementsValid = true;
-                for (const m of movements) {
-                    let name = '';
-                    if (typeof m === 'string') name = m;
-                    else if (typeof m === 'object' && m && 'name' in m) name = (m as any).name;
+            const methodology = methodologies.find(
+                (method) => normalizeMethodologyCode(method.code) === normalizeMethodologyCode(block.format || '')
+            );
 
-                    if (!name || name.trim().length === 0) {
-                        allMovementsValid = false;
-                        break;
-                    }
-                    /* 
-                       Note: We are NOT validating movement names against the cache strictly here for MetCons yet, 
-                       because sometimes users use custom movements or complex strings in MetCons. 
-                       However, if the requirement is STRICT, we should enable it.
-                       Given "NO PUEDE SER QUE SIGAS COMEITENDO ESTE ERROR MOGOLICO", let's be STRICT but safe.
-                       If they typed it, it's valid for now, but empty is not.
-                    */
-                }
-                if (!allMovementsValid) {
-                    missingFields.push('Movimientos válidos (nombres no vacíos)');
-                } else if (block.type === 'warmup' || block.type === 'accessory') {
-                    // Strict validation for Warmup/Accessory
-                    let allStrictValid = true;
-                    for (const m of movements) {
-                        let name = '';
-                        if (typeof m === 'string') name = m;
-                        else if (typeof m === 'object' && m && 'name' in m) name = (m as any).name;
+            if (methodology) {
+                for (const field of methodology.form_config?.fields || []) {
+                    if (!field.required) continue;
 
-                        // Check cache
-                        const match = searchLocal(name).find(e => e.name.toLowerCase() === name.toLowerCase());
-                        if (!match) {
-                            allStrictValid = false;
-                            break;
+                    if (field.type === 'movements_list') {
+                        let names = extractMovementNames(config[field.key]);
+                        if (field.key === 'movements' && names.length === 0) {
+                            names = [
+                                ...extractMovementNames(config.items),
+                                ...extractMovementNames(config.slots),
+                            ];
                         }
+
+                        if (names.length === 0) {
+                            missingFields.push(field.label);
+                        } else if (block.type === 'warmup' || block.type === 'accessory') {
+                            const allInLibrary = names.every((movementName) => {
+                                const match = searchLocal(movementName).find(
+                                    (exercise) => exercise.name.toLowerCase() === movementName.toLowerCase()
+                                );
+                                return !!match;
+                            });
+
+                            if (!allInLibrary) {
+                                missingFields.push('Todos los ejercicios deben ser de la biblioteca');
+                            }
+                        }
+
+                        continue;
                     }
-                    if (!allStrictValid) {
-                        missingFields.push('Todos los ejercicios deben ser de la biblioteca');
+
+                    const fieldValue = config[field.key];
+                    if (field.type === 'number') {
+                        if (!isPositiveNumber(fieldValue)) {
+                            missingFields.push(field.label);
+                        }
+                    } else if (!isFilledText(fieldValue)) {
+                        missingFields.push(field.label);
                     }
                 }
-            }
-
-            // Specific check for AMRAP: Time Cap
-            if (block.format === 'AMRAP' || block.format === 'For Time') {
-                // Assuming AMRAP usually needs a time cap, or maybe just AMRAP?
-                // Let's check config.minutes for AMRAP specifically if it's in the UI
-                if (block.format === 'AMRAP') {
-                    if (!config.minutes || Number(config.minutes) <= 0) {
-                        missingFields.push('Time Cap (Minutos)');
-                    }
+            } else {
+                const fallbackMovements = extractMovementNames(config.movements);
+                if (fallbackMovements.length === 0) {
+                    missingFields.push('Al menos 1 movimiento');
                 }
             }
         }
 
         return {
             isValid: missingFields.length === 0,
-            missingFields
+            missingFields,
         };
     };
 

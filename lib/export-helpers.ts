@@ -1,5 +1,6 @@
 
 import { type MesocycleStrategy } from '@/components/editor/MesocycleStrategyForm';
+import { normalizeMethodologyCode } from '@/lib/training-methodologies';
 
 // ==========================================
 // RM / STATS HELPERS (Copied from hooks/useAthleteRm.ts)
@@ -75,8 +76,10 @@ export function convertConfigToText(type: string, config: any, blockName?: strin
     // 2. Handle Structured Metcons
     if (type === 'metcon_structured') {
         const lines = [];
+        const formatCode = normalizeMethodologyCode((config.format as string) || '');
+        const timeCapValue = config.time_cap || config.timeCap || config.minutes;
         const header = [
-            config.time_cap || config.minutes ? `${config.format === 'EMOM' ? 'EMOM' : 'Time Cap'}: ${config.time_cap || config.minutes} min` : '',
+            timeCapValue ? `${formatCode === 'EMOM' ? 'EMOM' : 'Time Cap'}: ${timeCapValue} min` : '',
             config.rounds ? `${config.rounds} Rounds` : '',
             config.score_type ? `Score: ${config.score_type}` : ''
         ].filter(Boolean).join(' | ');
@@ -214,17 +217,19 @@ export function configToStructure(type: string, config: any, blockName?: string 
     // 2. MetCons
     if (type === 'metcon_structured') {
         const parts = [];
+        const formatCode = normalizeMethodologyCode((config.format as string) || '');
+        const timeCapValue = config.time_cap || config.timeCap || config.minutes;
 
         // Explicitly handle formats based on correct inputs
-        if (config.format === 'EMOM') {
+        if (formatCode === 'EMOM') {
             parts.push(`EMOM ${config.minutes || config.time_cap || ''}min`);
-        } else if (config.format === 'AMRAP') {
+        } else if (formatCode === 'AMRAP') {
             parts.push(`AMRAP ${config.minutes || config.time_cap || ''}min`);
-        } else if (config.format === 'For Time') {
-            parts.push(`For Time ${config.time_cap ? `(Cap: ${config.time_cap}min)` : ''}`);
+        } else if (formatCode === 'FOR_TIME') {
+            parts.push(`For Time ${timeCapValue ? `(Cap: ${timeCapValue}min)` : ''}`);
         } else {
             // Fallback
-            if (config.time_cap || config.minutes) parts.push(`Time Cap: ${config.time_cap || config.minutes} min`);
+            if (timeCapValue) parts.push(`Time Cap: ${timeCapValue} min`);
         }
 
         if (config.rounds) parts.push(`${config.rounds} Rounds`);

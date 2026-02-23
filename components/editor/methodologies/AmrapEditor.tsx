@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Clock, RotateCw, Dumbbell } from 'lucide-react';
+import { Plus, Trash2, Clock, RotateCw } from 'lucide-react';
 import { SmartExerciseInput } from '../SmartExerciseInput';
 import type { AMRAPConfig, RFTConfig } from '@/lib/supabase/types';
 
@@ -15,7 +15,7 @@ interface CircuitEditorProps {
     config: Partial<AMRAPConfig & RFTConfig>;
     onChange: (key: string, value: unknown) => void;
     onBatchChange?: (updates: Record<string, unknown>) => void;
-    mode: 'AMRAP' | 'RFT' | 'CHIPPER'; // CHIPPER acts like RFT usually but linear
+    mode: 'AMRAP' | 'RFT' | 'FOR_TIME' | 'CHIPPER';
 }
 
 export function CircuitEditor({ config, onChange, onBatchChange, mode }: CircuitEditorProps) {
@@ -53,7 +53,7 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
             onChange('items', items);
             onChange('movements', items.map(i => i.exercise));
         }
-    }, [items]);
+    }, [items, onBatchChange, onChange]);
 
     const addItem = () => {
         setItems(prev => [...prev, { id: crypto.randomUUID(), exercise: '', reps: '' }]);
@@ -71,49 +71,64 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
         });
     };
 
+    const showRoundsInput = mode === 'RFT' || mode === 'CHIPPER';
+    const showTimeCapInput = mode === 'RFT' || mode === 'CHIPPER' || mode === 'FOR_TIME';
+
     return (
         <div className="space-y-6 animate-in fade-in duration-300">
             {/* Top Config Row: Inputs based on Mode */}
-            <div className="flex flex-wrap items-center gap-4 bg-slate-50 dark:bg-cv-bg-tertiary/30 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50">
-                {(mode === 'RFT' || mode === 'CHIPPER') && (
+            {(showRoundsInput || showTimeCapInput) && (
+                <div className="flex flex-wrap items-center gap-4 bg-slate-50 dark:bg-cv-bg-tertiary/30 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50">
                     <>
-                        <div className="flex-1 min-w-[120px]">
-                            <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide">
-                                Rondas
-                            </label>
-                            <div className="flex items-center gap-2">
-                                <div className="relative flex-1">
-                                    <RotateCw size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                                    <input
-                                        type="number"
-                                        value={config.rounds || ''}
-                                        onChange={(e) => onChange('rounds', parseInt(e.target.value) || 0)}
-                                        className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
-                                        placeholder={mode === 'CHIPPER' ? '1' : '5'}
-                                    />
+                        {showRoundsInput && (
+                            <div className="flex-1 min-w-[120px]">
+                                <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide">
+                                    Rondas
+                                </label>
+                                <div className="flex items-center gap-2">
+                                    <div className="relative flex-1">
+                                        <RotateCw size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                                        <input
+                                            type="number"
+                                            value={config.rounds || ''}
+                                            onChange={(e) => onChange('rounds', parseInt(e.target.value, 10) || 0)}
+                                            className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
+                                            placeholder={mode === 'CHIPPER' ? '1' : '5'}
+                                        />
+                                    </div>
                                 </div>
+                                <p className="text-[11px] text-cv-text-tertiary mt-1 leading-snug">
+                                    {mode === 'CHIPPER'
+                                        ? 'Usa 1 si el chipper se hace una sola pasada.'
+                                        : 'Cantidad total de rondas del circuito.'}
+                                </p>
                             </div>
-                        </div>
-                        <div className="flex-1 min-w-[140px]">
-                            <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide">
-                                Time Cap (Opcional)
-                            </label>
-                            <div className="flex items-center gap-2">
-                                <div className="relative flex-1">
-                                    <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                                    <input
-                                        type="number"
-                                        value={config.timeCap || ''}
-                                        onChange={(e) => onChange('timeCap', parseInt(e.target.value) || null)}
-                                        className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
-                                        placeholder="No limit"
-                                    />
+                        )}
+                        {showTimeCapInput && (
+                            <div className="flex-1 min-w-[140px]">
+                                <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide">
+                                    Time Cap (Opcional)
+                                </label>
+                                <div className="flex items-center gap-2">
+                                    <div className="relative flex-1">
+                                        <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                                        <input
+                                            type="number"
+                                            value={config.timeCap || ''}
+                                            onChange={(e) => onChange('timeCap', parseInt(e.target.value, 10) || null)}
+                                            className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
+                                            placeholder="15"
+                                        />
+                                    </div>
                                 </div>
+                                <p className="text-[11px] text-cv-text-tertiary mt-1 leading-snug">
+                                    Minutos maximos para completar el bloque.
+                                </p>
                             </div>
-                        </div>
+                        )}
                     </>
-                )}
-            </div>
+                </div>
+            )}
 
             {/* Circuit Builder */}
             <div>
@@ -125,6 +140,9 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                         {items.length} ejercicios
                     </span>
                 </div>
+                <p className="text-[11px] text-cv-text-tertiary mb-3 leading-snug">
+                    En cada fila elige el ejercicio y define reps, distancia o tiempo objetivo para ese item.
+                </p>
 
                 <div className="space-y-3">
                     {items.map((item, index) => (
@@ -150,7 +168,7 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                                     type="text"
                                     value={item.reps}
                                     onChange={(e) => updateItem(index, 'reps', e.target.value)}
-                                    placeholder="Reps"
+                                    placeholder="Ej: 15 reps / 200m / 40s"
                                     className="w-full text-sm text-center bg-slate-50 dark:bg-slate-800 border-none rounded-lg py-2 focus:ring-1 focus:ring-cv-accent/50"
                                 />
                             </div>

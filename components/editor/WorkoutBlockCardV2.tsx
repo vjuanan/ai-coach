@@ -8,6 +8,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { createPortal } from 'react-dom';
 import { useAthleteBenchmarks } from '@/hooks/useAthleteBenchmarks'; // New Hook
+import { normalizeMethodologyCode } from '@/lib/training-methodologies';
 
 interface DraftWorkoutBlock {
     id: string;
@@ -47,12 +48,21 @@ const blockTypeStyles: Record<string, { color: string; label: string; hoverClass
 const formatLabels: Record<string, string> = {
     AMRAP: 'AMRAP',
     EMOM: 'EMOM',
+    EMOM_ALT: 'EMOM Alternado',
+    E2MOM: 'E2MOM',
     RFT: 'Rondas Por Tiempo',
-    Chipper: 'Chipper',
-    Ladder: 'Ladder',
-    Tabata: 'Tabata',
-    'Not For Time': 'Sin Tiempo',
-    'For Time': 'Por Tiempo',
+    FOR_TIME: 'Por Tiempo',
+    CHIPPER: 'Chipper',
+    DEATH_BY: 'Death By',
+    TABATA: 'Tabata',
+    LADDER: 'Escalera',
+    INTERVALS: 'Intervalos',
+    NOT_FOR_TIME: 'Sin Tiempo',
+    DROPSET_FINISHER: 'Dropset',
+    REST_PAUSE: 'Rest-Pause',
+    LADDER_FINISHER: 'Escalera',
+    ISO_HOLD: 'Iso-Hold',
+    '1_5_REPS': '1.5 Reps',
 };
 
 export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
@@ -208,7 +218,8 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
 
             case 'metcon':
             case 'metcon_structured': {
-                const format = block.format;
+                const rawFormat = block.format;
+                const format = normalizeMethodologyCode(rawFormat || '');
                 const items = (config as any).items as { exercise: string; reps: string }[] || [];
                 const slots = (config as any).slots as { label: string; movement: string; reps: string }[] || [];
                 const movements = config.movements as string[] || [];
@@ -219,7 +230,7 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
                 const restSeconds = (config as any).restSeconds as number;
 
                 if (format) {
-                    pillText = formatLabels[format] || format;
+                    pillText = formatLabels[format] || rawFormat || format;
                 }
 
                 // Build meta line based on format
@@ -228,11 +239,13 @@ export function WorkoutBlockCardV2({ block }: WorkoutBlockCardV2Props) {
                 } else if (format === 'EMOM' && minutes) {
                     const interval = (config as any).interval as number;
                     primaryMetric = `${minutes} min` + (interval && interval > 1 ? ` / c/${interval} min` : '');
-                } else if ((format === 'RFT' || format === 'For Time') && rounds) {
+                } else if (format === 'RFT' && rounds) {
                     primaryMetric = `${rounds} rondas` + (timeCap ? ` · TC ${timeCap}'` : '');
-                } else if (format === 'Chipper') {
+                } else if (format === 'FOR_TIME') {
+                    primaryMetric = timeCap ? `TC ${timeCap}'` : 'Por tiempo';
+                } else if (format === 'CHIPPER') {
                     primaryMetric = timeCap ? `TC ${timeCap}'` : '';
-                } else if (format === 'Tabata') {
+                } else if (format === 'TABATA') {
                     primaryMetric = `${rounds || 8}R · ${workSeconds || 20}s/${restSeconds || 10}s`;
                 }
 

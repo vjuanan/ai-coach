@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Clock, RotateCw, Dumbbell } from 'lucide-react';
+import { Plus, Trash2, Clock, RotateCw } from 'lucide-react';
 import { SmartExerciseInput } from '../SmartExerciseInput';
 import type { TabataConfig } from '@/lib/supabase/types';
 
@@ -35,7 +35,7 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
         // We'll prefer saving as 'movements' array related logic if possible, but keeping 'movement' as the first one for simple cases.
         onChange('movements', exercises);
         onChange('movement', exercises[0] || '');
-    }, [exercises]);
+    }, [exercises, onChange]);
 
     const addExercise = () => {
         setExercises(prev => [...prev, '']);
@@ -70,10 +70,13 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
                         <input
                             type="number"
                             value={rounds}
-                            onChange={(e) => onChange('rounds', parseInt(e.target.value) || 0)}
+                            onChange={(e) => onChange('rounds', parseInt(e.target.value, 10) || 0)}
                             className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
                         />
                     </div>
+                    <p className="text-[11px] text-cv-text-tertiary mt-1 leading-snug">
+                        Cantidad de rondas del protocolo Tabata.
+                    </p>
                 </div>
 
                 <div className="flex-1 min-w-[120px]">
@@ -85,10 +88,13 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
                         <input
                             type="number"
                             value={workSeconds}
-                            onChange={(e) => onChange('workSeconds', parseInt(e.target.value) || 0)}
+                            onChange={(e) => onChange('workSeconds', parseInt(e.target.value, 10) || 0)}
                             className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-semibold text-cv-text-primary"
                         />
                     </div>
+                    <p className="text-[11px] text-cv-text-tertiary mt-1 leading-snug">
+                        Segundos de esfuerzo por cada ronda.
+                    </p>
                 </div>
 
                 <div className="flex-1 min-w-[120px]">
@@ -100,10 +106,13 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
                         <input
                             type="number"
                             value={restSeconds}
-                            onChange={(e) => onChange('restSeconds', parseInt(e.target.value) || 0)}
+                            onChange={(e) => onChange('restSeconds', parseInt(e.target.value, 10) || 0)}
                             className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-semibold text-cv-text-primary"
                         />
                     </div>
+                    <p className="text-[11px] text-cv-text-tertiary mt-1 leading-snug">
+                        Segundos de recuperacion entre rondas.
+                    </p>
                 </div>
             </div>
 
@@ -121,6 +130,9 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
                         {exercises.length} movimientos
                     </span>
                 </div>
+                <p className="text-[11px] text-cv-text-tertiary mb-3 leading-snug">
+                    Carga uno o varios ejercicios. Si agregas mas de uno, se alternan en las rondas.
+                </p>
 
                 <div className="space-y-3">
                     {exercises.map((ex, index) => (

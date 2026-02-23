@@ -1,11 +1,12 @@
 'use server';
 
 import { createServerClient } from './supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import type { Database } from './supabase/types';
 import type { DraftMesocycle } from './store';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { unstable_noStore as noStore, unstable_cache } from 'next/cache';
+import { normalizeTrainingMethodologies } from './training-methodologies';
 
 type Program = Database['public']['Tables']['programs']['Row'];
 type Client = Database['public']['Tables']['clients']['Row'];
@@ -2604,7 +2605,7 @@ export const getTrainingMethodologies = unstable_cache(
             console.error('Error fetching training methodologies:', error);
             return [];
         }
-        return data;
+        return normalizeTrainingMethodologies((data || []) as any);
     },
     ['training_methodologies'],
     { revalidate: 3600, tags: ['training_methodologies'] }
@@ -2625,6 +2626,7 @@ export async function updateTrainingMethodology(id: string, updates: Record<stri
         return { error: error.message };
     }
 
+    revalidateTag('training_methodologies');
     revalidatePath('/editor');
     revalidatePath('/knowledge');
     return { data };

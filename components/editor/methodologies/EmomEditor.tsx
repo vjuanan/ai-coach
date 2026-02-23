@@ -11,12 +11,6 @@ interface EmomEditorProps {
     blockType?: 'warmup' | 'metcon_structured' | 'accessory' | 'skill' | 'finisher' | string;
 }
 
-interface MinuteSlot {
-    minutes: number[]; // e.g. [1, 3, 5] or just [1]
-    movement: string;
-    reps: string;
-}
-
 export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
     // Local state for complex minute logic
     // We map the raw config to a more UI-friendly structure if needed
@@ -99,13 +93,16 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                             <input
                                 type="number"
                                 value={duration}
-                                onChange={(e) => onChange('minutes', parseInt(e.target.value) || 0)}
+                                onChange={(e) => onChange('minutes', parseInt(e.target.value, 10) || 0)}
                                 className={`w-full py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary ${isWarmup ? 'pl-9 pr-9 text-center' : 'pl-9 pr-3'}`}
                                 placeholder="10"
                             />
                         </div>
                         <span className="text-sm font-medium text-cv-text-tertiary">min</span>
                     </div>
+                    <p className={`text-[11px] text-cv-text-tertiary mt-1 leading-snug ${isWarmup ? 'text-center' : ''}`}>
+                        Minutos totales del bloque EMOM.
+                    </p>
                 </div>
 
                 <div className="flex-1 min-w-[120px]">
@@ -118,13 +115,16 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                             <input
                                 type="number"
                                 value={interval}
-                                onChange={(e) => onChange('interval', parseInt(e.target.value) || 1)}
+                                onChange={(e) => onChange('interval', parseInt(e.target.value, 10) || 1)}
                                 className={`w-full py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary ${isWarmup ? 'pl-9 pr-9 text-center' : 'pl-9 pr-3'}`}
                                 placeholder="1"
                             />
                         </div>
                         <span className="text-sm font-medium text-cv-text-tertiary">min</span>
                     </div>
+                    <p className={`text-[11px] text-cv-text-tertiary mt-1 leading-snug ${isWarmup ? 'text-center' : ''}`}>
+                        Frecuencia del trabajo: 1 = cada minuto, 2 = cada 2 minutos, etc.
+                    </p>
                 </div>
             </div>
 
@@ -138,6 +138,9 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                         {slots.length} intervalos definidos
                     </span>
                 </div>
+                <p className="text-[11px] text-cv-text-tertiary mb-3 leading-snug">
+                    En cada intervalo define el nombre del minuto, el ejercicio y el volumen objetivo (reps, tiempo o distancia).
+                </p>
 
                 <div className="space-y-3">
                     {slots.map((slot, index) => (

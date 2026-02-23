@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { SmartExerciseInput } from './SmartExerciseInput';
 import { useExerciseCache } from '@/hooks/useExerciseCache';
 import { Trash2, Plus, RotateCcw, Repeat, Activity, Flame, Clock, FileText } from 'lucide-react';
-import type { TrainingMethodology } from '@/lib/supabase/types';
+import type { TrainingMethodology, TrainingMethodologyFormField } from '@/lib/supabase/types';
 import { InputCard } from './InputCard';
+import { formatMethodologyOptionLabel, normalizeMethodologyCode } from '@/lib/training-methodologies';
 
 interface GenericMovementFormProps {
     config: Record<string, unknown>;
@@ -43,10 +44,10 @@ const parseMovements = (data: unknown[]): MovementObject[] => {
 
 export function GenericMovementForm({ config, onChange, methodology, blockType }: GenericMovementFormProps) {
     // Logic for displaying inputs based on methodology
-    // Force git update: 4
+    const methodologyCode = normalizeMethodologyCode(methodology?.code || '');
     const isMetconLike = methodology?.category === 'metcon' || methodology?.category === 'hiit';
     const isStrengthLike = methodology?.category === 'strength';
-    const isStandard = methodology?.code === 'STANDARD';
+    const isStandard = methodologyCode === 'STANDARD';
 
     const isWarmUp = blockType === 'warmup';
     const [warmupMode, setWarmupMode] = useState<'rounds' | 'sets'>('rounds');
@@ -57,12 +58,20 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
     // - If no methodology selected (undefined), show NEITHER
     // - [NEW] Warmup blocks ALWAYS show Rounds OR Sets mutually exclusive
     const showRounds = (isMetconLike && !isStandard) || (isWarmUp && warmupMode === 'rounds');
-    const showGlobalSets = (methodology?.code === 'SUPER_SET' || methodology?.code === 'GIANT_SET');
-    const showSetsPerMovement = (!isWarmUp && (isStrengthLike || isStandard) && !showGlobalSets) || (isWarmUp && warmupMode === 'sets');
+    const showGlobalSets = methodologyCode === 'SUPER_SET';
+    const showGlobalRounds = methodologyCode === 'GIANT_SET';
+    const showSetsPerMovement = (!isWarmUp && (isStrengthLike || isStandard) && !showGlobalSets && !showGlobalRounds) || (isWarmUp && warmupMode === 'sets');
 
     const movements = parseMovements((config.movements as unknown[]) || []);
-    const rounds = (config.rounds as string) || '';
-    const globalSets = (config.sets as string) || '';
+    const rounds = (config.rounds as string | number) || '';
+    const globalSets = (config.sets as string | number) || '';
+    const movementField = (methodology?.form_config?.fields || []).find(
+        (field) => field.type === 'movements_list' && field.key === 'movements'
+    );
+    const methodologySimpleFields = (methodology?.form_config?.fields || [])
+        .filter((field) => field.type !== 'movements_list')
+        .filter((field) => !(field.key === 'rounds' && (showRounds || showGlobalRounds)))
+        .filter((field) => !(field.key === 'sets' && (showGlobalSets || showSetsPerMovement)));
 
     const handleMovementsChange = (newMovements: MovementObject[]) => {
         onChange('movements', newMovements);
@@ -110,31 +119,51 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                 )}
 
                 {/* 1. Global Rounds/Sets Input - Only if methodology supports it */}
-                {(showRounds || showGlobalSets) && (
+                {(showRounds || showGlobalSets || showGlobalRounds) && (
                     <div className="max-w-md w-full"> {/* Limited width */}
                         <InputCard
-                            label={showRounds ? "RONDAS / VUELTAS" : "SERIES"}
-                            value={showRounds ? rounds : globalSets}
-                            onChange={(val) => onChange(showRounds ? 'rounds' : 'sets', val)}
+                            label={showGlobalSets ? 'SERIES' : 'RONDAS / VUELTAS'}
+                            value={showGlobalSets ? globalSets : rounds}
+                            onChange={(val) => onChange(showGlobalSets ? 'sets' : 'rounds', val)}
                             type="text"
                             icon={RotateCcw}
-                            placeholder={showRounds ? "Ej: 3, 4, 5" : "3"}
+                            placeholder={showGlobalSets ? '3' : 'Ej: 3, 4, 5'}
                             presets={[2, 3, 4, 5]}
                         />
                     </div>
                 )}
             </div>
 
+            {methodologySimpleFields.length > 0 && (
+                <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {methodologySimpleFields.map((field) => (
+                            <MethodologySimpleField
+                                key={field.key}
+                                field={field}
+                                value={config[field.key]}
+                                onChange={(nextValue) => onChange(field.key, nextValue)}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* 2. Movements List */}
             <div>
                 <div className="flex items-center justify-between mb-3">
                     <label className="text-sm font-medium text-cv-text-secondary">
-                        Movimientos
+                        {movementField?.label || 'Movimientos'}
                     </label>
                     <span className="text-xs text-cv-text-tertiary">
                         {movements.length} ejercicios
                     </span>
                 </div>
+                {movementField?.help && (
+                    <p className="text-[11px] text-cv-text-tertiary mb-3 leading-snug">
+                        {movementField.help}
+                    </p>
+                )}
 
                 <div className="space-y-4">
                     {movements.map((movement, index) => (
@@ -166,6 +195,74 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                     </div>
                 </div>
             </div>
+        </div>
+    );
+}
+
+// ----------------------------------------------------------------------
+// Sub-component: MethodologySimpleField
+// ----------------------------------------------------------------------
+
+interface MethodologySimpleFieldProps {
+    field: TrainingMethodologyFormField;
+    value: unknown;
+    onChange: (value: unknown) => void;
+}
+
+function MethodologySimpleField({ field, value, onChange }: MethodologySimpleFieldProps) {
+    const resolvedValue = value ?? field.default ?? '';
+
+    if (field.type === 'select' && field.options) {
+        return (
+            <div className="bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-xl p-3 space-y-2">
+                <label className="block text-[11px] font-bold uppercase tracking-wide text-cv-text-secondary text-center">
+                    {field.label}
+                </label>
+                <select
+                    value={String(resolvedValue)}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="cv-input text-center"
+                >
+                    {field.options.map((option) => (
+                        <option key={option} value={option}>
+                            {formatMethodologyOptionLabel(option)}
+                        </option>
+                    ))}
+                </select>
+                {field.help && (
+                    <p className="text-[11px] text-cv-text-tertiary leading-snug text-center">{field.help}</p>
+                )}
+            </div>
+        );
+    }
+
+    const inputType = field.type === 'number' ? 'number' : 'text';
+    const normalizedValue = field.type === 'number'
+        ? (typeof resolvedValue === 'number' ? String(resolvedValue) : String(resolvedValue || '').replace(/[^0-9]/g, ''))
+        : String(resolvedValue ?? '');
+
+    return (
+        <div className="bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-xl p-3 space-y-2">
+            <label className="block text-[11px] font-bold uppercase tracking-wide text-cv-text-secondary text-center">
+                {field.label}
+            </label>
+            <input
+                type={inputType}
+                value={normalizedValue}
+                onChange={(e) => {
+                    if (field.type === 'number') {
+                        const numeric = e.target.value ? parseInt(e.target.value, 10) : null;
+                        onChange(numeric);
+                        return;
+                    }
+                    onChange(e.target.value);
+                }}
+                placeholder={field.placeholder}
+                className="cv-input text-center font-semibold"
+            />
+            {field.help && (
+                <p className="text-[11px] text-cv-text-tertiary leading-snug text-center">{field.help}</p>
+            )}
         </div>
     );
 }

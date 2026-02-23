@@ -3,7 +3,37 @@
 
 export type ClientType = 'athlete' | 'gym';
 export type BlockType = 'strength_linear' | 'metcon_structured' | 'warmup' | 'accessory' | 'skill' | 'free_text' | 'finisher';
-export type WorkoutFormat = 'AMRAP' | 'EMOM' | 'RFT' | 'Chipper' | 'Ladder' | 'Tabata' | 'Not For Time' | 'For Time' | 'STANDARD';
+export type WorkoutFormat =
+    | 'AMRAP'
+    | 'EMOM'
+    | 'EMOM_ALT'
+    | 'E2MOM'
+    | 'RFT'
+    | 'FOR_TIME'
+    | 'CHIPPER'
+    | 'DEATH_BY'
+    | 'TABATA'
+    | 'LADDER'
+    | 'INTERVALS'
+    | 'STANDARD'
+    | 'CLUSTER'
+    | 'DROP_SET'
+    | 'GIANT_SET'
+    | 'SUPER_SET'
+    | 'NOT_FOR_TIME'
+    | 'TEMPO'
+    | 'DROPSET_FINISHER'
+    | 'REST_PAUSE'
+    | 'LADDER_FINISHER'
+    | '21S'
+    | 'ISO_HOLD'
+    | '1_5_REPS'
+    // Legacy values kept for backward compatibility with old records
+    | 'For Time'
+    | 'Chipper'
+    | 'Tabata'
+    | 'Ladder'
+    | 'Not For Time';
 export type ExerciseCategory = 'Weightlifting' | 'Gymnastics' | 'Monostructural' | 'Functional Bodybuilding';
 
 // JSONB Config Types for Workout Blocks

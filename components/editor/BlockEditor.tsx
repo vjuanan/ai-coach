@@ -12,6 +12,11 @@ import { ProgressionPreview } from './ProgressionPreview';
 import { GenericMovementForm } from './GenericMovementForm';
 import { getTrainingMethodologies } from '@/lib/actions';
 import {
+    formatMethodologyOptionLabel,
+    normalizeMethodologyCode,
+    normalizeTrainingMethodologies,
+} from '@/lib/training-methodologies';
+import {
     X,
     Clock,
     Repeat,
@@ -73,6 +78,8 @@ const iconMap: Record<string, LucideIcon> = {
     Repeat2: Repeat, HelpCircle, Target
 };
 
+const SPECIALIZED_METHOD_CODES = ['EMOM', 'AMRAP', 'RFT', 'FOR_TIME', 'CHIPPER', 'TABATA'];
+
 export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps) {
     const {
         mesocycles,
@@ -92,6 +99,10 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     const [showProgressionSelector, setShowProgressionSelector] = useState(false);
     const [showEditExerciseModal, setShowEditExerciseModal] = useState(false);
     const firstInputRef = useRef<HTMLInputElement>(null);
+    const normalizedMethodologies = useMemo(
+        () => normalizeTrainingMethodologies(trainingMethodologies),
+        [trainingMethodologies]
+    );
 
     // Validation Hook
     const { validateBlock } = useBlockValidator();
@@ -153,11 +164,15 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     // instead of falling back to the generic DynamicMethodologyForm (Small Inputs) if a matching format (like 'STANDARD') exists.
     const currentMethodology = block?.type === 'strength_linear'
         ? undefined
-        : trainingMethodologies.find(m => m.code === block?.format);
+        : normalizedMethodologies.find(
+            (m) => normalizeMethodologyCode(m.code) === normalizeMethodologyCode(block?.format || '')
+        );
+    const currentMethodologyCode = normalizeMethodologyCode(currentMethodology?.code || '');
+    const isSpecializedMethod = SPECIALIZED_METHOD_CODES.includes(currentMethodologyCode);
     const isFinisherBlock = block?.type === 'finisher';
     const finisherMethods = useMemo(
-        () => trainingMethodologies.filter((m) => m.category === 'finisher'),
-        [trainingMethodologies]
+        () => normalizedMethodologies.filter((m) => m.category === 'finisher'),
+        [normalizedMethodologies]
     );
 
     // Finisher blocks should open directly with finisher methodologies (no extra click on "Finishers").
@@ -203,13 +218,16 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     };
 
     const handleFormatChange = (format: string) => {
+        const normalizedFormat = normalizeMethodologyCode(format);
         // Find methodology and apply its default values
-        const methodology = trainingMethodologies.find(m => m.code === format);
+        const methodology = normalizedMethodologies.find(
+            (m) => normalizeMethodologyCode(m.code) === normalizedFormat
+        );
         if (methodology) {
             const newConfig = { ...config, ...methodology.default_values } as WorkoutConfig;
-            updateBlock(blockId, { format: format as WorkoutFormat, config: newConfig });
+            updateBlock(blockId, { format: normalizedFormat as WorkoutFormat, config: newConfig });
         } else {
-            updateBlock(blockId, { format: format as WorkoutFormat });
+            updateBlock(blockId, { format: normalizedFormat as WorkoutFormat });
         }
     };
 
@@ -236,7 +254,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         const isAllowed = !block?.type || (allowed && allowed.includes(cat));
 
         if (isAllowed) {
-            let methods = trainingMethodologies.filter(m => m.category === cat);
+            let methods = normalizedMethodologies.filter(m => m.category === cat);
             // For warmup blocks, Classic = only Series x Reps (STANDARD)
             if (blockType === 'warmup' && cat === 'strength') {
                 methods = methods.filter(m => m.code === 'STANDARD');
@@ -342,7 +360,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                             <div className="flex flex-wrap gap-2">
                                                 {(groupedMethodologies.finisher || []).map(m => {
                                                     const IconComponent = iconMap[m.icon] || Dumbbell;
-                                                    const isSelected = block?.format === m.code;
+                                                    const isSelected = normalizeMethodologyCode(block?.format || '') === normalizeMethodologyCode(m.code);
 
                                                     return (
                                                         <button
@@ -374,7 +392,9 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                                     if (items.length === 0) return null;
 
                                                     const isExpanded = expandedCategory === category;
-                                                    const hasSelectedItem = items.some(m => m.code === block?.format);
+                                                    const hasSelectedItem = items.some(
+                                                        (m) => normalizeMethodologyCode(m.code) === normalizeMethodologyCode(block?.format || '')
+                                                    );
                                                     const CategoryIcon = categoryIcons[category] || Dumbbell;
 
                                                     return (
@@ -411,7 +431,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                                     <div className="flex flex-wrap gap-2">
                                                         {(groupedMethodologies[expandedCategory] || []).map(m => {
                                                             const IconComponent = iconMap[m.icon] || Dumbbell;
-                                                            const isSelected = block?.format === m.code;
+                                                            const isSelected = normalizeMethodologyCode(block?.format || '') === normalizeMethodologyCode(m.code);
 
                                                             return (
                                                                 <button
@@ -546,7 +566,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     currentMethodology && (
                         <div className="animate-in fade-in duration-300">
                             {/* EMOM Editor */}
-                            {currentMethodology.code === 'EMOM' && (
+                            {(currentMethodologyCode === 'EMOM' || currentMethodologyCode === 'EMOM_ALT') && (
                                 <EmomEditor
                                     key={blockId}
                                     config={config}
@@ -556,7 +576,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             )}
 
                             {/* AMRAP Editor */}
-                            {currentMethodology.code === 'AMRAP' && (
+                            {currentMethodologyCode === 'AMRAP' && (
                                 <CircuitEditor
                                     key={blockId}
                                     mode="AMRAP"
@@ -567,7 +587,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             )}
 
                             {/* RFT / Rounds For Time */}
-                            {(currentMethodology.code === 'RFT' || currentMethodology.code === 'For Time') && (
+                            {currentMethodologyCode === 'RFT' && (
                                 <CircuitEditor
                                     key={blockId}
                                     mode="RFT"
@@ -577,8 +597,19 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 />
                             )}
 
+                            {/* For Time */}
+                            {currentMethodologyCode === 'FOR_TIME' && (
+                                <CircuitEditor
+                                    key={blockId}
+                                    mode="FOR_TIME"
+                                    config={config}
+                                    onChange={handleConfigChange}
+                                    onBatchChange={handleBatchConfigChange}
+                                />
+                            )}
+
                             {/* Chipper */}
-                            {currentMethodology.code === 'Chipper' && (
+                            {currentMethodologyCode === 'CHIPPER' && (
                                 <CircuitEditor
                                     key={blockId}
                                     mode="CHIPPER"
@@ -589,7 +620,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             )}
 
                             {/* Tabata */}
-                            {currentMethodology.code === 'Tabata' && (
+                            {currentMethodologyCode === 'TABATA' && (
                                 <TabataEditor
                                     key={blockId}
                                     config={config}
@@ -598,7 +629,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             )}
 
                             {/* Fallback to GenericMovementForm for Warmup/Accessory/Skill/Finisher with methodology */}
-                            {['warmup', 'accessory', 'skill', 'finisher'].includes(block.type) && !['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper', 'Tabata'].includes(currentMethodology.code) && (
+                            {['warmup', 'accessory', 'skill', 'finisher'].includes(block.type) && !isSpecializedMethod && (
                                 <GenericMovementForm
                                     key={blockId}
                                     config={config}
@@ -609,7 +640,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             )}
 
                             {/* Fallback to Dynamic Form for others (Metcon) */}
-                            {!['warmup', 'accessory', 'skill', 'finisher'].includes(block.type) && !['EMOM', 'AMRAP', 'RFT', 'For Time', 'Chipper', 'Tabata'].includes(currentMethodology.code) && (
+                            {!['warmup', 'accessory', 'skill', 'finisher'].includes(block.type) && !isSpecializedMethod && (
                                 <DynamicMethodologyForm
                                     key={blockId}
                                     methodology={currentMethodology}
@@ -658,19 +689,22 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 {/* 5. NOTES (Visible for all except Strength, which has it inline) */}
                 {
                     block.type !== 'strength_linear' && (
-                        currentMethodology && currentMethodology.code === 'AMRAP' ? (
+                        currentMethodology && currentMethodologyCode === 'AMRAP' ? (
                             <div className="flex gap-4">
                                 {/* Time Cap - 40% - NOW FIRST */}
                                 <div className="w-[40%]">
                                     <label className="block text-xs font-bold text-cv-text-secondary mb-2 uppercase tracking-wide text-center">
                                         Time Cap (Min)
                                     </label>
+                                    <p className="text-[11px] text-cv-text-tertiary mb-2 text-center leading-snug">
+                                        Minutos maximos para sumar rondas en este AMRAP.
+                                    </p>
                                     <div className="relative h-[80px]">
                                         <Clock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-cv-text-tertiary opacity-50" />
                                         <input
                                             type="number"
                                             value={config.minutes || ''}
-                                            onChange={(e) => handleConfigChange('minutes', parseInt(e.target.value) || 0)}
+                                            onChange={(e) => handleConfigChange('minutes', parseInt(e.target.value, 10) || 0)}
                                             className="w-full h-full pl-10 pr-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-800 focus:border-cv-accent focus:ring-4 focus:ring-cv-accent/10 transition-all font-black text-4xl text-cv-text-primary text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                             placeholder="00"
                                         />
@@ -702,7 +736,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                     <textarea
                                         value={(config.notes as string) || ''}
                                         onChange={(e) => handleConfigChange('notes', e.target.value)}
-                                        placeholder="Focus on quality, tempo, etc."
+                                        placeholder="Objetivo tecnico, estrategia o indicaciones del bloque..."
                                         className="cv-input min-h-[60px] resize-none"
                                     />
                                 </div>
@@ -856,7 +890,7 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
                     className="cv-input"
                 >
                     {field.options.map(opt => (
-                        <option key={opt} value={opt}>{opt}</option>
+                        <option key={opt} value={opt}>{formatMethodologyOptionLabel(opt)}</option>
                     ))}
                 </select>
                 {field.help && (
@@ -887,23 +921,28 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
         };
 
         return (
-            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${showTempo ? 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700' : 'border-dashed border-slate-300 dark:border-slate-600'}`}>
-                <button
-                    onClick={toggleTempo}
-                    type="button"
-                    className={`w-8 h-4 rounded-full transition-colors relative focus:outline-none ${showTempo ? 'bg-cv-accent' : 'bg-slate-300 dark:bg-slate-600'}`}
-                >
-                    <span className={`block w-3 h-3 bg-white rounded-full transition-transform absolute top-0.5 left-0.5 ${showTempo ? 'translate-x-4' : 'translate-x-0'}`} />
-                </button>
-                <span className={`text-sm font-semibold whitespace-nowrap ${showTempo ? 'text-cv-text-primary' : 'text-cv-text-tertiary'}`}>{field.label}</span>
-                {showTempo && (
-                    <input
-                        type="text"
-                        value={(value as string) || ''}
-                        onChange={(e) => onChange(e.target.value)}
-                        placeholder="30X1"
-                        className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-16 text-center animate-in fade-in duration-150"
-                    />
+            <div className="space-y-1">
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${showTempo ? 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700' : 'border-dashed border-slate-300 dark:border-slate-600'}`}>
+                    <button
+                        onClick={toggleTempo}
+                        type="button"
+                        className={`w-8 h-4 rounded-full transition-colors relative focus:outline-none ${showTempo ? 'bg-cv-accent' : 'bg-slate-300 dark:bg-slate-600'}`}
+                    >
+                        <span className={`block w-3 h-3 bg-white rounded-full transition-transform absolute top-0.5 left-0.5 ${showTempo ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </button>
+                    <span className={`text-sm font-semibold whitespace-nowrap ${showTempo ? 'text-cv-text-primary' : 'text-cv-text-tertiary'}`}>{field.label}</span>
+                    {showTempo && (
+                        <input
+                            type="text"
+                            value={(value as string) || ''}
+                            onChange={(e) => onChange(e.target.value)}
+                            placeholder="30X1"
+                            className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-16 text-center animate-in fade-in duration-150"
+                        />
+                    )}
+                </div>
+                {field.help && (
+                    <p className="text-[11px] text-cv-text-tertiary leading-snug max-w-[240px]">{field.help}</p>
                 )}
             </div>
         );
@@ -915,31 +954,41 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
             : value;
 
         return (
-            <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
-                <span className="text-sm font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
-                <input
-                    type="number"
-                    min={0}
-                    value={(displayValue as number) || ''}
-                    onChange={(e) => onChange(e.target.value ? parseInt(e.target.value) : null)}
-                    placeholder={field.placeholder ? field.placeholder.replace('%', '') : '0'}
-                    className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-14 text-center"
-                />
+            <div className="space-y-1">
+                <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <span className="text-sm font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
+                    <input
+                        type="number"
+                        min={0}
+                        value={(displayValue as number) || ''}
+                        onChange={(e) => onChange(e.target.value ? parseInt(e.target.value, 10) : null)}
+                        placeholder={field.placeholder ? field.placeholder.replace('%', '') : '0'}
+                        className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-14 text-center"
+                    />
+                </div>
+                {field.help && (
+                    <p className="text-[11px] text-cv-text-tertiary leading-snug max-w-[240px]">{field.help}</p>
+                )}
             </div>
         );
     }
 
     // Default: text input
     return (
-        <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
-            <span className="text-sm font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
-            <input
-                type="text"
-                value={(value as string) || ''}
-                onChange={(e) => onChange(e.target.value)}
-                placeholder={field.placeholder}
-                className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-16 text-center"
-            />
+        <div className="space-y-1">
+            <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
+                <span className="text-sm font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
+                <input
+                    type="text"
+                    value={(value as string) || ''}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={field.placeholder}
+                    className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-16 text-center"
+                />
+            </div>
+            {field.help && (
+                <p className="text-[11px] text-cv-text-tertiary leading-snug max-w-[240px]">{field.help}</p>
+            )}
         </div>
     );
 }
