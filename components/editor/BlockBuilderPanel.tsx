@@ -270,8 +270,8 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
     const performAddBlock = (type: BlockType) => {
         const option = blockTypeOptions.find(o => o.type === type);
         // Default to "STANDARD" (Series x Reps) for all structured blocks
-        // Only free_text remains without a format
-        const format = type !== 'free_text' ? 'STANDARD' as WorkoutFormat : undefined;
+        // free_text and finisher start without format to let the editor choose the right methodology immediately.
+        const format = (type !== 'free_text' && type !== 'finisher') ? 'STANDARD' as WorkoutFormat : undefined;
 
         let initialConfig = undefined;
         if (type === 'strength_linear') {

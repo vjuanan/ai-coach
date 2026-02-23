@@ -8,6 +8,7 @@ import type { EMOMConfig } from '@/lib/supabase/types';
 interface EmomEditorProps {
     config: Partial<EMOMConfig>;
     onChange: (key: string, value: unknown) => void;
+    blockType?: 'warmup' | 'metcon_structured' | 'accessory' | 'skill' | 'finisher' | string;
 }
 
 interface MinuteSlot {
@@ -16,7 +17,7 @@ interface MinuteSlot {
     reps: string;
 }
 
-export function EmomEditor({ config, onChange }: EmomEditorProps) {
+export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
     // Local state for complex minute logic
     // We map the raw config to a more UI-friendly structure if needed
     // But for now let's try to stick to the config structure:
@@ -29,6 +30,7 @@ export function EmomEditor({ config, onChange }: EmomEditorProps) {
 
     const duration = (config.minutes as number) || 10;
     const interval = (config.interval as number) || 1; // Every 1 min default
+    const isWarmup = blockType === 'warmup';
 
     // Parse slots from config or initialize
     // We'll store slots as: { id: string, label: string, movement: string, reps: string }
@@ -57,7 +59,7 @@ export function EmomEditor({ config, onChange }: EmomEditorProps) {
         onChange('slots', slots);
         // Also sync 'movements' for backward compatibility or summary views
         onChange('movements', slots.map(s => s.movement));
-    }, [slots]);
+    }, [slots, onChange]);
 
     const addSlot = () => {
         setSlots(prev => [
@@ -86,19 +88,19 @@ export function EmomEditor({ config, onChange }: EmomEditorProps) {
     return (
         <div className="space-y-6 animate-in fade-in duration-300">
             {/* Top Config Row: Duration & Interval */}
-            <div className="flex flex-wrap items-center gap-4 bg-slate-50 dark:bg-cv-bg-tertiary/30 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50">
+            <div className={`flex flex-wrap items-center gap-4 bg-slate-50 dark:bg-cv-bg-tertiary/30 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50 ${isWarmup ? 'justify-center' : ''}`}>
                 <div className="flex-1 min-w-[120px]">
-                    <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide">
+                    <label className={`block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide ${isWarmup ? 'text-center' : ''}`}>
                         Duración Total
                     </label>
-                    <div className="flex items-center gap-2">
-                        <div className="relative flex-1">
+                    <div className={`flex items-center gap-2 ${isWarmup ? 'justify-center' : ''}`}>
+                        <div className={`relative flex-1 ${isWarmup ? 'max-w-[420px]' : ''}`}>
                             <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                             <input
                                 type="number"
                                 value={duration}
                                 onChange={(e) => onChange('minutes', parseInt(e.target.value) || 0)}
-                                className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
+                                className={`w-full py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary ${isWarmup ? 'pl-9 pr-9 text-center' : 'pl-9 pr-3'}`}
                                 placeholder="10"
                             />
                         </div>
@@ -107,17 +109,17 @@ export function EmomEditor({ config, onChange }: EmomEditorProps) {
                 </div>
 
                 <div className="flex-1 min-w-[120px]">
-                    <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide">
+                    <label className={`block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide ${isWarmup ? 'text-center' : ''}`}>
                         Cada
                     </label>
-                    <div className="flex items-center gap-2">
-                        <div className="relative flex-1">
+                    <div className={`flex items-center gap-2 ${isWarmup ? 'justify-center' : ''}`}>
+                        <div className={`relative flex-1 ${isWarmup ? 'max-w-[420px]' : ''}`}>
                             <Repeat size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                             <input
                                 type="number"
                                 value={interval}
                                 onChange={(e) => onChange('interval', parseInt(e.target.value) || 1)}
-                                className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
+                                className={`w-full py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary ${isWarmup ? 'pl-9 pr-9 text-center' : 'pl-9 pr-3'}`}
                                 placeholder="1"
                             />
                         </div>

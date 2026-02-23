@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useEditorStore } from '@/lib/store';
 import { useExerciseCache } from '@/hooks/useExerciseCache';
 import { SmartExerciseInput } from './SmartExerciseInput';
@@ -154,13 +154,30 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     const currentMethodology = block?.type === 'strength_linear'
         ? undefined
         : trainingMethodologies.find(m => m.code === block?.format);
+    const isFinisherBlock = block?.type === 'finisher';
+    const finisherMethods = useMemo(
+        () => trainingMethodologies.filter((m) => m.category === 'finisher'),
+        [trainingMethodologies]
+    );
 
-    // Auto-expand category of current methodology (must be before any return)
+    // Finisher blocks should open directly with finisher methodologies (no extra click on "Finishers").
     useEffect(() => {
+        if (!block) return;
+
+        if (isFinisherBlock && finisherMethods.length > 0 && (!currentMethodology || currentMethodology.category !== 'finisher')) {
+            const defaultMethod = finisherMethods[0];
+            const mergedConfig = { ...(block.config || {}), ...defaultMethod.default_values } as WorkoutConfig;
+            updateBlock(blockId, {
+                format: defaultMethod.code as WorkoutFormat,
+                config: mergedConfig
+            });
+            return;
+        }
+
         if (currentMethodology && !expandedCategory) {
             setExpandedCategory(currentMethodology.category);
         }
-    }, [currentMethodology, expandedCategory]);
+    }, [block, blockId, currentMethodology, expandedCategory, finisherMethods, isFinisherBlock, updateBlock]);
 
     // Early return if block not found (after all hooks)
     if (!block) {
@@ -320,49 +337,10 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 </div>
                             ) : (
                                 <div className="space-y-3">
-                                    {/* Categories Tabs - Horizontal Row */}
-                                    <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-                                        {categoryOrder.map(category => {
-                                            const items = groupedMethodologies[category] || [];
-                                            if (items.length === 0) return null;
-
-                                            const isExpanded = expandedCategory === category;
-                                            const hasSelectedItem = items.some(m => m.code === block?.format);
-                                            const CategoryIcon = categoryIcons[category] || Dumbbell;
-
-                                            return (
-                                                <button
-                                                    key={category}
-                                                    onClick={() => {
-                                                        setExpandedCategory(category);
-                                                        // Auto-select if category has only 1 methodology
-                                                        const catItems = groupedMethodologies[category] || [];
-                                                        if (catItems.length === 1) {
-                                                            handleFormatChange(catItems[0].code);
-                                                        }
-                                                    }}
-                                                    className={`
-                                                    flex-1 justify-center items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border flex
-                                                    ${isExpanded
-                                                            ? 'bg-cv-accent text-white border-cv-accent shadow-md scale-105'
-                                                            : hasSelectedItem
-                                                                ? 'bg-cv-accent/10 text-cv-accent border-cv-accent/30 hover:bg-cv-accent/20 hover:shadow-sm hover:scale-105'
-                                                                : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-cv-accent/50 hover:text-cv-accent hover:shadow-sm hover:scale-105'
-                                                        }
-                                                `}
-                                                >
-                                                    <CategoryIcon size={14} />
-                                                    <span>{categoryLabels[category]}</span>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-
-                                    {/* Active Category Options - Only show if more than 1 option */}
-                                    {expandedCategory && (groupedMethodologies[expandedCategory]?.length ?? 0) > 1 && (
+                                    {isFinisherBlock ? (
                                         <div className="bg-slate-50 dark:bg-cv-bg-tertiary/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-1 duration-200">
                                             <div className="flex flex-wrap gap-2">
-                                                {(groupedMethodologies[expandedCategory] || []).map(m => {
+                                                {(groupedMethodologies.finisher || []).map(m => {
                                                     const IconComponent = iconMap[m.icon] || Dumbbell;
                                                     const isSelected = block?.format === m.code;
 
@@ -387,6 +365,77 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                                 })}
                                             </div>
                                         </div>
+                                    ) : (
+                                        <>
+                                            {/* Categories Tabs - Horizontal Row */}
+                                            <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                                                {categoryOrder.map(category => {
+                                                    const items = groupedMethodologies[category] || [];
+                                                    if (items.length === 0) return null;
+
+                                                    const isExpanded = expandedCategory === category;
+                                                    const hasSelectedItem = items.some(m => m.code === block?.format);
+                                                    const CategoryIcon = categoryIcons[category] || Dumbbell;
+
+                                                    return (
+                                                        <button
+                                                            key={category}
+                                                            onClick={() => {
+                                                                setExpandedCategory(category);
+                                                                // Auto-select if category has only 1 methodology
+                                                                const catItems = groupedMethodologies[category] || [];
+                                                                if (catItems.length === 1) {
+                                                                    handleFormatChange(catItems[0].code);
+                                                                }
+                                                            }}
+                                                            className={`
+                                                            flex-1 justify-center items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border flex
+                                                            ${isExpanded
+                                                                    ? 'bg-cv-accent text-white border-cv-accent shadow-md scale-105'
+                                                                    : hasSelectedItem
+                                                                        ? 'bg-cv-accent/10 text-cv-accent border-cv-accent/30 hover:bg-cv-accent/20 hover:shadow-sm hover:scale-105'
+                                                                        : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-cv-accent/50 hover:text-cv-accent hover:shadow-sm hover:scale-105'
+                                                                }
+                                                        `}
+                                                        >
+                                                            <CategoryIcon size={14} />
+                                                            <span>{categoryLabels[category]}</span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {/* Active Category Options - Only show if more than 1 option */}
+                                            {expandedCategory && (groupedMethodologies[expandedCategory]?.length ?? 0) > 1 && (
+                                                <div className="bg-slate-50 dark:bg-cv-bg-tertiary/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {(groupedMethodologies[expandedCategory] || []).map(m => {
+                                                            const IconComponent = iconMap[m.icon] || Dumbbell;
+                                                            const isSelected = block?.format === m.code;
+
+                                                            return (
+                                                                <button
+                                                                    key={m.code}
+                                                                    onClick={() => handleFormatChange(m.code)}
+                                                                    title={m.description}
+                                                                    className={`
+                                                                    px-3 py-2 rounded-lg text-xs font-medium transition-all
+                                                                    flex items-center gap-2 border flex-1 min-w-[120px] justify-center
+                                                                    ${isSelected
+                                                                            ? 'bg-white dark:bg-cv-bg-primary text-cv-accent border-cv-accent shadow-md ring-1 ring-cv-accent/20 scale-[1.02]'
+                                                                            : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary hover:text-cv-accent hover:bg-slate-50 dark:hover:bg-cv-bg-primary border-slate-200 dark:border-slate-700 hover:border-cv-accent/30 hover:shadow-sm hover:-translate-y-0.5'
+                                                                        }
+                                                                `}
+                                                                >
+                                                                    <IconComponent size={14} />
+                                                                    {m.name}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             )
@@ -502,6 +551,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                     key={blockId}
                                     config={config}
                                     onChange={handleConfigChange}
+                                    blockType={block.type}
                                 />
                             )}
 
