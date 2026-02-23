@@ -48,8 +48,244 @@ export function calculateKgFromStats(
 // CONFIG TO TEXT HELPERS
 // ==========================================
 
+type ExportMetric = { label: string; value: string };
+
+function parseClockValue(value: string): number | null {
+    const trimmed = value.trim();
+    if (!trimmed.includes(':')) return null;
+    const [minRaw, secRaw] = trimmed.split(':');
+    const minutes = Number.parseInt(minRaw || '', 10);
+    const seconds = Number.parseInt(secRaw || '', 10);
+    if (!Number.isFinite(minutes) || !Number.isFinite(seconds)) return null;
+    return (minutes * 60) + seconds;
+}
+
+function toNumber(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value !== 'string') return null;
+    const fromClock = parseClockValue(value);
+    if (fromClock !== null) return fromClock;
+    const normalized = value.replace(/[^0-9.-]/g, '');
+    const parsed = Number.parseFloat(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function pushMetric(metrics: ExportMetric[], label: string, raw: unknown, unit?: string, decimals = 0) {
+    const numeric = toNumber(raw);
+    if (numeric === null) return;
+    const value = decimals > 0 ? numeric.toFixed(decimals) : `${Math.round(numeric * (decimals ? 10 ** decimals : 1)) / (decimals ? 10 ** decimals : 1)}`;
+    metrics.push({ label, value: unit ? `${value} ${unit}` : value });
+}
+
+function inferFormatCode(type: string, config: any): string {
+    if (type === 'strength_linear') return 'STANDARD';
+    return normalizeMethodologyCode((config?.format as string) || (config?.methodology as string) || '');
+}
+
+function collectMetrics(type: string, config: any): ExportMetric[] {
+    const metrics: ExportMetric[] = [];
+    const formatCode = inferFormatCode(type, config);
+
+    switch (formatCode) {
+        case 'EMOM':
+        case 'EMOM_ALT':
+        case 'E2MOM':
+            pushMetric(metrics, 'Duración Total', config.minutes, 'min');
+            pushMetric(metrics, 'Cada', config.interval, 'min');
+            break;
+        case 'AMRAP':
+            pushMetric(metrics, 'Duración Total', config.minutes || config.timeCap || config.time_cap, 'min');
+            break;
+        case 'RFT':
+            pushMetric(metrics, 'Rondas', config.rounds);
+            pushMetric(metrics, 'Time Cap', config.timeCap || config.time_cap, 'min');
+            break;
+        case 'FOR_TIME':
+            pushMetric(metrics, 'Time Cap', config.timeCap || config.time_cap, 'min');
+            break;
+        case 'CHIPPER':
+            pushMetric(metrics, 'Rondas', config.rounds);
+            pushMetric(metrics, 'Time Cap', config.timeCap || config.time_cap, 'min');
+            break;
+        case 'DEATH_BY':
+            pushMetric(metrics, 'Reps Inicio', config.startingReps);
+            pushMetric(metrics, 'Incremento', config.increment);
+            pushMetric(metrics, 'Límite', config.maxMinutes, 'min');
+            break;
+        case 'TABATA':
+            pushMetric(metrics, 'Rondas', config.rounds);
+            pushMetric(metrics, 'Trabajo', config.workSeconds, 'seg');
+            pushMetric(metrics, 'Descanso', config.restSeconds, 'seg');
+            break;
+        case 'LADDER':
+        case 'LADDER_FINISHER':
+            if (config.direction) metrics.push({ label: 'Dirección', value: String(config.direction) });
+            pushMetric(metrics, 'Reps Inicio', config.startReps ?? config.repsStart);
+            pushMetric(metrics, 'Reps Pico/Final', config.endReps ?? config.repsPeak);
+            pushMetric(metrics, 'Incremento', config.increment);
+            break;
+        case 'INTERVALS':
+            pushMetric(metrics, 'Intervalos', config.rounds);
+            pushMetric(metrics, 'Trabajo', config.workSeconds || config.workTime, 'seg');
+            pushMetric(metrics, 'Descanso', config.restSeconds || config.restTime, 'seg');
+            break;
+        case 'STANDARD':
+            pushMetric(metrics, 'Series', config.sets);
+            pushMetric(metrics, 'Reps', config.reps);
+            pushMetric(metrics, '% 1RM', config.percentage, '%');
+            pushMetric(metrics, 'Descanso', config.restSeconds || config.rest, 'seg');
+            break;
+        case 'CLUSTER':
+            pushMetric(metrics, 'Clusters', config.sets);
+            pushMetric(metrics, 'Mini-Sets', config.miniSets);
+            pushMetric(metrics, 'Reps/Mini-Set', config.repsPerMiniSet || config.repsPerCluster);
+            pushMetric(metrics, 'Descanso Intra', config.intraRestSeconds || config.intraRest, 'seg');
+            pushMetric(metrics, 'Descanso Entre', config.interRestSeconds || config.interRest, 'seg');
+            pushMetric(metrics, '% 1RM', config.percentage, '%');
+            break;
+        case 'DROP_SET':
+            pushMetric(metrics, 'Drops', config.drops);
+            pushMetric(metrics, 'Reps/Drop', config.repsPerDrop);
+            pushMetric(metrics, 'Reducción', config.weightReductionPct || config.weightReduction, '%');
+            break;
+        case 'GIANT_SET':
+            pushMetric(metrics, 'Rondas', config.rounds);
+            pushMetric(metrics, 'Descanso Entre Rondas', config.restBetweenRoundsSeconds || config.restBetweenRounds, 'seg');
+            break;
+        case 'SUPER_SET':
+            pushMetric(metrics, 'Series', config.sets);
+            pushMetric(metrics, 'Descanso Entre Sets', config.restBetweenSetsSeconds || config.restBetweenSets, 'seg');
+            break;
+        case 'NOT_FOR_TIME':
+            pushMetric(metrics, 'Rondas', config.rounds);
+            break;
+        case 'TEMPO': {
+            pushMetric(metrics, 'Series', config.sets);
+            pushMetric(metrics, 'Reps', config.reps);
+            if (config.tempo) metrics.push({ label: 'Tempo', value: String(config.tempo) });
+            const e = toNumber(config.tempoEccentric);
+            const b = toNumber(config.tempoBottom);
+            const c = toNumber(config.tempoConcentric);
+            const t = toNumber(config.tempoTop);
+            if (e !== null && b !== null && c !== null && t !== null) {
+                metrics.push({ label: 'Tempo', value: `${e}-${b}-${c}-${t}` });
+            }
+            pushMetric(metrics, 'Descanso', config.restSeconds || config.rest, 'seg');
+            break;
+        }
+        case 'DROPSET_FINISHER':
+            pushMetric(metrics, 'Drops', config.drops);
+            pushMetric(metrics, 'Reps/Drop', config.repsPerDrop);
+            pushMetric(metrics, 'Reducción', config.weightReductionPct || config.percentage, '%');
+            break;
+        case 'REST_PAUSE':
+            pushMetric(metrics, 'Reps Totales', config.totalReps);
+            pushMetric(metrics, 'Micro-Descanso', config.restSeconds || config.rest, 'seg');
+            pushMetric(metrics, 'Mini-Bloques', config.clusters);
+            break;
+        case '21S':
+            pushMetric(metrics, 'Series', config.sets);
+            break;
+        case 'ISO_HOLD':
+            pushMetric(metrics, 'Series', config.sets);
+            pushMetric(metrics, 'Pausa Isométrica', config.holdSeconds || config.holdTime, 'seg');
+            pushMetric(metrics, 'Reps', config.reps);
+            break;
+        case '1_5_REPS':
+            pushMetric(metrics, 'Series', config.sets);
+            pushMetric(metrics, 'Reps', config.reps);
+            break;
+        default:
+            pushMetric(metrics, 'Series', config.sets);
+            pushMetric(metrics, 'Reps', config.reps);
+            pushMetric(metrics, 'Rondas', config.rounds);
+            break;
+    }
+
+    return metrics;
+}
+
+function buildMovementLine(entry: any): string {
+    if (!entry) return '';
+    const name = (entry.name || entry.exercise || entry.movement || '').toString().trim();
+    if (!name) return '';
+
+    const parts: string[] = [];
+    const targetValue = toNumber(entry.targetValue ?? entry.reps ?? entry.quantity);
+    if (targetValue !== null) {
+        const unitMap: Record<string, string> = {
+            reps: 'Reps',
+            seconds: 'Seg',
+            meters: 'm',
+            calories: 'Cal',
+        };
+        const unit = unitMap[String(entry.targetUnit || 'reps')] || 'Reps';
+        parts.push(`${unit} ${targetValue}`);
+    }
+    const distance = toNumber(entry.distance);
+    if (distance !== null) parts.push(`Metros ${distance}`);
+    const sets = toNumber(entry.sets);
+    if (sets !== null) parts.push(`Series ${sets}`);
+    const rpe = toNumber(entry.rpe);
+    if (rpe !== null) parts.push(`RPE ${rpe}`);
+    const weight = toNumber(entry.weight);
+    if (weight !== null) parts.push(`Carga ${weight} kg`);
+    const rest = toNumber(entry.restSeconds ?? entry.rest);
+    if (rest !== null) parts.push(`Descanso ${rest} seg`);
+
+    return parts.length > 0 ? `${name} · ${parts.join(' · ')}` : name;
+}
+
+function collectMovementLines(config: any): string[] {
+    if (!config) return [];
+
+    const slotLines = Array.isArray(config.slots)
+        ? config.slots
+            .map((slot: any, idx: number) => {
+                const movement = buildMovementLine(slot);
+                if (!movement) return '';
+                return `Intervalo ${idx + 1}: ${movement}`;
+            })
+            .filter(Boolean)
+        : [];
+    if (slotLines.length > 0) return slotLines;
+
+    const itemLines = Array.isArray(config.items)
+        ? config.items.map((item: any) => buildMovementLine(item)).filter(Boolean)
+        : [];
+    if (itemLines.length > 0) return itemLines;
+
+    const movementLines = Array.isArray(config.movements)
+        ? config.movements.map((movement: any) => {
+            if (typeof movement === 'string') return movement.trim();
+            return buildMovementLine(movement);
+        }).filter(Boolean)
+        : [];
+    if (movementLines.length > 0) return movementLines;
+
+    if (typeof config.movement === 'string' && config.movement.trim().length > 0) {
+        return [config.movement.trim()];
+    }
+
+    if (Array.isArray(config.exercises)) {
+        return config.exercises.map((exercise: any) => String(exercise || '').trim()).filter(Boolean);
+    }
+
+    if (typeof config.content === 'string' && config.content.trim().length > 0) {
+        return config.content.split('\n').map((line: string) => line.trim()).filter(Boolean);
+    }
+
+    return [];
+}
+
 export function convertConfigToText(type: string, config: any, blockName?: string | null, oneRmStats?: any, excludeNotes: boolean = false, exercisesCues?: Record<string, string>): string[] {
-    // 1. Handle Strength Linear (Explicit)
+    const metrics = collectMetrics(type, config);
+    const metricLine = metrics.length > 0
+        ? metrics.map((metric) => `${metric.label}: ${metric.value}`).join(' · ')
+        : '';
+    const movementLines = collectMovementLines(config);
+
+    // 1. Handle Strength Linear
     if (type === 'strength_linear') {
         const mainMetric = config.distance ? config.distance : config.reps;
         let kgBadge = '';
@@ -62,117 +298,30 @@ export function convertConfigToText(type: string, config: any, blockName?: strin
         }
 
         const parts = [
-            config.sets && mainMetric ? `${config.sets} x ${mainMetric}` : '',
-            config.percentage ? `@ ${config.percentage}% ${kgBadge}` : '',
-            config.rpe ? `@ RPE ${config.rpe}` : '',
-            config.weight ? `(${config.weight})` : '' // Explicit weight if present
-        ].filter(Boolean).join('  ');
+            config.sets && mainMetric ? `Series: ${config.sets} · Reps: ${mainMetric}` : '',
+            config.percentage ? `%1RM: ${config.percentage}% ${kgBadge}` : '',
+            config.rpe ? `RPE: ${config.rpe}` : '',
+            config.weight ? `Carga: ${config.weight} kg` : ''
+        ].filter(Boolean).join(' · ');
 
         const lines = [parts];
-        if (config.notes && !excludeNotes) lines.push(config.notes);
         return lines.filter(Boolean);
     }
 
-    // 2. Handle Structured Metcons
-    if (type === 'metcon_structured') {
-        const lines = [];
-        const formatCode = normalizeMethodologyCode((config.format as string) || '');
-        const timeCapValue = config.time_cap || config.timeCap || config.minutes;
-        const header = [
-            timeCapValue ? `${formatCode === 'EMOM' ? 'EMOM' : 'Time Cap'}: ${timeCapValue} min` : '',
-            config.rounds ? `${config.rounds} Rounds` : '',
-            config.score_type ? `Score: ${config.score_type}` : ''
-        ].filter(Boolean).join(' | ');
-
-        if (header) lines.push(header);
-
-        if (Array.isArray(config.movements)) {
-            lines.push(...config.movements);
-        } else if (typeof config.content === 'string') {
-            lines.push(...config.content.split('\n'));
-        }
-
-        if (config.notes && !excludeNotes) lines.push(config.notes);
-        return lines;
+    // 2. Structured modalities export as variable:value + movement rows.
+    if (['metcon_structured', 'warmup', 'accessory', 'skill', 'finisher'].includes(type)) {
+        const lines: string[] = [];
+        if (metricLine) lines.push(metricLine);
+        if (movementLines.length > 0) lines.push(...movementLines);
+        return lines.filter(Boolean);
     }
 
-    // 3. Handle Generic Sets/Reps for Accessory/Warmup/Other
-    if (config.sets || config.reps || config.distance || config.weight) {
-        const mainMetric = config.distance || config.reps;
-        const parts = [
-            config.sets && mainMetric ? `${config.sets} x ${mainMetric}` : (config.sets ? `${config.sets} sets` : ''),
-            config.weight ? `(${config.weight})` : '',
-            config.rpe ? `@ RPE ${config.rpe}` : ''
-        ].filter(Boolean).join('  ');
-
-        const lines = [];
-        if (parts) lines.push(parts);
-        if (config.notes && !excludeNotes) lines.push(config.notes);
-
-        if (lines.length > 0) return lines;
+    // 3. Generic fallback
+    if (metricLine || movementLines.length > 0) {
+        return [metricLine, ...movementLines].filter(Boolean);
     }
 
-    // 4. Default Handlers (Movements array or Content string)
-    if (config.movements && Array.isArray(config.movements)) {
-        const lines = config.movements.map((m: any) => {
-            let name = '';
-            if (typeof m === 'string') name = m;
-            else if (typeof m === 'object' && m && 'name' in m) name = m.name;
-
-            if (!name) return '';
-
-            // 5. Append Cue if available (for list-based blocks like Warmup/Metcon)
-            // We try to match exact name, then case-insensitive, then alias
-            let cue = '';
-            if (exercisesCues) {
-                // Remove embedded existing cues just in case (e.g. "Plank (Cue: ...)")
-                // usage: name might be "Plank: 30s". We need to extract the base exercise name.
-                // This is hard because "Plank: 30s" isn't the key. 
-                // The structure usually is just the name if it's a list? 
-                // In Antopanti script: "Plancha: 30” (Cue: ...)" was the string.
-                // If we just use the string as is, we can't look it up.
-                // But `SmartExerciseInput` saves JUST the name "Plank" in the array for new blocks?
-                // GenericMovementForm saves ` { name: 'Plank' } ` objects or strings.
-
-                // If m is object with name, use m.name.
-                // If m is string, we might not match.
-                // But for NEW blocks, we encourage objects? GenericMovementForm returns objects now?
-                // Let's check GenericMovementForm: `return data.map(item => typeof item === 'string' ? { name: item } : item);`
-                // So internal state is objects. But `onChange` might save strings if it was legacy?
-                // `handleMovementsChange` calls `onChange('movements', newMovements)`. 
-                // So config.movements is strictly `MovementObject[]` now.
-
-                // However, `convertConfigToText` handles strings too.
-
-                // Let's try to match the name.
-                const cleanName = name.split(':')[0].trim(); // "Plank: 30s" -> "Plank"
-
-                if (exercisesCues[name]) cue = exercisesCues[name];
-                else if (exercisesCues[cleanName]) cue = exercisesCues[cleanName];
-                else {
-                    const key = Object.keys(exercisesCues).find(k => k.toLowerCase() === name.toLowerCase() || k.toLowerCase() === cleanName.toLowerCase());
-                    if (key) cue = exercisesCues[key];
-                }
-            }
-
-            if (cue) {
-                // If the name already has the cue (legacy), don't add it.
-                if (name.toLowerCase().includes(cue.toLowerCase().substring(0, 10))) return name;
-                return `${name} | Cue: ${cue}`;
-            }
-
-            return name;
-        }).filter(Boolean);
-
-        if (config.notes && !excludeNotes) lines.push(config.notes);
-        return lines;
-    }
-
-    if (config.content) {
-        return config.content.split('\n');
-    }
-
-    return !excludeNotes ? [config.notes || ''] : [];
+    return [];
 }
 
 export function configToStructure(type: string, config: any, blockName?: string | null, oneRmStats?: any, excludeNotes: boolean = false, exercisesCues?: Record<string, string>) {
@@ -182,11 +331,15 @@ export function configToStructure(type: string, config: any, blockName?: string 
         weight: '',
         rpe: '',
         rest: config.rest || '',
-        text: '', // For MetCons or text-based blocks
-        notes: (!excludeNotes && config.notes) ? config.notes : ''
+        text: '',
+        notes: '',
+        metrics: [] as ExportMetric[],
     };
+    const metrics = collectMetrics(type, config);
+    const movementLines = collectMovementLines(config);
+    res.metrics = metrics;
 
-    // 1. Strength / Generic Sets & Reps
+    // 1. Strength
     if (type === 'strength_linear' || config.sets || config.reps || config.weight) {
         if (config.sets) res.sets = `${config.sets}`;
 
@@ -210,43 +363,16 @@ export function configToStructure(type: string, config: any, blockName?: string 
         }
 
         if (config.rpe) res.rpe = `${config.rpe}`;
+        const restSeconds = toNumber(config.restSeconds || config.rest);
+        if (restSeconds !== null) res.rest = `${restSeconds} seg`;
+        if (movementLines.length > 0) res.text = movementLines.join('\n');
 
         return res;
     }
 
-    // 2. MetCons
-    if (type === 'metcon_structured') {
-        const parts = [];
-        const formatCode = normalizeMethodologyCode((config.format as string) || '');
-        const timeCapValue = config.time_cap || config.timeCap || config.minutes;
-
-        // Explicitly handle formats based on correct inputs
-        if (formatCode === 'EMOM') {
-            parts.push(`EMOM ${config.minutes || config.time_cap || ''}min`);
-        } else if (formatCode === 'AMRAP') {
-            parts.push(`AMRAP ${config.minutes || config.time_cap || ''}min`);
-        } else if (formatCode === 'FOR_TIME') {
-            parts.push(`For Time ${timeCapValue ? `(Cap: ${timeCapValue}min)` : ''}`);
-        } else {
-            // Fallback
-            if (timeCapValue) parts.push(`Time Cap: ${timeCapValue} min`);
-        }
-
-        if (config.rounds) parts.push(`${config.rounds} Rounds`);
-        if (config.score_type) parts.push(`Score: ${config.score_type}`);
-
-        const header = parts.filter(Boolean).join(' | ');
-
-        let content = '';
-        if (header) content += header + '\n';
-
-        if (Array.isArray(config.movements)) {
-            content += config.movements.map((m: any) => typeof m === 'string' ? m : m.name).join('\n');
-        } else if (typeof config.content === 'string') {
-            content += config.content;
-        }
-
-        res.text = content;
+    // 2. Structured modalities
+    if (['metcon_structured', 'warmup', 'accessory', 'skill', 'finisher'].includes(type)) {
+        res.text = movementLines.join('\n');
         return res;
     }
 
@@ -287,6 +413,10 @@ export function prepareProgramForExport(program: any, exercisesCues?: Record<str
                 name: dayNames[(d.day_number - 1) % 7] || `Día ${d.day_number}`,
                 day_number: d.day_number, // Explicitly keep day_number for DaySection
                 blocks: (d.blocks || []).map((b: any) => {
+                    const configForExport = {
+                        ...(b.config || {}),
+                        format: b.format || (b.config as any)?.format || null,
+                    };
                     // Resolve cue from library if available
                     let exerciseCue = '';
                     if (exercisesCues && b.name && exercisesCues[b.name]) {
@@ -301,12 +431,13 @@ export function prepareProgramForExport(program: any, exercisesCues?: Record<str
                     return {
                         type: b.type,
                         name: b.name || b.type,
-                        content: convertConfigToText(b.type, b.config, b.name, oneRmStats, true, exercisesCues),
-                        structure: configToStructure(b.type, b.config, b.name, oneRmStats, true, exercisesCues),
+                        config: configForExport,
+                        content: convertConfigToText(b.type, configForExport, b.name, oneRmStats, true, exercisesCues),
+                        structure: configToStructure(b.type, configForExport, b.name, oneRmStats, true, exercisesCues),
                         section: b.section || 'main',
-                        cue: exerciseCue || (b.config as any)?.notes || '', // Fallback to notes if no library cue (or if user manually added notes)
-                        format: (b.config as any)?.format || (b.config as any)?.methodology || null,
-                        rest: (b.config as any)?.rest || null,
+                        cue: exerciseCue || '',
+                        format: b.format || (b.config as any)?.format || (b.config as any)?.methodology || null,
+                        rest: (b.config as any)?.rest || (b.config as any)?.restSeconds || null,
                         progression_id: b.progression_id || null,
                     };
                 })

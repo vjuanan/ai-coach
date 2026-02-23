@@ -8,7 +8,8 @@ import type { AMRAPConfig, RFTConfig } from '@/lib/supabase/types';
 interface CircuitItem {
     id: string;
     exercise: string;
-    reps: string;
+    targetValue: number | '';
+    targetUnit: 'reps' | 'seconds' | 'meters' | 'calories';
 }
 
 interface CircuitEditorProps {
@@ -19,28 +20,46 @@ interface CircuitEditorProps {
 }
 
 export function CircuitEditor({ config, onChange, onBatchChange, mode }: CircuitEditorProps) {
-    // Local state for circuit items
     const [items, setItems] = useState<CircuitItem[]>(() => {
         const savedItems = (config as any).items;
-        if (savedItems && Array.isArray(savedItems)) return savedItems;
+        if (savedItems && Array.isArray(savedItems)) {
+            return savedItems.map((item: any, idx: number) => {
+                const rawValue = item?.targetValue ?? item?.reps;
+                const parsed = typeof rawValue === 'number'
+                    ? rawValue
+                    : Number.parseInt(String(rawValue || '').replace(/[^0-9]/g, ''), 10);
+                return {
+                    id: item?.id || `item-${idx + 1}`,
+                    exercise: item?.exercise || '',
+                    targetValue: Number.isFinite(parsed) && parsed > 0 ? parsed : '',
+                    targetUnit: (item?.targetUnit === 'seconds' || item?.targetUnit === 'meters' || item?.targetUnit === 'calories' || item?.targetUnit === 'reps')
+                        ? item.targetUnit
+                        : (typeof item?.reps === 'string' && item.reps.toLowerCase().includes('m')
+                            ? 'meters'
+                            : (typeof item?.reps === 'string' && item.reps.toLowerCase().includes('s')
+                                ? 'seconds'
+                                : (typeof item?.reps === 'string' && item.reps.toLowerCase().includes('cal') ? 'calories' : 'reps'))),
+                };
+            });
+        }
 
-        // Fallback backward compatibility
         const oldMovements = (config.movements as any[]) || [];
         if (oldMovements.length > 0) {
-            return oldMovements.map(m => {
+            return oldMovements.map((m, idx) => {
                 let exerciseName = '';
                 if (typeof m === 'string') exerciseName = m;
                 else if (typeof m === 'object' && m && 'name' in m) exerciseName = m.name;
 
                 return {
-                    id: crypto.randomUUID(),
+                    id: `legacy-item-${idx + 1}`,
                     exercise: exerciseName,
-                    reps: ''
+                    targetValue: '',
+                    targetUnit: 'reps' as const,
                 };
             });
         }
 
-        return [{ id: crypto.randomUUID(), exercise: '', reps: '' }];
+        return [{ id: crypto.randomUUID(), exercise: '', targetValue: '', targetUnit: 'reps' }];
     });
 
     const onChangeRef = useRef(onChange);
@@ -65,14 +84,18 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
     }, [items]);
 
     const addItem = () => {
-        setItems(prev => [...prev, { id: crypto.randomUUID(), exercise: '', reps: '' }]);
+        setItems(prev => [...prev, { id: crypto.randomUUID(), exercise: '', targetValue: '', targetUnit: 'reps' }]);
     };
 
     const removeItem = (index: number) => {
         setItems(prev => prev.filter((_, i) => i !== index));
     };
 
-    const updateItem = (index: number, field: 'exercise' | 'reps', value: string) => {
+    const updateItem = (
+        index: number,
+        field: 'exercise' | 'targetValue' | 'targetUnit',
+        value: string | number
+    ) => {
         setItems(prev => {
             const updated = [...prev];
             updated[index] = { ...updated[index], [field]: value };
@@ -80,15 +103,38 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
         });
     };
 
+    const showDurationInput = mode === 'AMRAP';
     const showRoundsInput = mode === 'RFT' || mode === 'CHIPPER';
     const showTimeCapInput = mode === 'RFT' || mode === 'CHIPPER' || mode === 'FOR_TIME';
 
     return (
         <div className="space-y-6 animate-in fade-in duration-300">
             {/* Top Config Row: Inputs based on Mode */}
-            {(showRoundsInput || showTimeCapInput) && (
+            {(showDurationInput || showRoundsInput || showTimeCapInput) && (
                 <div className="flex flex-wrap items-center gap-4 bg-slate-50 dark:bg-cv-bg-tertiary/30 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50">
                     <>
+                        {showDurationInput && (
+                            <div className="flex-1 min-w-[140px]">
+                                <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide">
+                                    Duración Total (min)
+                                </label>
+                                <div className="flex items-center gap-2">
+                                    <div className="relative flex-1">
+                                        <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                                        <input
+                                            type="number"
+                                            value={config.minutes || ''}
+                                            onChange={(e) => onChange('minutes', e.target.value ? parseInt(e.target.value, 10) : null)}
+                                            className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
+                                            placeholder="12"
+                                        />
+                                    </div>
+                                </div>
+                                <p className="text-[11px] text-cv-text-tertiary mt-1 leading-snug">
+                                    Minutos máximos para acumular rondas.
+                                </p>
+                            </div>
+                        )}
                         {showRoundsInput && (
                             <div className="flex-1 min-w-[120px]">
                                 <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide">
@@ -150,7 +196,7 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                     </span>
                 </div>
                 <p className="text-[11px] text-cv-text-tertiary mb-3 leading-snug">
-                    En cada fila elige el ejercicio y define reps, distancia o tiempo objetivo para ese item.
+                    En cada fila define ejercicio + variable numérica.
                 </p>
 
                 <div className="space-y-3">
@@ -172,14 +218,25 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                                 />
                             </div>
 
-                            <div className="w-24 shrink-0">
+                            <div className="grid grid-cols-[90px_120px] gap-2 shrink-0">
                                 <input
-                                    type="text"
-                                    value={item.reps}
-                                    onChange={(e) => updateItem(index, 'reps', e.target.value)}
-                                    placeholder="Ej: 15 reps / 200m / 40s"
+                                    type="number"
+                                    min={1}
+                                    value={item.targetValue}
+                                    onChange={(e) => updateItem(index, 'targetValue', e.target.value ? Number.parseInt(e.target.value, 10) : '')}
+                                    placeholder="Valor"
                                     className="w-full text-sm text-center bg-slate-50 dark:bg-slate-800 border-none rounded-lg py-2 focus:ring-1 focus:ring-cv-accent/50"
                                 />
+                                <select
+                                    value={item.targetUnit}
+                                    onChange={(e) => updateItem(index, 'targetUnit', e.target.value as 'reps' | 'seconds' | 'meters' | 'calories')}
+                                    className="w-full text-sm text-center bg-slate-50 dark:bg-slate-800 border-none rounded-lg py-2 focus:ring-1 focus:ring-cv-accent/50"
+                                >
+                                    <option value="reps">Reps</option>
+                                    <option value="seconds">Segundos</option>
+                                    <option value="meters">Metros</option>
+                                    <option value="calories">Calorías</option>
+                                </select>
                             </div>
 
                             <button

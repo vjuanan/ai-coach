@@ -78,7 +78,7 @@ const iconMap: Record<string, LucideIcon> = {
     Repeat2: Repeat, HelpCircle, Target
 };
 
-const SPECIALIZED_METHOD_CODES = ['EMOM', 'AMRAP', 'RFT', 'FOR_TIME', 'CHIPPER', 'TABATA'];
+const SPECIALIZED_METHOD_CODES = ['EMOM', 'EMOM_ALT', 'E2MOM', 'AMRAP', 'RFT', 'FOR_TIME', 'CHIPPER', 'TABATA'];
 
 export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps) {
     const {
@@ -566,10 +566,10 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                     currentMethodology && (
                         <div className="animate-in fade-in duration-300">
                             {/* EMOM Editor */}
-                            {(currentMethodologyCode === 'EMOM' || currentMethodologyCode === 'EMOM_ALT') && (
+                            {(currentMethodologyCode === 'EMOM' || currentMethodologyCode === 'EMOM_ALT' || currentMethodologyCode === 'E2MOM') && (
                                 <EmomEditor
                                     key={blockId}
-                                    config={config}
+                                    config={config as any}
                                     onChange={handleConfigChange}
                                     blockType={block.type}
                                 />
@@ -580,7 +580,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 <CircuitEditor
                                     key={blockId}
                                     mode="AMRAP"
-                                    config={config}
+                                    config={config as any}
                                     onChange={handleConfigChange}
                                     onBatchChange={handleBatchConfigChange}
                                 />
@@ -591,7 +591,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 <CircuitEditor
                                     key={blockId}
                                     mode="RFT"
-                                    config={config}
+                                    config={config as any}
                                     onChange={handleConfigChange}
                                     onBatchChange={handleBatchConfigChange}
                                 />
@@ -602,7 +602,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 <CircuitEditor
                                     key={blockId}
                                     mode="FOR_TIME"
-                                    config={config}
+                                    config={config as any}
                                     onChange={handleConfigChange}
                                     onBatchChange={handleBatchConfigChange}
                                 />
@@ -613,7 +613,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 <CircuitEditor
                                     key={blockId}
                                     mode="CHIPPER"
-                                    config={config}
+                                    config={config as any}
                                     onChange={handleConfigChange}
                                     onBatchChange={handleBatchConfigChange}
                                 />
@@ -623,7 +623,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             {currentMethodologyCode === 'TABATA' && (
                                 <TabataEditor
                                     key={blockId}
-                                    config={config}
+                                    config={config as any}
                                     onChange={handleConfigChange}
                                 />
                             )}
@@ -687,63 +687,8 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 }
 
                 {/* 5. NOTES (Visible for all except Strength, which has it inline) */}
-                {
-                    block.type !== 'strength_linear' && (
-                        currentMethodology && currentMethodologyCode === 'AMRAP' ? (
-                            <div className="flex gap-4">
-                                {/* Time Cap - 40% - NOW FIRST */}
-                                <div className="w-[40%]">
-                                    <label className="block text-xs font-bold text-cv-text-secondary mb-2 uppercase tracking-wide text-center">
-                                        Time Cap (Min)
-                                    </label>
-                                    <p className="text-[11px] text-cv-text-tertiary mb-2 text-center leading-snug">
-                                        Minutos maximos para sumar rondas en este AMRAP.
-                                    </p>
-                                    <div className="relative h-[80px]">
-                                        <Clock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-cv-text-tertiary opacity-50" />
-                                        <input
-                                            type="number"
-                                            value={config.minutes || ''}
-                                            onChange={(e) => handleConfigChange('minutes', parseInt(e.target.value, 10) || 0)}
-                                            className="w-full h-full pl-10 pr-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-800 focus:border-cv-accent focus:ring-4 focus:ring-cv-accent/10 transition-all font-black text-4xl text-cv-text-primary text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                            placeholder="00"
-                                        />
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-cv-text-tertiary pointer-events-none uppercase tracking-wider">
-                                            MIN
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Notes - 60% */}
-                                <div className="w-[60%]">
-                                    <label className="block text-xs font-bold text-cv-text-secondary mb-2 uppercase tracking-wide">
-                                        Notas
-                                    </label>
-                                    <textarea
-                                        value={(config.notes as string) || ''}
-                                        onChange={(e) => handleConfigChange('notes', e.target.value)}
-                                        placeholder="Objetivo, estrategia, rpe..."
-                                        className="cv-input h-[80px] resize-none"
-                                    />
-                                </div>
-                            </div>
-                        ) : (
-                            block.type !== 'warmup' ? (
-                                <div>
-                                    <label className="block text-sm font-medium text-cv-text-secondary mb-2">
-                                        Notas
-                                    </label>
-                                    <textarea
-                                        value={(config.notes as string) || ''}
-                                        onChange={(e) => handleConfigChange('notes', e.target.value)}
-                                        placeholder="Objetivo tecnico, estrategia o indicaciones del bloque..."
-                                        className="cv-input min-h-[60px] resize-none"
-                                    />
-                                </div>
-                            ) : null
-                        )
-                    )
-                }
+                {/* Se elimina dependencia de texto libre en bloques de estímulo:
+                    la configuración clave debe vivir en inputs estructurados por modalidad. */}
 
                 {/* 5.5. PROGRESSION PREVIEW - Show all weeks when progression is active */}
                 {

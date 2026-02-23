@@ -39,10 +39,11 @@ export type ExerciseCategory = 'Weightlifting' | 'Gymnastics' | 'Monostructural'
 // JSONB Config Types for Workout Blocks
 export interface StrengthConfig {
     sets: number;
-    reps: string;
-    percentage?: string;
+    reps: string | number;
+    percentage?: string | number;
     tempo?: string;
-    rest?: string;
+    rest?: string | number;
+    restSeconds?: number;
     distance?: string | number; // For distance-based exercises
     notes?: string;
     [key: string]: any;
@@ -51,22 +52,25 @@ export interface StrengthConfig {
 export interface EMOMConfig {
     minutes: number;
     interval: number; // every X minutes
-    movements: string[];
+    movements: Array<string | { name?: string; movement?: string; targetValue?: number; targetUnit?: 'reps' | 'seconds' | 'meters' }>;
+    slots?: Array<{ movement: string; targetValue: number; targetUnit: 'reps' | 'seconds' | 'meters' }>;
     notes?: string;
     [key: string]: any;
 }
 
 export interface AMRAPConfig {
-    minutes: number;
-    movements: string[];
+    minutes?: number;
+    movements: Array<string | { name?: string; exercise?: string; targetValue?: number; targetUnit?: 'reps' | 'seconds' | 'meters' | 'calories' }>;
+    items?: Array<{ exercise: string; targetValue: number; targetUnit: 'reps' | 'seconds' | 'meters' | 'calories' }>;
     notes?: string;
     [key: string]: any;
 }
 
 export interface RFTConfig {
-    rounds: number;
+    rounds?: number;
     timeCap?: number;
-    movements: string[];
+    movements: Array<string | { name?: string; exercise?: string; targetValue?: number; targetUnit?: 'reps' | 'seconds' | 'meters' | 'calories' }>;
+    items?: Array<{ exercise: string; targetValue: number; targetUnit: 'reps' | 'seconds' | 'meters' | 'calories' }>;
     notes?: string;
     [key: string]: any;
 }
@@ -75,7 +79,8 @@ export interface TabataConfig {
     rounds: number;
     workSeconds: number;
     restSeconds: number;
-    movement: string;
+    movement?: string;
+    movements?: string[];
     notes?: string;
     [key: string]: any;
 }

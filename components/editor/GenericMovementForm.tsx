@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { SmartExerciseInput } from './SmartExerciseInput';
 import { useExerciseCache } from '@/hooks/useExerciseCache';
-import { Trash2, Plus, RotateCcw, Repeat, Activity, Flame, Clock, FileText } from 'lucide-react';
+import { Trash2, Plus, RotateCcw, Repeat, Activity, Flame, Clock } from 'lucide-react';
 import type { TrainingMethodology, TrainingMethodologyFormField } from '@/lib/supabase/types';
 import { InputCard } from './InputCard';
 import { formatMethodologyOptionLabel, normalizeMethodologyCode } from '@/lib/training-methodologies';
@@ -19,11 +19,11 @@ interface MovementObject {
     name: string;
     sets?: string | number; // Added sets
     reps?: string | number;
-    weight?: string;
-    distance?: string;
+    weight?: string | number;
+    distance?: string | number;
     time?: string;
     rpe?: number;
-    rest?: string;
+    rest?: string | number;
     notes?: string;
 
     // Legacy / Compat
@@ -125,9 +125,9 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                             label={showGlobalSets ? 'SERIES' : 'RONDAS / VUELTAS'}
                             value={showGlobalSets ? globalSets : rounds}
                             onChange={(val) => onChange(showGlobalSets ? 'sets' : 'rounds', val)}
-                            type="text"
+                            type="number"
                             icon={RotateCcw}
-                            placeholder={showGlobalSets ? '3' : 'Ej: 3, 4, 5'}
+                            placeholder={showGlobalSets ? '3' : '5'}
                             presets={[2, 3, 4, 5]}
                         />
                     </div>
@@ -336,7 +336,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
             {isValid && (
                 <div className="p-2.5 bg-white dark:bg-cv-bg-secondary rounded-b-xl flex flex-col lg:flex-row gap-2.5">
                     {/* Metrics Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 flex-1">
+                    <div className={`grid grid-cols-2 ${isWarmUp ? 'md:grid-cols-3' : 'md:grid-cols-4'} gap-2.5 flex-1`}>
                         {/* 1. Series (Sets) - CONDITIONALLY SHOWN */}
                         {showSets && (
                             <InputCard
@@ -356,11 +356,11 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                             <InputCard
                                 label="DISTANCIA"
                                 value={movement.distance || ''}
-                                onChange={(val) => onChange({ distance: val })}
-                                type="text"
+                                onChange={(val) => onChange({ distance: val ? Number(val) : '' })}
+                                type="number"
                                 icon={Activity}
-                                presets={['200m', '400m', '800m', '1km']}
-                                placeholder="400m"
+                                presets={[200, 400, 800, 1000]}
+                                placeholder="400"
                                 isDistance
                                 isInvalid={!movement.distance}
                             />
@@ -380,17 +380,16 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                         {/* 3. Intensity / RPE / Weight - HIDDEN FOR WARM UP */}
                         {!isWarmUp && (
                             <InputCard
-                                label="INTENSIDAD / RPE"
+                                label="INTENSIDAD (RPE/KG)"
                                 value={(movement.rpe || movement.weight) as string | number}
                                 onChange={(val) => {
-                                    // Simple heuristic: if number < 11, assume RPE.
                                     if (typeof val === 'number' && val <= 10) onChange({ rpe: val, weight: undefined });
-                                    else onChange({ weight: val ? String(val) : undefined, rpe: undefined });
+                                    else onChange({ weight: val ? Number(val) : undefined, rpe: undefined });
                                 }}
                                 type="number"
                                 icon={Flame}
-                                presets={[7, 8, 9]}
-                                placeholder="RPE 8"
+                                presets={[7, 8, 9, 30, 40]}
+                                placeholder="8"
                                 isInvalid={!movement.rpe && !movement.weight}
                             />
                         )}
@@ -398,30 +397,16 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                         {/* 4. Rest - HIDDEN FOR WARM UP */}
                         {!isWarmUp && (
                             <InputCard
-                                label="DESCANSO"
-                                value={movement.rest as string}
+                                label="DESCANSO (seg)"
+                                value={(movement.rest as string | number) || ''}
                                 onChange={(val) => onChange({ rest: val })}
-                                type="time"
+                                type="number"
                                 icon={Clock}
-                                presets={['0:00', '0:30', '1:00']}
-                                placeholder="00:00"
+                                presets={[15, 30, 45, 60, 90]}
+                                placeholder="60"
                                 isInvalid={!movement.rest}
                             />
                         )}
-                    </div>
-
-                    {/* Notes (Right Side / Full Width on mobile) */}
-                    <div className="bg-slate-50 dark:bg-cv-bg-tertiary/30 rounded-xl border border-slate-100 dark:border-slate-800 p-2 flex flex-col group focus-within:ring-1 ring-cv-accent/50 transition-all w-full lg:w-1/3 min-h-[80px]">
-                        <div className="flex items-center gap-1.5 mb-1">
-                            <FileText size={12} className="text-cv-text-tertiary" />
-                            <span className="text-[9px] uppercase font-bold text-cv-text-tertiary">Notas</span>
-                        </div>
-                        <textarea
-                            value={movement.notes || movement.description || ''}
-                            onChange={(e) => onChange({ notes: e.target.value, description: e.target.value })}
-                            placeholder="Notas técnicas..."
-                            className="w-full h-full bg-transparent border-none p-0 text-xs text-cv-text-primary placeholder:text-slate-300 focus:ring-0 resize-none flex-1"
-                        />
                     </div>
                 </div>
             )}

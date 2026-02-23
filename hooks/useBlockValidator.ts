@@ -41,6 +41,14 @@ function extractMovementNames(value: unknown): string[] {
         .filter(Boolean);
 }
 
+function hasPositiveTarget(entry: unknown): boolean {
+    if (!entry || typeof entry !== 'object') return false;
+    const source = entry as Record<string, unknown>;
+    if (isPositiveNumber(source.targetValue)) return true;
+    if (isPositiveNumber(source.reps)) return true;
+    return false;
+}
+
 export const useBlockValidator = () => {
     const { searchLocal } = useExerciseCache();
     const { trainingMethodologies } = useEditorStore();
@@ -105,6 +113,8 @@ export const useBlockValidator = () => {
             );
 
             if (methodology) {
+                const methodCode = normalizeMethodologyCode(methodology.code);
+
                 for (const field of methodology.form_config?.fields || []) {
                     if (!field.required) continue;
 
@@ -144,6 +154,47 @@ export const useBlockValidator = () => {
                         missingFields.push(field.label);
                     }
                 }
+
+                // Additional structured checks for methodologies that require numeric payload per item/interval.
+                if (['EMOM', 'EMOM_ALT', 'E2MOM'].includes(methodCode)) {
+                    const slots = Array.isArray(config.slots) ? config.slots : [];
+                    if (slots.length === 0) {
+                        missingFields.push('Intervalos');
+                    } else {
+                        const hasSlotExercise = slots.every((slot) => {
+                            const names = extractMovementNames([slot]);
+                            return names.length > 0;
+                        });
+                        const hasSlotTarget = slots.every((slot) => hasPositiveTarget(slot));
+
+                        if (!hasSlotExercise) {
+                            missingFields.push('Ejercicio en cada intervalo');
+                        }
+                        if (!hasSlotTarget) {
+                            missingFields.push('Valor numérico por intervalo');
+                        }
+                    }
+                }
+
+                if (['AMRAP', 'RFT', 'FOR_TIME', 'CHIPPER'].includes(methodCode)) {
+                    const items = Array.isArray(config.items) ? config.items : [];
+                    if (items.length === 0) {
+                        missingFields.push('Items del circuito');
+                    } else {
+                        const hasItemExercise = items.every((item) => {
+                            const names = extractMovementNames([item]);
+                            return names.length > 0;
+                        });
+                        const hasItemTarget = items.every((item) => hasPositiveTarget(item));
+
+                        if (!hasItemExercise) {
+                            missingFields.push('Ejercicio en cada item');
+                        }
+                        if (!hasItemTarget) {
+                            missingFields.push('Valor numérico por item');
+                        }
+                    }
+                }
             } else {
                 const fallbackMovements = extractMovementNames(config.movements);
                 if (fallbackMovements.length === 0) {
@@ -152,9 +203,10 @@ export const useBlockValidator = () => {
             }
         }
 
+        const dedupedMissingFields = Array.from(new Set(missingFields));
         return {
-            isValid: missingFields.length === 0,
-            missingFields,
+            isValid: dedupedMissingFields.length === 0,
+            missingFields: dedupedMissingFields,
         };
     };
 

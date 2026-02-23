@@ -23,29 +23,45 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
     // Let's add a 'slots' property to the config dynamically.
 
     const duration = (config.minutes as number) || 10;
-    const interval = (config.interval as number) || 1; // Every 1 min default
+    const interval = (config.interval as number) || 1;
     const isWarmup = blockType === 'warmup';
+    const isE2MOMMode = interval === 2;
 
-    // Parse slots from config or initialize
-    // We'll store slots as: { id: string, label: string, movement: string, reps: string }
-    const [slots, setSlots] = useState<{ id: string; label: string; movement: string; reps: string }[]>(() => {
-        // Try to recover from existing config if available
+    const [slots, setSlots] = useState<{ id: string; movement: string; targetValue: number | ''; targetUnit: 'reps' | 'seconds' | 'meters' }[]>(() => {
+        // Try to recover from new format first
         const savedSlots = (config as any).slots;
-        if (savedSlots && Array.isArray(savedSlots)) return savedSlots;
+        if (savedSlots && Array.isArray(savedSlots)) {
+            return savedSlots.map((slot: any, idx: number) => {
+                const rawValue = slot?.targetValue ?? slot?.reps;
+                const parsed = typeof rawValue === 'number'
+                    ? rawValue
+                    : Number.parseInt(String(rawValue || '').replace(/[^0-9]/g, ''), 10);
+                const unit: 'reps' | 'seconds' | 'meters' =
+                    slot?.targetUnit === 'seconds' || slot?.targetUnit === 'meters' || slot?.targetUnit === 'reps'
+                        ? slot.targetUnit
+                        : (typeof slot?.reps === 'string' && slot.reps.toLowerCase().includes('m')
+                            ? 'meters'
+                            : (typeof slot?.reps === 'string' && slot.reps.toLowerCase().includes('s') ? 'seconds' : 'reps'));
+                return {
+                    id: slot?.id || `slot-${idx + 1}`,
+                    movement: slot?.movement || '',
+                    targetValue: Number.isFinite(parsed) && parsed > 0 ? parsed : '',
+                    targetUnit: unit
+                };
+            });
+        }
 
-        // Fallback: If movements exist in the old array format, try to map them
         const oldMovements = (config.movements as string[]) || [];
         if (oldMovements.length > 0) {
             return oldMovements.map((m, i) => ({
                 id: crypto.randomUUID(),
-                label: `Minuto ${i + 1}`,
                 movement: m,
-                reps: ''
+                targetValue: '',
+                targetUnit: 'reps' as const,
             }));
         }
 
-        // Default empty slot
-        return [{ id: crypto.randomUUID(), label: 'Minuto 1', movement: '', reps: '' }];
+        return [{ id: crypto.randomUUID(), movement: '', targetValue: '', targetUnit: 'reps' }];
     });
 
     const onChangeRef = useRef(onChange);
@@ -56,7 +72,6 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
     // Update config when slots change
     useEffect(() => {
         onChangeRef.current('slots', slots);
-        // Also sync 'movements' for backward compatibility or summary views
         onChangeRef.current('movements', slots.map(s => s.movement));
     }, [slots]);
 
@@ -65,9 +80,9 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
             ...prev,
             {
                 id: crypto.randomUUID(),
-                label: `Minuto ${prev.length + 1}`,
                 movement: '',
-                reps: ''
+                targetValue: '',
+                targetUnit: 'reps'
             }
         ]);
     };
@@ -76,7 +91,11 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
         setSlots(prev => prev.filter((_, i) => i !== index));
     };
 
-    const updateSlot = (index: number, field: 'movement' | 'reps' | 'label', value: string) => {
+    const updateSlot = (
+        index: number,
+        field: 'movement' | 'targetValue' | 'targetUnit',
+        value: string | number
+    ) => {
         setSlots(prev => {
             const updated = [...prev];
             updated[index] = { ...updated[index], [field]: value };
@@ -106,7 +125,7 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                         <span className="text-sm font-medium text-cv-text-tertiary">min</span>
                     </div>
                     <p className={`text-[11px] text-cv-text-tertiary mt-1 leading-snug ${isWarmup ? 'text-center' : ''}`}>
-                        Minutos totales del bloque EMOM.
+                        Duración total del bloque.
                     </p>
                 </div>
 
@@ -128,7 +147,7 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                         <span className="text-sm font-medium text-cv-text-tertiary">min</span>
                     </div>
                     <p className={`text-[11px] text-cv-text-tertiary mt-1 leading-snug ${isWarmup ? 'text-center' : ''}`}>
-                        Frecuencia del trabajo: 1 = cada minuto, 2 = cada 2 minutos, etc.
+                        Frecuencia de inicio: 1 = cada minuto, 2 = cada 2 minutos.
                     </p>
                 </div>
             </div>
@@ -137,14 +156,14 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
             <div>
                 <div className="flex items-center justify-between mb-3">
                     <label className="text-sm font-medium text-cv-text-secondary">
-                        Distribución de Minutos
+                        Distribución de Intervalos
                     </label>
                     <span className="text-xs text-cv-text-tertiary bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
                         {slots.length} intervalos definidos
                     </span>
                 </div>
                 <p className="text-[11px] text-cv-text-tertiary mb-3 leading-snug">
-                    En cada intervalo define el nombre del minuto, el ejercicio y el volumen objetivo (reps, tiempo o distancia).
+                    En cada intervalo define ejercicio + variable numérica objetivo.
                 </p>
 
                 <div className="space-y-3">
@@ -153,15 +172,11 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                             key={slot.id || index}
                             className="group relative flex gap-3 p-3 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-cv-accent/30 transition-all items-start"
                         >
-                            {/* Minute Label/Input */}
+                            {/* Interval label */}
                             <div className="w-24 pt-1">
-                                <input
-                                    type="text"
-                                    value={slot.label}
-                                    onChange={(e) => updateSlot(index, 'label', e.target.value)}
-                                    className="w-full text-xs font-bold text-cv-accent bg-cv-accent/5 border border-cv-accent/20 rounded-md px-2 py-1.5 text-center focus:ring-1 focus:ring-cv-accent focus:bg-white transition-all uppercase tracking-wide"
-                                    placeholder="MIN 1"
-                                />
+                                <div className="w-full text-xs font-bold text-cv-accent bg-cv-accent/5 border border-cv-accent/20 rounded-md px-2 py-1.5 text-center uppercase tracking-wide">
+                                    {isE2MOMMode ? `BLOQUE ${index + 1}` : `MINUTO ${index + 1}`}
+                                </div>
                                 {index < slots.length - 1 && (
                                     <div className="flex justify-center my-1">
                                         <div className="w-0.5 h-6 bg-slate-100 dark:bg-slate-700/50"></div>
@@ -182,14 +197,24 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                                     placeholder="Buscar ejercicio en la biblioteca..."
                                     className="cv-input bg-transparent border-none shadow-none focus:ring-0 px-0 py-0 text-sm font-medium h-auto placeholder:text-slate-400"
                                 />
-                                <div className="flex items-center gap-2">
+                                <div className="grid grid-cols-[1fr_120px] gap-2">
                                     <input
-                                        type="text"
-                                        value={slot.reps}
-                                        onChange={(e) => updateSlot(index, 'reps', e.target.value)}
-                                        placeholder="Ej: 15 reps, 40 segs work..."
-                                        className="text-xs text-cv-text-secondary bg-slate-50 dark:bg-slate-800 border-none rounded-md px-2 py-1 flex-1 focus:ring-1 focus:ring-cv-accent/50"
+                                        type="number"
+                                        min={1}
+                                        value={slot.targetValue}
+                                        onChange={(e) => updateSlot(index, 'targetValue', e.target.value ? Number.parseInt(e.target.value, 10) : '')}
+                                        placeholder="Valor"
+                                        className="text-xs text-cv-text-secondary bg-slate-50 dark:bg-slate-800 border-none rounded-md px-2 py-1.5 focus:ring-1 focus:ring-cv-accent/50"
                                     />
+                                    <select
+                                        value={slot.targetUnit}
+                                        onChange={(e) => updateSlot(index, 'targetUnit', e.target.value as 'reps' | 'seconds' | 'meters')}
+                                        className="text-xs text-cv-text-secondary bg-slate-50 dark:bg-slate-800 border-none rounded-md px-2 py-1.5 focus:ring-1 focus:ring-cv-accent/50"
+                                    >
+                                        <option value="reps">Reps</option>
+                                        <option value="seconds">Segundos</option>
+                                        <option value="meters">Metros</option>
+                                    </select>
                                 </div>
                             </div>
 

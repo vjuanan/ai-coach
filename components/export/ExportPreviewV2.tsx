@@ -25,6 +25,7 @@ interface WorkoutBlock {
         rest?: string;
         text?: string;
         notes?: string;
+        metrics?: Array<{ label: string; value: string }>;
     };
     section?: 'warmup' | 'main' | 'cooldown';
     cue?: string;
@@ -286,6 +287,33 @@ const getBlockDisplayName = (block: WorkoutBlock): string => {
     return map[block.type] || block.type;
 };
 
+const FORMAT_LABELS: Record<string, string> = {
+    EMOM: 'EMOM',
+    EMOM_ALT: 'EMOM Alternado',
+    E2MOM: 'E2MOM',
+    AMRAP: 'AMRAP',
+    RFT: 'Rondas por Tiempo',
+    FOR_TIME: 'Por Tiempo',
+    CHIPPER: 'Chipper',
+    DEATH_BY: 'Death By',
+    TABATA: 'Tabata',
+    LADDER: 'Escalera',
+    INTERVALS: 'Intervalos',
+    STANDARD: 'Series x Reps',
+    CLUSTER: 'Cluster',
+    DROP_SET: 'Drop Set',
+    GIANT_SET: 'Giant Set',
+    SUPER_SET: 'Super Set',
+    NOT_FOR_TIME: 'Not For Time',
+    TEMPO: 'Tempo',
+    DROPSET_FINISHER: 'Dropset',
+    REST_PAUSE: 'Rest-Pause',
+    LADDER_FINISHER: 'Escalera',
+    '21S': '21s',
+    ISO_HOLD: 'Iso-Hold',
+    '1_5_REPS': '1.5 Reps',
+};
+
 // -- EXERCISE ROW (Redesigned - Antopanti Card) --
 const ExerciseRow = ({
     block, index, theme, monthlyStrategy
@@ -295,132 +323,130 @@ const ExerciseRow = ({
 }) => {
     const displayName = getBlockDisplayName(block);
     const struct = block.structure;
+    const formatLabel = block.format ? (FORMAT_LABELS[String(block.format)] || String(block.format)) : null;
+    const metrics = struct?.metrics || [];
+    const movementLines = struct?.text
+        ? struct.text.split('\n').map((line) => line.trim()).filter(Boolean)
+        : (block.content || []).map((line) => line.trim()).filter(Boolean);
 
-    // Check if we have visible content
-    if (!struct && (!block.content || block.content.length === 0)) return null;
+    if (metrics.length === 0 && movementLines.length === 0 && !struct) return null;
 
     const hasProgression = getProgressionForBlock(block.name || '', monthlyStrategy);
     const showInlineProgression = hasProgression && hasProgression.progression.some(p => p && p !== '-');
-
-    // Build minimalist prescription string (fallback)
-    const parts = [];
-    if (struct) {
-        if (struct.sets) parts.push(`${struct.sets} series`);
-        if (struct.reps) parts.push(`${struct.reps} reps`);
-        if (struct.weight) parts.push(`${struct.weight}`);
-        if (struct.rest) parts.push(`Descanso: ${struct.rest}`);
-        if (struct.rpe) parts.push(`@ RPE ${struct.rpe}`);
-    }
-    const prescriptionText = parts.join('  ·  ');
+    const prescriptionText = metrics.map((metric) => `${metric.label}: ${metric.value}`).join(' · ');
 
     // Default to 4 weeks for the progression grid if available
     const progWeeks = hasProgression?.progression || [];
-    // If we have less than 4, pad it out for a clean 4-column look or just map what we have
     const displayProg = progWeeks.length > 0 ? progWeeks : [];
 
-    // Render Logic -> Ultra-Compact Horizontal Layout
     return (
         <div style={{
             marginBottom: '12px',
-            backgroundColor: theme.c.bgAlt, // White card
+            backgroundColor: theme.c.bgAlt,
             border: 'none',
             borderRadius: '14px',
-            padding: '14px 16px', // Tighter padding
+            padding: '14px 16px',
             display: 'flex',
-            flexDirection: 'row', // HORIZONTAL LAYOUT
+            flexDirection: 'row',
             gap: '14px',
-            boxShadow: '0 8px 16px rgba(248, 113, 157, 0.06)' // Softer tighter shadow
+            boxShadow: '0 8px 16px rgba(248, 113, 157, 0.06)'
         }}>
-            {/* Left Column: Number */}
             <div style={{
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'flex-start',
                 alignItems: 'center',
-                paddingTop: '2px' // Align visually with text
+                paddingTop: '2px'
             }}>
                 <span style={{
-                    fontSize: '36px', // Big number
-                    fontWeight: '900', // Black
+                    fontSize: '36px',
+                    fontWeight: '900',
                     background: `linear-gradient(135deg, ${theme.c.accent}, ${theme.c.accentMuted})`,
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     letterSpacing: '-1.5px',
                     lineHeight: '1',
-                    textShadow: '0 2px 10px rgba(248, 113, 157, 0.15)' // Subtle Glow
+                    textShadow: '0 2px 10px rgba(248, 113, 157, 0.15)'
                 }}>
                     {index}
                 </span>
             </div>
 
-            {/* Right Column: Title, Cues, & Progression */}
             <div style={{
                 display: 'flex',
                 flexDirection: 'column',
-                flex: 1, // Take remaining width
-                minWidth: 0 // Prevent text overflow
+                flex: 1,
+                minWidth: 0
             }}>
-                {/* Title */}
-                <span style={{
-                    fontSize: '16px',
-                    fontWeight: '800',
-                    color: theme.c.text,
-                    letterSpacing: '-0.3px',
-                    lineHeight: '1.2',
-                    marginBottom: '4px'
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '6px'
                 }}>
-                    {displayName}
-                </span>
+                    <span style={{
+                        fontSize: '16px',
+                        fontWeight: '800',
+                        color: theme.c.text,
+                        letterSpacing: '-0.3px',
+                        lineHeight: '1.2',
+                    }}>
+                        {displayName}
+                    </span>
+                    {formatLabel && (
+                        <span style={{
+                            fontSize: '10px',
+                            fontWeight: '800',
+                            color: theme.c.badge,
+                            backgroundColor: theme.c.accentSoft,
+                            border: `1px solid ${theme.c.borderSoft}`,
+                            padding: '2px 8px',
+                            borderRadius: '999px',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.4px'
+                        }}>
+                            {formatLabel}
+                        </span>
+                    )}
+                </div>
 
-                {/* Cues / Description */}
-                {(block.cue || struct?.text || (!struct && block.content && block.content.length > 0)) && (
-                    <div style={{ marginBottom: '8px' }}>
-                        {block.cue && (
-                            <div style={{
-                                fontSize: '12.5px',
-                                fontStyle: 'italic',
-                                color: theme.c.textMuted,
-                                lineHeight: '1.4',
-                                opacity: 0.85,
-                                borderLeft: `2px solid ${theme.c.border}`,
-                                paddingLeft: '8px',
-                                marginLeft: '2px', // Slight visual alignment
-                                marginBottom: '2px'
-                            }}>
-                                {block.cue}
-                            </div>
-                        )}
-
-                        {/* MetCon / Text Blocks - Simplified */}
-                        {struct?.text && (
-                            <div style={{
-                                marginTop: '4px',
-                                fontSize: '12.5px',
-                                lineHeight: '1.4',
-                                color: theme.c.textMuted,
-                                whiteSpace: 'pre-line',
-                            }}>
-                                {struct.text}
-                            </div>
-                        )}
-
-                        {/* Legacy Content */}
-                        {!struct && block.content && block.content.length > 0 && (
-                            <div style={{
-                                marginTop: '4px',
-                                fontSize: '12.5px',
-                                color: theme.c.textMuted,
-                                lineHeight: '1.4',
-                            }}>
-                                {block.content.map((line, i) => (
-                                    <div key={i}>• {line}</div>
-                                ))}
-                            </div>
-                        )}
+                {prescriptionText && (
+                    <div style={{
+                        backgroundColor: theme.c.accentSoft,
+                        borderRadius: '8px',
+                        border: `1px solid ${theme.c.borderSoft}`,
+                        padding: '8px 10px',
+                        marginBottom: '8px',
+                        fontSize: '12px',
+                        color: theme.c.text,
+                        fontWeight: '700',
+                        lineHeight: '1.35',
+                    }}>
+                        {prescriptionText}
                     </div>
                 )}
 
-                {/* Progression Details Box or Empty State Fallback (e.g for "Superserie A") */}
+                {movementLines.length > 0 && (
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px',
+                        marginBottom: showInlineProgression ? '10px' : '4px'
+                    }}>
+                        {movementLines.map((line, lineIdx) => (
+                            <div key={`${index}-line-${lineIdx}`} style={{
+                                fontSize: '12.5px',
+                                color: theme.c.textMuted,
+                                lineHeight: '1.4',
+                                borderLeft: `2px solid ${theme.c.borderSoft}`,
+                                paddingLeft: '8px',
+                            }}>
+                                {line}
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 <div style={{ marginTop: '4px' }}>
                     {showInlineProgression && displayProg.length > 0 ? (
                         <div style={{
@@ -431,22 +457,21 @@ const ExerciseRow = ({
                             overflow: 'hidden',
                             border: `1px solid ${theme.c.borderSoft}`
                         }}>
-                            {/* Horizontal 4-column Grid Inside Single Container */}
                             {displayProg.map((val, idx) => {
                                 return (
                                     <div key={idx} style={{
-                                        flex: 1, // Distribute evenly
+                                        flex: 1,
                                         display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        padding: '8px 2px', // Ultra compact
+                                        padding: '8px 2px',
                                         borderRight: idx < displayProg.length - 1 ? `1px solid ${theme.c.borderSoft}` : 'none'
                                     }}>
                                         <div style={{
                                             fontSize: '9.5px',
                                             fontWeight: '800',
-                                            color: theme.c.badge, // Gold `#EAB308`
+                                            color: theme.c.badge,
                                             textTransform: 'uppercase',
                                             marginBottom: '2px',
                                             opacity: 0.9
@@ -454,9 +479,9 @@ const ExerciseRow = ({
                                             SEM {idx + 1}
                                         </div>
                                         <div style={{
-                                            fontSize: '13px', // slightly bigger text relative to container
-                                            fontWeight: '700', // Bold
-                                            color: theme.c.text, // Black
+                                            fontSize: '13px',
+                                            fontWeight: '700',
+                                            color: theme.c.text,
                                             textAlign: 'center',
                                             lineHeight: '1.1'
                                         }}>
@@ -548,7 +573,11 @@ const DaySection = ({
                             const rounds = block.config?.rounds as string | number | undefined;
                             const blockName = getBlockDisplayName(block);
                             const isGenericActivacion = blockName.toLowerCase().includes('calentamiento') || blockName.toLowerCase().includes('activación');
-                            const movements = block.content.filter(c => c.trim());
+                            const metrics = block.structure?.metrics || [];
+                            const metricText = metrics.map((metric) => `${metric.label}: ${metric.value}`).join(' · ');
+                            const movements = block.structure?.text
+                                ? block.structure.text.split('\n').map((line) => line.trim()).filter(Boolean)
+                                : block.content.filter(c => c.trim());
                             return (
                                 <div key={i} style={{ marginBottom: i < warmupBlocks.length - 1 ? '20px' : '0' }}>
                                     <div style={{
@@ -565,6 +594,20 @@ const DaySection = ({
                                         <span>⚡</span>
                                         <span>{isGenericActivacion ? 'ACTIVACIÓN' : blockName} {rounds ? `(${rounds} VUELTAS)` : ''}</span>
                                     </div>
+                                    {metricText && (
+                                        <div style={{
+                                            backgroundColor: theme.c.accentSoft,
+                                            border: `1px solid ${theme.c.borderSoft}`,
+                                            borderRadius: '8px',
+                                            padding: '6px 10px',
+                                            marginBottom: '10px',
+                                            fontSize: '12px',
+                                            fontWeight: '700',
+                                            color: theme.c.text
+                                        }}>
+                                            {metricText}
+                                        </div>
+                                    )}
                                     <div style={{
                                         display: 'flex',
                                         flexDirection: 'column',
@@ -602,6 +645,11 @@ const DaySection = ({
                 {hasCooldown && cooldownBlocks.map((block, i) => {
                     // Si el finisher no tiene estructura/contenido, no lo renderizamos con caja
                     if (!block.structure && (!block.content || block.content.length === 0)) return null;
+                    const metrics = block.structure?.metrics || [];
+                    const metricText = metrics.map((metric) => `${metric.label}: ${metric.value}`).join(' · ');
+                    const detailLines = block.structure?.text
+                        ? block.structure.text.split('\n').map((line) => line.trim()).filter(Boolean)
+                        : (block.content || []).map((line) => line.trim()).filter(Boolean);
 
                     return (
                         <div key={`cd-${i}`} style={{
@@ -639,42 +687,35 @@ const DaySection = ({
                                 </span>
                             </div>
 
-                            {/* Legacy Content (List text) */}
-                            {block.content && block.content.length > 0 && (
+                            {metricText && (
                                 <div style={{
-                                    fontSize: '14px',
-                                    lineHeight: '1.6',
-                                    opacity: 0.95,
-                                    fontWeight: '400'
+                                    fontSize: '12.5px',
+                                    lineHeight: '1.45',
+                                    opacity: 0.98,
+                                    fontWeight: '700',
+                                    marginBottom: '10px',
+                                    backgroundColor: 'rgba(255,255,255,0.10)',
+                                    border: '1px solid rgba(255,255,255,0.14)',
+                                    borderRadius: '8px',
+                                    padding: '8px 10px'
                                 }}>
-                                    {block.content.map((c, i) => (
-                                        <div key={i}>{c}</div>
-                                    ))}
+                                    {metricText}
                                 </div>
                             )}
 
-                            {/* Metcon Structure Text - If used */}
-                            {block.structure?.text && (
+                            {detailLines.length > 0 && (
                                 <div style={{
                                     fontSize: '14px',
                                     lineHeight: '1.6',
                                     opacity: 0.95,
                                     fontWeight: '400',
-                                    whiteSpace: 'pre-line'
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '6px'
                                 }}>
-                                    {block.structure.text}
-                                </div>
-                            )}
-
-                            {/* Cues mapping for Finisher */}
-                            {block.cue && (
-                                <div style={{
-                                    marginTop: '12px',
-                                    fontSize: '13px',
-                                    fontStyle: 'italic',
-                                    opacity: 0.8
-                                }}>
-                                    {block.cue}
+                                    {detailLines.map((line, lineIdx) => (
+                                        <div key={`fin-line-${lineIdx}`}>{line}</div>
+                                    ))}
                                 </div>
                             )}
                         </div>
@@ -1221,4 +1262,3 @@ export function ExportPreview({
         </div>
     );
 }
-
