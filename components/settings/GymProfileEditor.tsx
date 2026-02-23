@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import {
     Building2, MapPin, Clock, Users, Settings, Phone, Globe,
-    Edit2, Save, X
+    Edit2, Save, X, ChevronDown, ChevronRight
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { EQUIPMENT_CATEGORIES, EQUIPMENT_LABELS, getEquipmentDisplayValue } from '@/lib/equipment-constants';
 
 interface GymProfileEditorProps {
     userId: string;
@@ -16,23 +17,11 @@ interface GymProfileEditorProps {
         gym_location?: string;
         operating_hours?: string;
         member_count?: number;
-        equipment_available?: Record<string, boolean>;
+        equipment_available?: Record<string, boolean | number>;
         contact_phone?: string;
         website_url?: string;
     };
 }
-
-const EQUIPMENT_LABELS: Record<string, string> = {
-    rig: '🏗️ Rig / Estructura',
-    rowers: '🚣 Remos (Concept2)',
-    skiErgs: '⛷️ SkiErgs',
-    assaultBikes: '🚴 Assault / Echo Bikes',
-    sleds: '🛷 Trineos / Prowler',
-    pool: '🏊 Piscina',
-    dumbbells: '🏋️ Mancuernas',
-    barbells: '🏋️ Barras Olímpicas',
-    kettlebells: '🔔 Kettlebells',
-};
 
 const GYM_TYPE_LABELS: Record<string, string> = {
     crossfit: '🏋️ Box CrossFit',
@@ -44,6 +33,7 @@ export function GymProfileEditor({ userId, initialData }: GymProfileEditorProps)
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [data, setData] = useState(initialData);
+    const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({});
     const supabase = createClient();
     const router = useRouter();
 
@@ -199,32 +189,88 @@ export function GymProfileEditor({ userId, initialData }: GymProfileEditorProps)
                         />
                     </InputGroup>
 
-                    {/* Equipment Checkboxes */}
+                    {/* Equipment Categorized */}
                     <div className="md:col-span-2">
                         <InputGroup icon={Settings} label="Equipamiento Disponible">
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                {Object.entries(EQUIPMENT_LABELS).map(([key, label]) => (
-                                    <label
-                                        key={key}
-                                        className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all text-sm ${data.equipment_available?.[key]
-                                                ? 'border-purple-500/50 bg-purple-500/5 text-cv-text-primary'
-                                                : 'border-cv-border bg-cv-bg-tertiary/30 text-cv-text-secondary hover:bg-cv-bg-tertiary/50'
-                                            }`}
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={data.equipment_available?.[key] || false}
-                                            onChange={(e) =>
-                                                handleChange('equipment_available', {
-                                                    ...data.equipment_available,
-                                                    [key]: e.target.checked,
-                                                })
-                                            }
-                                            className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                                        />
-                                        <span>{label}</span>
-                                    </label>
-                                ))}
+                            <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
+                                {EQUIPMENT_CATEGORIES.map(cat => {
+                                    const isExpanded = expandedCats[cat.id] ?? false;
+                                    const selectedCount = cat.items.filter(it => {
+                                        const val = data.equipment_available?.[it.key];
+                                        return typeof val === 'number' ? val > 0 : !!val;
+                                    }).length;
+                                    return (
+                                        <div key={cat.id} className="border border-cv-border rounded-lg overflow-hidden">
+                                            <button
+                                                type="button"
+                                                onClick={() => setExpandedCats(prev => ({ ...prev, [cat.id]: !prev[cat.id] }))}
+                                                className="w-full flex items-center justify-between px-3 py-2.5 bg-cv-bg-tertiary/50 hover:bg-cv-bg-tertiary transition-colors text-left"
+                                            >
+                                                <span className="font-medium text-sm text-cv-text-primary">
+                                                    {cat.emoji} {cat.title}
+                                                    {selectedCount > 0 && (
+                                                        <span className="ml-2 px-2 py-0.5 text-xs bg-purple-500/10 text-purple-400 rounded-full">
+                                                            {selectedCount}
+                                                        </span>
+                                                    )}
+                                                </span>
+                                                {isExpanded ? <ChevronDown size={16} className="text-cv-text-tertiary" /> : <ChevronRight size={16} className="text-cv-text-tertiary" />}
+                                            </button>
+                                            {isExpanded && (
+                                                <div className="p-2 grid grid-cols-1 gap-1.5">
+                                                    {cat.items.map(item => {
+                                                        const val = data.equipment_available?.[item.key];
+                                                        const isActive = typeof val === 'number' ? val > 0 : !!val;
+                                                        return (
+                                                            <label
+                                                                key={item.key}
+                                                                className={`flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-all text-sm ${isActive
+                                                                    ? 'border-purple-500/50 bg-purple-500/5 text-cv-text-primary'
+                                                                    : 'border-cv-border bg-cv-bg-tertiary/30 text-cv-text-secondary hover:bg-cv-bg-tertiary/50'
+                                                                    }`}
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={isActive}
+                                                                    onChange={(e) => {
+                                                                        const newVal = item.hasQuantity
+                                                                            ? (e.target.checked ? 1 : 0)
+                                                                            : e.target.checked;
+                                                                        handleChange('equipment_available', {
+                                                                            ...data.equipment_available,
+                                                                            [item.key]: newVal,
+                                                                        });
+                                                                    }}
+                                                                    className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                                                                />
+                                                                <span className="flex-1">{item.emoji} {item.label}</span>
+                                                                {item.hasQuantity && isActive && (
+                                                                    <div className="flex items-center gap-1 flex-shrink-0">
+                                                                        <input
+                                                                            type="number"
+                                                                            min={1}
+                                                                            value={typeof val === 'number' ? val : 1}
+                                                                            onChange={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleChange('equipment_available', {
+                                                                                    ...data.equipment_available,
+                                                                                    [item.key]: Math.max(1, parseInt(e.target.value) || 1),
+                                                                                });
+                                                                            }}
+                                                                            onClick={(e) => e.stopPropagation()}
+                                                                            className="w-14 h-7 text-center bg-cv-bg-tertiary border border-cv-border rounded text-sm focus:ring-1 focus:ring-purple-500 focus:outline-none text-cv-text-primary"
+                                                                        />
+                                                                        <span className="text-xs text-cv-text-tertiary">{item.quantityUnit}</span>
+                                                                    </div>
+                                                                )}
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </InputGroup>
                     </div>
@@ -234,11 +280,13 @@ export function GymProfileEditor({ userId, initialData }: GymProfileEditorProps)
     }
 
     // VIEW MODE
-    const activeEquipment = data.equipment_available
-        ? Object.entries(data.equipment_available)
-            .filter(([, v]) => v)
-            .map(([k]) => EQUIPMENT_LABELS[k] || k)
-        : [];
+    const activeEquipment: string[] = [];
+    if (data.equipment_available) {
+        Object.entries(data.equipment_available).forEach(([k, v]) => {
+            const display = getEquipmentDisplayValue(k, v as boolean | number);
+            if (display) activeEquipment.push(display);
+        });
+    }
 
     return (
         <div className="cv-card space-y-6">
@@ -287,3 +335,4 @@ export function GymProfileEditor({ userId, initialData }: GymProfileEditorProps)
         </div>
     );
 }
+

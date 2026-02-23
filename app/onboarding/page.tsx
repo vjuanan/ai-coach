@@ -5,12 +5,13 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
-    Dumbbell, UserCog, Building2, ChevronRight, ChevronLeft,
+    Dumbbell, UserCog, Building2, ChevronRight, ChevronLeft, ChevronDown,
     Calendar, Ruler, Weight, Target, MapPin, Clock, Activity,
     AlertCircle, MessageSquare, Camera, Upload, Check,
     Users, Globe, Phone, Settings, LogOut, Trophy
 } from 'lucide-react';
 import { refreshUserRoleReference } from '../auth/actions';
+import { EQUIPMENT_CATEGORIES, buildDefaultEquipment } from '@/lib/equipment-constants';
 import { LocationAutocomplete } from '@/components/shared/LocationAutocomplete';
 import { OperatingHoursModal } from '@/components/shared/OperatingHoursModal';
 
@@ -151,21 +152,16 @@ export default function OnboardingPage() {
         gym_location: '',
         operating_hours: '',
         member_count: 50,
-        equipment_available: {
-            rig: true,
-            rowers: false,
-            skiErgs: false,
-            assaultBikes: false,
-            sleds: false,
-            pool: false,
-            dumbbells: true,
-            barbells: true,
-            kettlebells: true
-        },
+        equipment_available: buildDefaultEquipment() as Record<string, boolean | number>,
         contact_phone: '',
         website_url: '',
         logo_url: ''
     });
+
+    // Track which equipment categories are expanded
+    const [expandedEquipCats, setExpandedEquipCats] = useState<Record<string, boolean>>(
+        Object.fromEntries(EQUIPMENT_CATEGORIES.map(c => [c.id, !!c.defaultExpanded]))
+    );
 
     const updateAthleteField = (field: string, value: any) => {
         setAthleteData(prev => ({ ...prev, [field]: value }));
@@ -637,39 +633,85 @@ export default function OnboardingPage() {
                 );
             case 4:
                 return (
-                    <div>
+                    <div className="space-y-4">
                         <InputLabel icon={Settings} label="Equipamiento Disponible" />
-                        <div className="grid grid-cols-2 gap-3">
-                            {[
-                                { key: 'rig', label: '🏗️ Rig / Estructura' },
-                                { key: 'rowers', label: '🚣 Remos (Concept2)' },
-                                { key: 'skiErgs', label: '⛷️ SkiErgs' },
-                                { key: 'assaultBikes', label: '🚴 Assault / Echo Bikes' },
-                                { key: 'sleds', label: '🛷 Trineos / Prowler' },
-                                { key: 'pool', label: '🏊 Piscina' },
-                                { key: 'dumbbells', label: '🏋️ Mancuernas' },
-                                { key: 'barbells', label: '🏋️ Barras Olímpicas' },
-                                { key: 'kettlebells', label: '🔔 Kettlebells' }
-                            ].map(item => (
-                                <label
-                                    key={item.key}
-                                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${gymData.equipment_available[item.key as keyof typeof gymData.equipment_available]
-                                        ? 'border-emerald-500 bg-emerald-50'
-                                        : 'border-gray-100 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    <input
-                                        type="checkbox"
-                                        checked={gymData.equipment_available[item.key as keyof typeof gymData.equipment_available]}
-                                        onChange={(e) => updateGymField('equipment_available', {
-                                            ...gymData.equipment_available,
-                                            [item.key]: e.target.checked
-                                        })}
-                                        className="w-5 h-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-                                    />
-                                    <span className="font-medium">{item.label}</span>
-                                </label>
-                            ))}
+                        <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
+                            {EQUIPMENT_CATEGORIES.map(cat => {
+                                const isExpanded = expandedEquipCats[cat.id] ?? false;
+                                const selectedCount = cat.items.filter(it => {
+                                    const val = gymData.equipment_available[it.key];
+                                    return typeof val === 'number' ? val > 0 : !!val;
+                                }).length;
+                                return (
+                                    <div key={cat.id} className="border-2 border-gray-100 rounded-xl overflow-hidden">
+                                        <button
+                                            type="button"
+                                            onClick={() => setExpandedEquipCats(prev => ({ ...prev, [cat.id]: !prev[cat.id] }))}
+                                            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+                                        >
+                                            <span className="font-semibold text-gray-800">
+                                                {cat.emoji} {cat.title}
+                                                {selectedCount > 0 && (
+                                                    <span className="ml-2 px-2 py-0.5 text-xs bg-emerald-100 text-emerald-700 rounded-full">
+                                                        {selectedCount}
+                                                    </span>
+                                                )}
+                                            </span>
+                                            {isExpanded ? <ChevronDown size={18} className="text-gray-400" /> : <ChevronRight size={18} className="text-gray-400" />}
+                                        </button>
+                                        {isExpanded && (
+                                            <div className="p-3 grid grid-cols-1 gap-2">
+                                                {cat.items.map(item => {
+                                                    const val = gymData.equipment_available[item.key];
+                                                    const isActive = typeof val === 'number' ? val > 0 : !!val;
+                                                    return (
+                                                        <div
+                                                            key={item.key}
+                                                            className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${isActive
+                                                                    ? 'border-emerald-400 bg-emerald-50'
+                                                                    : 'border-gray-100 hover:bg-gray-50'
+                                                                }`}
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={isActive}
+                                                                onChange={(e) => {
+                                                                    const newVal = item.hasQuantity
+                                                                        ? (e.target.checked ? 1 : 0)
+                                                                        : e.target.checked;
+                                                                    updateGymField('equipment_available', {
+                                                                        ...gymData.equipment_available,
+                                                                        [item.key]: newVal
+                                                                    });
+                                                                }}
+                                                                className="w-5 h-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 flex-shrink-0"
+                                                            />
+                                                            <span className="flex-1 font-medium text-sm">
+                                                                {item.emoji} {item.label}
+                                                            </span>
+                                                            {item.hasQuantity && isActive && (
+                                                                <div className="flex items-center gap-1 flex-shrink-0">
+                                                                    <input
+                                                                        type="number"
+                                                                        min={1}
+                                                                        value={typeof val === 'number' ? val : 1}
+                                                                        onChange={(e) => updateGymField('equipment_available', {
+                                                                            ...gymData.equipment_available,
+                                                                            [item.key]: Math.max(1, parseInt(e.target.value) || 1)
+                                                                        })}
+                                                                        className="w-14 h-8 text-center border-2 border-gray-200 rounded-lg text-sm focus:border-emerald-500 outline-none"
+                                                                    />
+                                                                    <span className="text-xs text-gray-500">{item.quantityUnit}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 );
