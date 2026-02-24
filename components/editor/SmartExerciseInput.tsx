@@ -105,7 +105,21 @@ export function SmartExerciseInput({
     const isExactMatch = results.some(r => r.name.toLowerCase() === query.trim().toLowerCase());
 
     return (
-        <div ref={wrapperRef} className="relative w-full">
+        <div
+            ref={wrapperRef}
+            className="relative w-full"
+            data-smart-exercise-input="true"
+            onKeyDownCapture={(e) => {
+                if (e.key !== 'Escape') return;
+                e.preventDefault();
+                e.stopPropagation();
+                setIsOpen(false);
+                const active = document.activeElement as HTMLElement | null;
+                if (active && wrapperRef.current?.contains(active)) {
+                    active.blur();
+                }
+            }}
+        >
             <div className="relative">
                 <input
                     ref={actualInputRef}
@@ -129,6 +143,13 @@ export function SmartExerciseInput({
                     className={`${className} pr-8`}
                     autoFocus={autoFocus}
                     autoComplete="off"
+                    onKeyDown={(e) => {
+                        if (e.key !== 'Escape') return;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsOpen(false);
+                        e.currentTarget.blur();
+                    }}
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary">
                     {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}

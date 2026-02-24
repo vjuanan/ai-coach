@@ -411,12 +411,20 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
+                const target = e.target as HTMLElement | null;
+                const isEditableTarget = !!target?.closest(
+                    'input, textarea, select, [contenteditable="true"], [role="textbox"], [role="combobox"], [data-smart-exercise-input="true"]'
+                );
+
                 if (showExport) {
                     setShowExport(false); // Close export modal if open
                     return;
                 }
                 if (showStrategy) {
                     setShowStrategy(false); // Close strategy modal if open
+                    return;
+                }
+                if (blockBuilderMode && isEditableTarget) {
                     return;
                 }
 
