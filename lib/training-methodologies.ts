@@ -202,7 +202,7 @@ const LABEL_OVERRIDES_ES: Record<string, Record<string, string>> = {
         direction: 'Direccion',
     },
     LADDER_FINISHER: {
-        direction: 'Direccion',
+        direction: 'Dirección',
         repsStart: 'Reps inicio',
         repsPeak: 'Reps pico/final',
         increment: 'Incremento por escalon',
@@ -343,7 +343,7 @@ const FORM_FIELD_OVERRIDES: Record<string, TrainingMethodologyFormField[]> = {
         { key: 'movements', label: 'Ejercicio', type: 'movements_list', required: true },
     ],
     LADDER_FINISHER: [
-        { key: 'direction', label: 'Direccion', type: 'select', options: ['ascending', 'descending', 'pyramid'], default: 'ascending', required: true },
+        { key: 'direction', label: 'Dirección', type: 'select', options: ['ascending', 'descending', 'pyramid'], default: 'ascending', required: true },
         { key: 'repsStart', label: 'Reps inicio', type: 'number', placeholder: '1', default: 1, required: true },
         { key: 'repsPeak', label: 'Reps pico/final', type: 'number', placeholder: '10', default: 10, required: true },
         { key: 'increment', label: 'Incremento por escalon', type: 'number', placeholder: '1', default: 1, required: true },
