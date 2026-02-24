@@ -194,6 +194,37 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         }
     }, [block, blockId, currentMethodology, expandedCategory, finisherMethods, isFinisherBlock, updateBlock]);
 
+    // Backfill missing numeric defaults in existing blocks so export and validation remain coherent.
+    useEffect(() => {
+        if (!block || !currentMethodology) return;
+        if (!['metcon_structured', 'warmup', 'accessory', 'skill', 'finisher'].includes(block.type)) return;
+
+        const fields = currentMethodology.form_config?.fields || [];
+        const updates: Record<string, unknown> = {};
+
+        for (const field of fields) {
+            if (field.type === 'movements_list') continue;
+            if (typeof field.default === 'undefined') continue;
+
+            const currentValue = (block.config || {})[field.key as keyof WorkoutConfig];
+            const isMissing = currentValue === undefined || currentValue === null || currentValue === '';
+            if (isMissing) {
+                updates[field.key] = field.default;
+            }
+        }
+
+        if (Object.keys(updates).length > 0) {
+            updateBlock(blockId, {
+                config: { ...(block.config || {}), ...updates } as WorkoutConfig,
+            });
+        }
+    }, [
+        block,
+        blockId,
+        currentMethodology,
+        updateBlock,
+    ]);
+
     // Early return if block not found (after all hooks)
     if (!block) {
         return (

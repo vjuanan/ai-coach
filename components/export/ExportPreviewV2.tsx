@@ -381,6 +381,7 @@ const ExerciseRow = ({
 }) => {
     const displayName = getBlockDisplayName(block);
     const struct = block.structure;
+    const guidance = typeof struct?.notes === 'string' ? struct.notes.trim() : '';
     const formatLabel = block.format ? (FORMAT_LABELS[String(block.format)] || String(block.format)) : null;
     const metrics = struct?.metrics || [];
     const movementLines = struct?.text
@@ -468,6 +469,22 @@ const ExerciseRow = ({
                 </div>
 
                 <MetricPills metrics={metrics} theme={theme} />
+
+                {guidance && (
+                    <div style={{
+                        fontSize: '12px',
+                        color: theme.c.text,
+                        backgroundColor: theme.c.bg,
+                        border: `1px solid ${theme.c.borderSoft}`,
+                        borderRadius: '8px',
+                        padding: '7px 10px',
+                        marginBottom: '8px',
+                        lineHeight: '1.35',
+                        fontWeight: 600,
+                    }}>
+                        {guidance}
+                    </div>
+                )}
 
                 {movementLines.length > 0 && (
                     <div style={{
@@ -602,6 +619,7 @@ const DaySection = ({
                             const blockName = getBlockDisplayName(block);
                             const isGenericActivacion = blockName.toLowerCase().includes('calentamiento') || blockName.toLowerCase().includes('activación');
                             const metrics = block.structure?.metrics || [];
+                            const guidance = typeof block.structure?.notes === 'string' ? block.structure.notes.trim() : '';
                             const movements = block.structure?.text
                                 ? block.structure.text.split('\n').map((line) => line.trim()).filter(Boolean)
                                 : block.content.filter(c => c.trim());
@@ -622,6 +640,20 @@ const DaySection = ({
                                         <span>{isGenericActivacion ? 'ACTIVACIÓN' : blockName} {rounds ? `(${rounds} VUELTAS)` : ''}</span>
                                     </div>
                                     <MetricPills metrics={metrics} theme={theme} compact />
+                                    {guidance && (
+                                        <div style={{
+                                            backgroundColor: theme.c.bg,
+                                            border: `1px solid ${theme.c.borderSoft}`,
+                                            borderRadius: '8px',
+                                            padding: '6px 10px',
+                                            marginBottom: '8px',
+                                            fontSize: '12px',
+                                            fontWeight: 600,
+                                            color: theme.c.text
+                                        }}>
+                                            {guidance}
+                                        </div>
+                                    )}
                                     <div style={{
                                         display: 'flex',
                                         flexDirection: 'column',
@@ -660,6 +692,7 @@ const DaySection = ({
                     // Si el finisher no tiene estructura/contenido, no lo renderizamos con caja
                     if (!block.structure && (!block.content || block.content.length === 0)) return null;
                     const metrics = block.structure?.metrics || [];
+                    const guidance = typeof block.structure?.notes === 'string' ? block.structure.notes.trim() : '';
                     const detailLines = block.structure?.text
                         ? block.structure.text.split('\n').map((line) => line.trim()).filter(Boolean)
                         : (block.content || []).map((line) => line.trim()).filter(Boolean);
@@ -701,6 +734,21 @@ const DaySection = ({
                             </div>
 
                             <MetricPills metrics={metrics} theme={theme} compact inverted />
+                            {guidance && (
+                                <div style={{
+                                    fontSize: '12.5px',
+                                    lineHeight: '1.45',
+                                    opacity: 0.98,
+                                    fontWeight: 600,
+                                    marginBottom: '10px',
+                                    backgroundColor: 'rgba(255,255,255,0.10)',
+                                    border: '1px solid rgba(255,255,255,0.14)',
+                                    borderRadius: '8px',
+                                    padding: '8px 10px'
+                                }}>
+                                    {guidance}
+                                </div>
+                            )}
 
                             {detailLines.length > 0 && (
                                 <div style={{

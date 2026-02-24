@@ -1,6 +1,10 @@
 
 import { type MesocycleStrategy } from '@/components/editor/MesocycleStrategyForm';
-import { formatMethodologyOptionLabel, normalizeMethodologyCode } from '@/lib/training-methodologies';
+import {
+    formatMethodologyOptionLabel,
+    getTrainingMethodologyDefaultValues,
+    normalizeMethodologyCode,
+} from '@/lib/training-methodologies';
 
 // ==========================================
 // RM / STATS HELPERS (Copied from hooks/useAthleteRm.ts)
@@ -82,8 +86,38 @@ function inferFormatCode(type: string, config: any): string {
     return normalizeMethodologyCode((config?.format as string) || (config?.methodology as string) || '');
 }
 
-function collectMetrics(type: string, config: any): ExportMetric[] {
+function mergeWithDefaults(defaults: Record<string, unknown>, config: any): Record<string, unknown> {
+    const merged: Record<string, unknown> = { ...defaults };
+    Object.entries(config || {}).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+            merged[key] = value;
+        }
+    });
+    return merged;
+}
+
+function normalizeExportConfig(type: string, config: any): Record<string, unknown> {
+    const formatCode = inferFormatCode(type, config);
+    const defaults = getTrainingMethodologyDefaultValues(formatCode);
+    return mergeWithDefaults(defaults, config || {});
+}
+
+function formatIntensityReference(raw: unknown): string | null {
+    const numeric = toNumber(raw);
+    if (numeric === null) return null;
+    if (numeric <= 10) return `RPE ${numeric}`;
+    return `${numeric}% 1RM`;
+}
+
+function pushIntensityMetric(metrics: ExportMetric[], label: string, raw: unknown) {
+    const formatted = formatIntensityReference(raw);
+    if (!formatted) return;
+    metrics.push({ label, value: formatted });
+}
+
+function collectMetrics(type: string, rawConfig: any): ExportMetric[] {
     const metrics: ExportMetric[] = [];
+    const config = normalizeExportConfig(type, rawConfig);
     const formatCode = inferFormatCode(type, config);
 
     switch (formatCode) {
@@ -129,6 +163,7 @@ function collectMetrics(type: string, config: any): ExportMetric[] {
             pushMetric(metrics, 'Reps Inicio', config.startReps ?? config.repsStart);
             pushMetric(metrics, 'Reps Pico/Final', config.endReps ?? config.repsPeak);
             pushMetric(metrics, 'Incremento', config.increment);
+            pushIntensityMetric(metrics, 'Intensidad', config.intensityTarget);
             break;
         case 'INTERVALS':
             pushMetric(metrics, 'Intervalos', config.rounds);
@@ -153,17 +188,25 @@ function collectMetrics(type: string, config: any): ExportMetric[] {
             pushMetric(metrics, 'Drops', config.drops);
             pushMetric(metrics, 'Reps/Drop', config.repsPerDrop);
             pushMetric(metrics, 'Reducción', config.weightReductionPct || config.weightReduction, '%');
+            pushMetric(metrics, 'Carga Inicial', config.startingLoadPct, '% 1RM');
             break;
         case 'GIANT_SET':
             pushMetric(metrics, 'Rondas', config.rounds);
+            pushMetric(metrics, 'Reps/Ejercicio', config.repsPerMovement);
+            pushIntensityMetric(metrics, 'Intensidad', config.intensityTarget);
+            pushMetric(metrics, 'Descanso Entre Ejercicios', config.restBetweenMovementsSeconds, 'seg');
             pushMetric(metrics, 'Descanso Entre Rondas', config.restBetweenRoundsSeconds || config.restBetweenRounds, 'seg');
             break;
         case 'SUPER_SET':
             pushMetric(metrics, 'Series', config.sets);
+            pushMetric(metrics, 'Reps/Ejercicio', config.repsPerMovement);
+            pushIntensityMetric(metrics, 'Intensidad', config.intensityTarget);
+            pushMetric(metrics, 'Descanso Entre Ejercicios', config.restBetweenMovementsSeconds, 'seg');
             pushMetric(metrics, 'Descanso Entre Sets', config.restBetweenSetsSeconds || config.restBetweenSets, 'seg');
             break;
         case 'NOT_FOR_TIME':
             pushMetric(metrics, 'Rondas', config.rounds);
+            pushMetric(metrics, 'Reps/Ejercicio', config.repsPerMovement);
             break;
         case 'TEMPO': {
             pushMetric(metrics, 'Series', config.sets);
@@ -184,23 +227,28 @@ function collectMetrics(type: string, config: any): ExportMetric[] {
             pushMetric(metrics, 'Drops', config.drops);
             pushMetric(metrics, 'Reps/Drop', config.repsPerDrop);
             pushMetric(metrics, 'Reducción', config.weightReductionPct || config.percentage, '%');
+            pushMetric(metrics, 'Carga Inicial', config.startingLoadPct, '% 1RM');
             break;
         case 'REST_PAUSE':
             pushMetric(metrics, 'Reps Totales', config.totalReps);
             pushMetric(metrics, 'Micro-Descanso', config.restSeconds || config.rest, 'seg');
             pushMetric(metrics, 'Mini-Bloques', config.clusters);
+            pushIntensityMetric(metrics, 'Intensidad', config.intensityTarget);
             break;
         case '21S':
             pushMetric(metrics, 'Series', config.sets);
+            pushIntensityMetric(metrics, 'Intensidad', config.intensityTarget);
             break;
         case 'ISO_HOLD':
             pushMetric(metrics, 'Series', config.sets);
             pushMetric(metrics, 'Pausa Isométrica', config.holdSeconds || config.holdTime, 'seg');
             pushMetric(metrics, 'Reps', config.reps);
+            pushIntensityMetric(metrics, 'Intensidad', config.intensityTarget);
             break;
         case '1_5_REPS':
             pushMetric(metrics, 'Series', config.sets);
             pushMetric(metrics, 'Reps', config.reps);
+            pushIntensityMetric(metrics, 'Intensidad', config.intensityTarget);
             break;
         default:
             pushMetric(metrics, 'Series', config.sets);
@@ -212,13 +260,64 @@ function collectMetrics(type: string, config: any): ExportMetric[] {
     return metrics;
 }
 
-function buildMovementLine(entry: any): string {
+type MovementFallback = {
+    targetValue?: unknown;
+    targetUnit?: 'reps' | 'seconds' | 'meters' | 'calories';
+    intensityText?: string;
+    restSeconds?: unknown;
+};
+
+function getMovementFallback(formatCode: string, config: Record<string, unknown>): MovementFallback {
+    const fallback: MovementFallback = {};
+
+    if (['DROP_SET', 'DROPSET_FINISHER'].includes(formatCode)) {
+        fallback.targetValue = config.repsPerDrop;
+        fallback.targetUnit = 'reps';
+    }
+
+    if (['GIANT_SET', 'SUPER_SET'].includes(formatCode)) {
+        fallback.targetValue = config.repsPerMovement;
+        fallback.targetUnit = 'reps';
+    }
+
+    if (formatCode === 'NOT_FOR_TIME') {
+        fallback.targetValue = config.repsPerMovement;
+        fallback.targetUnit = 'reps';
+    }
+
+    if (['STANDARD', 'TEMPO', 'ISO_HOLD', '1_5_REPS'].includes(formatCode)) {
+        fallback.targetValue = config.reps;
+        fallback.targetUnit = 'reps';
+    }
+
+    if (formatCode === '21S') {
+        fallback.targetValue = 21;
+        fallback.targetUnit = 'reps';
+    }
+
+    const intensityText = formatIntensityReference(
+        config.intensityTarget ?? config.startingLoadPct ?? config.percentage
+    );
+    if (intensityText) fallback.intensityText = intensityText;
+
+    const restSeconds =
+        config.restBetweenMovementsSeconds ??
+        config.restSeconds ??
+        config.restBetweenSetsSeconds;
+    if (toNumber(restSeconds) !== null && toNumber(restSeconds) !== 0) {
+        fallback.restSeconds = restSeconds;
+    }
+
+    return fallback;
+}
+
+function buildMovementLine(entry: any, fallback: MovementFallback = {}): string {
     if (!entry) return '';
     const name = (entry.name || entry.exercise || entry.movement || '').toString().trim();
     if (!name) return '';
 
     const details: string[] = [];
-    const targetValue = toNumber(entry.targetValue ?? entry.reps ?? entry.quantity);
+    const targetValue = toNumber(entry.targetValue ?? entry.reps ?? entry.quantity ?? fallback.targetValue);
     if (targetValue !== null) {
         const unitMap: Record<string, string> = {
             reps: 'reps',
@@ -226,7 +325,7 @@ function buildMovementLine(entry: any): string {
             meters: 'm',
             calories: 'cal',
         };
-        const unit = unitMap[String(entry.targetUnit || 'reps')] || 'reps';
+        const unit = unitMap[String(entry.targetUnit || fallback.targetUnit || 'reps')] || 'reps';
         details.push(`${targetValue} ${unit}`);
     }
     const distance = toNumber(entry.distance);
@@ -234,22 +333,29 @@ function buildMovementLine(entry: any): string {
     const sets = toNumber(entry.sets);
     if (sets !== null) details.push(`Series ${sets}`);
     const rpe = toNumber(entry.rpe);
-    if (rpe !== null) details.push(`RPE ${rpe}`);
+    if (rpe !== null) {
+        details.push(`RPE ${rpe}`);
+    } else if (fallback.intensityText) {
+        details.push(`Intensidad ${fallback.intensityText}`);
+    }
     const weight = toNumber(entry.weight);
     if (weight !== null) details.push(`${weight} kg`);
-    const rest = toNumber(entry.restSeconds ?? entry.rest);
+    const rest = toNumber(entry.restSeconds ?? entry.rest ?? fallback.restSeconds);
     if (rest !== null) details.push(`Descanso ${rest} seg`);
 
     return details.length > 0 ? `${name} · ${details.join(' · ')}` : name;
 }
 
-function collectMovementLines(config: any): string[] {
-    if (!config) return [];
+function collectMovementLines(type: string, rawConfig: any): string[] {
+    if (!rawConfig) return [];
+    const config = normalizeExportConfig(type, rawConfig);
+    const formatCode = inferFormatCode(type, config);
+    const fallback = getMovementFallback(formatCode, config);
 
     const slotLines = Array.isArray(config.slots)
         ? config.slots
             .map((slot: any, idx: number) => {
-                const movement = buildMovementLine(slot);
+                const movement = buildMovementLine(slot, fallback);
                 if (!movement) return '';
                 return `Intervalo ${idx + 1}: ${movement}`;
             })
@@ -258,24 +364,26 @@ function collectMovementLines(config: any): string[] {
     if (slotLines.length > 0) return slotLines;
 
     const itemLines = Array.isArray(config.items)
-        ? config.items.map((item: any) => buildMovementLine(item)).filter(Boolean)
+        ? config.items.map((item: any) => buildMovementLine(item, fallback)).filter(Boolean)
         : [];
     if (itemLines.length > 0) return itemLines;
 
     const movementLines = Array.isArray(config.movements)
         ? config.movements.map((movement: any) => {
-            if (typeof movement === 'string') return movement.trim();
-            return buildMovementLine(movement);
+            if (typeof movement === 'string') return buildMovementLine({ name: movement.trim() }, fallback);
+            return buildMovementLine(movement, fallback);
         }).filter(Boolean)
         : [];
     if (movementLines.length > 0) return movementLines;
 
     if (typeof config.movement === 'string' && config.movement.trim().length > 0) {
-        return [config.movement.trim()];
+        return [buildMovementLine({ name: config.movement.trim() }, fallback)];
     }
 
     if (Array.isArray(config.exercises)) {
-        return config.exercises.map((exercise: any) => String(exercise || '').trim()).filter(Boolean);
+        return config.exercises
+            .map((exercise: any) => buildMovementLine({ name: String(exercise || '').trim() }, fallback))
+            .filter(Boolean);
     }
 
     if (typeof config.content === 'string' && config.content.trim().length > 0) {
@@ -285,19 +393,98 @@ function collectMovementLines(config: any): string[] {
     return [];
 }
 
+function buildExecutionHint(type: string, rawConfig: any): string {
+    const config = normalizeExportConfig(type, rawConfig);
+    const formatCode = inferFormatCode(type, config);
+    const duration = toNumber(config.minutes);
+    const interval = toNumber(config.interval);
+    const rounds = toNumber(config.rounds);
+    const timeCap = toNumber(config.timeCap ?? config.time_cap);
+    const direction = config.direction ? formatMethodologyOptionLabel(String(config.direction)).toLowerCase() : '';
+
+    switch (formatCode) {
+        case 'EMOM':
+            return `Cómo hacerlo: iniciar una tarea cada ${interval || 1} min durante ${duration || 10} min.`;
+        case 'EMOM_ALT':
+            return `Cómo hacerlo: alternar ejercicios cada ${interval || 1} min durante ${duration || 12} min.`;
+        case 'E2MOM':
+            return `Cómo hacerlo: trabajar cada ${interval || 2} min durante ${duration || 12} min.`;
+        case 'AMRAP':
+            return `Cómo hacerlo: completar rondas continuas del circuito durante ${duration || 12} min.`;
+        case 'RFT':
+            return `Cómo hacerlo: completar ${rounds || 5} rondas por tiempo${timeCap ? ` (tope ${timeCap} min)` : ''}.`;
+        case 'FOR_TIME':
+            return `Cómo hacerlo: completar el circuito total por tiempo${timeCap ? ` (tope ${timeCap} min)` : ''}.`;
+        case 'CHIPPER':
+            return `Cómo hacerlo: ejecutar en orden hasta terminar${timeCap ? ` con tope ${timeCap} min` : ''}.`;
+        case 'DEATH_BY': {
+            const start = toNumber(config.startingReps) || 1;
+            const inc = toNumber(config.increment) || 1;
+            return `Cómo hacerlo: iniciar con ${start} reps y aumentar ${inc} rep(s) por ronda.`;
+        }
+        case 'TABATA': {
+            const work = toNumber(config.workSeconds) || 20;
+            const rest = toNumber(config.restSeconds) || 10;
+            return `Cómo hacerlo: ${toNumber(config.rounds) || 8} rondas de ${work}s trabajo + ${rest}s descanso.`;
+        }
+        case 'LADDER':
+            return `Cómo hacerlo: escalera ${direction || 'ascendente'} desde ${toNumber(config.startReps) || 1} hasta ${toNumber(config.endReps) || 10}, cambiando ${toNumber(config.increment) || 1} rep(s) por escalón.`;
+        case 'INTERVALS':
+            return `Cómo hacerlo: ${toNumber(config.rounds) || 5} intervalos de ${toNumber(config.workSeconds) || 40}s trabajo + ${toNumber(config.restSeconds) || 20}s descanso.`;
+        case 'STANDARD':
+            return `Cómo hacerlo: ${toNumber(config.sets) || 3} series de ${toNumber(config.reps) || 10} reps por ejercicio.`;
+        case 'CLUSTER':
+            return `Cómo hacerlo: ${toNumber(config.sets) || 4} clusters de ${toNumber(config.miniSets) || 3} mini-sets x ${toNumber(config.repsPerMiniSet) || 2} reps.`;
+        case 'DROP_SET':
+            return `Cómo hacerlo: ${toNumber(config.repsPerDrop) || 8} reps por drop, bajar ${toNumber(config.weightReductionPct) || 20}% desde ${toNumber(config.startingLoadPct) || 75}% 1RM.`;
+        case 'GIANT_SET':
+            return `Cómo hacerlo: ${toNumber(config.rounds) || 3} rondas, ${toNumber(config.repsPerMovement) || 10} reps por ejercicio, sin descanso interno.`;
+        case 'SUPER_SET':
+            return `Cómo hacerlo: ${toNumber(config.sets) || 4} series, ${toNumber(config.repsPerMovement) || 10} reps por ejercicio, alternando sin descanso interno.`;
+        case 'NOT_FOR_TIME':
+            return `Cómo hacerlo: bloque técnico sin reloj${rounds ? `, completar ${rounds} rondas` : ''} con ${toNumber(config.repsPerMovement) || 10} reps por ejercicio.`;
+        case 'TEMPO': {
+            const e = toNumber(config.tempoEccentric);
+            const b = toNumber(config.tempoBottom);
+            const c = toNumber(config.tempoConcentric);
+            const t = toNumber(config.tempoTop);
+            const tempo = (e !== null && b !== null && c !== null && t !== null)
+                ? `${e}-${b}-${c}-${t}`
+                : String(config.tempo || '');
+            return `Cómo hacerlo: ${toNumber(config.sets) || 3} series de ${toNumber(config.reps) || 10} reps con tempo ${tempo || '3-1-1-1'}.`;
+        }
+        case 'DROPSET_FINISHER':
+            return `Cómo hacerlo: finisher de ${toNumber(config.repsPerDrop) || 10} reps por drop, bajar ${toNumber(config.weightReductionPct) || 20}% desde ${toNumber(config.startingLoadPct) || 75}% 1RM.`;
+        case 'REST_PAUSE':
+            return `Cómo hacerlo: acumular ${toNumber(config.totalReps) || 20} reps en ${toNumber(config.clusters) || 3} mini-bloques con pausas de ${toNumber(config.restSeconds) || 15}s.`;
+        case 'LADDER_FINISHER':
+            return `Cómo hacerlo: escalera ${direction || 'ascendente'} de ${toNumber(config.repsStart) || 1} a ${toNumber(config.repsPeak) || 10}, variando ${toNumber(config.increment) || 1} rep(s) por escalón.`;
+        case '21S':
+            return `Cómo hacerlo: ${toNumber(config.sets) || 2} series del protocolo 21s (7 parcial baja + 7 parcial alta + 7 completas).`;
+        case 'ISO_HOLD':
+            return `Cómo hacerlo: ${toNumber(config.sets) || 2} series de ${toNumber(config.reps) || 10} reps con pausa isométrica de ${toNumber(config.holdSeconds) || 3}s.`;
+        case '1_5_REPS':
+            return `Cómo hacerlo: ${toNumber(config.sets) || 3} series de ${toNumber(config.reps) || 8} reps (1 completa + media rep por repetición).`;
+        default:
+            return '';
+    }
+}
+
 export function convertConfigToText(type: string, config: any, blockName?: string | null, oneRmStats?: any, excludeNotes: boolean = false, exercisesCues?: Record<string, string>): string[] {
-    const metrics = collectMetrics(type, config);
+    const normalizedConfig = normalizeExportConfig(type, config);
+    const metrics = collectMetrics(type, normalizedConfig);
     const metricLine = metrics.length > 0
         ? metrics.map((metric) => `${metric.label}: ${metric.value}`).join(' · ')
         : '';
-    const movementLines = collectMovementLines(config);
+    const movementLines = collectMovementLines(type, normalizedConfig);
+    const executionHint = buildExecutionHint(type, normalizedConfig);
 
     // 1. Handle Strength Linear
     if (type === 'strength_linear') {
-        const mainMetric = config.distance ? config.distance : config.reps;
+        const mainMetric = normalizedConfig.distance ? normalizedConfig.distance : normalizedConfig.reps;
         let kgBadge = '';
-        if (config.percentage && blockName && oneRmStats) {
-            const pctValue = parseFloat(config.percentage);
+        if (normalizedConfig.percentage && blockName && oneRmStats) {
+            const pctValue = parseFloat(String(normalizedConfig.percentage));
             if (!isNaN(pctValue)) {
                 const kg = calculateKgFromStats(oneRmStats, blockName, pctValue);
                 if (kg) kgBadge = `(≈${kg}kg)`;
@@ -305,10 +492,10 @@ export function convertConfigToText(type: string, config: any, blockName?: strin
         }
 
         const parts = [
-            config.sets && mainMetric ? `Series: ${config.sets} · Reps: ${mainMetric}` : '',
-            config.percentage ? `%1RM: ${config.percentage}% ${kgBadge}` : '',
-            config.rpe ? `RPE: ${config.rpe}` : '',
-            config.weight ? `Carga: ${config.weight} kg` : ''
+            normalizedConfig.sets && mainMetric ? `Series: ${normalizedConfig.sets} · Reps: ${mainMetric}` : '',
+            normalizedConfig.percentage ? `%1RM: ${normalizedConfig.percentage}% ${kgBadge}` : '',
+            normalizedConfig.rpe ? `RPE: ${normalizedConfig.rpe}` : '',
+            normalizedConfig.weight ? `Carga: ${normalizedConfig.weight} kg` : ''
         ].filter(Boolean).join(' · ');
 
         const lines = [parts];
@@ -319,60 +506,70 @@ export function convertConfigToText(type: string, config: any, blockName?: strin
     if (['metcon_structured', 'warmup', 'accessory', 'skill', 'finisher'].includes(type)) {
         const lines: string[] = [];
         if (metricLine) lines.push(metricLine);
+        if (executionHint) lines.push(executionHint);
         if (movementLines.length > 0) lines.push(...movementLines);
         return lines.filter(Boolean);
     }
 
     // 3. Generic fallback
     if (metricLine || movementLines.length > 0) {
-        return [metricLine, ...movementLines].filter(Boolean);
+        return [metricLine, executionHint, ...movementLines].filter(Boolean);
     }
 
     return [];
 }
 
 export function configToStructure(type: string, config: any, blockName?: string | null, oneRmStats?: any, excludeNotes: boolean = false, exercisesCues?: Record<string, string>) {
+    const normalizedConfig = normalizeExportConfig(type, config);
     const res = {
         sets: '',
         reps: '',
         weight: '',
         rpe: '',
-        rest: config.rest || '',
+        rest: normalizedConfig.rest || '',
         text: '',
         notes: '',
         metrics: [] as ExportMetric[],
     };
-    const metrics = collectMetrics(type, config);
-    const movementLines = collectMovementLines(config);
+    const metrics = collectMetrics(type, normalizedConfig);
+    const movementLines = collectMovementLines(type, normalizedConfig);
+    const executionHint = buildExecutionHint(type, normalizedConfig);
     res.metrics = metrics;
 
     // 1. Strength
-    if (type === 'strength_linear' || config.sets || config.reps || config.weight) {
-        if (config.sets) res.sets = `${config.sets}`;
+    if (type === 'strength_linear' || normalizedConfig.sets || normalizedConfig.reps || normalizedConfig.weight) {
+        if (normalizedConfig.sets) res.sets = `${normalizedConfig.sets}`;
 
         // Reps can be distance too
-        if (config.reps) res.reps = `${config.reps}`;
-        if (config.distance) res.reps = config.reps ? `${config.reps} (${config.distance})` : `${config.distance}`;
+        if (normalizedConfig.reps) res.reps = `${normalizedConfig.reps}`;
+        if (normalizedConfig.distance) {
+            res.reps = normalizedConfig.reps
+                ? `${normalizedConfig.reps} (${normalizedConfig.distance})`
+                : `${normalizedConfig.distance}`;
+        }
 
         // Weight logic
-        if (config.weight) res.weight = config.weight;
-        if (config.percentage) {
+        if (normalizedConfig.weight) res.weight = String(normalizedConfig.weight);
+        if (normalizedConfig.percentage) {
             let kgBadge = '';
             if (blockName && oneRmStats) {
-                const pctValue = parseFloat(config.percentage);
+                const pctValue = parseFloat(String(normalizedConfig.percentage));
                 if (!isNaN(pctValue)) {
                     const kg = calculateKgFromStats(oneRmStats, blockName, pctValue);
                     if (kg) kgBadge = ` (≈${kg}kg)`;
                 }
             }
             // If weight already exists, append percentage. If not, set it.
-            res.weight = res.weight ? `${res.weight} @ ${config.percentage}%${kgBadge}` : `${config.percentage}%${kgBadge}`;
+            res.weight = res.weight
+                ? `${res.weight} @ ${normalizedConfig.percentage}%${kgBadge}`
+                : `${normalizedConfig.percentage}%${kgBadge}`;
         }
 
-        if (config.rpe) res.rpe = `${config.rpe}`;
-        const restSeconds = toNumber(config.restSeconds || config.rest);
+        if (normalizedConfig.rpe) res.rpe = `${normalizedConfig.rpe}`;
+        const restSeconds = toNumber(normalizedConfig.restSeconds || normalizedConfig.rest);
         if (restSeconds !== null) res.rest = `${restSeconds} seg`;
         if (movementLines.length > 0) res.text = movementLines.join('\n');
+        if (executionHint) res.notes = executionHint;
 
         return res;
     }
@@ -380,14 +577,16 @@ export function configToStructure(type: string, config: any, blockName?: string 
     // 2. Structured modalities
     if (['metcon_structured', 'warmup', 'accessory', 'skill', 'finisher'].includes(type)) {
         res.text = movementLines.join('\n');
+        res.notes = executionHint;
         return res;
     }
 
     // 3. Defaults
-    const existingLines = convertConfigToText(type, config, blockName, oneRmStats, excludeNotes, exercisesCues);
+    const existingLines = convertConfigToText(type, normalizedConfig, blockName, oneRmStats, excludeNotes, exercisesCues);
     if (existingLines.length > 0) {
         res.text = existingLines.join('\n');
     }
+    if (executionHint) res.notes = executionHint;
 
     return res;
 }
