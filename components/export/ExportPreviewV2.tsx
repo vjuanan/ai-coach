@@ -314,6 +314,64 @@ const FORMAT_LABELS: Record<string, string> = {
     '1_5_REPS': '1.5 Reps',
 };
 
+const MetricPills = ({
+    metrics,
+    theme,
+    compact = false,
+    inverted = false,
+}: {
+    metrics: Array<{ label: string; value: string }>;
+    theme: ExportTheme;
+    compact?: boolean;
+    inverted?: boolean;
+}) => {
+    if (!metrics || metrics.length === 0) return null;
+
+    return (
+        <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: compact ? '6px' : '8px',
+            marginBottom: compact ? '8px' : '10px',
+        }}>
+            {metrics.map((metric, metricIdx) => (
+                <div
+                    key={`${metric.label}-${metricIdx}`}
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: compact ? '4px' : '6px',
+                        borderRadius: '999px',
+                        border: inverted
+                            ? '1px solid rgba(255,255,255,0.24)'
+                            : `1px solid ${theme.c.borderSoft}`,
+                        backgroundColor: inverted ? 'rgba(255,255,255,0.12)' : theme.c.accentSoft,
+                        padding: compact ? '4px 8px' : '5px 10px',
+                        lineHeight: '1.2',
+                    }}
+                >
+                    <span style={{
+                        fontSize: compact ? '10px' : '10.5px',
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.4px',
+                        color: inverted ? 'rgba(255,255,255,0.85)' : theme.c.textMuted,
+                    }}>
+                        {metric.label}
+                    </span>
+                    <span style={{
+                        fontSize: compact ? '11px' : '11.5px',
+                        fontWeight: 800,
+                        color: inverted ? '#FFFFFF' : theme.c.text,
+                    }}>
+                        {metric.value}
+                    </span>
+                </div>
+            ))}
+        </div>
+    );
+};
+
 // -- EXERCISE ROW (Redesigned - Antopanti Card) --
 const ExerciseRow = ({
     block, index, theme, monthlyStrategy
@@ -333,7 +391,6 @@ const ExerciseRow = ({
 
     const hasProgression = getProgressionForBlock(block.name || '', monthlyStrategy);
     const showInlineProgression = hasProgression && hasProgression.progression.some(p => p && p !== '-');
-    const prescriptionText = metrics.map((metric) => `${metric.label}: ${metric.value}`).join(' · ');
 
     // Default to 4 weeks for the progression grid if available
     const progWeeks = hasProgression?.progression || [];
@@ -410,21 +467,7 @@ const ExerciseRow = ({
                     )}
                 </div>
 
-                {prescriptionText && (
-                    <div style={{
-                        backgroundColor: theme.c.accentSoft,
-                        borderRadius: '8px',
-                        border: `1px solid ${theme.c.borderSoft}`,
-                        padding: '8px 10px',
-                        marginBottom: '8px',
-                        fontSize: '12px',
-                        color: theme.c.text,
-                        fontWeight: '700',
-                        lineHeight: '1.35',
-                    }}>
-                        {prescriptionText}
-                    </div>
-                )}
+                <MetricPills metrics={metrics} theme={theme} />
 
                 {movementLines.length > 0 && (
                     <div style={{
@@ -491,22 +534,7 @@ const ExerciseRow = ({
                                 );
                             })}
                         </div>
-                    ) : (
-                        prescriptionText && (
-                            <div style={{
-                                backgroundColor: theme.c.accentSoft,
-                                borderRadius: '6px',
-                                padding: '6px 10px',
-                                fontSize: '12px',
-                                color: theme.c.text,
-                                fontWeight: '700',
-                                display: 'inline-block',
-                                border: `1px solid ${theme.c.borderSoft}`
-                            }}>
-                                {prescriptionText}
-                            </div>
-                        )
-                    )}
+                    ) : null}
                 </div>
             </div>
         </div>
@@ -574,7 +602,6 @@ const DaySection = ({
                             const blockName = getBlockDisplayName(block);
                             const isGenericActivacion = blockName.toLowerCase().includes('calentamiento') || blockName.toLowerCase().includes('activación');
                             const metrics = block.structure?.metrics || [];
-                            const metricText = metrics.map((metric) => `${metric.label}: ${metric.value}`).join(' · ');
                             const movements = block.structure?.text
                                 ? block.structure.text.split('\n').map((line) => line.trim()).filter(Boolean)
                                 : block.content.filter(c => c.trim());
@@ -594,20 +621,7 @@ const DaySection = ({
                                         <span>⚡</span>
                                         <span>{isGenericActivacion ? 'ACTIVACIÓN' : blockName} {rounds ? `(${rounds} VUELTAS)` : ''}</span>
                                     </div>
-                                    {metricText && (
-                                        <div style={{
-                                            backgroundColor: theme.c.accentSoft,
-                                            border: `1px solid ${theme.c.borderSoft}`,
-                                            borderRadius: '8px',
-                                            padding: '6px 10px',
-                                            marginBottom: '10px',
-                                            fontSize: '12px',
-                                            fontWeight: '700',
-                                            color: theme.c.text
-                                        }}>
-                                            {metricText}
-                                        </div>
-                                    )}
+                                    <MetricPills metrics={metrics} theme={theme} compact />
                                     <div style={{
                                         display: 'flex',
                                         flexDirection: 'column',
@@ -646,7 +660,6 @@ const DaySection = ({
                     // Si el finisher no tiene estructura/contenido, no lo renderizamos con caja
                     if (!block.structure && (!block.content || block.content.length === 0)) return null;
                     const metrics = block.structure?.metrics || [];
-                    const metricText = metrics.map((metric) => `${metric.label}: ${metric.value}`).join(' · ');
                     const detailLines = block.structure?.text
                         ? block.structure.text.split('\n').map((line) => line.trim()).filter(Boolean)
                         : (block.content || []).map((line) => line.trim()).filter(Boolean);
@@ -687,21 +700,7 @@ const DaySection = ({
                                 </span>
                             </div>
 
-                            {metricText && (
-                                <div style={{
-                                    fontSize: '12.5px',
-                                    lineHeight: '1.45',
-                                    opacity: 0.98,
-                                    fontWeight: '700',
-                                    marginBottom: '10px',
-                                    backgroundColor: 'rgba(255,255,255,0.10)',
-                                    border: '1px solid rgba(255,255,255,0.14)',
-                                    borderRadius: '8px',
-                                    padding: '8px 10px'
-                                }}>
-                                    {metricText}
-                                </div>
-                            )}
+                            <MetricPills metrics={metrics} theme={theme} compact inverted />
 
                             {detailLines.length > 0 && (
                                 <div style={{

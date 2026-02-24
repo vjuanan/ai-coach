@@ -1,6 +1,6 @@
 
 import { type MesocycleStrategy } from '@/components/editor/MesocycleStrategyForm';
-import { normalizeMethodologyCode } from '@/lib/training-methodologies';
+import { formatMethodologyOptionLabel, normalizeMethodologyCode } from '@/lib/training-methodologies';
 
 // ==========================================
 // RM / STATS HELPERS (Copied from hooks/useAthleteRm.ts)
@@ -101,6 +101,7 @@ function collectMetrics(type: string, config: any): ExportMetric[] {
             pushMetric(metrics, 'Time Cap', config.timeCap || config.time_cap, 'min');
             break;
         case 'FOR_TIME':
+            pushMetric(metrics, 'Rondas', config.rounds);
             pushMetric(metrics, 'Time Cap', config.timeCap || config.time_cap, 'min');
             break;
         case 'CHIPPER':
@@ -119,7 +120,12 @@ function collectMetrics(type: string, config: any): ExportMetric[] {
             break;
         case 'LADDER':
         case 'LADDER_FINISHER':
-            if (config.direction) metrics.push({ label: 'Dirección', value: String(config.direction) });
+            if (config.direction) {
+                metrics.push({
+                    label: 'Dirección',
+                    value: formatMethodologyOptionLabel(String(config.direction)),
+                });
+            }
             pushMetric(metrics, 'Reps Inicio', config.startReps ?? config.repsStart);
             pushMetric(metrics, 'Reps Pico/Final', config.endReps ?? config.repsPeak);
             pushMetric(metrics, 'Incremento', config.increment);
@@ -162,13 +168,14 @@ function collectMetrics(type: string, config: any): ExportMetric[] {
         case 'TEMPO': {
             pushMetric(metrics, 'Series', config.sets);
             pushMetric(metrics, 'Reps', config.reps);
-            if (config.tempo) metrics.push({ label: 'Tempo', value: String(config.tempo) });
             const e = toNumber(config.tempoEccentric);
             const b = toNumber(config.tempoBottom);
             const c = toNumber(config.tempoConcentric);
             const t = toNumber(config.tempoTop);
             if (e !== null && b !== null && c !== null && t !== null) {
                 metrics.push({ label: 'Tempo', value: `${e}-${b}-${c}-${t}` });
+            } else if (config.tempo) {
+                metrics.push({ label: 'Tempo', value: String(config.tempo) });
             }
             pushMetric(metrics, 'Descanso', config.restSeconds || config.rest, 'seg');
             break;
@@ -210,30 +217,30 @@ function buildMovementLine(entry: any): string {
     const name = (entry.name || entry.exercise || entry.movement || '').toString().trim();
     if (!name) return '';
 
-    const parts: string[] = [];
+    const details: string[] = [];
     const targetValue = toNumber(entry.targetValue ?? entry.reps ?? entry.quantity);
     if (targetValue !== null) {
         const unitMap: Record<string, string> = {
-            reps: 'Reps',
-            seconds: 'Seg',
+            reps: 'reps',
+            seconds: 'seg',
             meters: 'm',
-            calories: 'Cal',
+            calories: 'cal',
         };
-        const unit = unitMap[String(entry.targetUnit || 'reps')] || 'Reps';
-        parts.push(`${unit} ${targetValue}`);
+        const unit = unitMap[String(entry.targetUnit || 'reps')] || 'reps';
+        details.push(`${targetValue} ${unit}`);
     }
     const distance = toNumber(entry.distance);
-    if (distance !== null) parts.push(`Metros ${distance}`);
+    if (distance !== null) details.push(`${distance} m`);
     const sets = toNumber(entry.sets);
-    if (sets !== null) parts.push(`Series ${sets}`);
+    if (sets !== null) details.push(`Series ${sets}`);
     const rpe = toNumber(entry.rpe);
-    if (rpe !== null) parts.push(`RPE ${rpe}`);
+    if (rpe !== null) details.push(`RPE ${rpe}`);
     const weight = toNumber(entry.weight);
-    if (weight !== null) parts.push(`Carga ${weight} kg`);
+    if (weight !== null) details.push(`${weight} kg`);
     const rest = toNumber(entry.restSeconds ?? entry.rest);
-    if (rest !== null) parts.push(`Descanso ${rest} seg`);
+    if (rest !== null) details.push(`Descanso ${rest} seg`);
 
-    return parts.length > 0 ? `${name} · ${parts.join(' · ')}` : name;
+    return details.length > 0 ? `${name} · ${details.join(' · ')}` : name;
 }
 
 function collectMovementLines(config: any): string[] {
