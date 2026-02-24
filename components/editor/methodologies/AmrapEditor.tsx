@@ -111,7 +111,7 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
         <div className="space-y-6 animate-in fade-in duration-300">
             {/* Top Config Row: Inputs based on Mode */}
             {(showDurationInput || showRoundsInput || showTimeCapInput) && (
-                <div className="flex flex-wrap items-center gap-4 bg-slate-50 dark:bg-cv-bg-tertiary/30 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-slate-50 dark:bg-cv-bg-tertiary/30 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50">
                     <>
                         {showDurationInput && (
                             <div className="flex-1 min-w-[140px]">
@@ -203,13 +203,13 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                     {items.map((item, index) => (
                         <div
                             key={item.id || index}
-                            className="group flex gap-3 p-3 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all items-center"
+                            className="group grid grid-cols-1 md:grid-cols-[40px_minmax(0,1fr)_110px_130px_auto] gap-3 p-3 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all items-start md:items-center"
                         >
                             <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-cv-text-tertiary shrink-0">
                                 {index + 1}
                             </div>
 
-                            <div className="flex-1 space-y-1">
+                            <div className="min-w-0">
                                 <SmartExerciseInput
                                     value={item.exercise}
                                     onChange={(val) => updateItem(index, 'exercise', val)}
@@ -218,15 +218,24 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                                 />
                             </div>
 
-                            <div className="grid grid-cols-[90px_120px] gap-2 shrink-0">
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary mb-1">
+                                    Valor
+                                </label>
                                 <input
                                     type="number"
                                     min={1}
                                     value={item.targetValue}
                                     onChange={(e) => updateItem(index, 'targetValue', e.target.value ? Number.parseInt(e.target.value, 10) : '')}
-                                    placeholder="Valor"
+                                    placeholder={item.targetUnit === 'seconds' ? '40' : item.targetUnit === 'meters' ? '200' : item.targetUnit === 'calories' ? '20' : '12'}
                                     className="w-full text-sm text-center bg-slate-50 dark:bg-slate-800 border-none rounded-lg py-2 focus:ring-1 focus:ring-cv-accent/50"
                                 />
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary mb-1">
+                                    Unidad
+                                </label>
                                 <select
                                     value={item.targetUnit}
                                     onChange={(e) => updateItem(index, 'targetUnit', e.target.value as 'reps' | 'seconds' | 'meters' | 'calories')}
@@ -241,7 +250,7 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
 
                             <button
                                 onClick={() => removeItem(index)}
-                                className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                                className="md:mt-5 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
                             >
                                 <Trash2 size={16} />
                             </button>

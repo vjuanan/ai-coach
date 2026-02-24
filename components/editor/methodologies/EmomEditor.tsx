@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Trash2, Clock, Repeat, ArrowRight } from 'lucide-react';
+import { Plus, Trash2, Clock, Repeat } from 'lucide-react';
 import { SmartExerciseInput } from '../SmartExerciseInput';
 import type { EMOMConfig } from '@/lib/supabase/types';
 
@@ -170,62 +170,65 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                     {slots.map((slot, index) => (
                         <div
                             key={slot.id || index}
-                            className="group relative flex gap-3 p-3 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-cv-accent/30 transition-all items-start"
+                            className="group relative grid grid-cols-1 md:grid-cols-[120px_minmax(0,1fr)_130px_150px_auto] gap-3 p-3 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-cv-accent/30 transition-all items-start md:items-center"
                         >
                             {/* Interval label */}
-                            <div className="w-24 pt-1">
-                                <div className="w-full text-xs font-bold text-cv-accent bg-cv-accent/5 border border-cv-accent/20 rounded-md px-2 py-1.5 text-center uppercase tracking-wide">
+                            <div className="md:pt-0">
+                                <div className="w-full text-xs font-bold text-cv-accent bg-cv-accent/5 border border-cv-accent/20 rounded-md px-2 py-2 text-center uppercase tracking-wide">
                                     {isE2MOMMode ? `BLOQUE ${index + 1}` : `MINUTO ${index + 1}`}
                                 </div>
-                                {index < slots.length - 1 && (
-                                    <div className="flex justify-center my-1">
-                                        <div className="w-0.5 h-6 bg-slate-100 dark:bg-slate-700/50"></div>
-                                    </div>
-                                )}
                             </div>
 
-                            {/* Divider Arrow */}
-                            <div className="pt-2 text-slate-300 dark:text-slate-600">
-                                <ArrowRight size={16} />
-                            </div>
-
-                            {/* Inputs */}
-                            <div className="flex-1 space-y-2">
+                            {/* Exercise */}
+                            <div className="min-w-0">
                                 <SmartExerciseInput
                                     value={slot.movement}
                                     onChange={(val) => updateSlot(index, 'movement', val)}
                                     placeholder="Buscar ejercicio en la biblioteca..."
-                                    className="cv-input bg-transparent border-none shadow-none focus:ring-0 px-0 py-0 text-sm font-medium h-auto placeholder:text-slate-400"
+                                    className="cv-input bg-transparent border-none shadow-none focus:ring-0 px-0 py-0 text-sm font-medium h-auto placeholder:text-slate-400 w-full"
                                 />
-                                <div className="grid grid-cols-[1fr_120px] gap-2">
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        value={slot.targetValue}
-                                        onChange={(e) => updateSlot(index, 'targetValue', e.target.value ? Number.parseInt(e.target.value, 10) : '')}
-                                        placeholder="Valor"
-                                        className="text-xs text-cv-text-secondary bg-slate-50 dark:bg-slate-800 border-none rounded-md px-2 py-1.5 focus:ring-1 focus:ring-cv-accent/50"
-                                    />
-                                    <select
-                                        value={slot.targetUnit}
-                                        onChange={(e) => updateSlot(index, 'targetUnit', e.target.value as 'reps' | 'seconds' | 'meters')}
-                                        className="text-xs text-cv-text-secondary bg-slate-50 dark:bg-slate-800 border-none rounded-md px-2 py-1.5 focus:ring-1 focus:ring-cv-accent/50"
-                                    >
-                                        <option value="reps">Reps</option>
-                                        <option value="seconds">Segundos</option>
-                                        <option value="meters">Metros</option>
-                                    </select>
-                                </div>
                             </div>
 
-                            {/* Actions */}
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary mb-1">
+                                    Valor
+                                </label>
+                                <input
+                                    type="number"
+                                    min={1}
+                                    value={slot.targetValue}
+                                    onChange={(e) => updateSlot(index, 'targetValue', e.target.value ? Number.parseInt(e.target.value, 10) : '')}
+                                    placeholder={slot.targetUnit === 'seconds' ? '40' : slot.targetUnit === 'meters' ? '200' : '12'}
+                                    className="w-full text-sm text-center bg-slate-50 dark:bg-slate-800 border-none rounded-lg py-2 font-semibold focus:ring-1 focus:ring-cv-accent/50"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary mb-1">
+                                    Unidad
+                                </label>
+                                <select
+                                    value={slot.targetUnit}
+                                    onChange={(e) => updateSlot(index, 'targetUnit', e.target.value as 'reps' | 'seconds' | 'meters')}
+                                    className="w-full text-sm text-center bg-slate-50 dark:bg-slate-800 border-none rounded-lg py-2 focus:ring-1 focus:ring-cv-accent/50"
+                                >
+                                    <option value="reps">Reps</option>
+                                    <option value="seconds">Segundos</option>
+                                    <option value="meters">Metros</option>
+                                </select>
+                            </div>
+
                             <button
                                 onClick={() => removeSlot(index)}
-                                className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                                className="md:mt-5 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
                                 title="Eliminar intervalo"
                             >
                                 <Trash2 size={16} />
                             </button>
+
+                            <p className="md:col-start-2 md:col-end-5 text-[11px] text-cv-text-tertiary leading-snug">
+                                Ejemplo: 12 reps, 40 seg o 200 m según la unidad elegida.
+                            </p>
                         </div>
                     ))}
                 </div>
