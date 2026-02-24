@@ -16,7 +16,7 @@ const REQUIRED_FIELD_ALIASES: Record<string, string[]> = {
     repsPerMovement: ['reps'],
     repsPerDrop: ['reps'],
     repsPerMiniSet: ['repsPerCluster', 'reps'],
-    startingLoadPct: ['percentage'],
+    startingLoadPct: ['percentage', 'loadKg'],
     intensityTarget: ['percentage', 'rpe'],
     restBetweenRoundsSeconds: ['restBetweenRounds'],
     restBetweenSetsSeconds: ['restBetweenSets'],
@@ -67,9 +67,9 @@ function hasPositiveTarget(entry: unknown): boolean {
     return false;
 }
 
-function getFieldCandidateValues(config: Record<string, unknown>, key: string): unknown[] {
+function getFieldCandidateValues(config: Record<string, unknown>, key: string, defaultValue?: unknown): unknown[] {
     const aliases = REQUIRED_FIELD_ALIASES[key] || [];
-    return [config[key], ...aliases.map((alias) => config[alias])];
+    return [config[key], ...aliases.map((alias) => config[alias]), defaultValue];
 }
 
 export const useBlockValidator = () => {
@@ -171,7 +171,7 @@ export const useBlockValidator = () => {
                         continue;
                     }
 
-                    const fieldValues = getFieldCandidateValues(config, field.key);
+                    const fieldValues = getFieldCandidateValues(config, field.key, field.default);
                     if (field.type === 'number') {
                         if (!fieldValues.some((value) => isPositiveNumber(value))) {
                             missingFields.push(field.label);
