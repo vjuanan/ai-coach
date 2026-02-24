@@ -425,7 +425,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                         <div
                             className={`flex items-center justify-between px-1 cursor-pointer rounded-lg py-1 transition-colors ${isActiveInBuilder && (blockBuilderSection === 'main' || !blockBuilderSection)
                                 ? 'bg-indigo-50 dark:bg-indigo-900/20'
-                                : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                                : 'bg-indigo-50/70 dark:bg-indigo-900/10 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
                                 }`}
                             onClick={(e) => {
                                 e.stopPropagation();
