@@ -424,8 +424,8 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                     <div className="space-y-1.5 mt-0">
                         <div
                             className={`flex items-center justify-between px-2 cursor-pointer rounded-lg py-1 border transition-colors ${isActiveInBuilder && (blockBuilderSection === 'main' || !blockBuilderSection)
-                                ? 'bg-indigo-100 border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-800'
-                                : 'bg-indigo-100 border-indigo-200 dark:bg-indigo-900/25 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30'
+                                ? 'bg-indigo-200/70 border-indigo-300 dark:bg-indigo-900/35 dark:border-indigo-700'
+                                : 'bg-indigo-200/60 border-indigo-300 dark:bg-indigo-900/30 dark:border-indigo-700 hover:bg-indigo-200/80 dark:hover:bg-indigo-900/40'
                                 }`}
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -440,8 +440,8 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                                 Entrenamiento
                             </h4>
                             <div className={`h-px flex-1 ml-3 ${isActiveInBuilder && (blockBuilderSection === 'main' || !blockBuilderSection)
-                                ? 'bg-indigo-200 dark:bg-indigo-800'
-                                : 'bg-indigo-100 dark:bg-indigo-900/30'
+                                ? 'bg-indigo-300 dark:bg-indigo-700'
+                                : 'bg-indigo-200 dark:bg-indigo-800'
                                 }`} />
                         </div>
 
