@@ -375,9 +375,9 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                     {/* WARM UP SECTION */}
                     <div className="space-y-1.5">
                         <div
-                            className={`flex items-center justify-between px-1 cursor-pointer rounded-lg py-1 transition-colors ${isActiveInBuilder && blockBuilderSection === 'warmup'
-                                ? 'bg-emerald-50 dark:bg-emerald-900/20'
-                                : 'bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'
+                            className={`flex items-center justify-between px-2 cursor-pointer rounded-lg py-1 border transition-colors ${isActiveInBuilder && blockBuilderSection === 'warmup'
+                                ? 'bg-emerald-100 border-emerald-200 dark:bg-emerald-900/30 dark:border-emerald-800'
+                                : 'bg-emerald-100 border-emerald-200 dark:bg-emerald-900/25 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'
                                 }`}
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -423,9 +423,9 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                     {/* MAIN WORKOUT SECTION */}
                     <div className="space-y-1.5 mt-0">
                         <div
-                            className={`flex items-center justify-between px-1 cursor-pointer rounded-lg py-1 transition-colors ${isActiveInBuilder && (blockBuilderSection === 'main' || !blockBuilderSection)
-                                ? 'bg-indigo-50 dark:bg-indigo-900/20'
-                                : 'bg-indigo-50/70 dark:bg-indigo-900/10 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
+                            className={`flex items-center justify-between px-2 cursor-pointer rounded-lg py-1 border transition-colors ${isActiveInBuilder && (blockBuilderSection === 'main' || !blockBuilderSection)
+                                ? 'bg-indigo-100 border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-800'
+                                : 'bg-indigo-100 border-indigo-200 dark:bg-indigo-900/25 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30'
                                 }`}
                             onClick={(e) => {
                                 e.stopPropagation();
