@@ -377,7 +377,7 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
                         <div
                             className={`flex items-center justify-between px-1 cursor-pointer rounded-lg py-1 transition-colors ${isActiveInBuilder && blockBuilderSection === 'warmup'
                                 ? 'bg-emerald-50 dark:bg-emerald-900/20'
-                                : 'hover:bg-slate-50 dark:hover:bg-slate-800'
+                                : 'bg-emerald-50/70 dark:bg-emerald-900/10 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
                                 }`}
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -489,4 +489,3 @@ export function DayCard({ day, dayName, compact = false, isActiveInBuilder = fal
         </div>
     );
 }
-
