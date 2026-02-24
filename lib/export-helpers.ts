@@ -74,6 +74,30 @@ function toNumber(value: unknown): number | null {
     return Number.isFinite(parsed) ? parsed : null;
 }
 
+function isPresentValue(value: unknown): boolean {
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string') return value.trim().length > 0;
+    return true;
+}
+
+function firstPresent(...values: unknown[]): unknown {
+    for (const value of values) {
+        if (isPresentValue(value)) return value;
+    }
+    return null;
+}
+
+function describeLoadReference(config: Record<string, unknown>): string | null {
+    const pct = toNumber(firstPresent(config.startingLoadPct, config.percentage));
+    if (pct !== null && pct > 0) return `${pct}% 1RM`;
+
+    const kg = toNumber(firstPresent(config.startingLoadKg, config.loadKg, config.weight));
+    if (kg !== null && kg > 0) return `${kg} kg`;
+
+    const intensity = formatIntensityReference(firstPresent(config.intensityTarget, config.rpe));
+    return intensity;
+}
+
 function pushMetric(metrics: ExportMetric[], label: string, raw: unknown, unit?: string, decimals = 0) {
     const numeric = toNumber(raw);
     if (numeric === null) return;
@@ -104,7 +128,7 @@ function normalizeExportConfig(type: string, config: any): Record<string, unknow
 
 function formatIntensityReference(raw: unknown): string | null {
     const numeric = toNumber(raw);
-    if (numeric === null) return null;
+    if (numeric === null || numeric <= 0) return null;
     if (numeric <= 10) return `RPE ${numeric}`;
     return `${numeric}% 1RM`;
 }
@@ -124,26 +148,26 @@ function collectMetrics(type: string, rawConfig: any): ExportMetric[] {
         case 'EMOM':
         case 'EMOM_ALT':
         case 'E2MOM':
-            pushMetric(metrics, 'Duración Total', config.minutes, 'min');
-            pushMetric(metrics, 'Cada', config.interval, 'min');
+            pushMetric(metrics, 'Duración Total', firstPresent(config.minutes, config.timeCap, config.time_cap), 'min');
+            pushMetric(metrics, 'Cada', firstPresent(config.interval, formatCode === 'E2MOM' ? 2 : 1), 'min');
             break;
         case 'AMRAP':
-            pushMetric(metrics, 'Duración Total', config.minutes || config.timeCap || config.time_cap, 'min');
+            pushMetric(metrics, 'Duración Total', firstPresent(config.minutes, config.timeCap, config.time_cap), 'min');
             break;
         case 'RFT':
             pushMetric(metrics, 'Rondas', config.rounds);
-            pushMetric(metrics, 'Time Cap', config.timeCap || config.time_cap, 'min');
+            pushMetric(metrics, 'Time Cap', firstPresent(config.timeCap, config.time_cap), 'min');
             break;
         case 'FOR_TIME':
             pushMetric(metrics, 'Rondas', config.rounds);
-            pushMetric(metrics, 'Time Cap', config.timeCap || config.time_cap, 'min');
+            pushMetric(metrics, 'Time Cap', firstPresent(config.timeCap, config.time_cap), 'min');
             break;
         case 'CHIPPER':
             pushMetric(metrics, 'Rondas', config.rounds);
-            pushMetric(metrics, 'Time Cap', config.timeCap || config.time_cap, 'min');
+            pushMetric(metrics, 'Time Cap', firstPresent(config.timeCap, config.time_cap), 'min');
             break;
         case 'DEATH_BY':
-            pushMetric(metrics, 'Reps Inicio', config.startingReps);
+            pushMetric(metrics, 'Reps Inicio', firstPresent(config.startingReps, config.startReps));
             pushMetric(metrics, 'Incremento', config.increment);
             pushMetric(metrics, 'Límite', config.maxMinutes, 'min');
             break;
@@ -163,50 +187,60 @@ function collectMetrics(type: string, rawConfig: any): ExportMetric[] {
             pushMetric(metrics, 'Reps Inicio', config.startReps ?? config.repsStart);
             pushMetric(metrics, 'Reps Pico/Final', config.endReps ?? config.repsPeak);
             pushMetric(metrics, 'Incremento', config.increment);
-            pushIntensityMetric(metrics, 'Intensidad', config.intensityTarget);
+            pushIntensityMetric(metrics, 'Intensidad', firstPresent(config.intensityTarget, config.percentage, config.rpe));
+            pushMetric(metrics, 'Carga', firstPresent(config.loadKg, config.weight), 'kg');
             break;
         case 'INTERVALS':
             pushMetric(metrics, 'Intervalos', config.rounds);
-            pushMetric(metrics, 'Trabajo', config.workSeconds || config.workTime, 'seg');
-            pushMetric(metrics, 'Descanso', config.restSeconds || config.restTime, 'seg');
+            pushMetric(metrics, 'Trabajo', firstPresent(config.workSeconds, config.workTime), 'seg');
+            pushMetric(metrics, 'Descanso', firstPresent(config.restSeconds, config.restTime, config.rest), 'seg');
             break;
         case 'STANDARD':
             pushMetric(metrics, 'Series', config.sets);
             pushMetric(metrics, 'Reps', config.reps);
             pushMetric(metrics, '% 1RM', config.percentage, '%');
-            pushMetric(metrics, 'Descanso', config.restSeconds || config.rest, 'seg');
+            pushIntensityMetric(metrics, 'Intensidad', config.rpe);
+            pushMetric(metrics, 'Carga', firstPresent(config.loadKg, config.weight), 'kg');
+            pushMetric(metrics, 'Descanso', firstPresent(config.restSeconds, config.rest), 'seg');
             break;
         case 'CLUSTER':
             pushMetric(metrics, 'Clusters', config.sets);
             pushMetric(metrics, 'Mini-Sets', config.miniSets);
-            pushMetric(metrics, 'Reps/Mini-Set', config.repsPerMiniSet || config.repsPerCluster);
-            pushMetric(metrics, 'Descanso Intra', config.intraRestSeconds || config.intraRest, 'seg');
-            pushMetric(metrics, 'Descanso Entre', config.interRestSeconds || config.interRest, 'seg');
+            pushMetric(metrics, 'Reps/Mini-Set', firstPresent(config.repsPerMiniSet, config.repsPerCluster, config.reps));
+            pushMetric(metrics, 'Descanso Intra', firstPresent(config.intraRestSeconds, config.intraRest), 'seg');
+            pushMetric(metrics, 'Descanso Entre', firstPresent(config.interRestSeconds, config.interRest), 'seg');
             pushMetric(metrics, '% 1RM', config.percentage, '%');
+            pushIntensityMetric(metrics, 'Intensidad', firstPresent(config.intensityTarget, config.rpe));
+            pushMetric(metrics, 'Carga', firstPresent(config.loadKg, config.weight), 'kg');
             break;
         case 'DROP_SET':
             pushMetric(metrics, 'Drops', config.drops);
-            pushMetric(metrics, 'Reps/Drop', config.repsPerDrop);
-            pushMetric(metrics, 'Reducción', config.weightReductionPct || config.weightReduction, '%');
-            pushMetric(metrics, 'Carga Inicial', config.startingLoadPct, '% 1RM');
+            pushMetric(metrics, 'Reps/Drop', firstPresent(config.repsPerDrop, config.reps));
+            pushMetric(metrics, 'Reducción', firstPresent(config.weightReductionPct, config.weightReduction), '%');
+            pushMetric(metrics, 'Carga Inicial', firstPresent(config.startingLoadPct, config.percentage), '% 1RM');
+            pushMetric(metrics, 'Carga Inicial (kg)', firstPresent(config.startingLoadKg, config.loadKg, config.weight), 'kg');
             break;
         case 'GIANT_SET':
             pushMetric(metrics, 'Rondas', config.rounds);
-            pushMetric(metrics, 'Reps/Ejercicio', config.repsPerMovement);
-            pushIntensityMetric(metrics, 'Intensidad', config.intensityTarget);
-            pushMetric(metrics, 'Descanso Entre Ejercicios', config.restBetweenMovementsSeconds, 'seg');
-            pushMetric(metrics, 'Descanso Entre Rondas', config.restBetweenRoundsSeconds || config.restBetweenRounds, 'seg');
+            pushMetric(metrics, 'Reps/Ejercicio', firstPresent(config.repsPerMovement, config.reps));
+            pushIntensityMetric(metrics, 'Intensidad', firstPresent(config.intensityTarget, config.percentage, config.rpe));
+            pushMetric(metrics, 'Carga', firstPresent(config.loadKg, config.weight), 'kg');
+            pushMetric(metrics, 'Descanso Entre Ejercicios', firstPresent(config.restBetweenMovementsSeconds, config.restSeconds), 'seg');
+            pushMetric(metrics, 'Descanso Entre Rondas', firstPresent(config.restBetweenRoundsSeconds, config.restBetweenRounds, config.restBetweenSetsSeconds), 'seg');
             break;
         case 'SUPER_SET':
             pushMetric(metrics, 'Series', config.sets);
-            pushMetric(metrics, 'Reps/Ejercicio', config.repsPerMovement);
-            pushIntensityMetric(metrics, 'Intensidad', config.intensityTarget);
-            pushMetric(metrics, 'Descanso Entre Ejercicios', config.restBetweenMovementsSeconds, 'seg');
-            pushMetric(metrics, 'Descanso Entre Sets', config.restBetweenSetsSeconds || config.restBetweenSets, 'seg');
+            pushMetric(metrics, 'Reps/Ejercicio', firstPresent(config.repsPerMovement, config.reps));
+            pushIntensityMetric(metrics, 'Intensidad', firstPresent(config.intensityTarget, config.percentage, config.rpe));
+            pushMetric(metrics, 'Carga', firstPresent(config.loadKg, config.weight), 'kg');
+            pushMetric(metrics, 'Descanso Entre Ejercicios', firstPresent(config.restBetweenMovementsSeconds, config.restSeconds), 'seg');
+            pushMetric(metrics, 'Descanso Entre Sets', firstPresent(config.restBetweenSetsSeconds, config.restBetweenSets), 'seg');
             break;
         case 'NOT_FOR_TIME':
             pushMetric(metrics, 'Rondas', config.rounds);
-            pushMetric(metrics, 'Reps/Ejercicio', config.repsPerMovement);
+            pushMetric(metrics, 'Reps/Ejercicio', firstPresent(config.repsPerMovement, config.reps));
+            pushIntensityMetric(metrics, 'Intensidad', firstPresent(config.intensityTarget, config.percentage, config.rpe));
+            pushMetric(metrics, 'Carga', firstPresent(config.loadKg, config.weight), 'kg');
             break;
         case 'TEMPO': {
             pushMetric(metrics, 'Series', config.sets);
@@ -220,35 +254,42 @@ function collectMetrics(type: string, rawConfig: any): ExportMetric[] {
             } else if (config.tempo) {
                 metrics.push({ label: 'Tempo', value: String(config.tempo) });
             }
-            pushMetric(metrics, 'Descanso', config.restSeconds || config.rest, 'seg');
+            pushIntensityMetric(metrics, 'Intensidad', firstPresent(config.intensityTarget, config.percentage, config.rpe));
+            pushMetric(metrics, 'Carga', firstPresent(config.loadKg, config.weight), 'kg');
+            pushMetric(metrics, 'Descanso', firstPresent(config.restSeconds, config.rest), 'seg');
             break;
         }
         case 'DROPSET_FINISHER':
             pushMetric(metrics, 'Drops', config.drops);
-            pushMetric(metrics, 'Reps/Drop', config.repsPerDrop);
-            pushMetric(metrics, 'Reducción', config.weightReductionPct || config.percentage, '%');
-            pushMetric(metrics, 'Carga Inicial', config.startingLoadPct, '% 1RM');
+            pushMetric(metrics, 'Reps/Drop', firstPresent(config.repsPerDrop, config.reps));
+            pushMetric(metrics, 'Reducción', firstPresent(config.weightReductionPct, config.weightReduction, config.percentage), '%');
+            pushMetric(metrics, 'Carga Inicial', firstPresent(config.startingLoadPct, config.percentage), '% 1RM');
+            pushMetric(metrics, 'Carga Inicial (kg)', firstPresent(config.startingLoadKg, config.loadKg, config.weight), 'kg');
             break;
         case 'REST_PAUSE':
             pushMetric(metrics, 'Reps Totales', config.totalReps);
-            pushMetric(metrics, 'Micro-Descanso', config.restSeconds || config.rest, 'seg');
+            pushMetric(metrics, 'Micro-Descanso', firstPresent(config.restSeconds, config.rest), 'seg');
             pushMetric(metrics, 'Mini-Bloques', config.clusters);
-            pushIntensityMetric(metrics, 'Intensidad', config.intensityTarget);
+            pushIntensityMetric(metrics, 'Intensidad', firstPresent(config.intensityTarget, config.percentage, config.rpe));
+            pushMetric(metrics, 'Carga', firstPresent(config.loadKg, config.weight), 'kg');
             break;
         case '21S':
             pushMetric(metrics, 'Series', config.sets);
-            pushIntensityMetric(metrics, 'Intensidad', config.intensityTarget);
+            pushIntensityMetric(metrics, 'Intensidad', firstPresent(config.intensityTarget, config.percentage, config.rpe));
+            pushMetric(metrics, 'Carga', firstPresent(config.loadKg, config.weight), 'kg');
             break;
         case 'ISO_HOLD':
             pushMetric(metrics, 'Series', config.sets);
-            pushMetric(metrics, 'Pausa Isométrica', config.holdSeconds || config.holdTime, 'seg');
+            pushMetric(metrics, 'Pausa Isométrica', firstPresent(config.holdSeconds, config.holdTime), 'seg');
             pushMetric(metrics, 'Reps', config.reps);
-            pushIntensityMetric(metrics, 'Intensidad', config.intensityTarget);
+            pushIntensityMetric(metrics, 'Intensidad', firstPresent(config.intensityTarget, config.percentage, config.rpe));
+            pushMetric(metrics, 'Carga', firstPresent(config.loadKg, config.weight), 'kg');
             break;
         case '1_5_REPS':
             pushMetric(metrics, 'Series', config.sets);
             pushMetric(metrics, 'Reps', config.reps);
-            pushIntensityMetric(metrics, 'Intensidad', config.intensityTarget);
+            pushIntensityMetric(metrics, 'Intensidad', firstPresent(config.intensityTarget, config.percentage, config.rpe));
+            pushMetric(metrics, 'Carga', firstPresent(config.loadKg, config.weight), 'kg');
             break;
         default:
             pushMetric(metrics, 'Series', config.sets);
@@ -264,6 +305,7 @@ type MovementFallback = {
     targetValue?: unknown;
     targetUnit?: 'reps' | 'seconds' | 'meters' | 'calories';
     intensityText?: string;
+    weightKg?: unknown;
     restSeconds?: unknown;
 };
 
@@ -271,22 +313,27 @@ function getMovementFallback(formatCode: string, config: Record<string, unknown>
     const fallback: MovementFallback = {};
 
     if (['DROP_SET', 'DROPSET_FINISHER'].includes(formatCode)) {
-        fallback.targetValue = config.repsPerDrop;
+        fallback.targetValue = firstPresent(config.repsPerDrop, config.reps);
         fallback.targetUnit = 'reps';
     }
 
     if (['GIANT_SET', 'SUPER_SET'].includes(formatCode)) {
-        fallback.targetValue = config.repsPerMovement;
+        fallback.targetValue = firstPresent(config.repsPerMovement, config.reps);
         fallback.targetUnit = 'reps';
     }
 
     if (formatCode === 'NOT_FOR_TIME') {
-        fallback.targetValue = config.repsPerMovement;
+        fallback.targetValue = firstPresent(config.repsPerMovement, config.reps);
         fallback.targetUnit = 'reps';
     }
 
-    if (['STANDARD', 'TEMPO', 'ISO_HOLD', '1_5_REPS'].includes(formatCode)) {
+    if (['STANDARD', 'TEMPO', 'ISO_HOLD', '1_5_REPS', 'CLUSTER'].includes(formatCode)) {
         fallback.targetValue = config.reps;
+        fallback.targetUnit = 'reps';
+    }
+
+    if (formatCode === 'CLUSTER') {
+        fallback.targetValue = firstPresent(config.repsPerMiniSet, config.repsPerCluster, config.reps);
         fallback.targetUnit = 'reps';
     }
 
@@ -296,14 +343,25 @@ function getMovementFallback(formatCode: string, config: Record<string, unknown>
     }
 
     const intensityText = formatIntensityReference(
-        config.intensityTarget ?? config.startingLoadPct ?? config.percentage
+        firstPresent(config.intensityTarget, config.startingLoadPct, config.percentage, config.rpe)
     );
     if (intensityText) fallback.intensityText = intensityText;
 
-    const restSeconds =
-        config.restBetweenMovementsSeconds ??
-        config.restSeconds ??
-        config.restBetweenSetsSeconds;
+    const fallbackWeight = firstPresent(config.startingLoadKg, config.loadKg, config.weight);
+    if (toNumber(fallbackWeight) !== null) {
+        fallback.weightKg = fallbackWeight;
+    }
+
+    const restSeconds = firstPresent(
+        config.restBetweenMovementsSeconds,
+        config.restSeconds,
+        config.restBetweenSetsSeconds,
+        config.restBetweenRoundsSeconds,
+        config.interRestSeconds,
+        config.interRest,
+        config.intraRestSeconds,
+        config.intraRest
+    );
     if (toNumber(restSeconds) !== null && toNumber(restSeconds) !== 0) {
         fallback.restSeconds = restSeconds;
     }
@@ -317,7 +375,7 @@ function buildMovementLine(entry: any, fallback: MovementFallback = {}): string 
     if (!name) return '';
 
     const details: string[] = [];
-    const targetValue = toNumber(entry.targetValue ?? entry.reps ?? entry.quantity ?? fallback.targetValue);
+    const targetValue = toNumber(firstPresent(entry.targetValue, entry.reps, entry.quantity, fallback.targetValue));
     if (targetValue !== null) {
         const unitMap: Record<string, string> = {
             reps: 'reps',
@@ -325,22 +383,22 @@ function buildMovementLine(entry: any, fallback: MovementFallback = {}): string 
             meters: 'm',
             calories: 'cal',
         };
-        const unit = unitMap[String(entry.targetUnit || fallback.targetUnit || 'reps')] || 'reps';
+        const unit = unitMap[String(firstPresent(entry.targetUnit, entry.unit, fallback.targetUnit, 'reps'))] || 'reps';
         details.push(`${targetValue} ${unit}`);
     }
-    const distance = toNumber(entry.distance);
+    const distance = toNumber(firstPresent(entry.distance, entry.meters));
     if (distance !== null) details.push(`${distance} m`);
     const sets = toNumber(entry.sets);
     if (sets !== null) details.push(`Series ${sets}`);
-    const rpe = toNumber(entry.rpe);
+    const rpe = toNumber(firstPresent(entry.rpe, entry.intensity));
     if (rpe !== null) {
-        details.push(`RPE ${rpe}`);
+        details.push(rpe <= 10 ? `RPE ${rpe}` : `${rpe}% 1RM`);
     } else if (fallback.intensityText) {
         details.push(`Intensidad ${fallback.intensityText}`);
     }
-    const weight = toNumber(entry.weight);
-    if (weight !== null) details.push(`${weight} kg`);
-    const rest = toNumber(entry.restSeconds ?? entry.rest ?? fallback.restSeconds);
+    const weight = toNumber(firstPresent(entry.weight, entry.loadKg, fallback.weightKg));
+    if (weight !== null) details.push(`Carga ${weight} kg`);
+    const rest = toNumber(firstPresent(entry.restSeconds, entry.rest, fallback.restSeconds));
     if (rest !== null) details.push(`Descanso ${rest} seg`);
 
     return details.length > 0 ? `${name} · ${details.join(' · ')}` : name;
@@ -401,6 +459,11 @@ function buildExecutionHint(type: string, rawConfig: any): string {
     const rounds = toNumber(config.rounds);
     const timeCap = toNumber(config.timeCap ?? config.time_cap);
     const direction = config.direction ? formatMethodologyOptionLabel(String(config.direction)).toLowerCase() : '';
+    const loadRef = describeLoadReference(config);
+    const intensityRef = formatIntensityReference(firstPresent(config.intensityTarget, config.percentage, config.rpe));
+    const repsPerMovement = toNumber(firstPresent(config.repsPerMovement, config.reps));
+    const restBetweenMovements = toNumber(firstPresent(config.restBetweenMovementsSeconds, config.restSeconds));
+    const restBetweenSets = toNumber(firstPresent(config.restBetweenSetsSeconds, config.restBetweenSets, config.restBetweenRoundsSeconds, config.restBetweenRounds));
 
     switch (formatCode) {
         case 'EMOM':
@@ -428,21 +491,35 @@ function buildExecutionHint(type: string, rawConfig: any): string {
             return `Cómo hacerlo: ${toNumber(config.rounds) || 8} rondas de ${work}s trabajo + ${rest}s descanso.`;
         }
         case 'LADDER':
-            return `Cómo hacerlo: escalera ${direction || 'ascendente'} desde ${toNumber(config.startReps) || 1} hasta ${toNumber(config.endReps) || 10}, cambiando ${toNumber(config.increment) || 1} rep(s) por escalón.`;
+            return `Cómo hacerlo: escalera ${direction || 'ascendente'} desde ${toNumber(config.startReps) || 1} hasta ${toNumber(config.endReps) || 10}, cambiando ${toNumber(config.increment) || 1} rep(s) por escalón${loadRef ? ` a ${loadRef}` : ''}.`;
         case 'INTERVALS':
             return `Cómo hacerlo: ${toNumber(config.rounds) || 5} intervalos de ${toNumber(config.workSeconds) || 40}s trabajo + ${toNumber(config.restSeconds) || 20}s descanso.`;
-        case 'STANDARD':
-            return `Cómo hacerlo: ${toNumber(config.sets) || 3} series de ${toNumber(config.reps) || 10} reps por ejercicio.`;
-        case 'CLUSTER':
-            return `Cómo hacerlo: ${toNumber(config.sets) || 4} clusters de ${toNumber(config.miniSets) || 3} mini-sets x ${toNumber(config.repsPerMiniSet) || 2} reps.`;
+        case 'STANDARD': {
+            const intensity = loadRef || intensityRef;
+            return `Cómo hacerlo: ${toNumber(config.sets) || 3} series de ${toNumber(config.reps) || 10} reps por ejercicio${intensity ? ` a ${intensity}` : ''}.`;
+        }
+        case 'CLUSTER': {
+            const intensity = loadRef || intensityRef;
+            return `Cómo hacerlo: ${toNumber(config.sets) || 4} clusters de ${toNumber(config.miniSets) || 3} mini-sets x ${toNumber(config.repsPerMiniSet) || 2} reps${intensity ? ` a ${intensity}` : ''}.`;
+        }
         case 'DROP_SET':
-            return `Cómo hacerlo: ${toNumber(config.repsPerDrop) || 8} reps por drop, bajar ${toNumber(config.weightReductionPct) || 20}% desde ${toNumber(config.startingLoadPct) || 75}% 1RM.`;
-        case 'GIANT_SET':
-            return `Cómo hacerlo: ${toNumber(config.rounds) || 3} rondas, ${toNumber(config.repsPerMovement) || 10} reps por ejercicio, sin descanso interno.`;
-        case 'SUPER_SET':
-            return `Cómo hacerlo: ${toNumber(config.sets) || 4} series, ${toNumber(config.repsPerMovement) || 10} reps por ejercicio, alternando sin descanso interno.`;
+            return `Cómo hacerlo: ${toNumber(firstPresent(config.repsPerDrop, config.reps)) || 8} reps por drop, bajar ${toNumber(firstPresent(config.weightReductionPct, config.weightReduction)) || 20}%${loadRef ? ` desde ${loadRef}` : ''}.`;
+        case 'GIANT_SET': {
+            const restText = restBetweenMovements && restBetweenMovements > 0
+                ? `, descansando ${restBetweenMovements}s entre ejercicios`
+                : ', sin descanso interno';
+            const betweenRounds = restBetweenSets && restBetweenSets > 0 ? ` y ${restBetweenSets}s entre rondas` : '';
+            return `Cómo hacerlo: ${toNumber(config.rounds) || 3} rondas de ${repsPerMovement || 10} reps por ejercicio${loadRef || intensityRef ? ` a ${loadRef || intensityRef}` : ''}${restText}${betweenRounds}.`;
+        }
+        case 'SUPER_SET': {
+            const restText = restBetweenMovements && restBetweenMovements > 0
+                ? `, con ${restBetweenMovements}s entre ejercicios`
+                : ', alternando sin descanso interno';
+            const betweenSets = restBetweenSets && restBetweenSets > 0 ? ` y ${restBetweenSets}s entre series` : '';
+            return `Cómo hacerlo: ${toNumber(config.sets) || 4} series de ${repsPerMovement || 10} reps por ejercicio${loadRef || intensityRef ? ` a ${loadRef || intensityRef}` : ''}${restText}${betweenSets}.`;
+        }
         case 'NOT_FOR_TIME':
-            return `Cómo hacerlo: bloque técnico sin reloj${rounds ? `, completar ${rounds} rondas` : ''} con ${toNumber(config.repsPerMovement) || 10} reps por ejercicio.`;
+            return `Cómo hacerlo: bloque técnico sin reloj${rounds ? `, completar ${rounds} rondas` : ''} con ${repsPerMovement || 10} reps por ejercicio${loadRef || intensityRef ? ` a ${loadRef || intensityRef}` : ''}.`;
         case 'TEMPO': {
             const e = toNumber(config.tempoEccentric);
             const b = toNumber(config.tempoBottom);
@@ -451,20 +528,20 @@ function buildExecutionHint(type: string, rawConfig: any): string {
             const tempo = (e !== null && b !== null && c !== null && t !== null)
                 ? `${e}-${b}-${c}-${t}`
                 : String(config.tempo || '');
-            return `Cómo hacerlo: ${toNumber(config.sets) || 3} series de ${toNumber(config.reps) || 10} reps con tempo ${tempo || '3-1-1-1'}.`;
+            return `Cómo hacerlo: ${toNumber(config.sets) || 3} series de ${toNumber(config.reps) || 10} reps con tempo ${tempo || '3-1-1-1'}${loadRef || intensityRef ? ` a ${loadRef || intensityRef}` : ''}.`;
         }
         case 'DROPSET_FINISHER':
-            return `Cómo hacerlo: finisher de ${toNumber(config.repsPerDrop) || 10} reps por drop, bajar ${toNumber(config.weightReductionPct) || 20}% desde ${toNumber(config.startingLoadPct) || 75}% 1RM.`;
+            return `Cómo hacerlo: finisher de ${toNumber(firstPresent(config.repsPerDrop, config.reps)) || 10} reps por drop, bajar ${toNumber(firstPresent(config.weightReductionPct, config.weightReduction)) || 20}%${loadRef ? ` desde ${loadRef}` : ''}.`;
         case 'REST_PAUSE':
-            return `Cómo hacerlo: acumular ${toNumber(config.totalReps) || 20} reps en ${toNumber(config.clusters) || 3} mini-bloques con pausas de ${toNumber(config.restSeconds) || 15}s.`;
+            return `Cómo hacerlo: acumular ${toNumber(config.totalReps) || 20} reps en ${toNumber(config.clusters) || 3} mini-bloques con pausas de ${toNumber(firstPresent(config.restSeconds, config.rest)) || 15}s${loadRef || intensityRef ? ` a ${loadRef || intensityRef}` : ''}.`;
         case 'LADDER_FINISHER':
-            return `Cómo hacerlo: escalera ${direction || 'ascendente'} de ${toNumber(config.repsStart) || 1} a ${toNumber(config.repsPeak) || 10}, variando ${toNumber(config.increment) || 1} rep(s) por escalón.`;
+            return `Cómo hacerlo: escalera ${direction || 'ascendente'} de ${toNumber(config.repsStart) || 1} a ${toNumber(config.repsPeak) || 10}, variando ${toNumber(config.increment) || 1} rep(s) por escalón${loadRef ? ` a ${loadRef}` : ''}.`;
         case '21S':
-            return `Cómo hacerlo: ${toNumber(config.sets) || 2} series del protocolo 21s (7 parcial baja + 7 parcial alta + 7 completas).`;
+            return `Cómo hacerlo: ${toNumber(config.sets) || 2} series del protocolo 21s (7 parcial baja + 7 parcial alta + 7 completas)${loadRef || intensityRef ? ` a ${loadRef || intensityRef}` : ''}.`;
         case 'ISO_HOLD':
-            return `Cómo hacerlo: ${toNumber(config.sets) || 2} series de ${toNumber(config.reps) || 10} reps con pausa isométrica de ${toNumber(config.holdSeconds) || 3}s.`;
+            return `Cómo hacerlo: ${toNumber(config.sets) || 2} series de ${toNumber(config.reps) || 10} reps con pausa isométrica de ${toNumber(firstPresent(config.holdSeconds, config.holdTime)) || 3}s${loadRef || intensityRef ? ` a ${loadRef || intensityRef}` : ''}.`;
         case '1_5_REPS':
-            return `Cómo hacerlo: ${toNumber(config.sets) || 3} series de ${toNumber(config.reps) || 8} reps (1 completa + media rep por repetición).`;
+            return `Cómo hacerlo: ${toNumber(config.sets) || 3} series de ${toNumber(config.reps) || 8} reps (1 completa + media rep por repetición)${loadRef || intensityRef ? ` a ${loadRef || intensityRef}` : ''}.`;
         default:
             return '';
     }

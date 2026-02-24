@@ -84,6 +84,7 @@ const FIELD_HELP_ES: Record<string, Record<string, string>> = {
         endReps: 'Reps objetivo del tramo final.',
         increment: 'Cuantas reps se agregan o quitan por escalon.',
         intensityTarget: 'Referencia de intensidad: 1-10 para RPE o >10 para %1RM.',
+        loadKg: 'Carga de referencia en kg (si prefieres trabajar con peso fijo).',
         movements: 'Ejercicio(s) que siguen la escalera.',
     },
     INTERVALS: {
@@ -113,12 +114,14 @@ const FIELD_HELP_ES: Record<string, Record<string, string>> = {
         repsPerDrop: 'Reps por cada drop.',
         weightReductionPct: 'Porcentaje de reducción de carga por drop.',
         startingLoadPct: 'Carga inicial recomendada en % del 1RM.',
+        loadKg: 'Carga inicial en kg (opcional si no usas %1RM).',
         movements: 'Ejercicio(s) sobre los que aplica el dropset.',
     },
     GIANT_SET: {
         rounds: 'Cantidad de rondas del giant set.',
         repsPerMovement: 'Repeticiones objetivo por ejercicio en cada ronda.',
         intensityTarget: 'Referencia de intensidad: 1-10 para RPE o >10 para %1RM.',
+        loadKg: 'Carga objetivo en kg para los ejercicios principales (opcional).',
         restBetweenMovementsSeconds: 'Descanso opcional entre ejercicios del circuito.',
         restBetweenRoundsSeconds: 'Descanso entre rondas completas (segundos).',
         movements: 'Ejercicios del giant set en secuencia.',
@@ -127,6 +130,7 @@ const FIELD_HELP_ES: Record<string, Record<string, string>> = {
         sets: 'Series del super set.',
         repsPerMovement: 'Repeticiones objetivo por ejercicio en cada serie.',
         intensityTarget: 'Referencia de intensidad: 1-10 para RPE o >10 para %1RM.',
+        loadKg: 'Carga objetivo en kg para los ejercicios del super set (opcional).',
         restBetweenMovementsSeconds: 'Descanso opcional entre ejercicios del par.',
         movements: 'Ejercicios A y B (o mas) que se alternan sin descanso.',
         restBetweenSetsSeconds: 'Descanso entre series del super set (segundos).',
@@ -158,6 +162,7 @@ const FIELD_HELP_ES: Record<string, Record<string, string>> = {
         restSeconds: 'Micro-descanso en segundos entre mini-series.',
         clusters: 'Cantidad de mini-bloques objetivo.',
         intensityTarget: 'Referencia de intensidad: 1-10 para RPE o >10 para %1RM.',
+        loadKg: 'Carga objetivo en kg para la serie principal (opcional).',
         movements: 'Ejercicio principal del rest-pause.',
     },
     LADDER_FINISHER: {
@@ -166,11 +171,13 @@ const FIELD_HELP_ES: Record<string, Record<string, string>> = {
         repsPeak: 'Repeticiones maximas o ultimo escalon.',
         increment: 'Reps que cambian por escalon.',
         intensityTarget: 'Referencia de intensidad: 1-10 para RPE o >10 para %1RM.',
+        loadKg: 'Carga de referencia en kg para el finisher (opcional).',
         movements: 'Ejercicio(s) que siguen la escalera.',
     },
     '21S': {
         sets: 'Cantidad de series 21s.',
         intensityTarget: 'Referencia de intensidad: 1-10 para RPE o >10 para %1RM.',
+        loadKg: 'Carga objetivo en kg para ejecutar el protocolo 21s (opcional).',
         movements: 'Ejercicio recomendado de aislamiento.',
     },
     ISO_HOLD: {
@@ -178,12 +185,14 @@ const FIELD_HELP_ES: Record<string, Record<string, string>> = {
         holdSeconds: 'Segundos de pausa isometrica por repeticion o al final.',
         reps: 'Cantidad de reps objetivo.',
         intensityTarget: 'Referencia de intensidad: 1-10 para RPE o >10 para %1RM.',
+        loadKg: 'Carga objetivo en kg (opcional).',
         movements: 'Ejercicio sobre el que se aplica la pausa.',
     },
     '1_5_REPS': {
         sets: 'Series del finisher 1.5.',
         reps: 'Repeticiones objetivo (cada una incluye media repeticion extra).',
         intensityTarget: 'Referencia de intensidad: 1-10 para RPE o >10 para %1RM.',
+        loadKg: 'Carga objetivo en kg (opcional).',
         movements: 'Ejercicio donde aplicar el patron 1.5.',
     },
 };
@@ -251,6 +260,7 @@ const FORM_FIELD_OVERRIDES: Record<string, TrainingMethodologyFormField[]> = {
         { key: 'endReps', label: 'Reps Pico/Final', type: 'number', placeholder: '10', required: true, default: 10 },
         { key: 'increment', label: 'Incremento por Escalón', type: 'number', placeholder: '1', required: true, default: 1 },
         { key: 'intensityTarget', label: 'Intensidad Objetivo (RPE/%/kg)', type: 'number', placeholder: '8', required: true, default: 8 },
+        { key: 'loadKg', label: 'Carga Objetivo (kg, opcional)', type: 'number', placeholder: '60' },
         { key: 'movements', label: 'Movimientos', type: 'movements_list', required: true },
     ],
     INTERVALS: [
@@ -280,12 +290,14 @@ const FORM_FIELD_OVERRIDES: Record<string, TrainingMethodologyFormField[]> = {
         { key: 'repsPerDrop', label: 'Reps por Drop', type: 'number', placeholder: '8', required: true, default: 8 },
         { key: 'weightReductionPct', label: 'Reducción de Peso (%)', type: 'number', placeholder: '20', required: true, default: 20 },
         { key: 'startingLoadPct', label: 'Carga Inicial (%1RM)', type: 'number', placeholder: '75', required: true, default: 75 },
+        { key: 'loadKg', label: 'Carga Inicial (kg, opcional)', type: 'number', placeholder: '80' },
         { key: 'movements', label: 'Movimientos', type: 'movements_list', required: true },
     ],
     GIANT_SET: [
         { key: 'rounds', label: 'Rondas', type: 'number', placeholder: '3', required: true, default: 3 },
         { key: 'repsPerMovement', label: 'Reps por Ejercicio', type: 'number', placeholder: '10', required: true, default: 10 },
         { key: 'intensityTarget', label: 'Intensidad Objetivo (RPE/%/kg)', type: 'number', placeholder: '8', required: true, default: 8 },
+        { key: 'loadKg', label: 'Carga Objetivo (kg, opcional)', type: 'number', placeholder: '60' },
         { key: 'restBetweenMovementsSeconds', label: 'Descanso entre Ejercicios (seg)', type: 'number', placeholder: '0', default: 0 },
         { key: 'restBetweenRoundsSeconds', label: 'Descanso entre Rondas (seg)', type: 'number', placeholder: '120', default: 120 },
         { key: 'movements', label: 'Movimientos', type: 'movements_list', required: true },
@@ -294,6 +306,7 @@ const FORM_FIELD_OVERRIDES: Record<string, TrainingMethodologyFormField[]> = {
         { key: 'sets', label: 'Series', type: 'number', placeholder: '4', required: true, default: 4 },
         { key: 'repsPerMovement', label: 'Reps por Ejercicio', type: 'number', placeholder: '10', required: true, default: 10 },
         { key: 'intensityTarget', label: 'Intensidad Objetivo (RPE/%/kg)', type: 'number', placeholder: '8', required: true, default: 8 },
+        { key: 'loadKg', label: 'Carga Objetivo (kg, opcional)', type: 'number', placeholder: '60' },
         { key: 'restBetweenMovementsSeconds', label: 'Descanso entre Ejercicios (seg)', type: 'number', placeholder: '0', default: 0 },
         { key: 'restBetweenSetsSeconds', label: 'Descanso entre Sets (seg)', type: 'number', placeholder: '90', default: 90 },
         { key: 'movements', label: 'Movimientos', type: 'movements_list', required: true },
@@ -318,6 +331,7 @@ const FORM_FIELD_OVERRIDES: Record<string, TrainingMethodologyFormField[]> = {
         { key: 'repsPerDrop', label: 'Reps por Drop', type: 'number', placeholder: '10', required: true, default: 10 },
         { key: 'weightReductionPct', label: 'Reducción de Peso (%)', type: 'number', placeholder: '20', required: true, default: 20 },
         { key: 'startingLoadPct', label: 'Carga Inicial (%1RM)', type: 'number', placeholder: '75', required: true, default: 75 },
+        { key: 'loadKg', label: 'Carga Inicial (kg, opcional)', type: 'number', placeholder: '60' },
         { key: 'movements', label: 'Ejercicio', type: 'movements_list', required: true },
     ],
     REST_PAUSE: [
@@ -325,6 +339,7 @@ const FORM_FIELD_OVERRIDES: Record<string, TrainingMethodologyFormField[]> = {
         { key: 'restSeconds', label: 'Micro-Descanso (seg)', type: 'number', placeholder: '15', required: true, default: 15 },
         { key: 'clusters', label: 'Mini-Bloques', type: 'number', placeholder: '3', default: 3 },
         { key: 'intensityTarget', label: 'Intensidad Objetivo (RPE/%/kg)', type: 'number', placeholder: '8', required: true, default: 8 },
+        { key: 'loadKg', label: 'Carga Objetivo (kg, opcional)', type: 'number', placeholder: '50' },
         { key: 'movements', label: 'Ejercicio', type: 'movements_list', required: true },
     ],
     LADDER_FINISHER: [
@@ -333,11 +348,13 @@ const FORM_FIELD_OVERRIDES: Record<string, TrainingMethodologyFormField[]> = {
         { key: 'repsPeak', label: 'Reps pico/final', type: 'number', placeholder: '10', default: 10, required: true },
         { key: 'increment', label: 'Incremento por escalon', type: 'number', placeholder: '1', default: 1, required: true },
         { key: 'intensityTarget', label: 'Intensidad Objetivo (RPE/%/kg)', type: 'number', placeholder: '8', required: true, default: 8 },
+        { key: 'loadKg', label: 'Carga Objetivo (kg, opcional)', type: 'number', placeholder: '60' },
         { key: 'movements', label: 'Movimientos', type: 'movements_list', required: true },
     ],
     '21S': [
         { key: 'sets', label: 'Series', type: 'number', placeholder: '2', required: true, default: 2 },
         { key: 'intensityTarget', label: 'Intensidad Objetivo (RPE/%/kg)', type: 'number', placeholder: '8', required: true, default: 8 },
+        { key: 'loadKg', label: 'Carga Objetivo (kg, opcional)', type: 'number', placeholder: '40' },
         { key: 'movements', label: 'Ejercicio', type: 'movements_list', required: true },
     ],
     ISO_HOLD: [
@@ -345,12 +362,14 @@ const FORM_FIELD_OVERRIDES: Record<string, TrainingMethodologyFormField[]> = {
         { key: 'holdSeconds', label: 'Pausa Isométrica (seg)', type: 'number', placeholder: '3', required: true, default: 3 },
         { key: 'reps', label: 'Repeticiones', type: 'number', placeholder: '10', required: true, default: 10 },
         { key: 'intensityTarget', label: 'Intensidad Objetivo (RPE/%/kg)', type: 'number', placeholder: '8', required: true, default: 8 },
+        { key: 'loadKg', label: 'Carga Objetivo (kg, opcional)', type: 'number', placeholder: '40' },
         { key: 'movements', label: 'Ejercicio', type: 'movements_list', required: true },
     ],
     '1_5_REPS': [
         { key: 'sets', label: 'Series', type: 'number', placeholder: '3', required: true, default: 3 },
         { key: 'reps', label: 'Repeticiones', type: 'number', placeholder: '8', required: true, default: 8 },
         { key: 'intensityTarget', label: 'Intensidad Objetivo (RPE/%/kg)', type: 'number', placeholder: '8', required: true, default: 8 },
+        { key: 'loadKg', label: 'Carga Objetivo (kg, opcional)', type: 'number', placeholder: '40' },
         { key: 'movements', label: 'Ejercicio', type: 'movements_list', required: true },
     ],
 };

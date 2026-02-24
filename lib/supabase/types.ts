@@ -41,6 +41,7 @@ export interface StrengthConfig {
     sets: number;
     reps: string | number;
     percentage?: string | number;
+    loadKg?: number;
     tempo?: string;
     rest?: string | number;
     restSeconds?: number;
@@ -90,6 +91,8 @@ export interface LadderConfig {
     startReps: number;
     endReps: number;
     increment: number;
+    intensityTarget?: number;
+    loadKg?: number;
     movements: string[];
     notes?: string;
     [key: string]: any;

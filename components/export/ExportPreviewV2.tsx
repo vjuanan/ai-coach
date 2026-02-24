@@ -304,7 +304,7 @@ const FORMAT_LABELS: Record<string, string> = {
     DROP_SET: 'Drop Set',
     GIANT_SET: 'Giant Set',
     SUPER_SET: 'Super Set',
-    NOT_FOR_TIME: 'Not For Time',
+    NOT_FOR_TIME: 'Sin Reloj',
     TEMPO: 'Tempo',
     DROPSET_FINISHER: 'Dropset',
     REST_PAUSE: 'Rest-Pause',

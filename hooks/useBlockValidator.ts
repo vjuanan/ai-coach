@@ -10,6 +10,24 @@ interface BlockValidationResult {
     missingFields: string[];
 }
 
+const REQUIRED_FIELD_ALIASES: Record<string, string[]> = {
+    startReps: ['repsStart'],
+    endReps: ['repsPeak'],
+    repsPerMovement: ['reps'],
+    repsPerDrop: ['reps'],
+    repsPerMiniSet: ['repsPerCluster', 'reps'],
+    startingLoadPct: ['percentage'],
+    intensityTarget: ['percentage', 'rpe'],
+    restBetweenRoundsSeconds: ['restBetweenRounds'],
+    restBetweenSetsSeconds: ['restBetweenSets'],
+    restBetweenMovementsSeconds: ['restSeconds', 'rest'],
+    interRestSeconds: ['interRest'],
+    intraRestSeconds: ['intraRest'],
+    workSeconds: ['workTime'],
+    restSeconds: ['restTime', 'rest'],
+    holdSeconds: ['holdTime'],
+};
+
 function isFilledText(value: unknown): boolean {
     if (typeof value === 'string') return value.trim().length > 0;
     if (typeof value === 'number') return true;
@@ -47,6 +65,11 @@ function hasPositiveTarget(entry: unknown): boolean {
     if (isPositiveNumber(source.targetValue)) return true;
     if (isPositiveNumber(source.reps)) return true;
     return false;
+}
+
+function getFieldCandidateValues(config: Record<string, unknown>, key: string): unknown[] {
+    const aliases = REQUIRED_FIELD_ALIASES[key] || [];
+    return [config[key], ...aliases.map((alias) => config[alias])];
 }
 
 export const useBlockValidator = () => {
@@ -125,6 +148,9 @@ export const useBlockValidator = () => {
                                 ...extractMovementNames(config.items),
                                 ...extractMovementNames(config.slots),
                             ];
+                            if (names.length === 0 && typeof config.movement === 'string' && config.movement.trim().length > 0) {
+                                names = [config.movement.trim()];
+                            }
                         }
 
                         if (names.length === 0) {
@@ -145,12 +171,12 @@ export const useBlockValidator = () => {
                         continue;
                     }
 
-                    const fieldValue = config[field.key];
+                    const fieldValues = getFieldCandidateValues(config, field.key);
                     if (field.type === 'number') {
-                        if (!isPositiveNumber(fieldValue)) {
+                        if (!fieldValues.some((value) => isPositiveNumber(value))) {
                             missingFields.push(field.label);
                         }
-                    } else if (!isFilledText(fieldValue)) {
+                    } else if (!fieldValues.some((value) => isFilledText(value))) {
                         missingFields.push(field.label);
                     }
                 }
@@ -177,7 +203,10 @@ export const useBlockValidator = () => {
                 }
 
                 if (['AMRAP', 'RFT', 'FOR_TIME', 'CHIPPER'].includes(methodCode)) {
-                    const items = Array.isArray(config.items) ? config.items : [];
+                    const fallbackMovements = Array.isArray(config.movements) ? config.movements : [];
+                    const items = Array.isArray(config.items) && config.items.length > 0
+                        ? config.items
+                        : fallbackMovements;
                     if (items.length === 0) {
                         missingFields.push('Items del circuito');
                     } else {
