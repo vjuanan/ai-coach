@@ -546,18 +546,18 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                         <div className="flex items-center gap-2">
                             {blockBuilderMode ? (
                                 <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 rounded flex items-center justify-center bg-cv-accent/10">
-                                        <Zap size={10} className="text-cv-accent" />
+                                    <div className="w-4 h-4 rounded flex items-center justify-center bg-slate-100 dark:bg-slate-800/80">
+                                        <Zap size={10} className="text-slate-500 dark:text-slate-300" />
                                     </div>
-                                    <span className="text-xs font-bold text-cv-text-primary">Block Builder</span>
+                                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-300">Block Builder</span>
                                 </div>
                             ) : (
-                                <h2 className="text-xs font-semibold text-cv-text-primary flex items-center gap-1.5 whitespace-nowrap">
+                                <h2 className="text-[13px] font-medium text-slate-500 dark:text-slate-300 flex items-center gap-1.5 whitespace-nowrap">
                                     {programName}
                                     {currentMesocycle?.focus && (
                                         <>
-                                            <span className="text-cv-text-tertiary">/</span>
-                                            <span className="text-cv-accent font-medium">{currentMesocycle.focus}</span>
+                                            <span className="text-slate-300 dark:text-slate-600">/</span>
+                                            <span className="text-slate-500 dark:text-slate-300 font-semibold">{currentMesocycle.focus}</span>
                                         </>
                                     )}
                                 </h2>
@@ -569,7 +569,7 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                             {assignmentData.id ? (
                                 <Popover.Root>
                                     <Popover.Trigger asChild>
-                                        <button className="flex items-center gap-1.5 px-1.5 py-0.5 rounded-md bg-cv-accent/5 hover:bg-cv-accent/10 text-[10px] text-cv-accent font-medium transition-colors ml-1">
+                                        <button className="flex items-center gap-1.5 px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/70 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-[10px] text-slate-500 dark:text-slate-300 font-medium transition-colors ml-1">
                                             {assignmentData.type === 'athlete' ? <User size={10} /> : <Building size={10} />}
                                             <span>{assignmentData.name}</span>
                                             <ChevronDown size={10} />
