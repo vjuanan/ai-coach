@@ -552,14 +552,8 @@ export function MesocycleEditor({ programId, programName, isFullScreen = false, 
                                     <span className="text-xs font-semibold text-slate-500 dark:text-slate-300">Block Builder</span>
                                 </div>
                             ) : (
-                                <h2 className="text-[13px] font-medium text-slate-500 dark:text-slate-300 flex items-center gap-1.5 whitespace-nowrap">
+                                <h2 className="text-sm font-semibold tracking-tight text-slate-500 dark:text-slate-300 whitespace-nowrap truncate max-w-[52vw]">
                                     {programName}
-                                    {currentMesocycle?.focus && (
-                                        <>
-                                            <span className="text-slate-300 dark:text-slate-600">/</span>
-                                            <span className="text-slate-500 dark:text-slate-300 font-semibold">{currentMesocycle.focus}</span>
-                                        </>
-                                    )}
                                 </h2>
                             )}
                         </div>
