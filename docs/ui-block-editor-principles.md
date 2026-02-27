@@ -25,11 +25,14 @@
 - Place presets below the input or in a compact popover.
 - Presets must preserve compact height and spacing.
 - Visible presets must be capped at `3` using strategic selection (`min`, `middle`, `max`).
+- Finisher numeric fields must expose `3` strategic presets (manual entry remains available).
 
 ## Consistency Rules
 - Keep border radius soft and consistent.
 - Keep compact heights consistent across editors.
 - Validation states (error/focus/hover) must stay minimal and dense.
+- Finisher methodology tabs must never use `flex-1`; tabs stay compact and centered.
+- Card labels must avoid accidental wrapping by using explicit `labelLines` (`1` or `2`) instead of uncontrolled line breaks.
 
 ## Coverage Scope
 - Apply these rules to all block editor surfaces:

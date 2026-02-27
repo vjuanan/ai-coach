@@ -21,6 +21,7 @@ interface InputCardProps {
     cardSize?: 'short' | 'medium' | 'time' | 'auto';
     presetsPlacement?: 'bottom' | 'popover';
     maxVisiblePresets?: number;
+    labelLines?: 1 | 2;
 }
 
 function dedupePresets(presets: (string | number)[]) {
@@ -101,6 +102,7 @@ export function InputCard({
     cardSize,
     presetsPlacement = 'bottom',
     maxVisiblePresets = 3,
+    labelLines = 1,
 }: InputCardProps) {
     const [localValue, setLocalValue] = useState<string>(value !== undefined && value !== null ? String(value) : '');
     const [isFocused, setIsFocused] = useState(false);
@@ -137,6 +139,10 @@ export function InputCard({
                 ? 'w-auto'
                 : 'cv-card-medium';
     const visiblePresets = selectStrategicPresets(presets, maxVisiblePresets);
+    const labelHeightClass = labelLines === 2
+        ? 'h-[1.5rem] leading-tight'
+        : 'inline-flex items-center h-[1.5rem] leading-none';
+    const labelTextClampClass = labelLines === 2 ? '' : 'whitespace-nowrap overflow-hidden text-ellipsis';
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let val = e.target.value;
@@ -197,9 +203,9 @@ export function InputCard({
             } ${className}`}
         >
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
+                <div className={`flex gap-1.5 ${labelLines === 2 ? 'items-start' : 'items-center'}`}>
                     {Icon && <Icon size={13} className={`${isInvalid ? 'text-red-500' : 'text-cv-text-tertiary'}`} />}
-                    <span className={`text-[10px] uppercase tracking-wider font-bold ${isInvalid ? 'text-red-600' : 'text-cv-text-tertiary'}`}>
+                    <span className={`text-[10px] uppercase tracking-wider font-bold ${labelHeightClass} ${labelTextClampClass} ${isInvalid ? 'text-red-600' : 'text-cv-text-tertiary'}`}>
                         {label}
                     </span>
                 </div>

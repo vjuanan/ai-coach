@@ -399,7 +399,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 <div className="space-y-3">
                                     {isFinisherBlock ? (
                                         <div className="bg-slate-50 dark:bg-cv-bg-tertiary/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-1 duration-200">
-                                            <div className="flex flex-wrap gap-2">
+                                            <div className="flex w-fit max-w-full mx-auto flex-wrap justify-center gap-2">
                                                 {(groupedMethodologies.finisher || []).map(m => {
                                                     const IconComponent = iconMap[m.icon] || Dumbbell;
                                                     const isSelected = normalizeMethodologyCode(block?.format || '') === normalizeMethodologyCode(m.code);
@@ -411,7 +411,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                                             title={m.description}
                                                             className={`
                                                             px-3 py-2 rounded-lg text-xs font-medium transition-all
-                                                            flex items-center gap-2 border flex-1 min-w-[120px] justify-center
+                                                            inline-flex items-center gap-2 border min-w-[128px] justify-center
                                                             ${isSelected
                                                                     ? 'bg-white dark:bg-cv-bg-primary text-cv-accent border-cv-accent shadow-md ring-1 ring-cv-accent/20 scale-[1.02]'
                                                                     : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary hover:text-cv-accent hover:bg-slate-50 dark:hover:bg-cv-bg-primary border-slate-200 dark:border-slate-700 hover:border-cv-accent/30 hover:shadow-sm hover:-translate-y-0.5'

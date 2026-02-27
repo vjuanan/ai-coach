@@ -35,8 +35,19 @@ type FieldValueSize = 'short' | 'medium' | 'time' | 'auto';
 
 function inferFieldPresets(field: TrainingMethodologyFormField): (string | number)[] {
     const key = field.key.toLowerCase();
+    const placeholderNumber = Number.parseInt(String(field.placeholder || ''), 10);
 
-    if (key.includes('round') || key === 'sets' || key.includes('mini')) return [2, 3, 4, 5];
+    if (key === 'drops') return [2, 3, 4];
+    if (key.includes('cluster') || key.includes('mini')) return [2, 3, 4];
+    if (key === 'holdseconds') return [2, 3, 5];
+    if (key === 'increment') return [1, 2, 3];
+    if (key === 'totalreps') return [15, 20, 25];
+    if (key.includes('weightreduction') && key.includes('pct')) return [15, 20, 25];
+    if (key === 'loadkg') {
+        if (Number.isFinite(placeholderNumber) && placeholderNumber >= 60) return [50, 60, 70];
+        return [40, 50, 60];
+    }
+    if (key.includes('round') || key === 'sets') return [2, 3, 4, 5];
     if (key.includes('rep')) return [8, 10, 12];
     if (key.includes('minute') || key.includes('timecap') || key.includes('time_cap')) return [10, 12, 15];
     if (key.includes('rest') && key.includes('second')) return [30, 45, 60, 90];
@@ -86,6 +97,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
     const isStandard = methodologyCode === 'STANDARD';
 
     const isWarmUp = blockType === 'warmup';
+    const isFinisherMethod = methodology?.category === 'finisher';
     const [warmupMode, setWarmupMode] = useState<'rounds' | 'sets'>('rounds');
 
     // Strict display rules:
@@ -181,6 +193,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                                 field={field}
                                 value={config[field.key]}
                                 onChange={(nextValue) => onChange(field.key, nextValue)}
+                                isFinisher={isFinisherMethod}
                             />
                         ))}
                     </div>
@@ -245,13 +258,27 @@ interface MethodologySimpleFieldProps {
     field: TrainingMethodologyFormField;
     value: unknown;
     onChange: (value: unknown) => void;
+    isFinisher: boolean;
     className?: string;
 }
 
-function MethodologySimpleField({ field, value, onChange, className = '' }: MethodologySimpleFieldProps) {
+function shouldUseTwoLineLabel(field: TrainingMethodologyFormField) {
+    const key = field.key.toLowerCase();
+    return key === 'weightreductionpct'
+        || key === 'startingloadpct'
+        || key === 'loadkg'
+        || key === 'intensitytarget'
+        || key === 'restseconds'
+        || key === 'holdseconds'
+        || key === 'repsperdrop'
+        || key === 'totalreps';
+}
+
+function MethodologySimpleField({ field, value, onChange, isFinisher, className = '' }: MethodologySimpleFieldProps) {
     const resolvedValue = value ?? field.default ?? '';
     const inferredSize = inferFieldValueSize(field);
     const inferredCardSize = inferredSize === 'time' ? 'time' : inferredSize === 'medium' ? 'medium' : 'short';
+    const labelLines: 1 | 2 = isFinisher && shouldUseTwoLineLabel(field) ? 2 : 1;
 
     if (field.type === 'select' && field.options) {
         return (
@@ -304,6 +331,7 @@ function MethodologySimpleField({ field, value, onChange, className = '' }: Meth
             className={className}
             compact
             presetsPlacement="bottom"
+            labelLines={labelLines}
         />
     );
 }
