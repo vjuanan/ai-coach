@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Trash2, Clock, RotateCw } from 'lucide-react';
+import { Plus, Trash2, Clock, RotateCw, Search } from 'lucide-react';
 import { SmartExerciseInput } from '../SmartExerciseInput';
 import type { AMRAPConfig, RFTConfig } from '@/lib/supabase/types';
 
@@ -20,6 +20,7 @@ interface CircuitEditorProps {
 }
 
 export function CircuitEditor({ config, onChange, onBatchChange, mode }: CircuitEditorProps) {
+    const rowGridCols = 'md:grid-cols-[32px_minmax(0,1fr)_2rem_5.5rem_7rem_2.25rem]';
     const [items, setItems] = useState<CircuitItem[]>(() => {
         const savedItems = (config as any).items;
         if (savedItems && Array.isArray(savedItems)) {
@@ -188,11 +189,20 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                     En cada fila define ejercicio + variable numérica.
                 </p>
 
+                <div className={`hidden md:grid ${rowGridCols} gap-2 px-2 text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary items-center`}>
+                    <span />
+                    <span />
+                    <span />
+                    <span className="text-center">Valor</span>
+                    <span className="text-center">Unidad</span>
+                    <span />
+                </div>
+
                 <div className="space-y-2.5">
                     {items.map((item, index) => (
                         <div
                             key={item.id || index}
-                            className="group grid grid-cols-1 md:grid-cols-[32px_minmax(0,1fr)_86px_110px_auto] gap-2 p-2.5 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm hover:shadow-md transition-all items-start md:items-center"
+                            className={`group grid grid-cols-1 ${rowGridCols} gap-2 p-2.5 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm hover:shadow-md transition-all items-start md:items-center`}
                         >
                             <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-cv-text-tertiary shrink-0">
                                 {index + 1}
@@ -207,8 +217,12 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary mb-1">
+                            <div className="hidden md:flex items-center justify-center text-cv-text-tertiary/80">
+                                <Search size={17} />
+                            </div>
+
+                            <div className="flex flex-col items-start md:items-center gap-1">
+                                <label className="block md:hidden text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary">
                                     Valor
                                 </label>
                                 <input
@@ -221,8 +235,8 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary mb-1">
+                            <div className="flex flex-col items-start md:items-center gap-1">
+                                <label className="block md:hidden text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary">
                                     Unidad
                                 </label>
                                 <select
@@ -237,12 +251,14 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                                 </select>
                             </div>
 
-                            <button
-                                onClick={() => removeItem(index)}
-                                className="md:mt-5 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
-                            >
-                                <Trash2 size={16} />
-                            </button>
+                            <div className="flex justify-center">
+                                <button
+                                    onClick={() => removeItem(index)}
+                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>

@@ -10,6 +10,7 @@
 - Desktop: main block inputs must fit in one row whenever possible.
 - Mobile: allow wrapping, but keep dense spacing and no empty gutters.
 - Avoid fixed wide wrappers for numeric-only controls.
+- If only one stimulus category is available, render `Tipo de estímulo` with a compact category badge and never a full-width rail/tab row.
 
 ## Input Sizing Rules
 - Use explicit width buckets by data type:
@@ -23,6 +24,7 @@
 - Presets must not live as a right-side column inside inputs.
 - Place presets below the input or in a compact popover.
 - Presets must preserve compact height and spacing.
+- Visible presets must be capped at `3` using strategic selection (`min`, `middle`, `max`).
 
 ## Consistency Rules
 - Keep border radius soft and consistent.

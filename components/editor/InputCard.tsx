@@ -20,6 +20,65 @@ interface InputCardProps {
     valueSize?: 'short' | 'medium' | 'time' | 'auto';
     cardSize?: 'short' | 'medium' | 'time' | 'auto';
     presetsPlacement?: 'bottom' | 'popover';
+    maxVisiblePresets?: number;
+}
+
+function dedupePresets(presets: (string | number)[]) {
+    const seen = new Set<string>();
+    return presets.filter((preset) => {
+        const key = `${typeof preset}:${String(preset)}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
+function selectStrategicPresets(presets: (string | number)[], maxVisible = 3) {
+    if (maxVisible <= 0) return [];
+    const unique = dedupePresets(presets);
+    if (unique.length <= maxVisible) return unique;
+
+    if (maxVisible === 1) return [unique[0]];
+    if (maxVisible === 2) return [unique[0], unique[unique.length - 1]];
+
+    const asNumbers = unique.map((preset) => (typeof preset === 'number' ? preset : Number(preset)));
+    const allNumeric = asNumbers.every((num) => Number.isFinite(num));
+
+    if (allNumeric) {
+        const minValue = Math.min(...asNumbers);
+        const maxValue = Math.max(...asNumbers);
+        const midpoint = (minValue + maxValue) / 2;
+
+        const minIndex = asNumbers.findIndex((value) => value === minValue);
+        const maxIndex = asNumbers.findIndex((value) => value === maxValue);
+
+        let middleIndex = -1;
+        let bestDistance = Number.POSITIVE_INFINITY;
+        let bestCenterDistance = Number.POSITIVE_INFINITY;
+        const visualCenter = (unique.length - 1) / 2;
+
+        for (let i = 0; i < asNumbers.length; i++) {
+            if (i === minIndex || i === maxIndex) continue;
+            const distance = Math.abs(asNumbers[i] - midpoint);
+            const centerDistance = Math.abs(i - visualCenter);
+            if (distance < bestDistance || (distance === bestDistance && centerDistance < bestCenterDistance)) {
+                bestDistance = distance;
+                bestCenterDistance = centerDistance;
+                middleIndex = i;
+            }
+        }
+
+        if (middleIndex === -1) {
+            middleIndex = Math.floor((unique.length - 1) / 2);
+        }
+
+        const picks = [unique[minIndex], unique[middleIndex], unique[maxIndex]];
+        return dedupePresets(picks).slice(0, maxVisible);
+    }
+
+    const middleIndex = Math.floor((unique.length - 1) / 2);
+    const picks = [unique[0], unique[middleIndex], unique[unique.length - 1]];
+    return dedupePresets(picks).slice(0, maxVisible);
 }
 
 export function InputCard({
@@ -41,6 +100,7 @@ export function InputCard({
     valueSize,
     cardSize,
     presetsPlacement = 'bottom',
+    maxVisiblePresets = 3,
 }: InputCardProps) {
     const [localValue, setLocalValue] = useState<string>(value !== undefined && value !== null ? String(value) : '');
     const [isFocused, setIsFocused] = useState(false);
@@ -76,6 +136,7 @@ export function InputCard({
             : resolvedCardSize === 'auto'
                 ? 'w-auto'
                 : 'cv-card-medium';
+    const visiblePresets = selectStrategicPresets(presets, maxVisiblePresets);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let val = e.target.value;
@@ -173,9 +234,9 @@ export function InputCard({
                 </div>
             </div>
 
-            {presets && presets.length > 0 && presetsPlacement === 'bottom' && (
+            {visiblePresets.length > 0 && presetsPlacement === 'bottom' && (
                 <div className="flex flex-wrap justify-center gap-1">
-                    {presets.map(preset => (
+                    {visiblePresets.map(preset => (
                         <button
                             key={preset}
                             onClick={() => handlePresetClick(preset)}
@@ -191,9 +252,9 @@ export function InputCard({
                 </div>
             )}
 
-            {presets && presets.length > 0 && presetsPlacement === 'popover' && isFocused && (
+            {visiblePresets.length > 0 && presetsPlacement === 'popover' && isFocused && (
                 <div className="absolute z-20 top-full mt-1 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl rounded-lg p-1.5 flex gap-1 min-w-max">
-                    {presets.map((preset) => (
+                    {visiblePresets.map((preset) => (
                         <button
                             key={preset}
                             onMouseDown={(e) => e.preventDefault()}

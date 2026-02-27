@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Trash2, Clock, Repeat } from 'lucide-react';
+import { Plus, Trash2, Clock, Repeat, Search } from 'lucide-react';
 import { SmartExerciseInput } from '../SmartExerciseInput';
 import type { EMOMConfig } from '@/lib/supabase/types';
 
@@ -26,6 +26,7 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
     const interval = (config.interval as number) || 1;
     const isWarmup = blockType === 'warmup';
     const isE2MOMMode = interval === 2;
+    const rowGridCols = 'md:grid-cols-[88px_minmax(0,1fr)_2rem_5.5rem_7rem_2.25rem]';
 
     const [slots, setSlots] = useState<{ id: string; movement: string; targetValue: number | ''; targetUnit: 'reps' | 'seconds' | 'meters' }[]>(() => {
         // Try to recover from new format first
@@ -160,11 +161,20 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                     En cada intervalo define ejercicio + variable numérica objetivo.
                 </p>
 
+                <div className={`hidden md:grid ${rowGridCols} gap-2 px-2 text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary items-center`}>
+                    <span />
+                    <span />
+                    <span />
+                    <span className="text-center">Valor</span>
+                    <span className="text-center">Unidad</span>
+                    <span />
+                </div>
+
                 <div className="space-y-2.5">
                     {slots.map((slot, index) => (
                         <div
                             key={slot.id || index}
-                            className="group relative grid grid-cols-1 md:grid-cols-[88px_minmax(0,1fr)_86px_110px_auto] gap-2 p-2.5 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm hover:shadow-md hover:border-cv-accent/30 transition-all items-start md:items-center"
+                            className={`group relative grid grid-cols-1 ${rowGridCols} gap-2 p-2.5 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm hover:shadow-md hover:border-cv-accent/30 transition-all items-start md:items-center`}
                         >
                             {/* Interval label */}
                             <div className="md:pt-0">
@@ -183,8 +193,12 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary mb-1">
+                            <div className="hidden md:flex items-center justify-center text-cv-text-tertiary/80">
+                                <Search size={17} />
+                            </div>
+
+                            <div className="flex flex-col items-start md:items-center gap-1">
+                                <label className="block md:hidden text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary">
                                     Valor
                                 </label>
                                 <input
@@ -197,8 +211,8 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary mb-1">
+                            <div className="flex flex-col items-start md:items-center gap-1">
+                                <label className="block md:hidden text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary">
                                     Unidad
                                 </label>
                                 <select
@@ -212,13 +226,15 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                                 </select>
                             </div>
 
-                            <button
-                                onClick={() => removeSlot(index)}
-                                className="md:mt-5 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
-                                title="Eliminar intervalo"
-                            >
-                                <Trash2 size={16} />
-                            </button>
+                            <div className="flex justify-center">
+                                <button
+                                    onClick={() => removeSlot(index)}
+                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                                    title="Eliminar intervalo"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
 
                         </div>
                     ))}

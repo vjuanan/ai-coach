@@ -312,6 +312,17 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         conditioning: Heart,
         finisher: Target
     };
+    const stimulusBadgeClass: Record<string, string> = {
+        metcon: 'cv-stimulus-badge-metcon',
+        hiit: 'cv-stimulus-badge-hiit',
+        strength: 'cv-stimulus-badge-strength',
+        conditioning: 'cv-stimulus-badge-conditioning',
+        finisher: 'cv-stimulus-badge-finisher',
+    };
+    const visibleCategories = categoryOrder.filter((category) => (groupedMethodologies[category] || []).length > 0);
+    const isSingleCategory = visibleCategories.length === 1;
+    const singleCategory = isSingleCategory ? visibleCategories[0] : null;
+    const activeCategory = expandedCategory || singleCategory;
 
     // Navigation info - find current block position
     // Navigation info - find current block position
@@ -416,51 +427,59 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                         </div>
                                     ) : (
                                         <>
-                                            {/* Categories Tabs - Horizontal Row */}
-                                            <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-                                                {categoryOrder.map(category => {
-                                                    const items = groupedMethodologies[category] || [];
-                                                    if (items.length === 0) return null;
+                                            {isSingleCategory && singleCategory && (
+                                                <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-cv-bg-tertiary/40 px-3 py-2">
+                                                    <span className="text-xs font-semibold text-cv-text-secondary">Tipo de estímulo</span>
+                                                    <span className={`cv-stimulus-badge ${stimulusBadgeClass[singleCategory]}`}>
+                                                        {categoryLabels[singleCategory]}
+                                                    </span>
+                                                </div>
+                                            )}
 
-                                                    const isExpanded = expandedCategory === category;
-                                                    const hasSelectedItem = items.some(
-                                                        (m) => normalizeMethodologyCode(m.code) === normalizeMethodologyCode(block?.format || '')
-                                                    );
-                                                    const CategoryIcon = categoryIcons[category] || Dumbbell;
+                                            {!isSingleCategory && (
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    {categoryOrder.map(category => {
+                                                        const items = groupedMethodologies[category] || [];
+                                                        if (items.length === 0) return null;
 
-                                                    return (
-                                                        <button
-                                                            key={category}
-                                                            onClick={() => {
-                                                                setExpandedCategory(category);
-                                                                // Auto-select if category has only 1 methodology
-                                                                const catItems = groupedMethodologies[category] || [];
-                                                                if (catItems.length === 1) {
-                                                                    handleFormatChange(catItems[0].code);
-                                                                }
-                                                            }}
-                                                            className={`
-                                                            flex-1 justify-center items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border flex
-                                                            ${isExpanded
-                                                                    ? 'bg-cv-accent text-white border-cv-accent shadow-md scale-105'
-                                                                    : hasSelectedItem
-                                                                        ? 'bg-cv-accent/10 text-cv-accent border-cv-accent/30 hover:bg-cv-accent/20 hover:shadow-sm hover:scale-105'
-                                                                        : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-cv-accent/50 hover:text-cv-accent hover:shadow-sm hover:scale-105'
-                                                                }
-                                                        `}
-                                                        >
-                                                            <CategoryIcon size={14} />
-                                                            <span>{categoryLabels[category]}</span>
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
+                                                        const isExpanded = expandedCategory === category;
+                                                        const hasSelectedItem = items.some(
+                                                            (m) => normalizeMethodologyCode(m.code) === normalizeMethodologyCode(block?.format || '')
+                                                        );
+                                                        const CategoryIcon = categoryIcons[category] || Dumbbell;
 
-                                            {/* Active Category Options - Only show if more than 1 option */}
-                                            {expandedCategory && (groupedMethodologies[expandedCategory]?.length ?? 0) > 1 && (
+                                                        return (
+                                                            <button
+                                                                key={category}
+                                                                onClick={() => {
+                                                                    setExpandedCategory(category);
+                                                                    const catItems = groupedMethodologies[category] || [];
+                                                                    if (catItems.length === 1) {
+                                                                        handleFormatChange(catItems[0].code);
+                                                                    }
+                                                                }}
+                                                                className={`
+                                                                inline-flex justify-center items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border
+                                                                ${isExpanded
+                                                                        ? 'bg-cv-accent text-white border-cv-accent shadow-md'
+                                                                        : hasSelectedItem
+                                                                            ? 'bg-cv-accent/10 text-cv-accent border-cv-accent/30 hover:bg-cv-accent/20 hover:shadow-sm'
+                                                                            : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-cv-accent/50 hover:text-cv-accent hover:shadow-sm'
+                                                                    }
+                                                            `}
+                                                            >
+                                                                <CategoryIcon size={14} />
+                                                                <span>{categoryLabels[category]}</span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+
+                                            {activeCategory && (groupedMethodologies[activeCategory]?.length ?? 0) > 1 && (
                                                 <div className="bg-slate-50 dark:bg-cv-bg-tertiary/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-1 duration-200">
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {(groupedMethodologies[expandedCategory] || []).map(m => {
+                                                    <div className="flex flex-wrap justify-center gap-2">
+                                                        {(groupedMethodologies[activeCategory] || []).map(m => {
                                                             const IconComponent = iconMap[m.icon] || Dumbbell;
                                                             const isSelected = normalizeMethodologyCode(block?.format || '') === normalizeMethodologyCode(m.code);
 
@@ -471,7 +490,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                                                     title={m.description}
                                                                     className={`
                                                                     px-3 py-2 rounded-lg text-xs font-medium transition-all
-                                                                    flex items-center gap-2 border flex-1 min-w-[120px] justify-center
+                                                                    inline-flex items-center gap-2 border min-w-[128px] justify-center
                                                                     ${isSelected
                                                                             ? 'bg-white dark:bg-cv-bg-primary text-cv-accent border-cv-accent shadow-md ring-1 ring-cv-accent/20 scale-[1.02]'
                                                                             : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary hover:text-cv-accent hover:bg-slate-50 dark:hover:bg-cv-bg-primary border-slate-200 dark:border-slate-700 hover:border-cv-accent/30 hover:shadow-sm hover:-translate-y-0.5'
@@ -803,7 +822,7 @@ function DynamicMethodologyForm({ methodology, config, onChange, onBatchChange }
         <div className="space-y-3">
             {/* Compact row for simple inputs - Single horizontal line wrapping if needed */}
             {simpleFields.length > 0 && (
-                <div className="flex flex-wrap gap-2 items-start">
+                <div className="flex w-fit max-w-full mx-auto flex-wrap justify-center gap-2 items-start">
                     {simpleFields.map((field: TrainingMethodologyFormField) => (
                         <div key={field.key}>
                             <DynamicField
@@ -1212,7 +1231,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
         <div className="animate-in fade-in duration-300 space-y-4">
 
             {/* MAIN GRID */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex w-fit max-w-full mx-auto flex-wrap justify-center gap-2">
 
                 {/* 1. SERIES */}
                 {showSets && (

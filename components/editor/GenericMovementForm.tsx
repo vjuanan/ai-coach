@@ -174,7 +174,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
 
             {methodologySimpleFields.length > 0 && (
                 <div className="space-y-2">
-                    <div className="flex flex-wrap gap-2 items-start">
+                    <div className="flex w-fit max-w-full mx-auto flex-wrap justify-center gap-2 items-start">
                         {methodologySimpleFields.map((field) => (
                             <MethodologySimpleField
                                 key={field.key}
@@ -377,7 +377,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
             {isValid && (
                 <div className="p-2.5 bg-white dark:bg-cv-bg-secondary rounded-b-lg flex flex-col gap-2">
                     {/* Metrics Grid */}
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex w-fit max-w-full mx-auto flex-wrap justify-center gap-2">
                         {/* 1. Series (Sets) - CONDITIONALLY SHOWN */}
                         {showSets && (
                             <InputCard

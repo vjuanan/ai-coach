@@ -18,6 +18,21 @@
     --cv-card-width-medium: 11rem;
     --cv-card-width-time: 12rem;
     --cv-chip-width: 2.25rem;
+    --cv-stimulus-strength-bg: #fef2f2;
+    --cv-stimulus-strength-border: #fecaca;
+    --cv-stimulus-strength-text: #b91c1c;
+    --cv-stimulus-metcon-bg: #ecfdf5;
+    --cv-stimulus-metcon-border: #bbf7d0;
+    --cv-stimulus-metcon-text: #166534;
+    --cv-stimulus-hiit-bg: #eef2ff;
+    --cv-stimulus-hiit-border: #c7d2fe;
+    --cv-stimulus-hiit-text: #3730a3;
+    --cv-stimulus-conditioning-bg: #eff6ff;
+    --cv-stimulus-conditioning-border: #bfdbfe;
+    --cv-stimulus-conditioning-text: #1d4ed8;
+    --cv-stimulus-finisher-bg: #f5f3ff;
+    --cv-stimulus-finisher-border: #ddd6fe;
+    --cv-stimulus-finisher-text: #6d28d9;
   }
 
   html {
@@ -147,6 +162,40 @@
 
   .cv-drop-target {
     @apply border-2 border-dashed border-cv-accent;
+  }
+
+  .cv-stimulus-badge {
+    @apply inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-semibold;
+  }
+
+  .cv-stimulus-badge-strength {
+    background: var(--cv-stimulus-strength-bg);
+    border-color: var(--cv-stimulus-strength-border);
+    color: var(--cv-stimulus-strength-text);
+  }
+
+  .cv-stimulus-badge-metcon {
+    background: var(--cv-stimulus-metcon-bg);
+    border-color: var(--cv-stimulus-metcon-border);
+    color: var(--cv-stimulus-metcon-text);
+  }
+
+  .cv-stimulus-badge-hiit {
+    background: var(--cv-stimulus-hiit-bg);
+    border-color: var(--cv-stimulus-hiit-border);
+    color: var(--cv-stimulus-hiit-text);
+  }
+
+  .cv-stimulus-badge-conditioning {
+    background: var(--cv-stimulus-conditioning-bg);
+    border-color: var(--cv-stimulus-conditioning-border);
+    color: var(--cv-stimulus-conditioning-text);
+  }
+
+  .cv-stimulus-badge-finisher {
+    background: var(--cv-stimulus-finisher-bg);
+    border-color: var(--cv-stimulus-finisher-border);
+    color: var(--cv-stimulus-finisher-text);
   }
 }
 
