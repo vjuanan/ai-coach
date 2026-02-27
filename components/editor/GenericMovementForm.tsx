@@ -93,13 +93,13 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5">
                 {isWarmUp && (
-                    <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg w-fit shrink-0">
+                    <div className="flex bg-slate-100 dark:bg-slate-800/50 p-0.5 rounded-md w-fit shrink-0">
                         <button
                             onClick={() => setWarmupMode('rounds')}
-                            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${warmupMode === 'rounds'
+                            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${warmupMode === 'rounds'
                                 ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                                 }`}
@@ -108,7 +108,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                         </button>
                         <button
                             onClick={() => setWarmupMode('sets')}
-                            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${warmupMode === 'sets'
+                            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${warmupMode === 'sets'
                                 ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                                 }`}
@@ -120,7 +120,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
 
                 {/* 1. Global Rounds/Sets Input - Only if methodology supports it */}
                 {(showRounds || showGlobalSets || showGlobalRounds) && (
-                    <div className="max-w-md w-full"> {/* Limited width */}
+                    <div className="w-full sm:w-auto">
                         <InputCard
                             label={showGlobalSets ? 'SERIES' : 'RONDAS / VUELTAS'}
                             value={showGlobalSets ? globalSets : rounds}
@@ -129,6 +129,8 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                             icon={RotateCcw}
                             placeholder={showGlobalSets ? '3' : '5'}
                             presets={[2, 3, 4, 5]}
+                            valueSize="short"
+                            className="w-full sm:w-auto"
                         />
                     </div>
                 )}
@@ -150,7 +152,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
             )}
 
             {/* 2. Movements List */}
-            <div>
+            <div className="space-y-3">
                 <div className="flex items-center justify-between mb-3">
                     <label className="text-sm font-medium text-cv-text-secondary">
                         {movementField?.label || 'Movimientos'}
@@ -165,7 +167,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                     </p>
                 )}
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                     {movements.map((movement, index) => (
                         <MovementCard
                             key={index}
@@ -179,7 +181,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                     ))}
 
                     {/* Add Movement Input */}
-                    <div className="max-w-md p-4 rounded-xl border border-dashed border-cv-border bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                    <div className="max-w-md p-3 rounded-lg border border-dashed border-cv-border bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                         <div className="flex items-center gap-3">
                             <Plus size={18} className="text-slate-400" />
                             <div className="flex-1">
@@ -214,14 +216,14 @@ function MethodologySimpleField({ field, value, onChange }: MethodologySimpleFie
 
     if (field.type === 'select' && field.options) {
         return (
-            <div className="bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-xl p-3 space-y-2">
+            <div className="bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 space-y-1.5">
                 <label className="block text-[11px] font-bold uppercase tracking-wide text-cv-text-secondary text-center">
                     {field.label}
                 </label>
                 <select
                     value={String(resolvedValue)}
                     onChange={(e) => onChange(e.target.value)}
-                    className="cv-input text-center"
+                    className="cv-input cv-input-compact text-center text-sm"
                 >
                     {field.options.map((option) => (
                         <option key={option} value={option}>
@@ -230,7 +232,7 @@ function MethodologySimpleField({ field, value, onChange }: MethodologySimpleFie
                     ))}
                 </select>
                 {field.help && (
-                    <p className="text-[11px] text-cv-text-tertiary leading-snug text-center">{field.help}</p>
+                    <p className="text-[10px] text-cv-text-tertiary leading-snug text-center">{field.help}</p>
                 )}
             </div>
         );
@@ -242,7 +244,7 @@ function MethodologySimpleField({ field, value, onChange }: MethodologySimpleFie
         : String(resolvedValue ?? '');
 
     return (
-        <div className="bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-xl p-3 space-y-2">
+        <div className="bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 space-y-1.5">
             <label className="block text-[11px] font-bold uppercase tracking-wide text-cv-text-secondary text-center">
                 {field.label}
             </label>
@@ -258,10 +260,10 @@ function MethodologySimpleField({ field, value, onChange }: MethodologySimpleFie
                     onChange(e.target.value);
                 }}
                 placeholder={field.placeholder}
-                className="cv-input text-center font-semibold"
+                className={`cv-input cv-input-compact text-center font-semibold ${field.type === 'number' ? 'cv-width-medium mx-auto' : ''}`}
             />
             {field.help && (
-                <p className="text-[11px] text-cv-text-tertiary leading-snug text-center">{field.help}</p>
+                <p className="text-[10px] text-cv-text-tertiary leading-snug text-center">{field.help}</p>
             )}
         </div>
     );
@@ -299,7 +301,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
     // Wait, I need to update the props of MovementCard first in the same file.
 
     return (
-        <div className={`rounded-xl border transition-all duration-200
+        <div className={`rounded-lg border transition-all duration-200
             ${isValid
                 ? 'bg-slate-50/50 dark:bg-cv-bg-secondary/50 border-slate-200 dark:border-slate-700'
                 : 'bg-slate-50 dark:bg-slate-800/50 border-transparent'
@@ -307,7 +309,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
         >
             {/* ... Header ... */}
             {/* Header: Exercise Name & Actions */}
-            <div className="p-2.5 flex gap-3 items-center border-b border-slate-100 dark:border-slate-800/50 rounded-t-xl">
+            <div className="p-2.5 flex gap-2.5 items-center border-b border-slate-100 dark:border-slate-800/50 rounded-t-lg">
                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-500">
                     {index + 1}
                 </div>
@@ -334,9 +336,9 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
 
             {/* Inputs Grid - Only if Valid */}
             {isValid && (
-                <div className="p-2.5 bg-white dark:bg-cv-bg-secondary rounded-b-xl flex flex-col lg:flex-row gap-2.5">
+                <div className="p-2.5 bg-white dark:bg-cv-bg-secondary rounded-b-lg flex flex-col gap-2">
                     {/* Metrics Grid */}
-                    <div className={`grid grid-cols-2 ${isWarmUp ? 'md:grid-cols-3' : 'md:grid-cols-4'} gap-2.5 flex-1`}>
+                    <div className="flex flex-wrap gap-2 flex-1">
                         {/* 1. Series (Sets) - CONDITIONALLY SHOWN */}
                         {showSets && (
                             <InputCard
@@ -348,6 +350,8 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                                 presets={[2, 3, 4]}
                                 placeholder="3"
                                 isInvalid={!movement.sets}
+                                valueSize="short"
+                                className="flex-1 min-w-[138px]"
                             />
                         )}
 
@@ -363,6 +367,8 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                                 placeholder="400"
                                 isDistance
                                 isInvalid={!movement.distance}
+                                valueSize="medium"
+                                className="flex-1 min-w-[138px]"
                             />
                         ) : (
                             <InputCard
@@ -374,6 +380,8 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                                 presets={[8, 10, 12, 15]}
                                 placeholder="10"
                                 isInvalid={!(movement.reps || movement.quantity)}
+                                valueSize="short"
+                                className="flex-1 min-w-[138px]"
                             />
                         )}
 
@@ -391,6 +399,8 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                                 presets={[7, 8, 9, 30, 40]}
                                 placeholder="8"
                                 isInvalid={!movement.rpe && !movement.weight}
+                                valueSize="short"
+                                className="flex-1 min-w-[138px]"
                             />
                         )}
 
@@ -405,6 +415,8 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                                 presets={[15, 30, 45, 60, 90]}
                                 placeholder="60"
                                 isInvalid={!movement.rest}
+                                valueSize="short"
+                                className="flex-1 min-w-[138px]"
                             />
                         )}
                     </div>

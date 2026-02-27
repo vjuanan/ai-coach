@@ -9,6 +9,11 @@
     --cv-bg-secondary: #FFFFFF;
     --cv-bg-tertiary: #F1F5F9;
     --cv-accent: #86C4A3;
+    --cv-input-height-compact: 2.25rem;
+    --cv-input-radius-soft: 0.625rem;
+    --cv-input-width-short: 2.75rem;
+    --cv-input-width-medium: 3.5rem;
+    --cv-input-width-time: 4.5rem;
   }
 
   html {
@@ -61,6 +66,11 @@
   /* CV Input Styles */
   .cv-input {
     @apply w-full bg-cv-bg-tertiary border border-cv-border rounded-md px-3 py-2 text-cv-text-primary placeholder:text-cv-text-tertiary focus:outline-none focus:border-cv-accent focus:ring-1 focus:ring-cv-accent/50 transition-all duration-200;
+  }
+
+  .cv-input-compact {
+    height: var(--cv-input-height-compact);
+    border-radius: var(--cv-input-radius-soft);
   }
 
   /* ... */
@@ -137,6 +147,21 @@
 }
 
 @layer utilities {
+  .cv-width-short {
+    width: var(--cv-input-width-short);
+  }
+
+  .cv-width-medium {
+    width: var(--cv-input-width-medium);
+  }
+
+  .cv-width-time {
+    width: var(--cv-input-width-time);
+  }
+
+  .cv-radius-soft {
+    border-radius: var(--cv-input-radius-soft);
+  }
 
   /* Text Gradient */
   .text-gradient-accent {

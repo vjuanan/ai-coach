@@ -63,9 +63,9 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
     const totalSecondsRem = totalTimeSeconds % 60;
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-300">
+        <div className="space-y-4 animate-in fade-in duration-300">
             {/* Config Row */}
-            <div className="flex flex-wrap items-center gap-4 bg-slate-50 dark:bg-cv-bg-tertiary/30 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50">
+            <div className="flex flex-wrap items-center gap-2.5 bg-slate-50 dark:bg-cv-bg-tertiary/30 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
                 <div className="flex-1 min-w-[100px]">
                     <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide">
                         Rondas
@@ -76,7 +76,7 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
                             type="number"
                             value={rounds}
                             onChange={(e) => onChange('rounds', parseInt(e.target.value, 10) || 0)}
-                            className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
+                            className="w-full pl-9 pr-3 cv-input-compact cv-width-short rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
                         />
                     </div>
                     <p className="text-[11px] text-cv-text-tertiary mt-1 leading-snug">
@@ -94,7 +94,7 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
                             type="number"
                             value={workSeconds}
                             onChange={(e) => onChange('workSeconds', parseInt(e.target.value, 10) || 0)}
-                            className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-semibold text-cv-text-primary"
+                            className="w-full pl-9 pr-3 cv-input-compact cv-width-short rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-green-500/20 focus:border-green-500 transition-all font-semibold text-cv-text-primary"
                         />
                     </div>
                     <p className="text-[11px] text-cv-text-tertiary mt-1 leading-snug">
@@ -112,7 +112,7 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
                             type="number"
                             value={restSeconds}
                             onChange={(e) => onChange('restSeconds', parseInt(e.target.value, 10) || 0)}
-                            className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-semibold text-cv-text-primary"
+                            className="w-full pl-9 pr-3 cv-input-compact cv-width-short rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-semibold text-cv-text-primary"
                         />
                     </div>
                     <p className="text-[11px] text-cv-text-tertiary mt-1 leading-snug">
@@ -126,7 +126,7 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
             </div>
 
             {/* Exercises List */}
-            <div>
+            <div className="space-y-2.5">
                 <div className="flex items-center justify-between mb-3">
                     <label className="text-sm font-medium text-cv-text-secondary">
                         Ejercicios Tabata
@@ -139,11 +139,11 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
                     Carga uno o varios ejercicios. Si agregas mas de uno, se alternan en las rondas.
                 </p>
 
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                     {exercises.map((ex, index) => (
                         <div
                             key={index}
-                            className="flex gap-3 p-3 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm transition-all items-center group"
+                            className="flex gap-2 p-2.5 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm transition-all items-center group"
                         >
                             <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-cv-text-tertiary shrink-0">
                                 {String.fromCharCode(65 + index)}
@@ -154,7 +154,7 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
                                     value={ex}
                                     onChange={(val) => updateExercise(index, val)}
                                     placeholder="Buscar ejercicio en la biblioteca..."
-                                    className="cv-input bg-transparent border-none shadow-none focus:ring-0 px-0 py-0 text-sm font-medium h-auto placeholder:text-slate-400 w-full"
+                                    className="cv-input cv-input-compact bg-transparent border-none shadow-none focus:ring-0 px-0 py-0 text-sm font-medium h-auto placeholder:text-slate-400 w-full"
                                 />
                             </div>
 
@@ -170,7 +170,7 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
 
                 <button
                     onClick={addExercise}
-                    className="mt-3 w-full py-3 border border-dashed border-cv-border rounded-xl text-cv-text-tertiary hover:text-cv-accent hover:border-cv-accent/50 hover:bg-cv-accent/5 transition-all flex items-center justify-center gap-2 text-sm font-medium"
+                    className="mt-2.5 w-full py-2 border border-dashed border-cv-border rounded-lg text-cv-text-tertiary hover:text-cv-accent hover:border-cv-accent/50 hover:bg-cv-accent/5 transition-all flex items-center justify-center gap-2 text-sm font-medium"
                 >
                     <Plus size={16} />
                     Añadir Ejercicio Alternativo

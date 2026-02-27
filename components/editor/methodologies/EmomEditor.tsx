@@ -104,9 +104,9 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-300">
+        <div className="space-y-4 animate-in fade-in duration-300">
             {/* Top Config Row: Duration & Interval */}
-            <div className={`flex flex-wrap items-center gap-4 bg-slate-50 dark:bg-cv-bg-tertiary/30 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50 ${isWarmup ? 'justify-center' : ''}`}>
+            <div className={`flex flex-wrap items-center gap-2.5 bg-slate-50 dark:bg-cv-bg-tertiary/30 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700/50 ${isWarmup ? 'justify-center' : ''}`}>
                 <div className="flex-1 min-w-[120px]">
                     <label className={`block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide ${isWarmup ? 'text-center' : ''}`}>
                         Duración Total
@@ -118,7 +118,7 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                                 type="number"
                                 value={duration}
                                 onChange={(e) => onChange('minutes', parseInt(e.target.value, 10) || 0)}
-                                className={`w-full py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary ${isWarmup ? 'pl-9 pr-9 text-center' : 'pl-9 pr-3'}`}
+                                className={`w-full cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary cv-width-short ${isWarmup ? 'pl-9 pr-9 text-center' : 'pl-9 pr-3'}`}
                                 placeholder="10"
                             />
                         </div>
@@ -140,7 +140,7 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                                 type="number"
                                 value={interval}
                                 onChange={(e) => onChange('interval', parseInt(e.target.value, 10) || 1)}
-                                className={`w-full py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-2 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary ${isWarmup ? 'pl-9 pr-9 text-center' : 'pl-9 pr-3'}`}
+                                className={`w-full cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary cv-width-short ${isWarmup ? 'pl-9 pr-9 text-center' : 'pl-9 pr-3'}`}
                                 placeholder="1"
                             />
                         </div>
@@ -153,7 +153,7 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
             </div>
 
             {/* Slots Builder */}
-            <div>
+            <div className="space-y-2.5">
                 <div className="flex items-center justify-between mb-3">
                     <label className="text-sm font-medium text-cv-text-secondary">
                         Distribución de Intervalos
@@ -166,15 +166,15 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                     En cada intervalo define ejercicio + variable numérica objetivo.
                 </p>
 
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                     {slots.map((slot, index) => (
                         <div
                             key={slot.id || index}
-                            className="group relative grid grid-cols-1 md:grid-cols-[120px_minmax(0,1fr)_130px_150px_auto] gap-3 p-3 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-cv-accent/30 transition-all items-start md:items-center"
+                            className="group relative grid grid-cols-1 md:grid-cols-[88px_minmax(0,1fr)_86px_110px_auto] gap-2 p-2.5 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm hover:shadow-md hover:border-cv-accent/30 transition-all items-start md:items-center"
                         >
                             {/* Interval label */}
                             <div className="md:pt-0">
-                                <div className="w-full text-xs font-bold text-cv-accent bg-cv-accent/5 border border-cv-accent/20 rounded-md px-2 py-2 text-center uppercase tracking-wide">
+                                <div className="w-full text-[10px] font-bold text-cv-accent bg-cv-accent/5 border border-cv-accent/20 rounded-md px-1.5 py-1.5 text-center uppercase tracking-wide">
                                     {isE2MOMMode ? `BLOQUE ${index + 1}` : `MINUTO ${index + 1}`}
                                 </div>
                             </div>
@@ -185,7 +185,7 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                                     value={slot.movement}
                                     onChange={(val) => updateSlot(index, 'movement', val)}
                                     placeholder="Buscar ejercicio en la biblioteca..."
-                                    className="cv-input bg-transparent border-none shadow-none focus:ring-0 px-0 py-0 text-sm font-medium h-auto placeholder:text-slate-400 w-full"
+                                    className="cv-input cv-input-compact bg-transparent border-none shadow-none focus:ring-0 px-0 py-0 text-sm font-medium h-auto placeholder:text-slate-400 w-full"
                                 />
                             </div>
 
@@ -199,7 +199,7 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                                     value={slot.targetValue}
                                     onChange={(e) => updateSlot(index, 'targetValue', e.target.value ? Number.parseInt(e.target.value, 10) : '')}
                                     placeholder={slot.targetUnit === 'seconds' ? '40' : slot.targetUnit === 'meters' ? '200' : '12'}
-                                    className="w-full text-sm text-center bg-slate-50 dark:bg-slate-800 border-none rounded-lg py-2 font-semibold focus:ring-1 focus:ring-cv-accent/50"
+                                    className="w-full cv-input-compact text-sm text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1 font-semibold focus:ring-1 focus:ring-cv-accent/50"
                                 />
                             </div>
 
@@ -210,7 +210,7 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                                 <select
                                     value={slot.targetUnit}
                                     onChange={(e) => updateSlot(index, 'targetUnit', e.target.value as 'reps' | 'seconds' | 'meters')}
-                                    className="w-full text-sm text-center bg-slate-50 dark:bg-slate-800 border-none rounded-lg py-2 focus:ring-1 focus:ring-cv-accent/50"
+                                    className="w-full cv-input-compact text-sm text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1 focus:ring-1 focus:ring-cv-accent/50"
                                 >
                                     <option value="reps">Reps</option>
                                     <option value="seconds">Segundos</option>
@@ -235,7 +235,7 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
 
                 <button
                     onClick={addSlot}
-                    className="mt-3 w-full py-3 border border-dashed border-cv-border rounded-xl text-cv-text-tertiary hover:text-cv-accent hover:border-cv-accent/50 hover:bg-cv-accent/5 transition-all flex items-center justify-center gap-2 text-sm font-medium"
+                    className="mt-2.5 w-full py-2 border border-dashed border-cv-border rounded-lg text-cv-text-tertiary hover:text-cv-accent hover:border-cv-accent/50 hover:bg-cv-accent/5 transition-all flex items-center justify-center gap-2 text-sm font-medium"
                 >
                     <Plus size={16} />
                     Añadir Intervalo

@@ -39,7 +39,7 @@ export function TableInputWithPresets({
     }, []);
 
     // Default underline style if no class provided
-    const defaultInputClass = "w-full bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-cv-accent p-1 text-center font-semibold text-cv-text-primary text-sm focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+    const defaultInputClass = "w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 cv-input-compact cv-radius-soft px-1 text-center font-semibold text-cv-text-primary text-sm focus:outline-none focus:ring-1 focus:ring-cv-accent/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 
     return (
         <div className={`relative flex justify-center ${width}`} ref={containerRef}>
@@ -55,7 +55,7 @@ export function TableInputWithPresets({
                     step={step}
                 />
                 {suffix && (
-                    <div className="absolute right-0 top-1 pointer-events-none">
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none">
                         {suffix}
                     </div>
                 )}
@@ -72,7 +72,7 @@ export function TableInputWithPresets({
                                 setIsFocused(false);
                             }}
                             className={`
-                                px-2 py-1 text-xs font-medium rounded transition-colors
+                                h-6 px-2 text-[10px] font-medium rounded transition-colors
                                 ${value == preset
                                     ? 'bg-cv-accent text-white'
                                     : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'

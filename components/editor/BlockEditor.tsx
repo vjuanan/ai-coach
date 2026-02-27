@@ -856,21 +856,21 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
 
     if (field.type === 'select' && field.options) {
         return (
-            <div>
-                <label className="block text-sm font-medium text-cv-text-secondary mb-2">
+            <div className="space-y-1">
+                <label className="block text-xs font-semibold text-cv-text-secondary">
                     {field.label}
                 </label>
                 <select
                     value={(value as string) || (field.default as string) || ''}
                     onChange={(e) => onChange(e.target.value)}
-                    className="cv-input"
+                    className="cv-input cv-input-compact text-sm"
                 >
                     {field.options.map(opt => (
                         <option key={opt} value={opt}>{formatMethodologyOptionLabel(opt)}</option>
                     ))}
                 </select>
                 {field.help && (
-                    <p className="text-xs text-cv-text-tertiary mt-1">{field.help}</p>
+                    <p className="text-[10px] text-cv-text-tertiary leading-snug">{field.help}</p>
                 )}
             </div>
         );
@@ -898,7 +898,7 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
 
         return (
             <div className="space-y-1">
-                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${showTempo ? 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700' : 'border-dashed border-slate-300 dark:border-slate-600'}`}>
+                <div className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border transition-colors ${showTempo ? 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700' : 'border-dashed border-slate-300 dark:border-slate-600'}`}>
                     <button
                         onClick={toggleTempo}
                         type="button"
@@ -906,19 +906,19 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
                     >
                         <span className={`block w-3 h-3 bg-white rounded-full transition-transform absolute top-0.5 left-0.5 ${showTempo ? 'translate-x-4' : 'translate-x-0'}`} />
                     </button>
-                    <span className={`text-sm font-semibold whitespace-nowrap ${showTempo ? 'text-cv-text-primary' : 'text-cv-text-tertiary'}`}>{field.label}</span>
+                    <span className={`text-xs font-semibold whitespace-nowrap ${showTempo ? 'text-cv-text-primary' : 'text-cv-text-tertiary'}`}>{field.label}</span>
                     {showTempo && (
                         <input
                             type="text"
                             value={(value as string) || ''}
                             onChange={(e) => onChange(e.target.value)}
                             placeholder="30X1"
-                            className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-16 text-center animate-in fade-in duration-150"
+                            className="bg-transparent border border-slate-200 dark:border-slate-700 cv-input-compact cv-radius-soft px-1 text-sm focus:ring-1 focus:ring-cv-accent/30 text-cv-text-primary font-semibold placeholder:text-slate-300 cv-width-time text-center animate-in fade-in duration-150"
                         />
                     )}
                 </div>
                 {field.help && (
-                    <p className="text-[11px] text-cv-text-tertiary leading-snug max-w-[240px]">{field.help}</p>
+                    <p className="text-[10px] text-cv-text-tertiary leading-snug max-w-[240px]">{field.help}</p>
                 )}
             </div>
         );
@@ -931,19 +931,19 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
 
         return (
             <div className="space-y-1">
-                <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <span className="text-sm font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
+                <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <span className="text-xs font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
                     <input
                         type="number"
                         min={0}
                         value={(displayValue as number) || ''}
                         onChange={(e) => onChange(e.target.value ? parseInt(e.target.value, 10) : null)}
                         placeholder={field.placeholder ? field.placeholder.replace('%', '') : '0'}
-                        className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-bold placeholder:text-slate-300 w-14 text-center"
+                        className="bg-transparent border border-slate-200 dark:border-slate-700 cv-input-compact cv-radius-soft px-1 text-sm focus:ring-1 focus:ring-cv-accent/30 text-cv-text-primary font-bold placeholder:text-slate-300 cv-width-short text-center"
                     />
                 </div>
                 {field.help && (
-                    <p className="text-[11px] text-cv-text-tertiary leading-snug max-w-[240px]">{field.help}</p>
+                    <p className="text-[10px] text-cv-text-tertiary leading-snug max-w-[240px]">{field.help}</p>
                 )}
             </div>
         );
@@ -952,18 +952,18 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
     // Default: text input
     return (
         <div className="space-y-1">
-            <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
-                <span className="text-sm font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
+            <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                <span className="text-xs font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
                 <input
                     type="text"
                     value={(value as string) || ''}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={field.placeholder}
-                    className="bg-transparent border-none p-0 text-base focus:ring-0 text-cv-text-primary font-medium placeholder:text-slate-300 w-16 text-center"
+                    className="bg-transparent border border-slate-200 dark:border-slate-700 cv-input-compact cv-radius-soft px-1 text-sm focus:ring-1 focus:ring-cv-accent/30 text-cv-text-primary font-medium placeholder:text-slate-300 cv-width-medium text-center"
                 />
             </div>
             {field.help && (
-                <p className="text-[11px] text-cv-text-tertiary leading-snug max-w-[240px]">{field.help}</p>
+                <p className="text-[10px] text-cv-text-tertiary leading-snug max-w-[240px]">{field.help}</p>
             )}
         </div>
     );
@@ -1203,7 +1203,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
         <div className="animate-in fade-in duration-300 space-y-4">
 
             {/* MAIN GRID */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="flex flex-wrap lg:flex-nowrap gap-2">
 
                 {/* 1. SERIES */}
                 {showSets && (
@@ -1215,10 +1215,12 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         icon={Layers}
                         presets={[3, 4, 5]}
                         isInvalid={!config.sets}
+                        className="flex-1 min-w-[152px]"
+                        valueSize="short"
                         headerAction={
                             <button
                                 onClick={() => setShowBreakdown(!showBreakdown)}
-                                className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded transition-colors ${showBreakdown
+                                className={`flex items-center gap-1 text-[10px] font-bold px-1 py-0.5 rounded transition-colors ${showBreakdown
                                     ? 'bg-cv-accent text-white'
                                     : 'bg-slate-100 dark:bg-slate-800 text-cv-text-tertiary hover:text-cv-accent'
                                     }`}
@@ -1243,6 +1245,8 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         placeholder="400m"
                         isDistance
                         isInvalid={!config.distance}
+                        className="flex-1 min-w-[152px]"
+                        valueSize="medium"
                     />
                 ) : (
                     <InputCard
@@ -1254,6 +1258,8 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         presets={[8, 10, 12]}
                         placeholder="10"
                         isInvalid={!config.reps}
+                        className="flex-1 min-w-[152px]"
+                        valueSize="short"
                     />
                 )}
 
@@ -1269,10 +1275,12 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     icon={intensityType === '% 1RM' ? Percent : Flame}
                     presets={intensityType === '% 1RM' ? [70, 75, 80] : [8, 9, 10]}
                     isInvalid={intensityType === '% 1RM' ? !config.percentage : !config.rpe}
+                    className="flex-1 min-w-[152px]"
+                    valueSize="short"
                     headerAction={
                         <button
                             onClick={() => setIntensityType(prev => prev === '% 1RM' ? 'RPE' : '% 1RM')}
-                            className="text-xs font-semibold text-cv-accent hover:text-cv-accent/80 transition-colors"
+                            className="text-[10px] font-semibold text-cv-accent hover:text-cv-accent/80 transition-colors"
                         >
                             {intensityType === '% 1RM' ? 'Usar RPE' : 'Usar %'}
                         </button>
@@ -1290,6 +1298,8 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     presets={['1:30', '2:00', '3:00']}
                     placeholder="00:00"
                     isInvalid={!config.rest}
+                    className="flex-1 min-w-[152px]"
+                    valueSize="time"
                 />
 
             </div>

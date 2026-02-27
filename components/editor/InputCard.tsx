@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LucideIcon } from 'lucide-react';
 
 interface InputCardProps {
@@ -15,6 +15,10 @@ interface InputCardProps {
     defaultValue?: string | number;
     badge?: string;
     isInvalid?: boolean; // Highlight in red if required but missing
+    className?: string;
+    compact?: boolean;
+    valueSize?: 'short' | 'medium' | 'time' | 'auto';
+    presetsPlacement?: 'bottom' | 'popover';
 }
 
 export function InputCard({
@@ -30,9 +34,15 @@ export function InputCard({
     isDistance,
     defaultValue,
     badge,
-    isInvalid
+    isInvalid,
+    className = '',
+    compact = true,
+    valueSize,
+    presetsPlacement = 'bottom',
 }: InputCardProps) {
     const [localValue, setLocalValue] = useState<string>(value !== undefined && value !== null ? String(value) : '');
+    const [isFocused, setIsFocused] = useState(false);
+    const defaultAppliedRef = useRef(false);
 
     // Sync from props
     useEffect(() => {
@@ -41,10 +51,21 @@ export function InputCard({
 
     // Apply default value when field is empty
     useEffect(() => {
-        if (!value && defaultValue !== undefined) {
+        if (defaultAppliedRef.current) return;
+        if ((value === undefined || value === null || value === '') && defaultValue !== undefined) {
+            defaultAppliedRef.current = true;
             onChange(defaultValue);
         }
-    }, []);
+    }, [defaultValue, onChange, value]);
+
+    const resolvedSize = valueSize || (type === 'time' ? 'time' : 'medium');
+    const widthClass = resolvedSize === 'short'
+        ? 'cv-width-short'
+        : resolvedSize === 'time'
+            ? 'cv-width-time'
+            : resolvedSize === 'auto'
+                ? 'w-auto min-w-[2.75rem]'
+                : 'cv-width-medium';
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let val = e.target.value;
@@ -88,75 +109,106 @@ export function InputCard({
                 onChange(formatted);
             }
         }
+        window.setTimeout(() => setIsFocused(false), 120);
+    };
+
+    const handlePresetClick = (preset: string | number) => {
+        setLocalValue(String(preset));
+        onChange(preset);
+        setIsFocused(false);
     };
 
     return (
-        <div className={`rounded-xl border p-2 flex flex-col gap-1.5 shadow-sm transition-all group relative overflow-hidden
+        <div className={`${compact ? 'cv-radius-soft p-2' : 'rounded-xl p-2.5'} border flex flex-col gap-1.5 transition-all group relative
             ${isInvalid
-                ? 'bg-red-50/50 dark:bg-red-900/10 border-red-500 shadow-red-500/20'
-                : 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700 hover:shadow-md'
-            }`}
+                ? 'bg-red-50/50 dark:bg-red-900/10 border-red-400'
+                : 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700'
+            } ${className}`}
         >
-            {/* Header */}
-            <div className="flex items-center justify-between z-10">
+            <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                    {Icon && <Icon size={14} className={`${isInvalid ? 'text-red-500' : 'text-cv-text-tertiary group-hover:text-cv-accent'} transition-colors`} />}
-                    <span className={`text-[10px] uppercase tracking-wider font-bold ${isInvalid ? 'text-red-600' : 'text-cv-text-tertiary group-hover:text-cv-text-secondary'} transition-colors`}>
+                    {Icon && <Icon size={13} className={`${isInvalid ? 'text-red-500' : 'text-cv-text-tertiary'}`} />}
+                    <span className={`text-[10px] uppercase tracking-wider font-bold ${isInvalid ? 'text-red-600' : 'text-cv-text-tertiary'}`}>
                         {label}
                     </span>
                 </div>
                 {headerAction}
             </div>
 
+            {subLabel && (
+                <div className="text-[10px] text-cv-text-tertiary -mt-1 leading-tight">{subLabel}</div>
+            )}
+
             {badge && (
-                <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-cv-accent/10 border border-cv-accent/20 rounded-md text-[10px] font-bold text-cv-accent animate-in fade-in zoom-in duration-200 z-20">
+                <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-cv-accent/10 border border-cv-accent/20 rounded-md text-[10px] font-bold text-cv-accent">
                     {badge}
                 </div>
             )}
 
-            {/* Content Container: Input + Presets */}
-            <div className="flex items-center gap-2 z-10 flex-1 mt-1">
-                {/* Input Area */}
-                <div className="flex items-baseline justify-center gap-1 flex-1 min-w-0">
+            <div className="flex items-center justify-center gap-1 min-h-[2.5rem]">
+                <div className="flex items-end justify-center gap-1 min-w-0">
                     <input
                         type="text"
                         value={localValue}
                         onChange={handleChange}
                         onBlur={handleBlur}
+                        onFocus={() => setIsFocused(true)}
                         placeholder={placeholder || '-'}
-                        className={`bg-transparent border-none p-0 text-xl font-bold text-center w-full focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
-                            ${isInvalid ? 'text-red-600 placeholder:text-red-300' : 'text-cv-text-primary placeholder:text-slate-200 dark:placeholder:text-slate-700'}
+                        className={`bg-transparent border border-slate-200 dark:border-slate-700 cv-radius-soft h-[var(--cv-input-height-compact)] px-1 text-lg font-bold text-center focus:ring-1 focus:ring-cv-accent/40 focus:border-cv-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${widthClass}
+                            ${isInvalid ? 'text-red-600 placeholder:text-red-300' : 'text-cv-text-primary placeholder:text-slate-300 dark:placeholder:text-slate-600'}
                         `}
                     />
-                    {isDistance && <span className="text-sm font-medium text-cv-text-tertiary">meters</span>}
-                    {label === '% 1RM' && <span className="text-sm font-medium text-cv-text-tertiary">%</span>}
+                    {isDistance && <span className="text-xs font-medium text-cv-text-tertiary">m</span>}
+                    {label === '% 1RM' && <span className="text-xs font-medium text-cv-text-tertiary">%</span>}
                 </div>
-
-                {/* Presets (On the Side) */}
-                {presets && presets.length > 0 && (
-                    <div className="flex-shrink-0 grid grid-cols-2 gap-1 border-l border-slate-100 dark:border-slate-800 pl-2">
-                        {presets.map(preset => (
-                            <button
-                                key={preset}
-                                onClick={() => onChange(preset)}
-                                className={`
-                                    flex items-center justify-center min-w-[32px] h-[24px] px-1 rounded-md text-[10px] font-semibold transition-all border
-                                    ${value == preset
-                                        ? 'bg-cv-accent text-white border-cv-accent'
-                                        : 'bg-slate-50 dark:bg-slate-800 text-cv-text-secondary border-slate-100 dark:border-slate-700 hover:border-cv-accent/30'}
-                                `}
-                            >
-                                {preset}
-                            </button>
-                        ))}
-                    </div>
-                )}
             </div>
 
-            {/* Background Decoration */}
-            <div className="absolute -bottom-4 -right-4 text-slate-50 dark:text-slate-800/50 pointer-events-none group-hover:scale-110 transition-transform">
-                {Icon && <Icon size={64} strokeWidth={1} />}
-            </div>
+            {presets && presets.length > 0 && presetsPlacement === 'bottom' && (
+                <div className="grid grid-cols-4 gap-1.5">
+                    {presets.map(preset => (
+                        <button
+                            key={preset}
+                            onClick={() => handlePresetClick(preset)}
+                            className={`h-6 px-1 rounded-md text-[10px] font-semibold transition-all border
+                                ${value == preset
+                                    ? 'bg-cv-accent text-white border-cv-accent'
+                                    : 'bg-slate-50 dark:bg-slate-800 text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-cv-accent/40'}
+                            `}
+                        >
+                            {preset}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {presets && presets.length > 0 && presetsPlacement === 'popover' && isFocused && (
+                <div className="absolute z-20 top-full mt-1 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl rounded-lg p-1.5 flex gap-1 min-w-max">
+                    {presets.map((preset) => (
+                        <button
+                            key={preset}
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => handlePresetClick(preset)}
+                            className={`h-6 px-2 rounded-md text-[10px] font-semibold transition-colors
+                                ${value == preset
+                                    ? 'bg-cv-accent text-white'
+                                    : 'bg-slate-100 dark:bg-slate-700 text-cv-text-secondary hover:bg-slate-200 dark:hover:bg-slate-600'}
+                            `}
+                        >
+                            {preset}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {presetsPlacement === 'popover' && (
+                <button
+                    type="button"
+                    onClick={() => setIsFocused((prev) => !prev)}
+                    className="self-center text-[10px] text-cv-text-tertiary hover:text-cv-accent transition-colors"
+                >
+                    Presets
+                </button>
+            )}
         </div>
     );
 }
