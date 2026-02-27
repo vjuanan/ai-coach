@@ -4,6 +4,7 @@ import { Dumbbell, Users, Building2, Shield, UserCog, Lock } from 'lucide-react'
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Topbar } from '@/components/app-shell/Topbar';
+import { DashboardClientNoop } from '@/components/app-shell/DashboardClientNoop';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +20,7 @@ export default async function DashboardPage() {
 
     return (
         <>
+            <DashboardClientNoop />
             <Topbar title="" />
             <div className="flex flex-col items-center justify-center min-h-[80vh] w-full max-w-7xl mx-auto px-4">
 
