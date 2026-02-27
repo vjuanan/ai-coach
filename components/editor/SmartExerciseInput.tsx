@@ -13,6 +13,7 @@ interface SmartExerciseInputProps {
     autoFocus?: boolean;
     inputRef?: React.RefObject<HTMLInputElement>;
     onSelect?: (exercise: any) => void;
+    showSearchIcon?: boolean;
 }
 
 // Force redeploy
@@ -23,7 +24,8 @@ export function SmartExerciseInput({
     className,
     autoFocus,
     inputRef,
-    onSelect
+    onSelect,
+    showSearchIcon = true
 }: SmartExerciseInputProps) {
     const [query, setQuery] = useState(typeof value === 'string' ? value : '');
     const [results, setResults] = useState<any[]>([]);
@@ -140,7 +142,7 @@ export function SmartExerciseInput({
                         setIsOpen(true);
                     }}
                     placeholder={placeholder}
-                    className={`${className} pr-8`}
+                    className={`${className} ${showSearchIcon ? 'pr-8' : ''}`}
                     autoFocus={autoFocus}
                     autoComplete="off"
                     onKeyDown={(e) => {
@@ -151,9 +153,11 @@ export function SmartExerciseInput({
                         e.currentTarget.blur();
                     }}
                 />
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary">
-                    {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
-                </div>
+                {showSearchIcon && (
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary">
+                        {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
+                    </div>
+                )}
             </div>
 
             {/* Dropdown */}

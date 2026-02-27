@@ -214,6 +214,7 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                                     onChange={(val) => updateItem(index, 'exercise', val)}
                                     placeholder="Buscar ejercicio en la biblioteca..."
                                     className="cv-input cv-input-compact bg-transparent border-none shadow-none focus:ring-0 px-0 py-0 text-sm font-medium h-auto placeholder:text-slate-400"
+                                    showSearchIcon={false}
                                 />
                             </div>
 
