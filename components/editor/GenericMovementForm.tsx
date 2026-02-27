@@ -31,6 +31,42 @@ interface MovementObject {
     description?: string;
 }
 
+type FieldValueSize = 'short' | 'medium' | 'time' | 'auto';
+
+function inferFieldPresets(field: TrainingMethodologyFormField): (string | number)[] {
+    const key = field.key.toLowerCase();
+
+    if (key.includes('round') || key === 'sets' || key.includes('mini')) return [2, 3, 4, 5];
+    if (key.includes('rep')) return [8, 10, 12];
+    if (key.includes('minute') || key.includes('timecap') || key.includes('time_cap')) return [10, 12, 15];
+    if (key.includes('rest') && key.includes('second')) return [30, 45, 60, 90];
+    if (key.includes('work') && key.includes('second')) return [20, 30, 40];
+    if (key.includes('percentage') || key.includes('pct') || key.includes('load')) return [70, 75, 80];
+    if (key.includes('rpe') || key.includes('intensity')) return [7, 8, 9];
+
+    return [];
+}
+
+function inferFieldValueSize(field: TrainingMethodologyFormField): FieldValueSize {
+    const key = field.key.toLowerCase();
+
+    if (key.includes('time') || key.includes('tempo')) return 'time';
+    if (
+        key.includes('round') ||
+        key.includes('set') ||
+        key.includes('rep') ||
+        key.includes('rest') ||
+        key.includes('work') ||
+        key.includes('rpe') ||
+        key.includes('pct') ||
+        key.includes('percentage')
+    ) {
+        return 'short';
+    }
+
+    return 'medium';
+}
+
 // Helper to parse existing data
 const parseMovements = (data: unknown[]): MovementObject[] => {
     if (!Array.isArray(data)) return [];
@@ -94,12 +130,12 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
 
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2">
                 {isWarmUp && (
                     <div className="flex bg-slate-100 dark:bg-slate-800/50 p-0.5 rounded-md w-fit shrink-0">
                         <button
                             onClick={() => setWarmupMode('rounds')}
-                            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${warmupMode === 'rounds'
+                            className={`px-2.5 py-0.5 text-[11px] font-bold rounded-md transition-all ${warmupMode === 'rounds'
                                 ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                                 }`}
@@ -108,7 +144,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                         </button>
                         <button
                             onClick={() => setWarmupMode('sets')}
-                            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${warmupMode === 'sets'
+                            className={`px-2.5 py-0.5 text-[11px] font-bold rounded-md transition-all ${warmupMode === 'sets'
                                 ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                                 }`}
@@ -137,14 +173,15 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
             </div>
 
             {methodologySimpleFields.length > 0 && (
-                <div className="space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-2">
+                    <div className="flex flex-wrap lg:flex-nowrap gap-2 items-start">
                         {methodologySimpleFields.map((field) => (
                             <MethodologySimpleField
                                 key={field.key}
                                 field={field}
                                 value={config[field.key]}
                                 onChange={(nextValue) => onChange(field.key, nextValue)}
+                                className="flex-1 min-w-[132px]"
                             />
                         ))}
                     </div>
@@ -209,21 +246,23 @@ interface MethodologySimpleFieldProps {
     field: TrainingMethodologyFormField;
     value: unknown;
     onChange: (value: unknown) => void;
+    className?: string;
 }
 
-function MethodologySimpleField({ field, value, onChange }: MethodologySimpleFieldProps) {
+function MethodologySimpleField({ field, value, onChange, className = '' }: MethodologySimpleFieldProps) {
     const resolvedValue = value ?? field.default ?? '';
 
     if (field.type === 'select' && field.options) {
         return (
-            <div className="bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 space-y-1.5">
-                <label className="block text-[11px] font-bold uppercase tracking-wide text-cv-text-secondary text-center">
+            <div className={`bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 cv-radius-soft p-1.5 space-y-1 ${className}`}>
+                <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-secondary text-center">
                     {field.label}
                 </label>
                 <select
                     value={String(resolvedValue)}
                     onChange={(e) => onChange(e.target.value)}
-                    className="cv-input cv-input-compact text-center text-sm"
+                    className="cv-input cv-input-compact text-center text-sm px-1"
+                    title={field.help}
                 >
                     {field.options.map((option) => (
                         <option key={option} value={option}>
@@ -231,41 +270,39 @@ function MethodologySimpleField({ field, value, onChange }: MethodologySimpleFie
                         </option>
                     ))}
                 </select>
-                {field.help && (
-                    <p className="text-[10px] text-cv-text-tertiary leading-snug text-center">{field.help}</p>
-                )}
             </div>
         );
     }
 
     const inputType = field.type === 'number' ? 'number' : 'text';
     const normalizedValue = field.type === 'number'
-        ? (typeof resolvedValue === 'number' ? String(resolvedValue) : String(resolvedValue || '').replace(/[^0-9]/g, ''))
+        ? (typeof resolvedValue === 'number' ? resolvedValue : Number.parseInt(String(resolvedValue || '').replace(/[^0-9]/g, ''), 10) || '')
         : String(resolvedValue ?? '');
 
     return (
-        <div className="bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 space-y-1.5">
-            <label className="block text-[11px] font-bold uppercase tracking-wide text-cv-text-secondary text-center">
-                {field.label}
-            </label>
-            <input
-                type={inputType}
-                value={normalizedValue}
-                onChange={(e) => {
-                    if (field.type === 'number') {
-                        const numeric = e.target.value ? parseInt(e.target.value, 10) : null;
-                        onChange(numeric);
+        <InputCard
+            label={field.label.toUpperCase()}
+            value={normalizedValue}
+            onChange={(nextValue) => {
+                if (field.type === 'number') {
+                    if (typeof nextValue === 'number') {
+                        onChange(nextValue);
                         return;
                     }
-                    onChange(e.target.value);
-                }}
-                placeholder={field.placeholder}
-                className={`cv-input cv-input-compact text-center font-semibold ${field.type === 'number' ? 'cv-width-medium mx-auto' : ''}`}
-            />
-            {field.help && (
-                <p className="text-[10px] text-cv-text-tertiary leading-snug text-center">{field.help}</p>
-            )}
-        </div>
+                    const parsed = String(nextValue).trim() === '' ? null : Number.parseInt(String(nextValue), 10);
+                    onChange(Number.isFinite(parsed as number) ? parsed : null);
+                    return;
+                }
+                onChange(nextValue);
+            }}
+            type={inputType}
+            placeholder={field.placeholder}
+            presets={inferFieldPresets(field)}
+            valueSize={inferFieldValueSize(field)}
+            className={className}
+            compact
+            presetsPlacement="bottom"
+        />
     );
 }
 
