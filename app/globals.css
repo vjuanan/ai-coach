@@ -11,9 +11,13 @@
     --cv-accent: #86C4A3;
     --cv-input-height-compact: 2.25rem;
     --cv-input-radius-soft: 0.625rem;
-    --cv-input-width-short: 2.75rem;
-    --cv-input-width-medium: 3.5rem;
-    --cv-input-width-time: 4.5rem;
+    --cv-input-width-short: 2.5rem;
+    --cv-input-width-medium: 3rem;
+    --cv-input-width-time: 4.25rem;
+    --cv-card-width-short: 10rem;
+    --cv-card-width-medium: 11rem;
+    --cv-card-width-time: 12rem;
+    --cv-chip-width: 2.25rem;
   }
 
   html {
@@ -157,6 +161,33 @@
 
   .cv-width-time {
     width: var(--cv-input-width-time);
+  }
+
+  .cv-card-short {
+    width: var(--cv-card-width-short);
+    min-width: var(--cv-card-width-short);
+    max-width: var(--cv-card-width-short);
+    flex: 0 0 var(--cv-card-width-short);
+  }
+
+  .cv-card-medium {
+    width: var(--cv-card-width-medium);
+    min-width: var(--cv-card-width-medium);
+    max-width: var(--cv-card-width-medium);
+    flex: 0 0 var(--cv-card-width-medium);
+  }
+
+  .cv-card-time {
+    width: var(--cv-card-width-time);
+    min-width: var(--cv-card-width-time);
+    max-width: var(--cv-card-width-time);
+    flex: 0 0 var(--cv-card-width-time);
+  }
+
+  .cv-chip-compact {
+    width: var(--cv-chip-width);
+    min-width: var(--cv-chip-width);
+    max-width: var(--cv-chip-width);
   }
 
   .cv-radius-soft {

@@ -18,6 +18,7 @@ interface InputCardProps {
     className?: string;
     compact?: boolean;
     valueSize?: 'short' | 'medium' | 'time' | 'auto';
+    cardSize?: 'short' | 'medium' | 'time' | 'auto';
     presetsPlacement?: 'bottom' | 'popover';
 }
 
@@ -38,6 +39,7 @@ export function InputCard({
     className = '',
     compact = true,
     valueSize,
+    cardSize,
     presetsPlacement = 'bottom',
 }: InputCardProps) {
     const [localValue, setLocalValue] = useState<string>(value !== undefined && value !== null ? String(value) : '');
@@ -58,14 +60,22 @@ export function InputCard({
         }
     }, [defaultValue, onChange, value]);
 
-    const resolvedSize = valueSize || (type === 'time' ? 'time' : 'medium');
+    const resolvedSize = valueSize || (type === 'time' ? 'time' : type === 'number' ? 'short' : 'medium');
     const widthClass = resolvedSize === 'short'
         ? 'cv-width-short'
         : resolvedSize === 'time'
             ? 'cv-width-time'
             : resolvedSize === 'auto'
-                ? 'w-auto min-w-[2.75rem]'
+                ? 'w-auto min-w-[2.5rem]'
                 : 'cv-width-medium';
+    const resolvedCardSize = cardSize || (resolvedSize === 'time' ? 'time' : resolvedSize === 'medium' ? 'medium' : 'short');
+    const cardWidthClass = resolvedCardSize === 'short'
+        ? 'cv-card-short'
+        : resolvedCardSize === 'time'
+            ? 'cv-card-time'
+            : resolvedCardSize === 'auto'
+                ? 'w-auto'
+                : 'cv-card-medium';
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let val = e.target.value;
@@ -119,7 +129,7 @@ export function InputCard({
     };
 
     return (
-        <div className={`${compact ? 'cv-radius-soft p-2' : 'rounded-xl p-2.5'} border flex flex-col gap-1.5 transition-all group relative
+        <div className={`${compact ? 'cv-radius-soft p-1.5' : 'rounded-xl p-2'} border flex flex-col gap-1 transition-all group relative ${cardWidthClass}
             ${isInvalid
                 ? 'bg-red-50/50 dark:bg-red-900/10 border-red-400'
                 : 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700'
@@ -145,7 +155,7 @@ export function InputCard({
                 </div>
             )}
 
-            <div className="flex items-center justify-center gap-1 min-h-[2.5rem]">
+            <div className="flex items-center justify-center gap-1 min-h-[2.2rem]">
                 <div className="flex items-end justify-center gap-1 min-w-0">
                     <input
                         type="text"
@@ -164,12 +174,12 @@ export function InputCard({
             </div>
 
             {presets && presets.length > 0 && presetsPlacement === 'bottom' && (
-                <div className="grid grid-cols-4 gap-1.5">
+                <div className="flex flex-wrap justify-center gap-1">
                     {presets.map(preset => (
                         <button
                             key={preset}
                             onClick={() => handlePresetClick(preset)}
-                            className={`h-6 px-1 rounded-md text-[10px] font-semibold transition-all border
+                            className={`cv-chip-compact h-6 px-0 rounded-md text-[10px] font-semibold transition-all border
                                 ${value == preset
                                     ? 'bg-cv-accent text-white border-cv-accent'
                                     : 'bg-slate-50 dark:bg-slate-800 text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-cv-accent/40'}

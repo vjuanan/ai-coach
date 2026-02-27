@@ -265,6 +265,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                                             onChange={(val) => handleBlockUpdate(block.blockId, 'sets', parseInt(val) || 0, config)}
                                             presets={[3, 4, 5, 6]}
                                             placeholder="-"
+                                            chipLayout="popover"
                                             width="w-16"
                                             inputClassName="w-16 px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                         />
@@ -276,6 +277,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                                             onChange={(val) => handleBlockUpdate(block.blockId, 'reps', parseInt(val) || 0, config)}
                                             presets={[5, 8, 10, 12, 15]}
                                             placeholder="-"
+                                            chipLayout="popover"
                                             width="w-16"
                                             inputClassName="w-16 px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                         />
@@ -288,6 +290,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                                                 onChange={(val) => handleBlockUpdate(block.blockId, 'distance', val, config)}
                                                 presets={['200m', '400m', '800m', '1600m']}
                                                 placeholder="-"
+                                                chipLayout="popover"
                                                 width="w-16"
                                                 inputClassName="w-16 px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                             />
@@ -301,6 +304,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                                             presets={[60, 65, 70, 75, 80, 85, 90]}
                                             placeholder="-"
                                             step={2.5}
+                                            chipLayout="popover"
                                             width="w-16"
                                             inputClassName="w-16 px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                         />
@@ -313,6 +317,7 @@ export function ProgressionPreview({ currentBlockId, progressionId }: Progressio
                                             presets={[60, 90, 120, 180]}
                                             placeholder="-"
                                             step={30}
+                                            chipLayout="popover"
                                             width="w-16"
                                             inputClassName="w-16 px-2 py-1 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-cv-accent/50 font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                         />

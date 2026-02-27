@@ -111,74 +111,63 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
         <div className="space-y-4 animate-in fade-in duration-300">
             {/* Top Config Row: Inputs based on Mode */}
             {(showDurationInput || showRoundsInput || showTimeCapInput) && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 bg-slate-50 dark:bg-cv-bg-tertiary/30 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
+                <div className="flex flex-wrap gap-2">
                     <>
                         {showDurationInput && (
-                            <div className="flex-1 min-w-[140px]">
-                                <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide">
+                            <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
+                                <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide">
                                     Duración Total (min)
                                 </label>
                                 <div className="flex items-center gap-2">
-                                    <div className="relative flex-1">
-                                        <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                                    <div className="relative">
+                                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                                         <input
                                             type="number"
                                             value={config.minutes || ''}
                                             onChange={(e) => onChange('minutes', e.target.value ? parseInt(e.target.value, 10) : null)}
-                                            className="w-full pl-9 pr-3 cv-input-compact cv-width-short rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
+                                            className="cv-width-short pl-7 pr-1 text-center cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
                                             placeholder="12"
                                         />
                                     </div>
                                 </div>
-                                <p className="text-[11px] text-cv-text-tertiary mt-1 leading-snug">
-                                    Minutos máximos para acumular rondas.
-                                </p>
                             </div>
                         )}
                         {showRoundsInput && (
-                            <div className="flex-1 min-w-[120px]">
-                                <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide">
+                            <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
+                                <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide">
                                     Rondas
                                 </label>
                                 <div className="flex items-center gap-2">
-                                    <div className="relative flex-1">
-                                        <RotateCw size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                                    <div className="relative">
+                                        <RotateCw size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                                         <input
                                             type="number"
                                             value={config.rounds || ''}
                                             onChange={(e) => onChange('rounds', parseInt(e.target.value, 10) || 0)}
-                                            className="w-full pl-9 pr-3 cv-input-compact cv-width-short rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
+                                            className="cv-width-short pl-7 pr-1 text-center cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
                                             placeholder={mode === 'CHIPPER' ? '1' : '5'}
                                         />
                                     </div>
                                 </div>
-                                <p className="text-[11px] text-cv-text-tertiary mt-1 leading-snug">
-                                    {mode === 'CHIPPER'
-                                        ? 'Usa 1 si el chipper se hace una sola pasada.'
-                                        : 'Cantidad total de rondas del circuito.'}
-                                </p>
                             </div>
                         )}
                         {showTimeCapInput && (
-                            <div className="flex-1 min-w-[140px]">
-                                <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide">
+                            <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
+                                <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide">
                                     Time Cap (Opcional)
                                 </label>
                                 <div className="flex items-center gap-2">
-                                    <div className="relative flex-1">
-                                        <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                                    <div className="relative">
+                                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                                         <input
                                             type="number"
                                             value={config.timeCap || ''}
                                             onChange={(e) => onChange('timeCap', parseInt(e.target.value, 10) || null)}
-                                            className="w-full pl-9 pr-3 cv-input-compact cv-width-short rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
+                                            className="cv-width-short pl-7 pr-1 text-center cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
                                             placeholder="15"
                                         />
                                     </div>
                                 </div>
-                                <p className="text-[11px] text-cv-text-tertiary mt-1 leading-snug">
-                                    Minutos maximos para completar el bloque.
-                                </p>
                             </div>
                         )}
                     </>
@@ -228,7 +217,7 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                                     value={item.targetValue}
                                     onChange={(e) => updateItem(index, 'targetValue', e.target.value ? Number.parseInt(e.target.value, 10) : '')}
                                     placeholder={item.targetUnit === 'seconds' ? '40' : item.targetUnit === 'meters' ? '200' : item.targetUnit === 'calories' ? '20' : '12'}
-                                    className="w-full cv-input-compact text-sm text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1 focus:ring-1 focus:ring-cv-accent/50"
+                                    className="cv-width-short cv-input-compact text-sm text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1 focus:ring-1 focus:ring-cv-accent/50"
                                 />
                             </div>
 
@@ -239,7 +228,7 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                                 <select
                                     value={item.targetUnit}
                                     onChange={(e) => updateItem(index, 'targetUnit', e.target.value as 'reps' | 'seconds' | 'meters' | 'calories')}
-                                    className="w-full cv-input-compact text-sm text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1 focus:ring-1 focus:ring-cv-accent/50"
+                                    className="cv-width-time cv-input-compact text-sm text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1 focus:ring-1 focus:ring-cv-accent/50"
                                 >
                                     <option value="reps">Reps</option>
                                     <option value="seconds">Segundos</option>

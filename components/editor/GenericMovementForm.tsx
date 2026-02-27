@@ -130,12 +130,12 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
 
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-start gap-1.5">
                 {isWarmUp && (
-                    <div className="flex bg-slate-100 dark:bg-slate-800/50 p-0.5 rounded-md w-fit shrink-0">
+                    <div className="flex bg-slate-100 dark:bg-slate-800/50 p-0.5 rounded-md h-fit shrink-0">
                         <button
                             onClick={() => setWarmupMode('rounds')}
-                            className={`px-2.5 py-0.5 text-[11px] font-bold rounded-md transition-all ${warmupMode === 'rounds'
+                            className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-all ${warmupMode === 'rounds'
                                 ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                                 }`}
@@ -144,7 +144,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                         </button>
                         <button
                             onClick={() => setWarmupMode('sets')}
-                            className={`px-2.5 py-0.5 text-[11px] font-bold rounded-md transition-all ${warmupMode === 'sets'
+                            className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-all ${warmupMode === 'sets'
                                 ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                                 }`}
@@ -156,7 +156,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
 
                 {/* 1. Global Rounds/Sets Input - Only if methodology supports it */}
                 {(showRounds || showGlobalSets || showGlobalRounds) && (
-                    <div className="w-full sm:w-auto">
+                    <div className="shrink-0">
                         <InputCard
                             label={showGlobalSets ? 'SERIES' : 'RONDAS / VUELTAS'}
                             value={showGlobalSets ? globalSets : rounds}
@@ -166,7 +166,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                             placeholder={showGlobalSets ? '3' : '5'}
                             presets={[2, 3, 4, 5]}
                             valueSize="short"
-                            className="w-full sm:w-auto"
+                            cardSize="short"
                         />
                     </div>
                 )}
@@ -174,14 +174,13 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
 
             {methodologySimpleFields.length > 0 && (
                 <div className="space-y-2">
-                    <div className="flex flex-wrap lg:flex-nowrap gap-2 items-start">
+                    <div className="flex flex-wrap gap-2 items-start">
                         {methodologySimpleFields.map((field) => (
                             <MethodologySimpleField
                                 key={field.key}
                                 field={field}
                                 value={config[field.key]}
                                 onChange={(nextValue) => onChange(field.key, nextValue)}
-                                className="flex-1 min-w-[132px]"
                             />
                         ))}
                     </div>
@@ -218,7 +217,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                     ))}
 
                     {/* Add Movement Input */}
-                    <div className="max-w-md p-3 rounded-lg border border-dashed border-cv-border bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                    <div className="p-3 rounded-lg border border-dashed border-cv-border bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                         <div className="flex items-center gap-3">
                             <Plus size={18} className="text-slate-400" />
                             <div className="flex-1">
@@ -251,10 +250,12 @@ interface MethodologySimpleFieldProps {
 
 function MethodologySimpleField({ field, value, onChange, className = '' }: MethodologySimpleFieldProps) {
     const resolvedValue = value ?? field.default ?? '';
+    const inferredSize = inferFieldValueSize(field);
+    const inferredCardSize = inferredSize === 'time' ? 'time' : inferredSize === 'medium' ? 'medium' : 'short';
 
     if (field.type === 'select' && field.options) {
         return (
-            <div className={`bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 cv-radius-soft p-1.5 space-y-1 ${className}`}>
+            <div className={`cv-card-medium bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 cv-radius-soft p-1.5 space-y-1 ${className}`}>
                 <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-secondary text-center">
                     {field.label}
                 </label>
@@ -298,7 +299,8 @@ function MethodologySimpleField({ field, value, onChange, className = '' }: Meth
             type={inputType}
             placeholder={field.placeholder}
             presets={inferFieldPresets(field)}
-            valueSize={inferFieldValueSize(field)}
+            valueSize={inferredSize}
+            cardSize={inferredCardSize}
             className={className}
             compact
             presetsPlacement="bottom"
@@ -375,7 +377,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
             {isValid && (
                 <div className="p-2.5 bg-white dark:bg-cv-bg-secondary rounded-b-lg flex flex-col gap-2">
                     {/* Metrics Grid */}
-                    <div className="flex flex-wrap gap-2 flex-1">
+                    <div className="flex flex-wrap gap-2">
                         {/* 1. Series (Sets) - CONDITIONALLY SHOWN */}
                         {showSets && (
                             <InputCard
@@ -388,7 +390,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                                 placeholder="3"
                                 isInvalid={!movement.sets}
                                 valueSize="short"
-                                className="flex-1 min-w-[138px]"
+                                cardSize="short"
                             />
                         )}
 
@@ -405,7 +407,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                                 isDistance
                                 isInvalid={!movement.distance}
                                 valueSize="medium"
-                                className="flex-1 min-w-[138px]"
+                                cardSize="medium"
                             />
                         ) : (
                             <InputCard
@@ -418,7 +420,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                                 placeholder="10"
                                 isInvalid={!(movement.reps || movement.quantity)}
                                 valueSize="short"
-                                className="flex-1 min-w-[138px]"
+                                cardSize="short"
                             />
                         )}
 
@@ -437,7 +439,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                                 placeholder="8"
                                 isInvalid={!movement.rpe && !movement.weight}
                                 valueSize="short"
-                                className="flex-1 min-w-[138px]"
+                                cardSize="short"
                             />
                         )}
 
@@ -453,7 +455,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                                 placeholder="60"
                                 isInvalid={!movement.rest}
                                 valueSize="short"
-                                className="flex-1 min-w-[138px]"
+                                cardSize="short"
                             />
                         )}
                     </div>

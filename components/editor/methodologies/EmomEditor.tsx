@@ -106,49 +106,43 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
     return (
         <div className="space-y-4 animate-in fade-in duration-300">
             {/* Top Config Row: Duration & Interval */}
-            <div className={`flex flex-wrap items-center gap-2.5 bg-slate-50 dark:bg-cv-bg-tertiary/30 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700/50 ${isWarmup ? 'justify-center' : ''}`}>
-                <div className="flex-1 min-w-[120px]">
-                    <label className={`block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide ${isWarmup ? 'text-center' : ''}`}>
+            <div className={`flex flex-wrap items-start gap-2 ${isWarmup ? 'justify-center' : ''}`}>
+                <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 border border-slate-200 dark:border-slate-700/50 cv-radius-soft p-1.5">
+                    <label className={`block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide ${isWarmup ? 'text-center' : ''}`}>
                         Duración Total
                     </label>
                     <div className={`flex items-center gap-2 ${isWarmup ? 'justify-center' : ''}`}>
-                        <div className={`relative flex-1 ${isWarmup ? 'max-w-[420px]' : ''}`}>
-                            <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                        <div className="relative">
+                            <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                             <input
                                 type="number"
                                 value={duration}
                                 onChange={(e) => onChange('minutes', parseInt(e.target.value, 10) || 0)}
-                                className={`w-full cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary cv-width-short ${isWarmup ? 'pl-9 pr-9 text-center' : 'pl-9 pr-3'}`}
+                                className="cv-width-short cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary pl-7 pr-1 text-center"
                                 placeholder="10"
                             />
                         </div>
-                        <span className="text-sm font-medium text-cv-text-tertiary">min</span>
+                        <span className="text-xs font-medium text-cv-text-tertiary">min</span>
                     </div>
-                    <p className={`text-[11px] text-cv-text-tertiary mt-1 leading-snug ${isWarmup ? 'text-center' : ''}`}>
-                        Duración total del bloque.
-                    </p>
                 </div>
 
-                <div className="flex-1 min-w-[120px]">
-                    <label className={`block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide ${isWarmup ? 'text-center' : ''}`}>
+                <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 border border-slate-200 dark:border-slate-700/50 cv-radius-soft p-1.5">
+                    <label className={`block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide ${isWarmup ? 'text-center' : ''}`}>
                         Cada
                     </label>
                     <div className={`flex items-center gap-2 ${isWarmup ? 'justify-center' : ''}`}>
-                        <div className={`relative flex-1 ${isWarmup ? 'max-w-[420px]' : ''}`}>
-                            <Repeat size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                        <div className="relative">
+                            <Repeat size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                             <input
                                 type="number"
                                 value={interval}
                                 onChange={(e) => onChange('interval', parseInt(e.target.value, 10) || 1)}
-                                className={`w-full cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary cv-width-short ${isWarmup ? 'pl-9 pr-9 text-center' : 'pl-9 pr-3'}`}
+                                className="cv-width-short cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary pl-7 pr-1 text-center"
                                 placeholder="1"
                             />
                         </div>
-                        <span className="text-sm font-medium text-cv-text-tertiary">min</span>
+                        <span className="text-xs font-medium text-cv-text-tertiary">min</span>
                     </div>
-                    <p className={`text-[11px] text-cv-text-tertiary mt-1 leading-snug ${isWarmup ? 'text-center' : ''}`}>
-                        Frecuencia de inicio: 1 = cada minuto, 2 = cada 2 minutos.
-                    </p>
                 </div>
             </div>
 
@@ -199,7 +193,7 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                                     value={slot.targetValue}
                                     onChange={(e) => updateSlot(index, 'targetValue', e.target.value ? Number.parseInt(e.target.value, 10) : '')}
                                     placeholder={slot.targetUnit === 'seconds' ? '40' : slot.targetUnit === 'meters' ? '200' : '12'}
-                                    className="w-full cv-input-compact text-sm text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1 font-semibold focus:ring-1 focus:ring-cv-accent/50"
+                                    className="cv-width-short cv-input-compact text-sm text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1 font-semibold focus:ring-1 focus:ring-cv-accent/50"
                                 />
                             </div>
 
@@ -210,7 +204,7 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                                 <select
                                     value={slot.targetUnit}
                                     onChange={(e) => updateSlot(index, 'targetUnit', e.target.value as 'reps' | 'seconds' | 'meters')}
-                                    className="w-full cv-input-compact text-sm text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1 focus:ring-1 focus:ring-cv-accent/50"
+                                    className="cv-width-time cv-input-compact text-sm text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1 focus:ring-1 focus:ring-cv-accent/50"
                                 >
                                     <option value="reps">Reps</option>
                                     <option value="seconds">Segundos</option>
@@ -226,9 +220,6 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                                 <Trash2 size={16} />
                             </button>
 
-                            <p className="md:col-start-2 md:col-end-5 text-[11px] text-cv-text-tertiary leading-snug">
-                                Ejemplo: 12 reps, 40 seg o 200 m según la unidad elegida.
-                            </p>
                         </div>
                     ))}
                 </div>

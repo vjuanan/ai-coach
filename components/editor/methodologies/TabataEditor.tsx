@@ -65,59 +65,50 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
     return (
         <div className="space-y-4 animate-in fade-in duration-300">
             {/* Config Row */}
-            <div className="flex flex-wrap items-center gap-2.5 bg-slate-50 dark:bg-cv-bg-tertiary/30 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
-                <div className="flex-1 min-w-[100px]">
-                    <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide">
+            <div className="flex flex-wrap items-start gap-2">
+                <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
+                    <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide">
                         Rondas
                     </label>
                     <div className="relative">
-                        <RotateCw size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                        <RotateCw size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                         <input
                             type="number"
                             value={rounds}
                             onChange={(e) => onChange('rounds', parseInt(e.target.value, 10) || 0)}
-                            className="w-full pl-9 pr-3 cv-input-compact cv-width-short rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
+                            className="cv-width-short pl-7 pr-1 text-center cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
                         />
                     </div>
-                    <p className="text-[11px] text-cv-text-tertiary mt-1 leading-snug">
-                        Cantidad de rondas del protocolo Tabata.
-                    </p>
                 </div>
 
-                <div className="flex-1 min-w-[120px]">
-                    <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide text-green-600 dark:text-green-400">
+                <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
+                    <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide text-green-600 dark:text-green-400">
                         Trabajo (s)
                     </label>
                     <div className="relative">
-                        <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-green-500/70" />
+                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-green-500/70" />
                         <input
                             type="number"
                             value={workSeconds}
                             onChange={(e) => onChange('workSeconds', parseInt(e.target.value, 10) || 0)}
-                            className="w-full pl-9 pr-3 cv-input-compact cv-width-short rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-green-500/20 focus:border-green-500 transition-all font-semibold text-cv-text-primary"
+                            className="cv-width-short pl-7 pr-1 text-center cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-green-500/20 focus:border-green-500 transition-all font-semibold text-cv-text-primary"
                         />
                     </div>
-                    <p className="text-[11px] text-cv-text-tertiary mt-1 leading-snug">
-                        Segundos de esfuerzo por cada ronda.
-                    </p>
                 </div>
 
-                <div className="flex-1 min-w-[120px]">
-                    <label className="block text-xs font-semibold text-cv-text-secondary mb-1.5 uppercase tracking-wide text-orange-600 dark:text-orange-400">
+                <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
+                    <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide text-orange-600 dark:text-orange-400">
                         Descanso (s)
                     </label>
                     <div className="relative">
-                        <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/70" />
+                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-orange-500/70" />
                         <input
                             type="number"
                             value={restSeconds}
                             onChange={(e) => onChange('restSeconds', parseInt(e.target.value, 10) || 0)}
-                            className="w-full pl-9 pr-3 cv-input-compact cv-width-short rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-semibold text-cv-text-primary"
+                            className="cv-width-short pl-7 pr-1 text-center cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-semibold text-cv-text-primary"
                         />
                     </div>
-                    <p className="text-[11px] text-cv-text-tertiary mt-1 leading-snug">
-                        Segundos de recuperacion entre rondas.
-                    </p>
                 </div>
             </div>
 

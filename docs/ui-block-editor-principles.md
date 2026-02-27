@@ -17,6 +17,7 @@
 - `medium`: 3-4 digits.
 - `time`: `MM:SS`.
 - Do not auto-expand width based on user text.
+- Numeric block-editor cards must use fixed width classes and never `flex-1`.
 
 ## Presets Rules
 - Presets must not live as a right-side column inside inputs.

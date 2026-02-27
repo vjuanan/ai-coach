@@ -803,7 +803,7 @@ function DynamicMethodologyForm({ methodology, config, onChange, onBatchChange }
         <div className="space-y-3">
             {/* Compact row for simple inputs - Single horizontal line wrapping if needed */}
             {simpleFields.length > 0 && (
-                <div className="flex flex-wrap gap-3 items-end">
+                <div className="flex flex-wrap gap-2 items-start">
                     {simpleFields.map((field: TrainingMethodologyFormField) => (
                         <div key={field.key}>
                             <DynamicField
@@ -842,7 +842,16 @@ interface DynamicFieldProps {
     onBatchConfigChange?: (updates: Record<string, unknown>) => void;
 }
 
+function getDynamicFieldWidthClass(field: TrainingMethodologyFormField): 'cv-card-short' | 'cv-card-medium' | 'cv-card-time' {
+    const key = field.key.toLowerCase();
+    if (key.includes('time') || key.includes('tempo')) return 'cv-card-time';
+    if (field.type === 'number') return 'cv-card-short';
+    return 'cv-card-medium';
+}
+
 function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBatchConfigChange }: DynamicFieldProps) {
+    const cardWidthClass = getDynamicFieldWidthClass(field);
+
     if (field.type === 'movements_list') {
         return (
             <MovementsListField
@@ -856,14 +865,14 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
 
     if (field.type === 'select' && field.options) {
         return (
-            <div className="space-y-1">
-                <label className="block text-xs font-semibold text-cv-text-secondary">
+            <div className={`space-y-1 ${cardWidthClass}`}>
+                <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-secondary">
                     {field.label}
                 </label>
                 <select
                     value={(value as string) || (field.default as string) || ''}
                     onChange={(e) => onChange(e.target.value)}
-                    className="cv-input cv-input-compact text-sm"
+                    className="cv-input cv-input-compact text-sm px-1"
                 >
                     {field.options.map(opt => (
                         <option key={opt} value={opt}>{formatMethodologyOptionLabel(opt)}</option>
@@ -897,7 +906,7 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
         };
 
         return (
-            <div className="space-y-1">
+            <div className={`space-y-1 ${cardWidthClass}`}>
                 <div className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border transition-colors ${showTempo ? 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700' : 'border-dashed border-slate-300 dark:border-slate-600'}`}>
                     <button
                         onClick={toggleTempo}
@@ -930,7 +939,7 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
             : value;
 
         return (
-            <div className="space-y-1">
+            <div className={`space-y-1 ${cardWidthClass}`}>
                 <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
                     <span className="text-xs font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
                     <input
@@ -951,7 +960,7 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
 
     // Default: text input
     return (
-        <div className="space-y-1">
+        <div className={`space-y-1 ${cardWidthClass}`}>
             <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
                 <span className="text-xs font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
                 <input
@@ -1203,7 +1212,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
         <div className="animate-in fade-in duration-300 space-y-4">
 
             {/* MAIN GRID */}
-            <div className="flex flex-wrap lg:flex-nowrap gap-2">
+            <div className="flex flex-wrap gap-2">
 
                 {/* 1. SERIES */}
                 {showSets && (
@@ -1215,7 +1224,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         icon={Layers}
                         presets={[3, 4, 5]}
                         isInvalid={!config.sets}
-                        className="flex-1 min-w-[152px]"
+                        cardSize="short"
                         valueSize="short"
                         headerAction={
                             <button
@@ -1245,7 +1254,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         placeholder="400m"
                         isDistance
                         isInvalid={!config.distance}
-                        className="flex-1 min-w-[152px]"
+                        cardSize="medium"
                         valueSize="medium"
                     />
                 ) : (
@@ -1258,7 +1267,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         presets={[8, 10, 12]}
                         placeholder="10"
                         isInvalid={!config.reps}
-                        className="flex-1 min-w-[152px]"
+                        cardSize="short"
                         valueSize="short"
                     />
                 )}
@@ -1275,7 +1284,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     icon={intensityType === '% 1RM' ? Percent : Flame}
                     presets={intensityType === '% 1RM' ? [70, 75, 80] : [8, 9, 10]}
                     isInvalid={intensityType === '% 1RM' ? !config.percentage : !config.rpe}
-                    className="flex-1 min-w-[152px]"
+                    cardSize="short"
                     valueSize="short"
                     headerAction={
                         <button
@@ -1298,7 +1307,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     presets={['1:30', '2:00', '3:00']}
                     placeholder="00:00"
                     isInvalid={!config.rest}
-                    className="flex-1 min-w-[152px]"
+                    cardSize="time"
                     valueSize="time"
                 />
 
@@ -1307,7 +1316,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
             {/* BREAKDOWN PANEL */}
             {showBreakdown && (
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-2">
-                    <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-2 p-2 border-b border-slate-200 dark:border-slate-700 text-[10px] font-bold text-cv-text-tertiary uppercase tracking-wider text-center">
+                    <div className="grid grid-cols-[2rem_9.5rem_9.5rem_9.5rem] gap-2 p-2 border-b border-slate-200 dark:border-slate-700 text-[10px] font-bold text-cv-text-tertiary uppercase tracking-wider text-center">
                         <div className="w-8">#</div>
                         <div>{showDistance ? 'DISTANCIA' : 'REPS'}</div>
                         <div>INTENSIDAD</div>
@@ -1318,7 +1327,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         {Array.from({ length: setsCount }).map((_, i) => {
                             const detail = getSeriesDetail(i);
                             return (
-                                <div key={i} className="grid grid-cols-[auto_1fr_1fr_1fr] gap-2 p-2 items-center hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                                <div key={i} className="grid grid-cols-[2rem_9.5rem_9.5rem_9.5rem] gap-2 p-2 items-start hover:bg-white dark:hover:bg-slate-800 transition-colors">
                                     <div className="w-8 text-center font-bold text-cv-text-secondary text-sm">{i + 1}</div>
 
                                     {/* Reps/Distance */}
@@ -1328,16 +1337,18 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                                         onChange={(val) => updateSeriesDetail(i, showDistance ? { distance: val } : { reps: val })}
                                         presets={showDistance ? ['200m', '400m', '800m'] : [5, 8, 10, 12]}
                                         placeholder="-"
+                                        width={showDistance ? 'cv-width-medium' : 'cv-width-short'}
                                     />
 
                                     {/* Intensity */}
-                                    <div className="flex justify-center w-full">
+                                    <div className="flex justify-center">
                                         {intensityType === '% 1RM' ? (
                                             <TableInputWithPresets
                                                 value={detail.percentage || ''}
                                                 onChange={(val) => updateSeriesDetail(i, { percentage: parseInt(val) || 0 })}
                                                 presets={[70, 75, 80, 85]}
                                                 placeholder="-"
+                                                width="cv-width-medium"
                                                 suffix={<span className="text-[10px] text-slate-400">%</span>}
                                             />
                                         ) : (
@@ -1346,6 +1357,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                                                 onChange={(val) => updateSeriesDetail(i, { rpe: parseInt(val) || 0 })}
                                                 presets={[7, 8, 9, 10]}
                                                 placeholder="-"
+                                                width="cv-width-medium"
                                                 suffix={<span className="text-[10px] text-slate-400">RPE</span>}
                                             />
                                         )}
@@ -1358,6 +1370,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                                         onChange={(val) => updateSeriesDetail(i, { rest: val })}
                                         presets={['1:30', '2:00', '3:00']}
                                         placeholder="-"
+                                        width="cv-width-time"
                                     />
                                 </div>
                             );
