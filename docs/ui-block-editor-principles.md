@@ -11,12 +11,13 @@
 - Mobile: allow wrapping, but keep dense spacing and no empty gutters.
 - Avoid fixed wide wrappers for numeric-only controls.
 - Stimulus selection uses a single-layer picker: never render visual subcategory tabs (MetCon/HIIT/Classic/Acondicionamiento) inside the editor.
-- After choosing stimulus, collapse to a compact header (`Tipo de estímulo` + selected value + `Editar`).
+- After choosing stimulus, collapse to a compact meta bar with only: stimulus name, block-type badge, progression switch, and edit pencil icon.
 - If only one stimulus category is available, render `Tipo de estímulo` with a compact category badge and never a full-width rail/tab row.
 - Warmup top controls (`Por Vueltas/Por Series` + `Rondas/Vueltas`) must be rendered as a single compact horizontal band.
 - In warmup, `Rondas/Vueltas` must use a subtle inline control (micro label + short input + 3 chips), never a dominant standalone card.
 - `warmup`, `accessory`, and `skill` movement cards must render in two columns from `xl` (`>=1280px`) and center the last incomplete row.
 - Main numeric input rows must use fluid distribution (`100%` container width) with dynamic percentage-based card widths.
+- Global configurable parameters (stimulus meta, rounds/sets, duration/interval/timecap, progression) must stay in a compact top bar so the main canvas prioritizes movement design.
 
 ## Input Sizing Rules
 - Use explicit width buckets by data type:
@@ -33,6 +34,7 @@
 - Presets must preserve compact height and spacing.
 - Visible presets must be capped at `3` using strategic selection (`min`, `middle`, `max`).
 - Finisher numeric fields must expose `3` strategic presets (manual entry remains available).
+- No short numeric field may render as a full-width row.
 
 ## Consistency Rules
 - Keep border radius soft and consistent.
@@ -42,7 +44,10 @@
 - Card labels must avoid accidental wrapping by using explicit `labelLines` (`1` or `2`) instead of uncontrolled line breaks.
 - Single-metric exercise inputs (for example, warmup repetitions) must remain centered with bounded useful width and must not appear as tiny cards floating in oversized empty containers.
 - Movement-card metrics must be centered and occupy useful width (no mini islands with dominant lateral dead space).
-- Global per-exercise fields (for example `Reps base`) must include explicit contextual copy (`aplica a cada ejercicio`) to avoid orphan labels.
+- Global per-exercise fields (for example `Reps base`) must use concise labels and stay grouped in the parameter top bar (no standalone helper paragraph blocks).
+- Do not render redundant explanatory copy in editor surfaces (`what is AMRAP`, `Ejercicios del circuito`, `En cada fila...`) unless the text is strictly required for validation or error handling.
+- Block-type badge colors and active block card highlight must come from the same block-type token source (`bg/border/text`) with exact parity.
+- Every UI change in block editor must be visually validated with screenshots before considering the task complete; if issues are found, iterate fix + recapture until clean.
 
 ## Coverage Scope
 - Apply these rules to all block editor surfaces:

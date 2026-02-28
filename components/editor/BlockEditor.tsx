@@ -339,18 +339,6 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 {/* 1. STIMULUS PICKER (Unified, no sub-categories UI) */}
                 {supportsStimulusPicker && (
                     <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-2">
-                        <div className="flex items-center justify-end">
-                            {block.type !== 'warmup' && (
-                                <ProgressionSettings
-                                    blockId={blockId}
-                                    progressionId={block.progression_id}
-                                    showSelector={showProgressionSelector}
-                                    setShowSelector={setShowProgressionSelector}
-                                    onToggle={toggleBlockProgression}
-                                    showDistance={false}
-                                />
-                            )}
-                        </div>
 
                         {loading && (
                             <div className="flex items-center justify-center py-4">
@@ -359,26 +347,33 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                         )}
 
                         {!loading && currentMethodology && !showStimulusPicker && (
-                            <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-cv-bg-tertiary/40 px-3 py-2 flex flex-wrap items-center justify-between gap-2">
-                                <div className="flex min-w-0 items-center gap-2">
-                                    <span className="text-[11px] font-semibold text-cv-text-tertiary whitespace-nowrap">
-                                        Tipo de estímulo
-                                    </span>
+                            <div className="cv-meta-bar">
+                                <div className="flex min-w-0 items-center gap-2 flex-wrap">
                                     <span className="text-sm font-semibold text-cv-text-primary truncate">
                                         {currentMethodology.name}
                                     </span>
-                                </div>
-                                <div className="flex items-center gap-2">
                                     <span className={`cv-block-type-badge ${blockTypeBadgeClass[block.type] || 'cv-block-type-badge-free'}`}>
                                         {blockTypeLabels[block.type] || block.type}
                                     </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {block.type !== 'warmup' && (
+                                        <ProgressionSettings
+                                            blockId={blockId}
+                                            progressionId={block.progression_id}
+                                            showSelector={showProgressionSelector}
+                                            setShowSelector={setShowProgressionSelector}
+                                            onToggle={toggleBlockProgression}
+                                            showDistance={false}
+                                        />
+                                    )}
                                     <button
                                         type="button"
                                         onClick={() => setShowStimulusPicker(true)}
-                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary text-xs font-semibold text-cv-text-secondary hover:text-cv-accent hover:border-cv-accent/40 transition-colors"
+                                        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary text-cv-text-secondary hover:text-cv-accent hover:border-cv-accent/40 transition-colors"
+                                        aria-label="Editar estímulo"
                                     >
-                                        <PencilLine size={12} />
-                                        Editar
+                                        <PencilLine size={13} />
                                     </button>
                                 </div>
                             </div>
@@ -386,15 +381,27 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
 
                         {!loading && (showStimulusPicker || !currentMethodology) && (
                             <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-cv-bg-tertiary/50 p-3 space-y-2">
-                                <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
-                                    <Search size={14} className="text-cv-text-tertiary" />
-                                    <input
-                                        type="text"
-                                        value={stimulusQuery}
-                                        onChange={(e) => setStimulusQuery(e.target.value)}
-                                        placeholder="Buscar tipo de estímulo..."
-                                        className="w-full bg-transparent border-none p-0 text-sm text-cv-text-primary placeholder:text-cv-text-tertiary focus:outline-none focus:ring-0"
-                                    />
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="flex min-w-[220px] flex-1 items-center gap-2 px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
+                                        <Search size={14} className="text-cv-text-tertiary" />
+                                        <input
+                                            type="text"
+                                            value={stimulusQuery}
+                                            onChange={(e) => setStimulusQuery(e.target.value)}
+                                            placeholder="Buscar estímulo..."
+                                            className="w-full bg-transparent border-none p-0 text-sm text-cv-text-primary placeholder:text-cv-text-tertiary focus:outline-none focus:ring-0"
+                                        />
+                                    </div>
+                                    {block.type !== 'warmup' && (
+                                        <ProgressionSettings
+                                            blockId={blockId}
+                                            progressionId={block.progression_id}
+                                            showSelector={showProgressionSelector}
+                                            setShowSelector={setShowProgressionSelector}
+                                            onToggle={toggleBlockProgression}
+                                            showDistance={false}
+                                        />
+                                    )}
                                 </div>
 
                                 {filteredMethodologies.length > 0 ? (
@@ -411,7 +418,6 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                                         setShowStimulusPicker(false);
                                                         setStimulusQuery('');
                                                     }}
-                                                    title={methodology.description}
                                                     className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all inline-flex items-center justify-center gap-2 border
                                                         ${isSelected
                                                             ? 'bg-white dark:bg-cv-bg-primary text-cv-accent border-cv-accent shadow-sm'
@@ -430,12 +436,6 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                     </div>
                                 )}
                             </div>
-                        )}
-
-                        {currentMethodology && block.type !== 'warmup' && !showStimulusPicker && (
-                            <p className="text-xs text-cv-text-tertiary italic">
-                                {currentMethodology.description}
-                            </p>
                         )}
                     </div>
                 )}
@@ -734,18 +734,17 @@ function DynamicMethodologyForm({ methodology, config, onChange, onBatchChange }
         <div className="space-y-3">
             {/* Compact row for simple inputs - Single horizontal line wrapping if needed */}
             {simpleFields.length > 0 && (
-                <div className="cv-fluid-grid">
+                <div className="cv-meta-bar">
                     {simpleFields.map((field: TrainingMethodologyFormField) => (
-                        <div key={field.key} className="w-full">
-                            <DynamicField
-                                field={field}
-                                value={config[field.key]}
-                                onChange={(value) => onChange(field.key, value)}
-                                allConfig={config}
-                                onConfigChange={onChange}
-                                onBatchConfigChange={onBatchChange}
-                            />
-                        </div>
+                        <DynamicField
+                            key={field.key}
+                            field={field}
+                            value={config[field.key]}
+                            onChange={(value) => onChange(field.key, value)}
+                            allConfig={config}
+                            onConfigChange={onChange}
+                            onBatchConfigChange={onBatchChange}
+                        />
                     ))}
                 </div>
             )}
@@ -789,29 +788,25 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
                 label={field.label}
                 value={(value as string[]) || []}
                 onChange={onChange}
-                help={field.help}
             />
         );
     }
 
     if (field.type === 'select' && field.options) {
         return (
-            <div className="space-y-1 cv-card-fluid">
-                <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-secondary">
+            <div className="cv-meta-item">
+                <label className="text-[10px] font-bold uppercase tracking-wide text-cv-text-secondary whitespace-nowrap">
                     {field.label}
                 </label>
                 <select
                     value={(value as string) || (field.default as string) || ''}
                     onChange={(e) => onChange(e.target.value)}
-                    className={`cv-input cv-input-compact text-sm px-1 ${inputWidthClass}`}
+                    className={`cv-meta-input-fit text-sm ${inputWidthClass}`}
                 >
                     {field.options.map(opt => (
                         <option key={opt} value={opt}>{formatMethodologyOptionLabel(opt)}</option>
                     ))}
                 </select>
-                {field.help && (
-                    <p className="text-[10px] text-cv-text-tertiary leading-snug">{field.help}</p>
-                )}
             </div>
         );
     }
@@ -837,8 +832,8 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
         };
 
         return (
-            <div className="space-y-1 cv-card-fluid">
-                <div className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border transition-colors ${showTempo ? 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700' : 'border-dashed border-slate-300 dark:border-slate-600'}`}>
+            <div className={`cv-meta-item transition-colors ${showTempo ? '' : 'border-dashed border-slate-300 dark:border-slate-600'}`}>
+                <div className="flex items-center gap-2">
                     <button
                         onClick={toggleTempo}
                         type="button"
@@ -853,13 +848,10 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
                             value={(value as string) || ''}
                             onChange={(e) => onChange(e.target.value)}
                             placeholder="30X1"
-                            className="bg-transparent border border-slate-200 dark:border-slate-700 cv-input-compact cv-radius-soft px-1 text-sm focus:ring-1 focus:ring-cv-accent/30 text-cv-text-primary font-semibold placeholder:text-slate-300 cv-width-time text-center animate-in fade-in duration-150"
+                            className="cv-meta-input-fit cv-width-time text-sm focus:ring-1 focus:ring-cv-accent/30 placeholder:text-slate-300 animate-in fade-in duration-150"
                         />
                     )}
                 </div>
-                {field.help && (
-                    <p className="text-[10px] text-cv-text-tertiary leading-snug max-w-[240px]">{field.help}</p>
-                )}
             </div>
         );
     }
@@ -870,41 +862,31 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
             : value;
 
         return (
-            <div className="space-y-1 cv-card-fluid">
-                <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <span className="text-xs font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
-                    <input
-                        type="number"
-                        min={0}
-                        value={(displayValue as number) || ''}
-                        onChange={(e) => onChange(e.target.value ? parseInt(e.target.value, 10) : null)}
-                        placeholder={field.placeholder ? field.placeholder.replace('%', '') : '0'}
-                        className={`bg-transparent border border-slate-200 dark:border-slate-700 cv-input-compact cv-radius-soft px-1 text-sm focus:ring-1 focus:ring-cv-accent/30 text-cv-text-primary font-bold placeholder:text-slate-300 ${inputWidthClass} text-center`}
-                    />
-                </div>
-                {field.help && (
-                    <p className="text-[10px] text-cv-text-tertiary leading-snug max-w-[240px]">{field.help}</p>
-                )}
+            <div className="cv-meta-item">
+                <span className="text-xs font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
+                <input
+                    type="number"
+                    min={0}
+                    value={(displayValue as number) || ''}
+                    onChange={(e) => onChange(e.target.value ? parseInt(e.target.value, 10) : null)}
+                    placeholder={field.placeholder ? field.placeholder.replace('%', '') : '0'}
+                    className={`cv-meta-input-fit text-sm focus:ring-1 focus:ring-cv-accent/30 font-bold placeholder:text-slate-300 ${inputWidthClass}`}
+                />
             </div>
         );
     }
 
     // Default: text input
     return (
-        <div className="space-y-1 cv-card-fluid">
-            <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
-                <span className="text-xs font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
-                <input
-                    type="text"
-                    value={(value as string) || ''}
-                    onChange={(e) => onChange(e.target.value)}
-                    placeholder={field.placeholder}
-                    className={`bg-transparent border border-slate-200 dark:border-slate-700 cv-input-compact cv-radius-soft px-1 text-sm focus:ring-1 focus:ring-cv-accent/30 text-cv-text-primary font-medium placeholder:text-slate-300 ${inputWidthClass} text-center`}
-                />
-            </div>
-            {field.help && (
-                <p className="text-[10px] text-cv-text-tertiary leading-snug max-w-[240px]">{field.help}</p>
-            )}
+        <div className="cv-meta-item">
+            <span className="text-xs font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
+            <input
+                type="text"
+                value={(value as string) || ''}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={field.placeholder}
+                className={`cv-meta-input-fit text-sm focus:ring-1 focus:ring-cv-accent/30 font-medium placeholder:text-slate-300 ${inputWidthClass}`}
+            />
         </div>
     );
 }
@@ -920,10 +902,9 @@ interface MovementsListProps {
     label: string;
     value: unknown[];
     onChange: (value: string[]) => void;
-    help?: string;
 }
 
-function MovementsListField({ label, value, onChange, help }: MovementsListProps) {
+function MovementsListField({ label, value, onChange }: MovementsListProps) {
     const toMovementText = (entry: unknown): string => {
         if (typeof entry === 'string') return entry;
         if (!entry || typeof entry !== 'object') return '';
@@ -961,9 +942,6 @@ function MovementsListField({ label, value, onChange, help }: MovementsListProps
             <label className="block text-sm font-medium text-cv-text-secondary mb-2">
                 {label}
             </label>
-            {help && (
-                <p className="text-xs text-cv-text-tertiary mb-2">{help}</p>
-            )}
             <div className="space-y-2">
                 {movements.map((movement, index) => (
                     <div key={index} className="flex gap-2">
@@ -1143,7 +1121,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
         <div className="animate-in fade-in duration-300 space-y-4">
 
             {/* MAIN GRID */}
-            <div className="cv-fluid-grid">
+            <div className="cv-meta-bar">
 
                 {/* 1. SERIES */}
                 {showSets && (
@@ -1157,7 +1135,8 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         isInvalid={!config.sets}
                         cardSize="short"
                         valueSize="short"
-                        layout="fluid"
+                        density="micro"
+                        layout="fit"
                         headerAction={
                             <button
                                 onClick={() => setShowBreakdown(!showBreakdown)}
@@ -1188,7 +1167,8 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         isInvalid={!config.distance}
                         cardSize="medium"
                         valueSize="medium"
-                        layout="fluid"
+                        density="micro"
+                        layout="fit"
                     />
                 ) : (
                     <InputCard
@@ -1202,7 +1182,8 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         isInvalid={!config.reps}
                         cardSize="short"
                         valueSize="short"
-                        layout="fluid"
+                        density="micro"
+                        layout="fit"
                     />
                 )}
 
@@ -1220,7 +1201,8 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     isInvalid={intensityType === '% 1RM' ? !config.percentage : !config.rpe}
                     cardSize="short"
                     valueSize="short"
-                    layout="fluid"
+                    density="micro"
+                    layout="fit"
                     headerAction={
                         <button
                             onClick={() => setIntensityType(prev => prev === '% 1RM' ? 'RPE' : '% 1RM')}
@@ -1244,7 +1226,8 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     isInvalid={!config.rest}
                     cardSize="time"
                     valueSize="time"
-                    layout="fluid"
+                    density="micro"
+                    layout="fit"
                 />
 
             </div>

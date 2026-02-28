@@ -211,22 +211,22 @@ const LABEL_OVERRIDES_ES: Record<string, Record<string, string>> = {
 
 const FORM_FIELD_OVERRIDES: Record<string, TrainingMethodologyFormField[]> = {
     EMOM: [
-        { key: 'minutes', label: 'Duración Total (min)', type: 'number', placeholder: '10', required: true, default: 10 },
+        { key: 'minutes', label: 'Duración (min)', type: 'number', placeholder: '10', required: true, default: 10 },
         { key: 'interval', label: 'Cada (min)', type: 'number', placeholder: '1', required: true, default: 1 },
         { key: 'movements', label: 'Movimientos', type: 'movements_list', required: true },
     ],
     EMOM_ALT: [
-        { key: 'minutes', label: 'Duración Total (min)', type: 'number', placeholder: '12', required: true, default: 12 },
+        { key: 'minutes', label: 'Duración (min)', type: 'number', placeholder: '12', required: true, default: 12 },
         { key: 'interval', label: 'Cada (min)', type: 'number', placeholder: '1', required: true, default: 1 },
         { key: 'movements', label: 'Movimientos', type: 'movements_list', required: true },
     ],
     E2MOM: [
-        { key: 'minutes', label: 'Duración Total (min)', type: 'number', placeholder: '12', required: true, default: 12 },
+        { key: 'minutes', label: 'Duración (min)', type: 'number', placeholder: '12', required: true, default: 12 },
         { key: 'interval', label: 'Cada (min)', type: 'number', placeholder: '2', required: true, default: 2 },
         { key: 'movements', label: 'Movimientos', type: 'movements_list', required: true },
     ],
     AMRAP: [
-        { key: 'minutes', label: 'Duración Total (min)', type: 'number', placeholder: '12', required: true, default: 12 },
+        { key: 'minutes', label: 'Duración (min)', type: 'number', placeholder: '12', required: true, default: 12 },
         { key: 'movements', label: 'Movimientos', type: 'movements_list', required: true },
     ],
     RFT: [

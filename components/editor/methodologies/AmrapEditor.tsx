@@ -112,62 +112,56 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
         <div className="space-y-4 animate-in fade-in duration-300">
             {/* Top Config Row: Inputs based on Mode */}
             {(showDurationInput || showRoundsInput || showTimeCapInput) && (
-                <div className="cv-fluid-grid-tight">
+                <div className="cv-meta-bar">
                     <>
                         {showDurationInput && (
-                            <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
-                                <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide">
-                                    Duración Total (min)
+                            <div className="cv-meta-item">
+                                <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
+                                    Duración (min)
                                 </label>
-                                <div className="flex items-center gap-2">
-                                    <div className="relative">
-                                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                                        <input
-                                            type="number"
-                                            value={config.minutes || ''}
-                                            onChange={(e) => onChange('minutes', e.target.value ? parseInt(e.target.value, 10) : null)}
-                                            className="cv-width-short pl-7 pr-1 text-center cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
-                                            placeholder="12"
-                                        />
-                                    </div>
+                                <div className="relative">
+                                    <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                                    <input
+                                        type="number"
+                                        value={config.minutes || ''}
+                                        onChange={(e) => onChange('minutes', e.target.value ? parseInt(e.target.value, 10) : null)}
+                                        className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
+                                        placeholder="12"
+                                    />
                                 </div>
                             </div>
                         )}
                         {showRoundsInput && (
-                            <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
-                                <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide">
+                            <div className="cv-meta-item">
+                                <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
                                     Rondas
                                 </label>
-                                <div className="flex items-center gap-2">
-                                    <div className="relative">
-                                        <RotateCw size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                                        <input
-                                            type="number"
-                                            value={config.rounds || ''}
-                                            onChange={(e) => onChange('rounds', parseInt(e.target.value, 10) || 0)}
-                                            className="cv-width-short pl-7 pr-1 text-center cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
-                                            placeholder={mode === 'CHIPPER' ? '1' : '5'}
-                                        />
-                                    </div>
+                                <div className="relative">
+                                    <RotateCw size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                                    <input
+                                        type="number"
+                                        value={config.rounds || ''}
+                                        onChange={(e) => onChange('rounds', parseInt(e.target.value, 10) || 0)}
+                                        className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
+                                        placeholder={mode === 'CHIPPER' ? '1' : '5'}
+                                    />
                                 </div>
                             </div>
                         )}
                         {showTimeCapInput && (
-                            <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
-                                <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide">
-                                    Time Cap (Opcional)
+                            <div className="cv-meta-item">
+                                <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
+                                    Time Cap
                                 </label>
-                                <div className="flex items-center gap-2">
-                                    <div className="relative">
-                                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                                        <input
-                                            type="number"
-                                            value={config.timeCap || ''}
-                                            onChange={(e) => onChange('timeCap', parseInt(e.target.value, 10) || null)}
-                                            className="cv-width-short pl-7 pr-1 text-center cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
-                                            placeholder="15"
-                                        />
-                                    </div>
+                                <div className="relative">
+                                    <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                                    <input
+                                        type="number"
+                                        value={config.timeCap || ''}
+                                        onChange={(e) => onChange('timeCap', parseInt(e.target.value, 10) || null)}
+                                        className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
+                                        placeholder="15"
+                                    />
                                 </div>
                             </div>
                         )}
@@ -179,15 +173,12 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
             <div className="space-y-2.5">
                 <div className="flex items-center justify-between mb-3">
                     <label className="text-sm font-medium text-cv-text-secondary">
-                        Ejercicios del Circuito
+                        Movimientos
                     </label>
                     <span className="text-xs text-cv-text-tertiary bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
                         {items.length} ejercicios
                     </span>
                 </div>
-                <p className="text-[11px] text-cv-text-tertiary mb-3 leading-snug">
-                    En cada fila define ejercicio + variable numérica.
-                </p>
 
                 <div className={`hidden md:grid ${rowGridCols} gap-2 px-2 text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary items-center`}>
                     <span />

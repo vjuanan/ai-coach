@@ -23,7 +23,7 @@ interface InputCardProps {
     maxVisiblePresets?: number;
     labelLines?: 1 | 2;
     density?: 'compact' | 'micro';
-    layout?: 'fixed' | 'fluid';
+    layout?: 'fixed' | 'fluid' | 'fit';
 }
 
 function dedupePresets(presets: (string | number)[]) {
@@ -137,7 +137,9 @@ export function InputCard({
     const resolvedCardSize = cardSize || (resolvedSize === 'time' ? 'time' : resolvedSize === 'medium' ? 'medium' : 'short');
     const cardWidthClass = layout === 'fluid'
         ? 'cv-card-fluid'
-        : resolvedCardSize === 'short'
+        : layout === 'fit'
+            ? 'cv-card-fit'
+            : resolvedCardSize === 'short'
             ? 'cv-card-short'
             : resolvedCardSize === 'time'
                 ? 'cv-card-time'

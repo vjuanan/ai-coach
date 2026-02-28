@@ -1,7 +1,4 @@
 'use client';
-// Force rebuild: 2026-02-19T14:45:00
-console.log("BLOCK BUILDER PANEL LOADING - CONFIRMATION DIALOG APPLIED");
-
 
 import { useEditorStore } from '@/lib/store';
 import { BlockEditor } from './BlockEditor';
@@ -150,6 +147,26 @@ const blockTypeOptions: {
             icon: FileText
         },
     ];
+
+const activeBlockClassByType: Record<string, string> = {
+    warmup: 'cv-block-active-warmup',
+    strength_linear: 'cv-block-active-strength',
+    metcon_structured: 'cv-block-active-metcon',
+    accessory: 'cv-block-active-accessory',
+    skill: 'cv-block-active-skill',
+    finisher: 'cv-block-active-finisher',
+    free_text: 'cv-block-active-free',
+};
+
+const activeIconClassByType: Record<string, string> = {
+    warmup: 'cv-block-icon-active-warmup',
+    strength_linear: 'cv-block-icon-active-strength',
+    metcon_structured: 'cv-block-icon-active-metcon',
+    accessory: 'cv-block-icon-active-accessory',
+    skill: 'cv-block-icon-active-skill',
+    finisher: 'cv-block-icon-active-finisher',
+    free_text: 'cv-block-icon-active-free',
+};
 
 // Check if a block is empty (no meaningful content)
 export const isBlockEmpty = (block: { type: string; format: string | null; config: Record<string, unknown> }): boolean => {
@@ -407,7 +424,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                         className={`
                                                             group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left w-[160px] flex-shrink-0 cursor-pointer
                                                             ${isActive
-                                                                ? 'bg-white dark:bg-cv-bg-primary border-cv-accent shadow-lg ring-2 ring-cv-accent/40 z-20'
+                                                                ? `cv-block-active ${activeBlockClassByType[block.type] || 'cv-block-active-free'} z-20`
                                                                 : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-500 hover:z-30'
                                                             }
                                                             `}
@@ -439,7 +456,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                             <Trash2 size={13} strokeWidth={2.5} />
                                                         </button>
 
-                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-cv-accent text-white' : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'}`}>
+                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? `cv-block-icon-active ${activeIconClassByType[block.type] || 'cv-block-icon-active-free'}` : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'}`}>
                                                             <Icon size={14} />
                                                         </div>
                                                         <div className="flex-1 min-w-0 overflow-hidden pr-6">

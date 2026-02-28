@@ -11,7 +11,7 @@ interface EmomEditorProps {
     blockType?: 'warmup' | 'metcon_structured' | 'accessory' | 'skill' | 'finisher' | string;
 }
 
-export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
+export function EmomEditor({ config, onChange }: EmomEditorProps) {
     // Local state for complex minute logic
     // We map the raw config to a more UI-friendly structure if needed
     // But for now let's try to stick to the config structure:
@@ -24,7 +24,6 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
 
     const duration = (config.minutes as number) || 10;
     const interval = (config.interval as number) || 1;
-    const isWarmup = blockType === 'warmup';
     const isE2MOMMode = interval === 2;
     const rowGridCols = 'md:grid-cols-[84px_minmax(0,1fr)_2rem_minmax(6rem,0.8fr)_minmax(7.25rem,0.9fr)_2.25rem]';
 
@@ -107,43 +106,39 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
     return (
         <div className="space-y-4 animate-in fade-in duration-300">
             {/* Top Config Row: Duration & Interval */}
-            <div className="cv-fluid-grid-tight">
-                <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 border border-slate-200 dark:border-slate-700/50 cv-radius-soft p-1.5">
-                    <label className={`block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide ${isWarmup ? 'text-center' : ''}`}>
-                        Duración Total
+            <div className="cv-meta-bar">
+                <div className="cv-meta-item">
+                    <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
+                        Duración
                     </label>
-                    <div className={`flex items-center gap-2 ${isWarmup ? 'justify-center' : ''}`}>
-                        <div className="relative">
-                            <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                            <input
-                                type="number"
-                                value={duration}
-                                onChange={(e) => onChange('minutes', parseInt(e.target.value, 10) || 0)}
-                                className="cv-width-short cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary pl-7 pr-1 text-center"
-                                placeholder="10"
-                            />
-                        </div>
-                        <span className="text-xs font-medium text-cv-text-tertiary">min</span>
+                    <div className="relative">
+                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                        <input
+                            type="number"
+                            value={duration}
+                            onChange={(e) => onChange('minutes', parseInt(e.target.value, 10) || 0)}
+                            className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
+                            placeholder="10"
+                        />
                     </div>
+                    <span className="text-[10px] font-medium text-cv-text-tertiary">min</span>
                 </div>
 
-                <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 border border-slate-200 dark:border-slate-700/50 cv-radius-soft p-1.5">
-                    <label className={`block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide ${isWarmup ? 'text-center' : ''}`}>
+                <div className="cv-meta-item">
+                    <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
                         Cada
                     </label>
-                    <div className={`flex items-center gap-2 ${isWarmup ? 'justify-center' : ''}`}>
-                        <div className="relative">
-                            <Repeat size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                            <input
-                                type="number"
-                                value={interval}
-                                onChange={(e) => onChange('interval', parseInt(e.target.value, 10) || 1)}
-                                className="cv-width-short cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary pl-7 pr-1 text-center"
-                                placeholder="1"
-                            />
-                        </div>
-                        <span className="text-xs font-medium text-cv-text-tertiary">min</span>
+                    <div className="relative">
+                        <Repeat size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                        <input
+                            type="number"
+                            value={interval}
+                            onChange={(e) => onChange('interval', parseInt(e.target.value, 10) || 1)}
+                            className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
+                            placeholder="1"
+                        />
                     </div>
+                    <span className="text-[10px] font-medium text-cv-text-tertiary">min</span>
                 </div>
             </div>
 
@@ -151,15 +146,12 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
             <div className="space-y-2.5">
                 <div className="flex items-center justify-between mb-3">
                     <label className="text-sm font-medium text-cv-text-secondary">
-                        Distribución de Intervalos
+                        Intervalos
                     </label>
                     <span className="text-xs text-cv-text-tertiary bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
                         {slots.length} intervalos definidos
                     </span>
                 </div>
-                <p className="text-[11px] text-cv-text-tertiary mb-3 leading-snug">
-                    En cada intervalo define ejercicio + variable numérica objetivo.
-                </p>
 
                 <div className={`hidden md:grid ${rowGridCols} gap-2 px-2 text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary items-center`}>
                     <span />

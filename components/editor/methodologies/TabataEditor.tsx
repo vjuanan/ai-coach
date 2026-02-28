@@ -58,16 +58,12 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
         });
     };
 
-    const totalTimeSeconds = rounds * (workSeconds + restSeconds) - restSeconds; // Subtract last rest? Usually included. let's say included.
-    const totalMinutes = Math.floor(totalTimeSeconds / 60);
-    const totalSecondsRem = totalTimeSeconds % 60;
-
     return (
         <div className="space-y-4 animate-in fade-in duration-300">
             {/* Config Row */}
-            <div className="cv-fluid-grid-tight">
-                <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
-                    <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide">
+            <div className="cv-meta-bar">
+                <div className="cv-meta-item">
+                    <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
                         Rondas
                     </label>
                     <div className="relative">
@@ -76,44 +72,40 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
                             type="number"
                             value={rounds}
                             onChange={(e) => onChange('rounds', parseInt(e.target.value, 10) || 0)}
-                            className="cv-width-short pl-7 pr-1 text-center cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-cv-accent/20 focus:border-cv-accent transition-all font-semibold text-cv-text-primary"
+                            className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
                         />
                     </div>
                 </div>
 
-                <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
-                    <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide text-green-600 dark:text-green-400">
+                <div className="cv-meta-item">
+                    <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
                         Trabajo (s)
                     </label>
                     <div className="relative">
-                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-green-500/70" />
+                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                         <input
                             type="number"
                             value={workSeconds}
                             onChange={(e) => onChange('workSeconds', parseInt(e.target.value, 10) || 0)}
-                            className="cv-width-short pl-7 pr-1 text-center cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-green-500/20 focus:border-green-500 transition-all font-semibold text-cv-text-primary"
+                            className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
                         />
                     </div>
                 </div>
 
-                <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
-                    <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide text-orange-600 dark:text-orange-400">
+                <div className="cv-meta-item">
+                    <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
                         Descanso (s)
                     </label>
                     <div className="relative">
-                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-orange-500/70" />
+                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                         <input
                             type="number"
                             value={restSeconds}
                             onChange={(e) => onChange('restSeconds', parseInt(e.target.value, 10) || 0)}
-                            className="cv-width-short pl-7 pr-1 text-center cv-input-compact rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary focus:ring-1 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-semibold text-cv-text-primary"
+                            className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
                         />
                     </div>
                 </div>
-            </div>
-
-            <div className="text-xs text-cv-text-tertiary italic text-center">
-                Tiempo Total Estimado: {totalMinutes}:{totalSecondsRem.toString().padStart(2, '0')}
             </div>
 
             {/* Exercises List */}
@@ -126,9 +118,6 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
                         {exercises.length} movimientos
                     </span>
                 </div>
-                <p className="text-[11px] text-cv-text-tertiary mb-3 leading-snug">
-                    Carga uno o varios ejercicios. Si agregas mas de uno, se alternan en las rondas.
-                </p>
 
                 <div className="space-y-2.5">
                     {exercises.map((ex, index) => (

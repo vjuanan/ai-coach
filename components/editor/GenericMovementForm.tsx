@@ -180,9 +180,6 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
         .filter((field) => field.type !== 'movements_list')
         .filter((field) => !(field.key === 'rounds' && (showRounds || showGlobalRounds)))
         .filter((field) => !(field.key === 'sets' && (showGlobalSets || showSetsPerMovement)));
-    const hasGlobalRepsPerMovement = methodologySimpleFields.some(
-        (field) => field.key.toLowerCase() === 'repspermovement'
-    );
 
     const handleMovementsChange = (newMovements: MovementObject[]) => {
         onChange('movements', newMovements);
@@ -205,12 +202,9 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
 
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className={isWarmUp
-                ? 'w-fit max-w-full mx-auto flex flex-wrap items-center justify-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-cv-bg-tertiary/40 px-2 py-1'
-                : 'flex flex-wrap items-start gap-1.5'}
-            >
+            <div className="cv-meta-bar">
                 {isWarmUp && (
-                    <div className="flex items-center bg-white dark:bg-cv-bg-secondary p-0.5 rounded-md shrink-0 h-8 border border-slate-200 dark:border-slate-700">
+                    <div className="cv-meta-switch shrink-0">
                         <button
                             onClick={() => setWarmupMode('rounds')}
                             className={`px-2 py-0 text-[11px] font-bold rounded-md transition-all h-6 ${warmupMode === 'rounds'
@@ -235,7 +229,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                 {/* 1. Global Rounds/Sets Input - Only if methodology supports it */}
                 {shouldShowGlobalControl && (
                     isWarmUp ? (
-                        <div className="cv-inline-rounds-control shrink-0">
+                        <div className="cv-meta-item shrink-0">
                             <div className="flex items-center justify-center gap-1">
                                 <span className="text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary whitespace-nowrap">
                                     {globalControlLabel}
@@ -265,43 +259,33 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                             </div>
                         </div>
                     ) : (
-                        <div className="w-full sm:max-w-[12rem]">
-                            <InputCard
-                                label={globalControlLabel}
-                                value={globalControlValue}
-                                onChange={(val) => onChange(globalControlKey, val)}
-                                type="number"
-                                icon={RotateCcw}
-                                placeholder={globalControlKey === 'sets' ? '3' : '5'}
-                                presets={[2, 3, 4, 5]}
-                                valueSize="short"
-                                cardSize="short"
-                                density="compact"
-                                maxVisiblePresets={3}
-                                layout="fluid"
-                            />
-                        </div>
+                        <InputCard
+                            label={globalControlLabel}
+                            value={globalControlValue}
+                            onChange={(val) => onChange(globalControlKey, val)}
+                            type="number"
+                            icon={RotateCcw}
+                            placeholder={globalControlKey === 'sets' ? '3' : '5'}
+                            presets={[2, 3, 4, 5]}
+                            valueSize="short"
+                            cardSize="short"
+                            density="micro"
+                            maxVisiblePresets={3}
+                            layout="fit"
+                        />
                     )
                 )}
-            </div>
 
-            {methodologySimpleFields.length > 0 && (
-                <div className="space-y-2">
-                    <div className="cv-fluid-grid">
-                        {methodologySimpleFields.map((field) => (
-                            <div key={field.key} className="w-full">
-                                <MethodologySimpleField
-                                    field={field}
-                                    value={config[field.key]}
-                                    onChange={(nextValue) => onChange(field.key, nextValue)}
-                                    isFinisher={isFinisherMethod}
-                                    movementCount={movements.length}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+                {methodologySimpleFields.map((field) => (
+                    <MethodologySimpleField
+                        key={field.key}
+                        field={field}
+                        value={config[field.key]}
+                        onChange={(nextValue) => onChange(field.key, nextValue)}
+                        isFinisher={isFinisherMethod}
+                    />
+                ))}
+            </div>
 
             {/* 2. Movements List */}
             <div className="space-y-3">
@@ -313,16 +297,6 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                         {movements.length} ejercicios
                     </span>
                 </div>
-                {movementField?.help && (
-                    <p className="text-[11px] text-cv-text-tertiary mb-3 leading-snug">
-                        {movementField.help}
-                    </p>
-                )}
-                {hasGlobalRepsPerMovement && movements.length === 0 && (
-                    <p className="text-[11px] text-cv-text-tertiary mb-3 leading-snug">
-                        Reps base se aplicará a cada ejercicio cuando agregues movimientos.
-                    </p>
-                )}
 
                 <div className={useCompactMovementCards ? 'flex flex-wrap justify-center gap-2' : 'space-y-3'}>
                     {movements.map((movement, index) => (
@@ -372,7 +346,6 @@ interface MethodologySimpleFieldProps {
     value: unknown;
     onChange: (value: unknown) => void;
     isFinisher: boolean;
-    movementCount: number;
     className?: string;
 }
 
@@ -388,7 +361,7 @@ function shouldUseTwoLineLabel(field: TrainingMethodologyFormField) {
         || key === 'totalreps';
 }
 
-function MethodologySimpleField({ field, value, onChange, isFinisher, movementCount, className = '' }: MethodologySimpleFieldProps) {
+function MethodologySimpleField({ field, value, onChange, isFinisher, className = '' }: MethodologySimpleFieldProps) {
     const resolvedValue = value ?? field.default ?? '';
     const inferredSize = inferFieldValueSize(field);
     const inferredCardSize = inferredSize === 'time' ? 'time' : inferredSize === 'medium' ? 'medium' : 'short';
@@ -396,21 +369,17 @@ function MethodologySimpleField({ field, value, onChange, isFinisher, movementCo
     const fieldKey = field.key.toLowerCase();
     const isRepsPerMovementField = fieldKey === 'repspermovement';
     const resolvedLabel = isRepsPerMovementField ? 'REPS BASE' : field.label.toUpperCase();
-    const resolvedSubLabel = isRepsPerMovementField
-        ? (movementCount > 0 ? 'APLICA A CADA EJERCICIO' : 'SE APLICA A TODOS LOS EJERCICIOS')
-        : undefined;
 
     if (field.type === 'select' && field.options) {
         return (
-            <div className={`cv-card-fluid bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 cv-radius-soft p-1.5 space-y-1 ${className}`}>
-                <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-secondary text-center">
+            <div className={`cv-meta-item ${className}`}>
+                <label className="text-[10px] font-bold uppercase tracking-wide text-cv-text-secondary whitespace-nowrap">
                     {field.label}
                 </label>
                 <select
                     value={String(resolvedValue)}
                     onChange={(e) => onChange(e.target.value)}
-                    className="cv-input cv-input-compact text-center text-sm px-1"
-                    title={field.help}
+                    className="cv-meta-input-fit text-center text-sm px-1 cv-width-time"
                 >
                     {field.options.map((option) => (
                         <option key={option} value={option}>
@@ -430,7 +399,7 @@ function MethodologySimpleField({ field, value, onChange, isFinisher, movementCo
     return (
         <InputCard
             label={resolvedLabel}
-            subLabel={resolvedSubLabel}
+            subLabel={undefined}
             value={normalizedValue}
             onChange={(nextValue) => {
                 if (field.type === 'number') {
@@ -453,7 +422,8 @@ function MethodologySimpleField({ field, value, onChange, isFinisher, movementCo
             compact
             presetsPlacement="bottom"
             labelLines={labelLines}
-            layout="fluid"
+            density="micro"
+            layout="fit"
         />
     );
 }
@@ -484,10 +454,10 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp,
     const showDistance = exerciseMatch?.tracking_parameters?.distance;
     const metricsCount = (showSets ? 1 : 0) + 1 + (isWarmUp ? 0 : 2);
     const metricsGridStyle = metricsCount === 1
-        ? { gridTemplateColumns: 'minmax(0, 17rem)' }
+        ? { gridTemplateColumns: 'minmax(0, 19rem)' }
         : metricsCount === 2
-            ? { gridTemplateColumns: 'repeat(auto-fit, minmax(12rem, 1fr))' }
-            : { gridTemplateColumns: 'repeat(auto-fit, minmax(10rem, 1fr))' };
+            ? { gridTemplateColumns: 'repeat(auto-fit, minmax(13rem, 1fr))' }
+            : { gridTemplateColumns: 'repeat(auto-fit, minmax(11rem, 1fr))' };
 
     return (
         <div className={`rounded-lg border transition-all duration-200
