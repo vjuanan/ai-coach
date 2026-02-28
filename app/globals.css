@@ -10,6 +10,8 @@
     --cv-bg-tertiary: #F1F5F9;
     --cv-accent: #86C4A3;
     --cv-input-height-compact: 2.25rem;
+    --cv-input-height-micro: 2rem;
+    --cv-chip-height-micro: 1.35rem;
     --cv-input-radius-soft: 0.625rem;
     --cv-input-width-short: 2.5rem;
     --cv-input-width-medium: 3rem;
@@ -89,6 +91,11 @@
 
   .cv-input-compact {
     height: var(--cv-input-height-compact);
+    border-radius: var(--cv-input-radius-soft);
+  }
+
+  .cv-input-micro {
+    height: var(--cv-input-height-micro);
     border-radius: var(--cv-input-radius-soft);
   }
 
@@ -237,6 +244,10 @@
     width: var(--cv-chip-width);
     min-width: var(--cv-chip-width);
     max-width: var(--cv-chip-width);
+  }
+
+  .cv-chip-micro {
+    height: var(--cv-chip-height-micro);
   }
 
   .cv-radius-soft {

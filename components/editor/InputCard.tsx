@@ -22,6 +22,7 @@ interface InputCardProps {
     presetsPlacement?: 'bottom' | 'popover';
     maxVisiblePresets?: number;
     labelLines?: 1 | 2;
+    density?: 'compact' | 'micro';
 }
 
 function dedupePresets(presets: (string | number)[]) {
@@ -103,6 +104,7 @@ export function InputCard({
     presetsPlacement = 'bottom',
     maxVisiblePresets = 3,
     labelLines = 1,
+    density = 'compact',
 }: InputCardProps) {
     const [localValue, setLocalValue] = useState<string>(value !== undefined && value !== null ? String(value) : '');
     const [isFocused, setIsFocused] = useState(false);
@@ -143,6 +145,11 @@ export function InputCard({
         ? 'h-[1.5rem] leading-tight'
         : 'inline-flex items-center h-[1.5rem] leading-none';
     const labelTextClampClass = labelLines === 2 ? '' : 'whitespace-nowrap overflow-hidden text-ellipsis';
+    const isMicro = density === 'micro';
+    const cardPaddingClass = compact ? (isMicro ? 'cv-radius-soft p-1' : 'cv-radius-soft p-1.5') : 'rounded-xl p-2';
+    const inputHeightClass = isMicro ? 'cv-input-micro text-base' : 'h-[var(--cv-input-height-compact)] text-lg';
+    const chipDensityClass = isMicro ? 'cv-chip-micro text-[9px]' : 'h-6 text-[10px]';
+    const valueRowClass = isMicro ? 'min-h-[1.9rem]' : 'min-h-[2.2rem]';
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let val = e.target.value;
@@ -196,7 +203,7 @@ export function InputCard({
     };
 
     return (
-        <div className={`${compact ? 'cv-radius-soft p-1.5' : 'rounded-xl p-2'} border flex flex-col gap-1 transition-all group relative ${cardWidthClass}
+        <div className={`${cardPaddingClass} border flex flex-col gap-1 transition-all group relative ${cardWidthClass}
             ${isInvalid
                 ? 'bg-red-50/50 dark:bg-red-900/10 border-red-400'
                 : 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700'
@@ -222,7 +229,7 @@ export function InputCard({
                 </div>
             )}
 
-            <div className="flex items-center justify-center gap-1 min-h-[2.2rem]">
+            <div className={`flex items-center justify-center gap-1 ${valueRowClass}`}>
                 <div className="flex items-end justify-center gap-1 min-w-0">
                     <input
                         type="text"
@@ -231,7 +238,7 @@ export function InputCard({
                         onBlur={handleBlur}
                         onFocus={() => setIsFocused(true)}
                         placeholder={placeholder || '-'}
-                        className={`bg-transparent border border-slate-200 dark:border-slate-700 cv-radius-soft h-[var(--cv-input-height-compact)] px-1 text-lg font-bold text-center focus:ring-1 focus:ring-cv-accent/40 focus:border-cv-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${widthClass}
+                        className={`bg-transparent border border-slate-200 dark:border-slate-700 cv-radius-soft ${inputHeightClass} px-1 font-bold text-center focus:ring-1 focus:ring-cv-accent/40 focus:border-cv-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${widthClass}
                             ${isInvalid ? 'text-red-600 placeholder:text-red-300' : 'text-cv-text-primary placeholder:text-slate-300 dark:placeholder:text-slate-600'}
                         `}
                     />
@@ -246,7 +253,7 @@ export function InputCard({
                         <button
                             key={preset}
                             onClick={() => handlePresetClick(preset)}
-                            className={`cv-chip-compact h-6 px-0 rounded-md text-[10px] font-semibold transition-all border
+                            className={`cv-chip-compact ${chipDensityClass} px-0 rounded-md font-semibold transition-all border
                                 ${value == preset
                                     ? 'bg-cv-accent text-white border-cv-accent'
                                     : 'bg-slate-50 dark:bg-slate-800 text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-cv-accent/40'}
@@ -265,7 +272,7 @@ export function InputCard({
                             key={preset}
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={() => handlePresetClick(preset)}
-                            className={`h-6 px-2 rounded-md text-[10px] font-semibold transition-colors
+                            className={`${isMicro ? 'h-5 text-[9px]' : 'h-6 text-[10px]'} px-2 rounded-md font-semibold transition-colors
                                 ${value == preset
                                     ? 'bg-cv-accent text-white'
                                     : 'bg-slate-100 dark:bg-slate-700 text-cv-text-secondary hover:bg-slate-200 dark:hover:bg-slate-600'}

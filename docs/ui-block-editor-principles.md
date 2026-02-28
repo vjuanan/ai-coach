@@ -11,6 +11,8 @@
 - Mobile: allow wrapping, but keep dense spacing and no empty gutters.
 - Avoid fixed wide wrappers for numeric-only controls.
 - If only one stimulus category is available, render `Tipo de estímulo` with a compact category badge and never a full-width rail/tab row.
+- Warmup top controls (`Por Vueltas/Por Series` + `Rondas/Vueltas`) must be rendered as a single compact horizontal band.
+- `warmup`, `accessory`, and `skill` movement cards must render in two columns from `xl` (`>=1280px`) and center the last incomplete row.
 
 ## Input Sizing Rules
 - Use explicit width buckets by data type:
@@ -33,6 +35,7 @@
 - Validation states (error/focus/hover) must stay minimal and dense.
 - Finisher methodology tabs must never use `flex-1`; tabs stay compact and centered.
 - Card labels must avoid accidental wrapping by using explicit `labelLines` (`1` or `2`) instead of uncontrolled line breaks.
+- Single-metric exercise inputs (for example, warmup repetitions) must align to content width (`w-fit`) and never sit centered inside oversized empty containers.
 
 ## Coverage Scope
 - Apply these rules to all block editor surfaces:

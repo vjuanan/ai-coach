@@ -98,6 +98,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
 
     const isWarmUp = blockType === 'warmup';
     const isFinisherMethod = methodology?.category === 'finisher';
+    const useCompactMovementCards = ['warmup', 'accessory', 'skill'].includes(blockType || '');
     const [warmupMode, setWarmupMode] = useState<'rounds' | 'sets'>('rounds');
 
     // Strict display rules:
@@ -142,12 +143,15 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
 
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex flex-wrap items-start gap-1.5">
+            <div className={isWarmUp
+                ? 'w-fit max-w-full mx-auto flex flex-wrap items-center justify-center gap-2'
+                : 'flex flex-wrap items-start gap-1.5'}
+            >
                 {isWarmUp && (
-                    <div className="flex bg-slate-100 dark:bg-slate-800/50 p-0.5 rounded-md h-fit shrink-0">
+                    <div className="flex items-center bg-slate-100 dark:bg-slate-800/50 p-0.5 rounded-md shrink-0 h-[2.2rem]">
                         <button
                             onClick={() => setWarmupMode('rounds')}
-                            className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-all ${warmupMode === 'rounds'
+                            className={`px-2 py-0 text-[11px] font-bold rounded-md transition-all h-[1.8rem] ${warmupMode === 'rounds'
                                 ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                                 }`}
@@ -156,7 +160,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                         </button>
                         <button
                             onClick={() => setWarmupMode('sets')}
-                            className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-all ${warmupMode === 'sets'
+                            className={`px-2 py-0 text-[11px] font-bold rounded-md transition-all h-[1.8rem] ${warmupMode === 'sets'
                                 ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                                 }`}
@@ -179,6 +183,8 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                             presets={[2, 3, 4, 5]}
                             valueSize="short"
                             cardSize="short"
+                            density={isWarmUp ? 'micro' : 'compact'}
+                            maxVisiblePresets={3}
                         />
                     </div>
                 )}
@@ -216,21 +222,26 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                     </p>
                 )}
 
-                <div className="space-y-3">
+                <div className={useCompactMovementCards ? 'flex flex-wrap justify-center gap-2' : 'space-y-3'}>
                     {movements.map((movement, index) => (
-                        <MovementCard
+                        <div
                             key={index}
-                            index={index}
-                            movement={movement}
-                            onChange={(updates) => updateMovement(index, updates)}
-                            onRemove={() => removeMovement(index)}
-                            showSets={showSetsPerMovement}
-                            isWarmUp={isWarmUp}
-                        />
+                            className={useCompactMovementCards ? 'w-full xl:basis-[calc(50%-0.5rem)] xl:max-w-[calc(50%-0.5rem)]' : ''}
+                        >
+                            <MovementCard
+                                index={index}
+                                movement={movement}
+                                onChange={(updates) => updateMovement(index, updates)}
+                                onRemove={() => removeMovement(index)}
+                                showSets={showSetsPerMovement}
+                                isWarmUp={isWarmUp}
+                                layoutMode={useCompactMovementCards ? 'compact' : 'default'}
+                            />
+                        </div>
                     ))}
 
                     {/* Add Movement Input */}
-                    <div className="p-3 rounded-lg border border-dashed border-cv-border bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                    <div className={`p-3 rounded-lg border border-dashed border-cv-border bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors ${useCompactMovementCards ? 'basis-full' : ''}`}>
                         <div className="flex items-center gap-3">
                             <Plus size={18} className="text-slate-400" />
                             <div className="flex-1">
@@ -347,10 +358,12 @@ interface MovementCardProps {
     onRemove: () => void;
     showSets: boolean;
     isWarmUp: boolean;
+    layoutMode: 'default' | 'compact';
 }
 
-function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp }: MovementCardProps) {
+function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp, layoutMode }: MovementCardProps) {
     const { searchLocal } = useExerciseCache();
+    const isCompactLayout = layoutMode === 'compact';
 
     // Check validity
     const exerciseMatch = searchLocal(movement.name).find(e => e.name.toLowerCase() === movement.name.toLowerCase());
@@ -358,14 +371,6 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
 
     // Attributes
     const showDistance = exerciseMatch?.tracking_parameters?.distance;
-
-    // Check if it's a Warm Up block to hide RPE and Rest
-    // We can check if the methodology passed down (if any) is 'warmup' OR if the parent component told us so.
-    // BUT the prop is not yet passed to MovementCard. We need to thread it.
-
-    // Actually, `GenericMovementForm` doesn't pass `blockType` to `MovementCard` yet.
-    // Let's assume we will pass it. 
-    // Wait, I need to update the props of MovementCard first in the same file.
 
     return (
         <div className={`rounded-lg border transition-all duration-200
@@ -376,7 +381,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
         >
             {/* ... Header ... */}
             {/* Header: Exercise Name & Actions */}
-            <div className="p-2.5 flex gap-2.5 items-center border-b border-slate-100 dark:border-slate-800/50 rounded-t-lg">
+            <div className={`${isCompactLayout ? 'p-2 gap-2' : 'p-2.5 gap-2.5'} flex items-center border-b border-slate-100 dark:border-slate-800/50 rounded-t-lg`}>
                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-500">
                     {index + 1}
                 </div>
@@ -386,7 +391,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                         value={movement.name}
                         onChange={(val) => onChange({ name: val })}
                         placeholder="Buscar ejercicio..."
-                        className={`w-full bg-transparent focus:outline-none focus:ring-0 border-none ${isValid ? 'font-bold text-cv-text-primary text-base' : 'font-medium text-cv-text-secondary placeholder:text-slate-400'}`}
+                        className={`w-full bg-transparent focus:outline-none focus:ring-0 border-none ${isValid ? `font-bold text-cv-text-primary ${isCompactLayout ? 'text-[15px]' : 'text-base'}` : 'font-medium text-cv-text-secondary placeholder:text-slate-400'}`}
                     />
                     {!isValid && movement.name && (
                         <p className="text-[10px] text-amber-500 mt-1">Selecciona de la lista</p>
@@ -403,9 +408,9 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
 
             {/* Inputs Grid - Only if Valid */}
             {isValid && (
-                <div className="p-2.5 bg-white dark:bg-cv-bg-secondary rounded-b-lg flex flex-col gap-2">
+                <div className={`${isCompactLayout ? 'p-2 gap-1.5' : 'p-2.5 gap-2'} bg-white dark:bg-cv-bg-secondary rounded-b-lg flex flex-col`}>
                     {/* Metrics Grid */}
-                    <div className="flex w-fit max-w-full mx-auto flex-wrap justify-center gap-2">
+                    <div className={`${isCompactLayout ? 'flex w-fit max-w-full flex-wrap justify-start gap-1.5' : 'flex w-fit max-w-full mx-auto flex-wrap justify-center gap-2'}`}>
                         {/* 1. Series (Sets) - CONDITIONALLY SHOWN */}
                         {showSets && (
                             <InputCard
@@ -419,6 +424,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                                 isInvalid={!movement.sets}
                                 valueSize="short"
                                 cardSize="short"
+                                density={isWarmUp ? 'micro' : 'compact'}
                             />
                         )}
 
@@ -436,6 +442,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                                 isInvalid={!movement.distance}
                                 valueSize="medium"
                                 cardSize="medium"
+                                density={isWarmUp ? 'micro' : 'compact'}
                             />
                         ) : (
                             <InputCard
@@ -449,6 +456,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp 
                                 isInvalid={!(movement.reps || movement.quantity)}
                                 valueSize="short"
                                 cardSize="short"
+                                density={isWarmUp ? 'micro' : 'compact'}
                             />
                         )}
 
