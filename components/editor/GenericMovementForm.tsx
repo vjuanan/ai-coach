@@ -225,17 +225,19 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                 {(showRounds || showGlobalSets || showGlobalRounds) && (
                     isWarmUp ? (
                         <div className="cv-inline-rounds-control shrink-0">
-                            <span className="text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary">
-                                {globalControlLabel}
-                            </span>
-                            <input
-                                type="number"
-                                min={1}
-                                value={globalControlValue}
-                                onChange={(e) => onChange(showGlobalSets ? 'sets' : 'rounds', e.target.value ? Number.parseInt(e.target.value, 10) : '')}
-                                placeholder={showGlobalSets ? '3' : '5'}
-                                className="cv-width-short cv-input-micro bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 cv-radius-soft px-1 font-bold text-center text-base focus:ring-1 focus:ring-cv-accent/40 focus:border-cv-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            />
+                            <div className="flex items-center justify-center gap-1.5">
+                                <span className="text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary whitespace-nowrap">
+                                    {globalControlLabel}
+                                </span>
+                                <input
+                                    type="number"
+                                    min={1}
+                                    value={globalControlValue}
+                                    onChange={(e) => onChange(showGlobalSets ? 'sets' : 'rounds', e.target.value ? Number.parseInt(e.target.value, 10) : '')}
+                                    placeholder={showGlobalSets ? '3' : '5'}
+                                    className="cv-width-short cv-input-micro bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 cv-radius-soft px-1 font-bold text-center text-base focus:ring-1 focus:ring-cv-accent/40 focus:border-cv-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                            </div>
                             <div className="flex flex-wrap justify-center gap-1">
                                 {globalControlPresets.map((preset) => (
                                     <button
