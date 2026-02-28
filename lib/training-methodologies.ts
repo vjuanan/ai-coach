@@ -295,7 +295,7 @@ const FORM_FIELD_OVERRIDES: Record<string, TrainingMethodologyFormField[]> = {
     ],
     GIANT_SET: [
         { key: 'rounds', label: 'Rondas', type: 'number', placeholder: '3', required: true, default: 3 },
-        { key: 'repsPerMovement', label: 'Reps por Ejercicio', type: 'number', placeholder: '10', required: true, default: 10 },
+        { key: 'repsPerMovement', label: 'Reps base', type: 'number', placeholder: '10', required: true, default: 10 },
         { key: 'intensityTarget', label: 'Intensidad Objetivo (RPE/%/kg)', type: 'number', placeholder: '8', required: true, default: 8 },
         { key: 'loadKg', label: 'Carga Objetivo (kg, opcional)', type: 'number', placeholder: '60' },
         { key: 'restBetweenMovementsSeconds', label: 'Descanso entre Ejercicios (seg)', type: 'number', placeholder: '0', default: 0 },
@@ -304,7 +304,7 @@ const FORM_FIELD_OVERRIDES: Record<string, TrainingMethodologyFormField[]> = {
     ],
     SUPER_SET: [
         { key: 'sets', label: 'Series', type: 'number', placeholder: '4', required: true, default: 4 },
-        { key: 'repsPerMovement', label: 'Reps por Ejercicio', type: 'number', placeholder: '10', required: true, default: 10 },
+        { key: 'repsPerMovement', label: 'Reps base', type: 'number', placeholder: '10', required: true, default: 10 },
         { key: 'intensityTarget', label: 'Intensidad Objetivo (RPE/%/kg)', type: 'number', placeholder: '8', required: true, default: 8 },
         { key: 'loadKg', label: 'Carga Objetivo (kg, opcional)', type: 'number', placeholder: '60' },
         { key: 'restBetweenMovementsSeconds', label: 'Descanso entre Ejercicios (seg)', type: 'number', placeholder: '0', default: 0 },
@@ -313,7 +313,7 @@ const FORM_FIELD_OVERRIDES: Record<string, TrainingMethodologyFormField[]> = {
     ],
     NOT_FOR_TIME: [
         { key: 'rounds', label: 'Rondas (opcional)', type: 'number', placeholder: '3' },
-        { key: 'repsPerMovement', label: 'Reps por Ejercicio', type: 'number', placeholder: '10', required: true, default: 10 },
+        { key: 'repsPerMovement', label: 'Reps base', type: 'number', placeholder: '10', required: true, default: 10 },
         { key: 'movements', label: 'Movimientos', type: 'movements_list', required: true },
     ],
     TEMPO: [

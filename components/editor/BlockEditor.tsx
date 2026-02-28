@@ -44,8 +44,9 @@ import {
     ChevronDown,
     ChevronUp,
     AlertCircle,
-    Target
-
+    Target,
+    Search,
+    PencilLine,
 } from 'lucide-react';
 import { TableInputWithPresets } from './TableInputWithPresets';
 import { InputCard } from './InputCard';
@@ -95,7 +96,8 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     } = useEditorStore();
     // const [methodologies, setMethodologies] = useState<TrainingMethodology[]>([]); // Removed local state
     const [loading, setLoading] = useState(trainingMethodologies.length === 0);
-    const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+    const [showStimulusPicker, setShowStimulusPicker] = useState(false);
+    const [stimulusQuery, setStimulusQuery] = useState('');
     const [showProgressionSelector, setShowProgressionSelector] = useState(false);
     const [showEditExerciseModal, setShowEditExerciseModal] = useState(false);
     const firstInputRef = useRef<HTMLInputElement>(null);
@@ -169,30 +171,22 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         );
     const currentMethodologyCode = normalizeMethodologyCode(currentMethodology?.code || '');
     const isSpecializedMethod = SPECIALIZED_METHOD_CODES.includes(currentMethodologyCode);
-    const isFinisherBlock = block?.type === 'finisher';
-    const finisherMethods = useMemo(
-        () => normalizedMethodologies.filter((m) => m.category === 'finisher'),
-        [normalizedMethodologies]
-    );
+    const blockType = block?.type;
+    const supportsStimulusPicker = ['metcon_structured', 'warmup', 'accessory', 'skill', 'finisher'].includes(blockType || '');
 
-    // Finisher blocks should open directly with finisher methodologies (no extra click on "Finishers").
     useEffect(() => {
-        if (!block) return;
+        if (!blockType) return;
 
-        if (isFinisherBlock && finisherMethods.length > 0 && (!currentMethodology || currentMethodology.category !== 'finisher')) {
-            const defaultMethod = finisherMethods[0];
-            const mergedConfig = { ...(block.config || {}), ...defaultMethod.default_values } as WorkoutConfig;
-            updateBlock(blockId, {
-                format: defaultMethod.code as WorkoutFormat,
-                config: mergedConfig
-            });
+        if (!supportsStimulusPicker) {
+            setShowStimulusPicker(false);
+            setStimulusQuery('');
             return;
         }
 
-        if (currentMethodology && !expandedCategory) {
-            setExpandedCategory(currentMethodology.category);
-        }
-    }, [block, blockId, currentMethodology, expandedCategory, finisherMethods, isFinisherBlock, updateBlock]);
+        const hasValidStimulus = Boolean(currentMethodology);
+        setShowStimulusPicker(!hasValidStimulus);
+        setStimulusQuery('');
+    }, [blockId, blockType, currentMethodology, supportsStimulusPicker]);
 
     // Backfill missing numeric defaults in existing blocks so export and validation remain coherent.
     useEffect(() => {
@@ -262,67 +256,31 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         }
     };
 
-    // Category grouping for better display
-    // NOTE: 'strength' (Classic) is excluded because it's its own block type, not a methodology
-    // Category grouping with STRICT filtering based on block type
-    // Category grouping with STRICT filtering based on block type
-    const categoryOrder = ['metcon', 'hiit', 'strength', 'conditioning', 'finisher'];
-
-    // Define allowed categories for each block type
-    const allowedCategories: Record<string, string[]> = {
-        'finisher': ['finisher'],
-        'metcon_structured': ['metcon', 'hiit'],
-        'conditioning': ['conditioning'],
-        'strength_linear': ['strength'],
-        'warmup': ['strength', 'metcon', 'conditioning', 'hiit'],
-        'skill': ['strength'],
-        'accessory': ['strength'],
+    const allowedCategoriesByBlockType: Record<string, string[]> = {
+        finisher: ['finisher'],
+        metcon_structured: ['metcon', 'hiit'],
+        conditioning: ['conditioning'],
+        strength_linear: ['strength'],
+        warmup: ['strength', 'metcon', 'conditioning', 'hiit'],
+        skill: ['strength'],
+        accessory: ['strength'],
     };
-
-    const groupedMethodologies = categoryOrder.reduce((acc, cat) => {
-        const blockType = block?.type || 'undefined';
-        const allowed = allowedCategories[blockType];
-        const isAllowed = !block?.type || (allowed && allowed.includes(cat));
-
-        if (isAllowed) {
-            let methods = normalizedMethodologies.filter(m => m.category === cat);
-            // For warmup blocks, Classic = only Series x Reps (STANDARD)
-            if (blockType === 'warmup' && cat === 'strength') {
-                methods = methods.filter(m => m.code === 'STANDARD');
-            }
-            if (methods.length > 0) {
-                acc[cat] = methods;
-            }
+    const allowedCategories = allowedCategoriesByBlockType[block.type] || [];
+    const allowedMethodologies = normalizedMethodologies.filter((methodology) => {
+        if (!allowedCategories.includes(methodology.category)) return false;
+        if (block.type === 'warmup' && methodology.category === 'strength') {
+            return normalizeMethodologyCode(methodology.code) === 'STANDARD';
         }
-        return acc;
-    }, {} as Record<string, TrainingMethodology[]>);
-
-    const categoryLabels: Record<string, string> = {
-        metcon: 'MetCon',
-        hiit: 'HIIT',
-        strength: 'Classic',
-        conditioning: 'Acondicionamiento',
-        finisher: 'Finishers'
-    };
-
-    const categoryIcons: Record<string, LucideIcon> = {
-        metcon: Zap,
-        hiit: Timer,
-        strength: Dumbbell,
-        conditioning: Heart,
-        finisher: Target
-    };
-    const stimulusBadgeClass: Record<string, string> = {
-        metcon: 'cv-stimulus-badge-metcon',
-        hiit: 'cv-stimulus-badge-hiit',
-        strength: 'cv-stimulus-badge-strength',
-        conditioning: 'cv-stimulus-badge-conditioning',
-        finisher: 'cv-stimulus-badge-finisher',
-    };
-    const visibleCategories = categoryOrder.filter((category) => (groupedMethodologies[category] || []).length > 0);
-    const isSingleCategory = visibleCategories.length === 1;
-    const singleCategory = isSingleCategory ? visibleCategories[0] : null;
-    const activeCategory = expandedCategory || singleCategory;
+        return true;
+    });
+    const normalizedStimulusQuery = stimulusQuery.trim().toLowerCase();
+    const filteredMethodologies = allowedMethodologies.filter((methodology) => {
+        if (!normalizedStimulusQuery) return true;
+        return (
+            methodology.name.toLowerCase().includes(normalizedStimulusQuery) ||
+            normalizeMethodologyCode(methodology.code).toLowerCase().includes(normalizedStimulusQuery)
+        );
+    });
 
     // Navigation info - find current block position
     // Navigation info - find current block position
@@ -359,6 +317,15 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         free_text: 'Texto Libre',
         finisher: 'Finisher'
     };
+    const blockTypeBadgeClass: Record<string, string> = {
+        warmup: 'cv-block-type-badge-warmup',
+        strength_linear: 'cv-block-type-badge-strength',
+        metcon_structured: 'cv-block-type-badge-metcon',
+        accessory: 'cv-block-type-badge-accessory',
+        skill: 'cv-block-type-badge-skill',
+        finisher: 'cv-block-type-badge-finisher',
+        free_text: 'cv-block-type-badge-free',
+    };
 
     // Validation Logic - Using Hook
     // Cast block to any because the hook expects a specific shape that matches checks but Typescript might be strict about exact nullable types
@@ -369,15 +336,10 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-4 space-y-5">
 
-                {/* 1. METHODOLOGY SELECTOR (For Structured types) - NOW FIRST */}
-                {(block.type === 'metcon_structured' || block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill' || block.type === 'finisher') && (
-                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                        <div className="flex items-center justify-between mb-2">
-                            <label className="block text-sm font-medium text-cv-text-secondary">
-                                Metodología de Entrenamiento
-                            </label>
-
-                            {/* Progression Toggle - Not for warmup */}
+                {/* 1. STIMULUS PICKER (Unified, no sub-categories UI) */}
+                {supportsStimulusPicker && (
+                    <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-2">
+                        <div className="flex items-center justify-end">
                             {block.type !== 'warmup' && (
                                 <ProgressionSettings
                                     blockId={blockId}
@@ -390,138 +352,93 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                             )}
                         </div>
 
-                        {
-                            loading ? (
-                                <div className="flex items-center justify-center py-4">
-                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-cv-accent"></div>
+                        {loading && (
+                            <div className="flex items-center justify-center py-4">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-cv-accent"></div>
+                            </div>
+                        )}
+
+                        {!loading && currentMethodology && !showStimulusPicker && (
+                            <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-cv-bg-tertiary/40 px-3 py-2 flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex min-w-0 items-center gap-2">
+                                    <span className="text-[11px] font-semibold text-cv-text-tertiary whitespace-nowrap">
+                                        Tipo de estímulo
+                                    </span>
+                                    <span className="text-sm font-semibold text-cv-text-primary truncate">
+                                        {currentMethodology.name}
+                                    </span>
                                 </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {isFinisherBlock ? (
-                                        <div className="bg-slate-50 dark:bg-cv-bg-tertiary/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-1 duration-200">
-                                            <div className="flex w-fit max-w-full mx-auto flex-wrap justify-center gap-2">
-                                                {(groupedMethodologies.finisher || []).map(m => {
-                                                    const IconComponent = iconMap[m.icon] || Dumbbell;
-                                                    const isSelected = normalizeMethodologyCode(block?.format || '') === normalizeMethodologyCode(m.code);
-
-                                                    return (
-                                                        <button
-                                                            key={m.code}
-                                                            onClick={() => handleFormatChange(m.code)}
-                                                            title={m.description}
-                                                            className={`
-                                                            px-3 py-2 rounded-lg text-xs font-medium transition-all
-                                                            inline-flex items-center gap-2 border min-w-[128px] justify-center
-                                                            ${isSelected
-                                                                    ? 'bg-white dark:bg-cv-bg-primary text-cv-accent border-cv-accent shadow-md ring-1 ring-cv-accent/20 scale-[1.02]'
-                                                                    : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary hover:text-cv-accent hover:bg-slate-50 dark:hover:bg-cv-bg-primary border-slate-200 dark:border-slate-700 hover:border-cv-accent/30 hover:shadow-sm hover:-translate-y-0.5'
-                                                                }
-                                                        `}
-                                                        >
-                                                            <IconComponent size={14} />
-                                                            {m.name}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            {isSingleCategory && singleCategory && (
-                                                <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-cv-bg-tertiary/40 px-3 py-2">
-                                                    <span className="text-xs font-semibold text-cv-text-secondary">Tipo de estímulo</span>
-                                                    <span className={`cv-stimulus-badge ${stimulusBadgeClass[singleCategory]}`}>
-                                                        {categoryLabels[singleCategory]}
-                                                    </span>
-                                                </div>
-                                            )}
-
-                                            {!isSingleCategory && (
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    {categoryOrder.map(category => {
-                                                        const items = groupedMethodologies[category] || [];
-                                                        if (items.length === 0) return null;
-
-                                                        const isExpanded = expandedCategory === category;
-                                                        const hasSelectedItem = items.some(
-                                                            (m) => normalizeMethodologyCode(m.code) === normalizeMethodologyCode(block?.format || '')
-                                                        );
-                                                        const CategoryIcon = categoryIcons[category] || Dumbbell;
-
-                                                        return (
-                                                            <button
-                                                                key={category}
-                                                                onClick={() => {
-                                                                    setExpandedCategory(category);
-                                                                    const catItems = groupedMethodologies[category] || [];
-                                                                    if (catItems.length === 1) {
-                                                                        handleFormatChange(catItems[0].code);
-                                                                    }
-                                                                }}
-                                                                className={`
-                                                                inline-flex justify-center items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border
-                                                                ${isExpanded
-                                                                        ? 'bg-cv-accent text-white border-cv-accent shadow-md'
-                                                                        : hasSelectedItem
-                                                                            ? 'bg-cv-accent/10 text-cv-accent border-cv-accent/30 hover:bg-cv-accent/20 hover:shadow-sm'
-                                                                            : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-cv-accent/50 hover:text-cv-accent hover:shadow-sm'
-                                                                    }
-                                                            `}
-                                                            >
-                                                                <CategoryIcon size={14} />
-                                                                <span>{categoryLabels[category]}</span>
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
-
-                                            {activeCategory && (groupedMethodologies[activeCategory]?.length ?? 0) > 1 && (
-                                                <div className="bg-slate-50 dark:bg-cv-bg-tertiary/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-1 duration-200">
-                                                    <div className="flex flex-wrap justify-center gap-2">
-                                                        {(groupedMethodologies[activeCategory] || []).map(m => {
-                                                            const IconComponent = iconMap[m.icon] || Dumbbell;
-                                                            const isSelected = normalizeMethodologyCode(block?.format || '') === normalizeMethodologyCode(m.code);
-
-                                                            return (
-                                                                <button
-                                                                    key={m.code}
-                                                                    onClick={() => handleFormatChange(m.code)}
-                                                                    title={m.description}
-                                                                    className={`
-                                                                    px-3 py-2 rounded-lg text-xs font-medium transition-all
-                                                                    inline-flex items-center gap-2 border min-w-[128px] justify-center
-                                                                    ${isSelected
-                                                                            ? 'bg-white dark:bg-cv-bg-primary text-cv-accent border-cv-accent shadow-md ring-1 ring-cv-accent/20 scale-[1.02]'
-                                                                            : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary hover:text-cv-accent hover:bg-slate-50 dark:hover:bg-cv-bg-primary border-slate-200 dark:border-slate-700 hover:border-cv-accent/30 hover:shadow-sm hover:-translate-y-0.5'
-                                                                        }
-                                                                `}
-                                                                >
-                                                                    <IconComponent size={14} />
-                                                                    {m.name}
-                                                                </button>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
+                                <div className="flex items-center gap-2">
+                                    <span className={`cv-block-type-badge ${blockTypeBadgeClass[block.type] || 'cv-block-type-badge-free'}`}>
+                                        {blockTypeLabels[block.type] || block.type}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowStimulusPicker(true)}
+                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary text-xs font-semibold text-cv-text-secondary hover:text-cv-accent hover:border-cv-accent/40 transition-colors"
+                                    >
+                                        <PencilLine size={12} />
+                                        Editar
+                                    </button>
                                 </div>
-                            )
-                        }
+                            </div>
+                        )}
 
-                        {/* Methodology Description */}
-                        {
-                            currentMethodology && block.type !== 'warmup' && (
-                                <p className="mt-2 text-xs text-cv-text-tertiary italic">
-                                    {currentMethodology.description}
-                                </p>
-                            )
-                        }
-                    </div >
-                )
-                }
+                        {!loading && (showStimulusPicker || !currentMethodology) && (
+                            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-cv-bg-tertiary/50 p-3 space-y-2">
+                                <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary">
+                                    <Search size={14} className="text-cv-text-tertiary" />
+                                    <input
+                                        type="text"
+                                        value={stimulusQuery}
+                                        onChange={(e) => setStimulusQuery(e.target.value)}
+                                        placeholder="Buscar tipo de estímulo..."
+                                        className="w-full bg-transparent border-none p-0 text-sm text-cv-text-primary placeholder:text-cv-text-tertiary focus:outline-none focus:ring-0"
+                                    />
+                                </div>
+
+                                {filteredMethodologies.length > 0 ? (
+                                    <div className="cv-fluid-grid-tight">
+                                        {filteredMethodologies.map((methodology) => {
+                                            const IconComponent = iconMap[methodology.icon] || Dumbbell;
+                                            const isSelected = normalizeMethodologyCode(block.format || '') === normalizeMethodologyCode(methodology.code);
+                                            return (
+                                                <button
+                                                    key={methodology.code}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        handleFormatChange(methodology.code);
+                                                        setShowStimulusPicker(false);
+                                                        setStimulusQuery('');
+                                                    }}
+                                                    title={methodology.description}
+                                                    className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all inline-flex items-center justify-center gap-2 border
+                                                        ${isSelected
+                                                            ? 'bg-white dark:bg-cv-bg-primary text-cv-accent border-cv-accent shadow-sm'
+                                                            : 'bg-white dark:bg-cv-bg-secondary text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:text-cv-accent hover:border-cv-accent/40 hover:bg-cv-bg-primary/50'}
+                                                    `}
+                                                >
+                                                    <IconComponent size={14} />
+                                                    <span>{methodology.name}</span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-700 px-3 py-4 text-center text-xs text-cv-text-tertiary">
+                                        No hay tipos de estímulo que coincidan con la búsqueda.
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {currentMethodology && block.type !== 'warmup' && !showStimulusPicker && (
+                            <p className="text-xs text-cv-text-tertiary italic">
+                                {currentMethodology.description}
+                            </p>
+                        )}
+                    </div>
+                )}
 
                 {/* 2. BLOCK NAME / EXERCISE INPUT */}
                 {/* Logic: 
@@ -716,19 +633,14 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                 <FreeTextForm key={blockId} config={config} onChange={handleConfigChange} />
                             )}
 
-                            {(block.type === 'warmup' || block.type === 'accessory' || block.type === 'skill' || block.type === 'finisher') && !currentMethodology && (
-                                <GenericMovementForm key={blockId} config={config} onChange={handleConfigChange} methodology={currentMethodology} blockType={block.type} />
-                            )}
-
-                            {/* CRITICAL UI FIX: Force user to select a methodology for MetCon */}
-                            {block.type === 'metcon_structured' && (
+                            {supportsStimulusPicker && (
                                 <div className="p-6 text-center border-2 border-dashed border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-900/30 rounded-xl">
                                     <AlertCircle className="w-10 h-10 text-amber-500 mx-auto mb-3" />
                                     <h3 className="text-sm font-bold text-cv-text-primary mb-1">
-                                        Selecciona un tipo de MetCon
+                                        Selecciona un tipo de estímulo
                                     </h3>
-                                    <p className="text-xs text-cv-text-secondary max-w-[200px] mx-auto">
-                                        Debes elegir una metodología (EMOM, AMRAP, For Time, etc.) arriba para configurar este bloque.
+                                    <p className="text-xs text-cv-text-secondary max-w-[260px] mx-auto">
+                                        Elegí un estímulo desde el selector superior para mostrar los inputs de este bloque.
                                     </p>
                                 </div>
                             )}

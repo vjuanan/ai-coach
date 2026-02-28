@@ -37,6 +37,27 @@
     --cv-stimulus-finisher-bg: #f5f3ff;
     --cv-stimulus-finisher-border: #ddd6fe;
     --cv-stimulus-finisher-text: #6d28d9;
+    --cv-block-warmup-bg: #ffedd5;
+    --cv-block-warmup-border: #fdba74;
+    --cv-block-warmup-text: #c2410c;
+    --cv-block-strength-bg: #fee2e2;
+    --cv-block-strength-border: #fca5a5;
+    --cv-block-strength-text: #b91c1c;
+    --cv-block-metcon-bg: #dcfce7;
+    --cv-block-metcon-border: #86c4a3;
+    --cv-block-metcon-text: #166534;
+    --cv-block-accessory-bg: #f3e8ff;
+    --cv-block-accessory-border: #d8b4fe;
+    --cv-block-accessory-text: #7e22ce;
+    --cv-block-skill-bg: #dbeafe;
+    --cv-block-skill-border: #93c5fd;
+    --cv-block-skill-text: #1d4ed8;
+    --cv-block-finisher-bg: #fef3c7;
+    --cv-block-finisher-border: #fcd34d;
+    --cv-block-finisher-text: #b45309;
+    --cv-block-free-bg: #f1f5f9;
+    --cv-block-free-border: #cbd5e1;
+    --cv-block-free-text: #475569;
   }
 
   html {
@@ -206,6 +227,52 @@
     border-color: var(--cv-stimulus-finisher-border);
     color: var(--cv-stimulus-finisher-text);
   }
+
+  .cv-block-type-badge {
+    @apply inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold;
+  }
+
+  .cv-block-type-badge-warmup {
+    background: var(--cv-block-warmup-bg);
+    border-color: var(--cv-block-warmup-border);
+    color: var(--cv-block-warmup-text);
+  }
+
+  .cv-block-type-badge-strength {
+    background: var(--cv-block-strength-bg);
+    border-color: var(--cv-block-strength-border);
+    color: var(--cv-block-strength-text);
+  }
+
+  .cv-block-type-badge-metcon {
+    background: var(--cv-block-metcon-bg);
+    border-color: var(--cv-block-metcon-border);
+    color: var(--cv-block-metcon-text);
+  }
+
+  .cv-block-type-badge-accessory {
+    background: var(--cv-block-accessory-bg);
+    border-color: var(--cv-block-accessory-border);
+    color: var(--cv-block-accessory-text);
+  }
+
+  .cv-block-type-badge-skill {
+    background: var(--cv-block-skill-bg);
+    border-color: var(--cv-block-skill-border);
+    color: var(--cv-block-skill-text);
+  }
+
+  .cv-block-type-badge-finisher {
+    background: var(--cv-block-finisher-bg);
+    border-color: var(--cv-block-finisher-border);
+    color: var(--cv-block-finisher-text);
+  }
+
+  .cv-block-type-badge-free {
+    background: var(--cv-block-free-bg);
+    border-color: var(--cv-block-free-border);
+    color: var(--cv-block-free-text);
+  }
 }
 
 @layer utilities {
@@ -277,11 +344,12 @@
 
   .cv-inline-rounds-control {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 0.3rem;
-    min-width: 9rem;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    min-width: 0;
     padding: 0;
   }
 

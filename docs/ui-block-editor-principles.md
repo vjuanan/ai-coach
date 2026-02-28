@@ -10,6 +10,8 @@
 - Desktop: main block inputs must fit in one row whenever possible.
 - Mobile: allow wrapping, but keep dense spacing and no empty gutters.
 - Avoid fixed wide wrappers for numeric-only controls.
+- Stimulus selection uses a single-layer picker: never render visual subcategory tabs (MetCon/HIIT/Classic/Acondicionamiento) inside the editor.
+- After choosing stimulus, collapse to a compact header (`Tipo de estímulo` + selected value + `Editar`).
 - If only one stimulus category is available, render `Tipo de estímulo` with a compact category badge and never a full-width rail/tab row.
 - Warmup top controls (`Por Vueltas/Por Series` + `Rondas/Vueltas`) must be rendered as a single compact horizontal band.
 - In warmup, `Rondas/Vueltas` must use a subtle inline control (micro label + short input + 3 chips), never a dominant standalone card.
@@ -40,6 +42,7 @@
 - Card labels must avoid accidental wrapping by using explicit `labelLines` (`1` or `2`) instead of uncontrolled line breaks.
 - Single-metric exercise inputs (for example, warmup repetitions) must remain centered with bounded useful width and must not appear as tiny cards floating in oversized empty containers.
 - Movement-card metrics must be centered and occupy useful width (no mini islands with dominant lateral dead space).
+- Global per-exercise fields (for example `Reps base`) must include explicit contextual copy (`aplica a cada ejercicio`) to avoid orphan labels.
 
 ## Coverage Scope
 - Apply these rules to all block editor surfaces:

@@ -165,13 +165,24 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
     const movementField = (methodology?.form_config?.fields || []).find(
         (field) => field.type === 'movements_list' && field.key === 'movements'
     );
-    const globalControlLabel = showGlobalSets ? 'SERIES' : 'RONDAS / VUELTAS';
-    const globalControlValue = showGlobalSets ? globalSets : rounds;
+    const globalControlKey = isWarmUp
+        ? (warmupMode === 'sets' ? 'sets' : 'rounds')
+        : (showGlobalSets ? 'sets' : 'rounds');
+    const globalControlLabel = isWarmUp
+        ? (warmupMode === 'sets' ? 'SERIES BASE' : 'RONDAS')
+        : (showGlobalSets ? 'SERIES' : 'RONDAS / VUELTAS');
+    const globalControlValue = isWarmUp
+        ? (warmupMode === 'sets' ? globalSets : rounds)
+        : (showGlobalSets ? globalSets : rounds);
+    const shouldShowGlobalControl = isWarmUp || showRounds || showGlobalSets || showGlobalRounds;
     const globalControlPresets = selectStrategicPresets([2, 3, 4, 5], 3);
     const methodologySimpleFields = (methodology?.form_config?.fields || [])
         .filter((field) => field.type !== 'movements_list')
         .filter((field) => !(field.key === 'rounds' && (showRounds || showGlobalRounds)))
         .filter((field) => !(field.key === 'sets' && (showGlobalSets || showSetsPerMovement)));
+    const hasGlobalRepsPerMovement = methodologySimpleFields.some(
+        (field) => field.key.toLowerCase() === 'repspermovement'
+    );
 
     const handleMovementsChange = (newMovements: MovementObject[]) => {
         onChange('movements', newMovements);
@@ -195,14 +206,14 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className={isWarmUp
-                ? 'w-fit max-w-full mx-auto flex flex-wrap items-center justify-center gap-2'
+                ? 'w-fit max-w-full mx-auto flex flex-wrap items-center justify-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-cv-bg-tertiary/40 px-2 py-1'
                 : 'flex flex-wrap items-start gap-1.5'}
             >
                 {isWarmUp && (
-                    <div className="flex items-center bg-slate-100 dark:bg-slate-800/50 p-0.5 rounded-md shrink-0 h-[2.2rem]">
+                    <div className="flex items-center bg-white dark:bg-cv-bg-secondary p-0.5 rounded-md shrink-0 h-8 border border-slate-200 dark:border-slate-700">
                         <button
                             onClick={() => setWarmupMode('rounds')}
-                            className={`px-2 py-0 text-[11px] font-bold rounded-md transition-all h-[1.8rem] ${warmupMode === 'rounds'
+                            className={`px-2 py-0 text-[11px] font-bold rounded-md transition-all h-6 ${warmupMode === 'rounds'
                                 ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                                 }`}
@@ -211,7 +222,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                         </button>
                         <button
                             onClick={() => setWarmupMode('sets')}
-                            className={`px-2 py-0 text-[11px] font-bold rounded-md transition-all h-[1.8rem] ${warmupMode === 'sets'
+                            className={`px-2 py-0 text-[11px] font-bold rounded-md transition-all h-6 ${warmupMode === 'sets'
                                 ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                                 }`}
@@ -222,10 +233,10 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                 )}
 
                 {/* 1. Global Rounds/Sets Input - Only if methodology supports it */}
-                {(showRounds || showGlobalSets || showGlobalRounds) && (
+                {shouldShowGlobalControl && (
                     isWarmUp ? (
                         <div className="cv-inline-rounds-control shrink-0">
-                            <div className="flex items-center justify-center gap-1.5">
+                            <div className="flex items-center justify-center gap-1">
                                 <span className="text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary whitespace-nowrap">
                                     {globalControlLabel}
                                 </span>
@@ -233,8 +244,8 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                                     type="number"
                                     min={1}
                                     value={globalControlValue}
-                                    onChange={(e) => onChange(showGlobalSets ? 'sets' : 'rounds', e.target.value ? Number.parseInt(e.target.value, 10) : '')}
-                                    placeholder={showGlobalSets ? '3' : '5'}
+                                    onChange={(e) => onChange(globalControlKey, e.target.value ? Number.parseInt(e.target.value, 10) : '')}
+                                    placeholder={globalControlKey === 'sets' ? '3' : '5'}
                                     className="cv-width-short cv-input-micro bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 cv-radius-soft px-1 font-bold text-center text-base focus:ring-1 focus:ring-cv-accent/40 focus:border-cv-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                             </div>
@@ -243,7 +254,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                                     <button
                                         key={preset}
                                         type="button"
-                                        onClick={() => onChange(showGlobalSets ? 'sets' : 'rounds', preset)}
+                                        onClick={() => onChange(globalControlKey, preset)}
                                         className={`cv-chip-compact cv-chip-micro text-[9px] px-0 rounded-md font-semibold transition-all border ${globalControlValue == preset
                                             ? 'bg-cv-accent text-white border-cv-accent'
                                             : 'bg-slate-50 dark:bg-slate-800 text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-cv-accent/40'}`}
@@ -258,10 +269,10 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                             <InputCard
                                 label={globalControlLabel}
                                 value={globalControlValue}
-                                onChange={(val) => onChange(showGlobalSets ? 'sets' : 'rounds', val)}
+                                onChange={(val) => onChange(globalControlKey, val)}
                                 type="number"
                                 icon={RotateCcw}
-                                placeholder={showGlobalSets ? '3' : '5'}
+                                placeholder={globalControlKey === 'sets' ? '3' : '5'}
                                 presets={[2, 3, 4, 5]}
                                 valueSize="short"
                                 cardSize="short"
@@ -284,6 +295,7 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                                     value={config[field.key]}
                                     onChange={(nextValue) => onChange(field.key, nextValue)}
                                     isFinisher={isFinisherMethod}
+                                    movementCount={movements.length}
                                 />
                             </div>
                         ))}
@@ -304,6 +316,11 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
                 {movementField?.help && (
                     <p className="text-[11px] text-cv-text-tertiary mb-3 leading-snug">
                         {movementField.help}
+                    </p>
+                )}
+                {hasGlobalRepsPerMovement && movements.length === 0 && (
+                    <p className="text-[11px] text-cv-text-tertiary mb-3 leading-snug">
+                        Reps base se aplicará a cada ejercicio cuando agregues movimientos.
                     </p>
                 )}
 
@@ -355,6 +372,7 @@ interface MethodologySimpleFieldProps {
     value: unknown;
     onChange: (value: unknown) => void;
     isFinisher: boolean;
+    movementCount: number;
     className?: string;
 }
 
@@ -370,13 +388,19 @@ function shouldUseTwoLineLabel(field: TrainingMethodologyFormField) {
         || key === 'totalreps';
 }
 
-function MethodologySimpleField({ field, value, onChange, isFinisher, className = '' }: MethodologySimpleFieldProps) {
+function MethodologySimpleField({ field, value, onChange, isFinisher, movementCount, className = '' }: MethodologySimpleFieldProps) {
     const resolvedValue = value ?? field.default ?? '';
     const inferredSize = inferFieldValueSize(field);
     const inferredCardSize = inferredSize === 'time' ? 'time' : inferredSize === 'medium' ? 'medium' : 'short';
     const labelLines: 1 | 2 = isFinisher && shouldUseTwoLineLabel(field) ? 2 : 1;
+    const fieldKey = field.key.toLowerCase();
+    const isRepsPerMovementField = fieldKey === 'repspermovement';
+    const resolvedLabel = isRepsPerMovementField ? 'REPS BASE' : field.label.toUpperCase();
+    const resolvedSubLabel = isRepsPerMovementField
+        ? (movementCount > 0 ? 'APLICA A CADA EJERCICIO' : 'SE APLICA A TODOS LOS EJERCICIOS')
+        : undefined;
 
-        if (field.type === 'select' && field.options) {
+    if (field.type === 'select' && field.options) {
         return (
             <div className={`cv-card-fluid bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 cv-radius-soft p-1.5 space-y-1 ${className}`}>
                 <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-secondary text-center">
@@ -405,7 +429,8 @@ function MethodologySimpleField({ field, value, onChange, isFinisher, className 
 
     return (
         <InputCard
-            label={field.label.toUpperCase()}
+            label={resolvedLabel}
+            subLabel={resolvedSubLabel}
             value={normalizedValue}
             onChange={(nextValue) => {
                 if (field.type === 'number') {

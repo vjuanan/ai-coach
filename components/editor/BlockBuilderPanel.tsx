@@ -194,6 +194,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
     // State for discarding incomplete block confirmation
     const [showConfirmDiscard, setShowConfirmDiscard] = useState(false);
     const [pendingBlockType, setPendingBlockType] = useState<BlockType | null>(null);
+    const [pendingSelectBlockId, setPendingSelectBlockId] = useState<string | null>(null);
     const [blockToDiscardId, setBlockToDiscardId] = useState<string | null>(null);
 
     // State for Rich Tooltip
@@ -256,6 +257,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                 // CHECK 3: Is it INCOMPLETE? If so, warn user.
                 else if (!isBlockComplete(currentBlock)) {
                     setPendingBlockType(type);
+                    setPendingSelectBlockId(null);
                     setBlockToDiscardId(currentBlock.id);
                     setShowConfirmDiscard(true);
                     return; // STOP HERE
@@ -268,10 +270,14 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
     };
 
     const performAddBlock = (type: BlockType) => {
-        const option = blockTypeOptions.find(o => o.type === type);
-        // Default to "STANDARD" (Series x Reps) for all structured blocks
-        // free_text and finisher start without format to let the editor choose the right methodology immediately.
-        const format = (type !== 'free_text' && type !== 'finisher') ? 'STANDARD' as WorkoutFormat : undefined;
+        const stimulusPickerBlockTypes: BlockType[] = ['metcon_structured', 'warmup', 'accessory', 'skill', 'finisher'];
+        const usesStimulusPicker = stimulusPickerBlockTypes.includes(type);
+        // Keep explicit default only for strength blocks; structured blocks open with stimulus picker.
+        const format = type === 'strength_linear'
+            ? 'STANDARD' as WorkoutFormat
+            : (usesStimulusPicker || type === 'free_text')
+                ? undefined
+                : 'STANDARD' as WorkoutFormat;
 
         let initialConfig = undefined;
         if (type === 'strength_linear') {
@@ -292,14 +298,25 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
 
 
 
-    const confirmDiscardAndAdd = () => {
-        if (blockToDiscardId && pendingBlockType) {
+    const resetDiscardFlow = () => {
+        setShowConfirmDiscard(false);
+        setBlockToDiscardId(null);
+        setPendingBlockType(null);
+        setPendingSelectBlockId(null);
+    };
+
+    const confirmDiscardAndContinue = () => {
+        if (blockToDiscardId) {
             deleteBlock(blockToDiscardId);
-            performAddBlock(pendingBlockType);
-            setShowConfirmDiscard(false);
-            setBlockToDiscardId(null);
-            setPendingBlockType(null);
         }
+
+        if (pendingBlockType) {
+            performAddBlock(pendingBlockType);
+        } else if (pendingSelectBlockId) {
+            selectBlock(pendingSelectBlockId);
+        }
+
+        resetDiscardFlow();
     };
 
     return (
@@ -378,6 +395,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                                     if (!isValid && !isBlockEmpty(currentBlock)) {
                                                                         // Show dialog to user: Finish or Discard
                                                                         setPendingBlockType(null); // Not adding new, just switching
+                                                                        setPendingSelectBlockId(block.id);
                                                                         setBlockToDiscardId(currentBlock.id);
                                                                         setShowConfirmDiscard(true);
                                                                         return;
@@ -538,6 +556,37 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
             </div>
 
             {/* Confirmation Dialog for Non-Empty Blocks (DELETE) */}
+            {showConfirmDiscard && blockToDiscardId && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl max-w-sm w-full overflow-hidden border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-5">
+                            <h3 className="text-lg font-semibold text-cv-text-primary mb-2 flex items-center gap-2">
+                                <AlertTriangle size={20} className="text-amber-500" />
+                                Bloque incompleto
+                            </h3>
+                            <p className="text-sm text-cv-text-secondary mb-4">
+                                El bloque actual tiene datos incompletos. ¿Querés descartarlo para continuar?
+                            </p>
+
+                            <div className="flex gap-2 justify-end">
+                                <button
+                                    onClick={resetDiscardFlow}
+                                    className="px-4 py-2 text-sm text-cv-text-secondary hover:text-cv-text-primary font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={confirmDiscardAndContinue}
+                                    className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors"
+                                >
+                                    Descartar y continuar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {showConfirmDelete && blockToDelete && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white dark:bg-cv-bg-secondary rounded-xl shadow-xl max-w-sm w-full overflow-hidden border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200">
