@@ -26,7 +26,7 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
     const interval = (config.interval as number) || 1;
     const isWarmup = blockType === 'warmup';
     const isE2MOMMode = interval === 2;
-    const rowGridCols = 'md:grid-cols-[88px_minmax(0,1fr)_2rem_5.5rem_7rem_2.25rem]';
+    const rowGridCols = 'md:grid-cols-[84px_minmax(0,1fr)_2rem_minmax(6rem,0.8fr)_minmax(7.25rem,0.9fr)_2.25rem]';
 
     const [slots, setSlots] = useState<{ id: string; movement: string; targetValue: number | ''; targetUnit: 'reps' | 'seconds' | 'meters' }[]>(() => {
         // Try to recover from new format first
@@ -107,8 +107,8 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
     return (
         <div className="space-y-4 animate-in fade-in duration-300">
             {/* Top Config Row: Duration & Interval */}
-            <div className={`flex flex-wrap items-start gap-2 ${isWarmup ? 'justify-center' : ''}`}>
-                <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 border border-slate-200 dark:border-slate-700/50 cv-radius-soft p-1.5">
+            <div className="cv-fluid-grid-tight">
+                <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 border border-slate-200 dark:border-slate-700/50 cv-radius-soft p-1.5">
                     <label className={`block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide ${isWarmup ? 'text-center' : ''}`}>
                         Duración Total
                     </label>
@@ -127,7 +127,7 @@ export function EmomEditor({ config, onChange, blockType }: EmomEditorProps) {
                     </div>
                 </div>
 
-                <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 border border-slate-200 dark:border-slate-700/50 cv-radius-soft p-1.5">
+                <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 border border-slate-200 dark:border-slate-700/50 cv-radius-soft p-1.5">
                     <label className={`block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide ${isWarmup ? 'text-center' : ''}`}>
                         Cada
                     </label>

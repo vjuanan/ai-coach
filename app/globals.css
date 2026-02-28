@@ -19,6 +19,8 @@
     --cv-card-width-short: 10rem;
     --cv-card-width-medium: 11rem;
     --cv-card-width-time: 12rem;
+    --cv-fluid-card-min: 10rem;
+    --cv-fluid-card-min-tight: 8.75rem;
     --cv-chip-width: 2.25rem;
     --cv-stimulus-strength-bg: #fef2f2;
     --cv-stimulus-strength-border: #fecaca;
@@ -246,8 +248,49 @@
     max-width: var(--cv-chip-width);
   }
 
+  .cv-card-fluid {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    flex: 1 1 auto;
+  }
+
   .cv-chip-micro {
     height: var(--cv-chip-height-micro);
+  }
+
+  .cv-fluid-grid {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(var(--cv-fluid-card-min), 1fr));
+    gap: 0.5rem;
+    align-items: start;
+  }
+
+  .cv-fluid-grid-tight {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(var(--cv-fluid-card-min-tight), 1fr));
+    gap: 0.5rem;
+    align-items: start;
+  }
+
+  .cv-inline-rounds-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.45rem;
+    border: 1px solid rgb(226 232 240);
+    border-radius: 0.625rem;
+    background: rgb(248 250 252 / 0.8);
+    min-width: 8.5rem;
+  }
+
+  .dark .cv-inline-rounds-control {
+    border-color: rgb(51 65 85 / 0.85);
+    background: rgb(30 41 59 / 0.45);
   }
 
   .cv-radius-soft {

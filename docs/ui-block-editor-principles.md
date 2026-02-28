@@ -12,7 +12,9 @@
 - Avoid fixed wide wrappers for numeric-only controls.
 - If only one stimulus category is available, render `Tipo de estímulo` with a compact category badge and never a full-width rail/tab row.
 - Warmup top controls (`Por Vueltas/Por Series` + `Rondas/Vueltas`) must be rendered as a single compact horizontal band.
+- In warmup, `Rondas/Vueltas` must use a subtle inline control (micro label + short input + 3 chips), never a dominant standalone card.
 - `warmup`, `accessory`, and `skill` movement cards must render in two columns from `xl` (`>=1280px`) and center the last incomplete row.
+- Main numeric input rows must use fluid distribution (`100%` container width) with dynamic percentage-based card widths.
 
 ## Input Sizing Rules
 - Use explicit width buckets by data type:
@@ -21,6 +23,7 @@
 - `time`: `MM:SS`.
 - Do not auto-expand width based on user text.
 - Numeric block-editor cards must use fixed width classes and never `flex-1`.
+- Fluid rows must keep compact inner input widths by data type while allowing outer card containers to stretch (`layout='fluid'`).
 
 ## Presets Rules
 - Presets must not live as a right-side column inside inputs.
@@ -35,7 +38,8 @@
 - Validation states (error/focus/hover) must stay minimal and dense.
 - Finisher methodology tabs must never use `flex-1`; tabs stay compact and centered.
 - Card labels must avoid accidental wrapping by using explicit `labelLines` (`1` or `2`) instead of uncontrolled line breaks.
-- Single-metric exercise inputs (for example, warmup repetitions) must align to content width (`w-fit`) and never sit centered inside oversized empty containers.
+- Single-metric exercise inputs (for example, warmup repetitions) must remain centered with bounded useful width and must not appear as tiny cards floating in oversized empty containers.
+- Movement-card metrics must be centered and occupy useful width (no mini islands with dominant lateral dead space).
 
 ## Coverage Scope
 - Apply these rules to all block editor surfaces:

@@ -23,6 +23,7 @@ interface InputCardProps {
     maxVisiblePresets?: number;
     labelLines?: 1 | 2;
     density?: 'compact' | 'micro';
+    layout?: 'fixed' | 'fluid';
 }
 
 function dedupePresets(presets: (string | number)[]) {
@@ -105,6 +106,7 @@ export function InputCard({
     maxVisiblePresets = 3,
     labelLines = 1,
     density = 'compact',
+    layout = 'fixed',
 }: InputCardProps) {
     const [localValue, setLocalValue] = useState<string>(value !== undefined && value !== null ? String(value) : '');
     const [isFocused, setIsFocused] = useState(false);
@@ -133,13 +135,15 @@ export function InputCard({
                 ? 'w-auto min-w-[2.5rem]'
                 : 'cv-width-medium';
     const resolvedCardSize = cardSize || (resolvedSize === 'time' ? 'time' : resolvedSize === 'medium' ? 'medium' : 'short');
-    const cardWidthClass = resolvedCardSize === 'short'
-        ? 'cv-card-short'
-        : resolvedCardSize === 'time'
-            ? 'cv-card-time'
-            : resolvedCardSize === 'auto'
-                ? 'w-auto'
-                : 'cv-card-medium';
+    const cardWidthClass = layout === 'fluid'
+        ? 'cv-card-fluid'
+        : resolvedCardSize === 'short'
+            ? 'cv-card-short'
+            : resolvedCardSize === 'time'
+                ? 'cv-card-time'
+                : resolvedCardSize === 'auto'
+                    ? 'w-auto'
+                    : 'cv-card-medium';
     const visiblePresets = selectStrategicPresets(presets, maxVisiblePresets);
     const labelHeightClass = labelLines === 2
         ? 'h-[1.5rem] leading-tight'

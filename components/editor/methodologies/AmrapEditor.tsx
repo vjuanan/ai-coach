@@ -20,7 +20,7 @@ interface CircuitEditorProps {
 }
 
 export function CircuitEditor({ config, onChange, onBatchChange, mode }: CircuitEditorProps) {
-    const rowGridCols = 'md:grid-cols-[32px_minmax(0,1fr)_2rem_5.5rem_7rem_2.25rem]';
+    const rowGridCols = 'md:grid-cols-[32px_minmax(0,1fr)_2rem_minmax(6rem,0.8fr)_minmax(7.25rem,0.9fr)_2.25rem]';
     const [items, setItems] = useState<CircuitItem[]>(() => {
         const savedItems = (config as any).items;
         if (savedItems && Array.isArray(savedItems)) {
@@ -112,10 +112,10 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
         <div className="space-y-4 animate-in fade-in duration-300">
             {/* Top Config Row: Inputs based on Mode */}
             {(showDurationInput || showRoundsInput || showTimeCapInput) && (
-                <div className="flex flex-wrap gap-2">
+                <div className="cv-fluid-grid-tight">
                     <>
                         {showDurationInput && (
-                            <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
+                            <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
                                 <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide">
                                     Duración Total (min)
                                 </label>
@@ -134,7 +134,7 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                             </div>
                         )}
                         {showRoundsInput && (
-                            <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
+                            <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
                                 <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide">
                                     Rondas
                                 </label>
@@ -153,7 +153,7 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                             </div>
                         )}
                         {showTimeCapInput && (
-                            <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
+                            <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
                                 <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide">
                                     Time Cap (Opcional)
                                 </label>

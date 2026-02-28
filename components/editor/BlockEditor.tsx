@@ -822,9 +822,9 @@ function DynamicMethodologyForm({ methodology, config, onChange, onBatchChange }
         <div className="space-y-3">
             {/* Compact row for simple inputs - Single horizontal line wrapping if needed */}
             {simpleFields.length > 0 && (
-                <div className="flex w-fit max-w-full mx-auto flex-wrap justify-center gap-2 items-start">
+                <div className="cv-fluid-grid">
                     {simpleFields.map((field: TrainingMethodologyFormField) => (
-                        <div key={field.key}>
+                        <div key={field.key} className="w-full">
                             <DynamicField
                                 field={field}
                                 value={config[field.key]}
@@ -861,15 +861,15 @@ interface DynamicFieldProps {
     onBatchConfigChange?: (updates: Record<string, unknown>) => void;
 }
 
-function getDynamicFieldWidthClass(field: TrainingMethodologyFormField): 'cv-card-short' | 'cv-card-medium' | 'cv-card-time' {
+function getDynamicFieldInputWidthClass(field: TrainingMethodologyFormField): 'cv-width-short' | 'cv-width-medium' | 'cv-width-time' {
     const key = field.key.toLowerCase();
-    if (key.includes('time') || key.includes('tempo')) return 'cv-card-time';
-    if (field.type === 'number') return 'cv-card-short';
-    return 'cv-card-medium';
+    if (key.includes('time') || key.includes('tempo')) return 'cv-width-time';
+    if (field.type === 'number') return 'cv-width-short';
+    return 'cv-width-medium';
 }
 
 function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBatchConfigChange }: DynamicFieldProps) {
-    const cardWidthClass = getDynamicFieldWidthClass(field);
+    const inputWidthClass = getDynamicFieldInputWidthClass(field);
 
     if (field.type === 'movements_list') {
         return (
@@ -884,14 +884,14 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
 
     if (field.type === 'select' && field.options) {
         return (
-            <div className={`space-y-1 ${cardWidthClass}`}>
+            <div className="space-y-1 cv-card-fluid">
                 <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-secondary">
                     {field.label}
                 </label>
                 <select
                     value={(value as string) || (field.default as string) || ''}
                     onChange={(e) => onChange(e.target.value)}
-                    className="cv-input cv-input-compact text-sm px-1"
+                    className={`cv-input cv-input-compact text-sm px-1 ${inputWidthClass}`}
                 >
                     {field.options.map(opt => (
                         <option key={opt} value={opt}>{formatMethodologyOptionLabel(opt)}</option>
@@ -925,7 +925,7 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
         };
 
         return (
-            <div className={`space-y-1 ${cardWidthClass}`}>
+            <div className="space-y-1 cv-card-fluid">
                 <div className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border transition-colors ${showTempo ? 'bg-white dark:bg-cv-bg-secondary border-slate-200 dark:border-slate-700' : 'border-dashed border-slate-300 dark:border-slate-600'}`}>
                     <button
                         onClick={toggleTempo}
@@ -958,7 +958,7 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
             : value;
 
         return (
-            <div className={`space-y-1 ${cardWidthClass}`}>
+            <div className="space-y-1 cv-card-fluid">
                 <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
                     <span className="text-xs font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
                     <input
@@ -967,7 +967,7 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
                         value={(displayValue as number) || ''}
                         onChange={(e) => onChange(e.target.value ? parseInt(e.target.value, 10) : null)}
                         placeholder={field.placeholder ? field.placeholder.replace('%', '') : '0'}
-                        className="bg-transparent border border-slate-200 dark:border-slate-700 cv-input-compact cv-radius-soft px-1 text-sm focus:ring-1 focus:ring-cv-accent/30 text-cv-text-primary font-bold placeholder:text-slate-300 cv-width-short text-center"
+                        className={`bg-transparent border border-slate-200 dark:border-slate-700 cv-input-compact cv-radius-soft px-1 text-sm focus:ring-1 focus:ring-cv-accent/30 text-cv-text-primary font-bold placeholder:text-slate-300 ${inputWidthClass} text-center`}
                     />
                 </div>
                 {field.help && (
@@ -979,7 +979,7 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
 
     // Default: text input
     return (
-        <div className={`space-y-1 ${cardWidthClass}`}>
+        <div className="space-y-1 cv-card-fluid">
             <div className="flex items-center gap-2 bg-white dark:bg-cv-bg-secondary px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
                 <span className="text-xs font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
                 <input
@@ -987,7 +987,7 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
                     value={(value as string) || ''}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={field.placeholder}
-                    className="bg-transparent border border-slate-200 dark:border-slate-700 cv-input-compact cv-radius-soft px-1 text-sm focus:ring-1 focus:ring-cv-accent/30 text-cv-text-primary font-medium placeholder:text-slate-300 cv-width-medium text-center"
+                    className={`bg-transparent border border-slate-200 dark:border-slate-700 cv-input-compact cv-radius-soft px-1 text-sm focus:ring-1 focus:ring-cv-accent/30 text-cv-text-primary font-medium placeholder:text-slate-300 ${inputWidthClass} text-center`}
                 />
             </div>
             {field.help && (
@@ -1231,7 +1231,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
         <div className="animate-in fade-in duration-300 space-y-4">
 
             {/* MAIN GRID */}
-            <div className="flex w-fit max-w-full mx-auto flex-wrap justify-center gap-2">
+            <div className="cv-fluid-grid">
 
                 {/* 1. SERIES */}
                 {showSets && (
@@ -1245,6 +1245,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         isInvalid={!config.sets}
                         cardSize="short"
                         valueSize="short"
+                        layout="fluid"
                         headerAction={
                             <button
                                 onClick={() => setShowBreakdown(!showBreakdown)}
@@ -1275,6 +1276,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         isInvalid={!config.distance}
                         cardSize="medium"
                         valueSize="medium"
+                        layout="fluid"
                     />
                 ) : (
                     <InputCard
@@ -1288,6 +1290,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         isInvalid={!config.reps}
                         cardSize="short"
                         valueSize="short"
+                        layout="fluid"
                     />
                 )}
 
@@ -1305,6 +1308,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     isInvalid={intensityType === '% 1RM' ? !config.percentage : !config.rpe}
                     cardSize="short"
                     valueSize="short"
+                    layout="fluid"
                     headerAction={
                         <button
                             onClick={() => setIntensityType(prev => prev === '% 1RM' ? 'RPE' : '% 1RM')}
@@ -1328,6 +1332,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                     isInvalid={!config.rest}
                     cardSize="time"
                     valueSize="time"
+                    layout="fluid"
                 />
 
             </div>

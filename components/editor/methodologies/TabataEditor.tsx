@@ -65,8 +65,8 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
     return (
         <div className="space-y-4 animate-in fade-in duration-300">
             {/* Config Row */}
-            <div className="flex flex-wrap items-start gap-2">
-                <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
+            <div className="cv-fluid-grid-tight">
+                <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
                     <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide">
                         Rondas
                     </label>
@@ -81,7 +81,7 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
                     </div>
                 </div>
 
-                <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
+                <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
                     <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide text-green-600 dark:text-green-400">
                         Trabajo (s)
                     </label>
@@ -96,7 +96,7 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
                     </div>
                 </div>
 
-                <div className="cv-card-short bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
+                <div className="cv-card-fluid bg-slate-50 dark:bg-cv-bg-tertiary/30 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50">
                     <label className="block text-[10px] font-bold text-cv-text-secondary mb-1 uppercase tracking-wide text-orange-600 dark:text-orange-400">
                         Descanso (s)
                     </label>

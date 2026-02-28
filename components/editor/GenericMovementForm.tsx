@@ -33,6 +33,54 @@ interface MovementObject {
 
 type FieldValueSize = 'short' | 'medium' | 'time' | 'auto';
 
+function dedupePresets(presets: (string | number)[]) {
+    const seen = new Set<string>();
+    return presets.filter((preset) => {
+        const key = `${typeof preset}:${String(preset)}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
+function selectStrategicPresets(presets: (string | number)[], maxVisible = 3) {
+    if (maxVisible <= 0) return [];
+    const unique = dedupePresets(presets);
+    if (unique.length <= maxVisible) return unique;
+    if (maxVisible === 1) return [unique[0]];
+    if (maxVisible === 2) return [unique[0], unique[unique.length - 1]];
+
+    const numericValues = unique
+        .map((preset) => (typeof preset === 'number' ? preset : Number(preset)));
+    const allNumeric = numericValues.every((value) => Number.isFinite(value));
+
+    if (allNumeric) {
+        const minValue = Math.min(...numericValues);
+        const maxValue = Math.max(...numericValues);
+        const middleTarget = (minValue + maxValue) / 2;
+
+        const minIndex = numericValues.findIndex((value) => value === minValue);
+        const maxIndex = numericValues.findIndex((value) => value === maxValue);
+
+        let middleIndex = -1;
+        let bestDistance = Number.POSITIVE_INFINITY;
+        for (let i = 0; i < numericValues.length; i++) {
+            if (i === minIndex || i === maxIndex) continue;
+            const distance = Math.abs(numericValues[i] - middleTarget);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                middleIndex = i;
+            }
+        }
+
+        if (middleIndex === -1) middleIndex = Math.floor((unique.length - 1) / 2);
+        return dedupePresets([unique[minIndex], unique[middleIndex], unique[maxIndex]]).slice(0, maxVisible);
+    }
+
+    const middleIndex = Math.floor((unique.length - 1) / 2);
+    return dedupePresets([unique[0], unique[middleIndex], unique[unique.length - 1]]).slice(0, maxVisible);
+}
+
 function inferFieldPresets(field: TrainingMethodologyFormField): (string | number)[] {
     const key = field.key.toLowerCase();
     const placeholderNumber = Number.parseInt(String(field.placeholder || ''), 10);
@@ -117,6 +165,9 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
     const movementField = (methodology?.form_config?.fields || []).find(
         (field) => field.type === 'movements_list' && field.key === 'movements'
     );
+    const globalControlLabel = showGlobalSets ? 'SERIES' : 'RONDAS / VUELTAS';
+    const globalControlValue = showGlobalSets ? globalSets : rounds;
+    const globalControlPresets = selectStrategicPresets([2, 3, 4, 5], 3);
     const methodologySimpleFields = (methodology?.form_config?.fields || [])
         .filter((field) => field.type !== 'movements_list')
         .filter((field) => !(field.key === 'rounds' && (showRounds || showGlobalRounds)))
@@ -172,35 +223,67 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
 
                 {/* 1. Global Rounds/Sets Input - Only if methodology supports it */}
                 {(showRounds || showGlobalSets || showGlobalRounds) && (
-                    <div className="shrink-0">
-                        <InputCard
-                            label={showGlobalSets ? 'SERIES' : 'RONDAS / VUELTAS'}
-                            value={showGlobalSets ? globalSets : rounds}
-                            onChange={(val) => onChange(showGlobalSets ? 'sets' : 'rounds', val)}
-                            type="number"
-                            icon={RotateCcw}
-                            placeholder={showGlobalSets ? '3' : '5'}
-                            presets={[2, 3, 4, 5]}
-                            valueSize="short"
-                            cardSize="short"
-                            density={isWarmUp ? 'micro' : 'compact'}
-                            maxVisiblePresets={3}
-                        />
-                    </div>
+                    isWarmUp ? (
+                        <div className="cv-inline-rounds-control shrink-0">
+                            <span className="text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary">
+                                {globalControlLabel}
+                            </span>
+                            <input
+                                type="number"
+                                min={1}
+                                value={globalControlValue}
+                                onChange={(e) => onChange(showGlobalSets ? 'sets' : 'rounds', e.target.value ? Number.parseInt(e.target.value, 10) : '')}
+                                placeholder={showGlobalSets ? '3' : '5'}
+                                className="cv-width-short cv-input-micro bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 cv-radius-soft px-1 font-bold text-center text-base focus:ring-1 focus:ring-cv-accent/40 focus:border-cv-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
+                            <div className="flex flex-wrap justify-center gap-1">
+                                {globalControlPresets.map((preset) => (
+                                    <button
+                                        key={preset}
+                                        type="button"
+                                        onClick={() => onChange(showGlobalSets ? 'sets' : 'rounds', preset)}
+                                        className={`cv-chip-compact cv-chip-micro text-[9px] px-0 rounded-md font-semibold transition-all border ${globalControlValue == preset
+                                            ? 'bg-cv-accent text-white border-cv-accent'
+                                            : 'bg-slate-50 dark:bg-slate-800 text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-cv-accent/40'}`}
+                                    >
+                                        {preset}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="w-full sm:max-w-[12rem]">
+                            <InputCard
+                                label={globalControlLabel}
+                                value={globalControlValue}
+                                onChange={(val) => onChange(showGlobalSets ? 'sets' : 'rounds', val)}
+                                type="number"
+                                icon={RotateCcw}
+                                placeholder={showGlobalSets ? '3' : '5'}
+                                presets={[2, 3, 4, 5]}
+                                valueSize="short"
+                                cardSize="short"
+                                density="compact"
+                                maxVisiblePresets={3}
+                                layout="fluid"
+                            />
+                        </div>
+                    )
                 )}
             </div>
 
             {methodologySimpleFields.length > 0 && (
                 <div className="space-y-2">
-                    <div className="flex w-fit max-w-full mx-auto flex-wrap justify-center gap-2 items-start">
+                    <div className="cv-fluid-grid">
                         {methodologySimpleFields.map((field) => (
-                            <MethodologySimpleField
-                                key={field.key}
-                                field={field}
-                                value={config[field.key]}
-                                onChange={(nextValue) => onChange(field.key, nextValue)}
-                                isFinisher={isFinisherMethod}
-                            />
+                            <div key={field.key} className="w-full">
+                                <MethodologySimpleField
+                                    field={field}
+                                    value={config[field.key]}
+                                    onChange={(nextValue) => onChange(field.key, nextValue)}
+                                    isFinisher={isFinisherMethod}
+                                />
+                            </div>
                         ))}
                     </div>
                 </div>
@@ -291,9 +374,9 @@ function MethodologySimpleField({ field, value, onChange, isFinisher, className 
     const inferredCardSize = inferredSize === 'time' ? 'time' : inferredSize === 'medium' ? 'medium' : 'short';
     const labelLines: 1 | 2 = isFinisher && shouldUseTwoLineLabel(field) ? 2 : 1;
 
-    if (field.type === 'select' && field.options) {
+        if (field.type === 'select' && field.options) {
         return (
-            <div className={`cv-card-medium bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 cv-radius-soft p-1.5 space-y-1 ${className}`}>
+            <div className={`cv-card-fluid bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 cv-radius-soft p-1.5 space-y-1 ${className}`}>
                 <label className="block text-[10px] font-bold uppercase tracking-wide text-cv-text-secondary text-center">
                     {field.label}
                 </label>
@@ -343,6 +426,7 @@ function MethodologySimpleField({ field, value, onChange, isFinisher, className 
             compact
             presetsPlacement="bottom"
             labelLines={labelLines}
+            layout="fluid"
         />
     );
 }
@@ -371,6 +455,12 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp,
 
     // Attributes
     const showDistance = exerciseMatch?.tracking_parameters?.distance;
+    const metricsCount = (showSets ? 1 : 0) + 1 + (isWarmUp ? 0 : 2);
+    const metricsGridStyle = metricsCount === 1
+        ? { gridTemplateColumns: 'minmax(0, 17rem)' }
+        : metricsCount === 2
+            ? { gridTemplateColumns: 'repeat(auto-fit, minmax(12rem, 1fr))' }
+            : { gridTemplateColumns: 'repeat(auto-fit, minmax(10rem, 1fr))' };
 
     return (
         <div className={`rounded-lg border transition-all duration-200
@@ -410,7 +500,10 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp,
             {isValid && (
                 <div className={`${isCompactLayout ? 'p-2 gap-1.5' : 'p-2.5 gap-2'} bg-white dark:bg-cv-bg-secondary rounded-b-lg flex flex-col`}>
                     {/* Metrics Grid */}
-                    <div className={`${isCompactLayout ? 'flex w-fit max-w-full flex-wrap justify-start gap-1.5' : 'flex w-fit max-w-full mx-auto flex-wrap justify-center gap-2'}`}>
+                    <div
+                        className={`grid w-full gap-2 ${metricsCount === 1 ? 'justify-center mx-auto max-w-[17rem]' : ''}`}
+                        style={metricsGridStyle}
+                    >
                         {/* 1. Series (Sets) - CONDITIONALLY SHOWN */}
                         {showSets && (
                             <InputCard
@@ -425,6 +518,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp,
                                 valueSize="short"
                                 cardSize="short"
                                 density={isWarmUp ? 'micro' : 'compact'}
+                                layout="fluid"
                             />
                         )}
 
@@ -443,6 +537,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp,
                                 valueSize="medium"
                                 cardSize="medium"
                                 density={isWarmUp ? 'micro' : 'compact'}
+                                layout="fluid"
                             />
                         ) : (
                             <InputCard
@@ -457,6 +552,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp,
                                 valueSize="short"
                                 cardSize="short"
                                 density={isWarmUp ? 'micro' : 'compact'}
+                                layout="fluid"
                             />
                         )}
 
@@ -476,6 +572,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp,
                                 isInvalid={!movement.rpe && !movement.weight}
                                 valueSize="short"
                                 cardSize="short"
+                                layout="fluid"
                             />
                         )}
 
@@ -492,6 +589,7 @@ function MovementCard({ index, movement, onChange, onRemove, showSets, isWarmUp,
                                 isInvalid={!movement.rest}
                                 valueSize="short"
                                 cardSize="short"
+                                layout="fluid"
                             />
                         )}
                     </div>
