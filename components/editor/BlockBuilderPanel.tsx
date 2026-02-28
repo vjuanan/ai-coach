@@ -369,7 +369,6 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                         </div>
                                         <div className="text-left flex-1 pr-12">
                                             <p className="font-semibold text-sm text-cv-text-primary">{option.label}</p>
-                                            <p className="text-[10px] text-cv-text-tertiary">{option.description}</p>
                                         </div>
 
                                         {/* Hover Add Indicator */}
@@ -536,7 +535,6 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                             </div>
                                                             <div>
                                                                 <p className="text-xs font-semibold text-cv-text-primary">{option.label}</p>
-                                                                <p className="text-[10px] text-cv-text-tertiary line-clamp-1">{option.description}</p>
                                                             </div>
                                                         </button>
                                                     );
