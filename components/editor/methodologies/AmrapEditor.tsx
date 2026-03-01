@@ -17,9 +17,10 @@ interface CircuitEditorProps {
     onChange: (key: string, value: unknown) => void;
     onBatchChange?: (updates: Record<string, unknown>) => void;
     mode: 'AMRAP' | 'RFT' | 'FOR_TIME' | 'CHIPPER';
+    showMetaControls?: boolean;
 }
 
-export function CircuitEditor({ config, onChange, onBatchChange, mode }: CircuitEditorProps) {
+export function CircuitEditor({ config, onChange, onBatchChange, mode, showMetaControls = true }: CircuitEditorProps) {
     const rowGridCols = 'md:grid-cols-[32px_minmax(0,1fr)_2rem_minmax(6rem,0.8fr)_minmax(7.25rem,0.9fr)_2.25rem]';
     const [items, setItems] = useState<CircuitItem[]>(() => {
         const savedItems = (config as any).items;
@@ -111,7 +112,7 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
     return (
         <div className="space-y-4 animate-in fade-in duration-300">
             {/* Top Config Row: Inputs based on Mode */}
-            {(showDurationInput || showRoundsInput || showTimeCapInput) && (
+            {showMetaControls && (showDurationInput || showRoundsInput || showTimeCapInput) && (
                 <div className="cv-meta-bar">
                     <>
                         {showDurationInput && (
@@ -193,6 +194,7 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                     {items.map((item, index) => (
                         <div
                             key={item.id || index}
+                            data-circuit-row
                             className={`group grid grid-cols-1 ${rowGridCols} gap-2 p-2.5 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm hover:shadow-md transition-all items-start md:items-center`}
                         >
                             <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-cv-text-tertiary shrink-0">
@@ -209,9 +211,19 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode }: Circuit
                                 />
                             </div>
 
-                            <div className="hidden md:flex items-center justify-center text-cv-text-tertiary/80">
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    const row = e.currentTarget.closest('[data-circuit-row]');
+                                    const input = (row?.querySelector('[data-smart-exercise-input] input')
+                                        || row?.querySelector('input')) as HTMLInputElement | null;
+                                    input?.focus();
+                                }}
+                                className="hidden md:flex self-center items-center justify-center text-cv-text-tertiary/80 hover:text-cv-accent transition-colors p-1"
+                                aria-label={`Buscar ejercicio fila ${index + 1}`}
+                            >
                                 <Search size={17} />
-                            </div>
+                            </button>
 
                             <div className="flex flex-col items-start md:items-center gap-1">
                                 <label className="block md:hidden text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary">

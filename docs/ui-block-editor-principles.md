@@ -18,6 +18,7 @@
 - `warmup`, `accessory`, and `skill` movement cards must render in two columns from `xl` (`>=1280px`) and center the last incomplete row.
 - Main numeric input rows must use fluid distribution (`100%` container width) with dynamic percentage-based card widths.
 - Global configurable parameters (stimulus meta, rounds/sets, duration/interval/timecap, progression) must stay in a compact top bar so the main canvas prioritizes movement design.
+- Parameter top bars must use controlled wrap inside a single visual band; never split into stacked bars when a single compact band can hold the controls.
 
 ## Input Sizing Rules
 - Use explicit width buckets by data type:
@@ -48,6 +49,7 @@
 - Do not render redundant explanatory copy in editor surfaces (`what is AMRAP`, `Ejercicios del circuito`, `En cada fila...`) unless the text is strictly required for validation or error handling.
 - Block-type badge colors and active block card highlight must come from the same block-type token source (`bg/border/text`) with exact parity.
 - Every UI change in block editor must be visually validated with screenshots before considering the task complete; if issues are found, iterate fix + recapture until clean.
+- Hover previews/tooltips must be viewport-safe: clamp/fallback position so no tooltip content is clipped by screen edges.
 
 ## Coverage Scope
 - Apply these rules to all block editor surfaces:

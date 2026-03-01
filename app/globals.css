@@ -42,7 +42,7 @@
     --cv-block-warmup-text: #c2410c;
     --cv-block-strength-bg: #fee2e2;
     --cv-block-strength-border: #fca5a5;
-    --cv-block-strength-text: #b91c1c;
+    --cv-block-strength-text: #ef4444;
     --cv-block-metcon-bg: #ccfbf1;
     --cv-block-metcon-border: #99f6e4;
     --cv-block-metcon-text: #86c4a3;
@@ -275,7 +275,7 @@
   }
 
   .cv-meta-bar {
-    @apply flex w-full flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/70 px-2.5 py-2;
+    @apply flex w-full flex-wrap items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2.5;
   }
 
   .dark .cv-meta-bar {
@@ -283,7 +283,7 @@
   }
 
   .cv-meta-item {
-    @apply inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-1.5;
+    @apply inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5;
   }
 
   .dark .cv-meta-item {

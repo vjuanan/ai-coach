@@ -13,6 +13,9 @@ interface GenericMovementFormProps {
     onChange: (key: string, value: unknown) => void;
     methodology?: TrainingMethodology;
     blockType?: string; // Added blockType
+    showMetaControls?: boolean;
+    warmupMode?: 'rounds' | 'sets';
+    onWarmupModeChange?: (mode: 'rounds' | 'sets') => void;
 }
 
 interface MovementObject {
@@ -137,7 +140,15 @@ const parseMovements = (data: unknown[]): MovementObject[] => {
     });
 };
 
-export function GenericMovementForm({ config, onChange, methodology, blockType }: GenericMovementFormProps) {
+export function GenericMovementForm({
+    config,
+    onChange,
+    methodology,
+    blockType,
+    showMetaControls = true,
+    warmupMode: controlledWarmupMode,
+    onWarmupModeChange,
+}: GenericMovementFormProps) {
     // Logic for displaying inputs based on methodology
     const methodologyCode = normalizeMethodologyCode(methodology?.code || '');
     const isMetconLike = methodology?.category === 'metcon' || methodology?.category === 'hiit';
@@ -147,7 +158,14 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
     const isWarmUp = blockType === 'warmup';
     const isFinisherMethod = methodology?.category === 'finisher';
     const useCompactMovementCards = ['warmup', 'accessory', 'skill'].includes(blockType || '');
-    const [warmupMode, setWarmupMode] = useState<'rounds' | 'sets'>('rounds');
+    const [internalWarmupMode, setInternalWarmupMode] = useState<'rounds' | 'sets'>('rounds');
+    const warmupMode = controlledWarmupMode ?? internalWarmupMode;
+    const setWarmupMode = (mode: 'rounds' | 'sets') => {
+        if (onWarmupModeChange) onWarmupModeChange(mode);
+        if (controlledWarmupMode === undefined) {
+            setInternalWarmupMode(mode);
+        }
+    };
 
     // Strict display rules:
     // - Rounds: Only for Metcon/HIIT, but NEVER for STANDARD
@@ -202,90 +220,92 @@ export function GenericMovementForm({ config, onChange, methodology, blockType }
 
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="cv-meta-bar">
-                {isWarmUp && (
-                    <div className="cv-meta-switch shrink-0">
-                        <button
-                            onClick={() => setWarmupMode('rounds')}
-                            className={`px-2 py-0 text-[11px] font-bold rounded-md transition-all h-6 ${warmupMode === 'rounds'
-                                ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
-                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-                                }`}
-                        >
-                            Por Vueltas
-                        </button>
-                        <button
-                            onClick={() => setWarmupMode('sets')}
-                            className={`px-2 py-0 text-[11px] font-bold rounded-md transition-all h-6 ${warmupMode === 'sets'
-                                ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
-                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-                                }`}
-                        >
-                            Por Series
-                        </button>
-                    </div>
-                )}
-
-                {/* 1. Global Rounds/Sets Input - Only if methodology supports it */}
-                {shouldShowGlobalControl && (
-                    isWarmUp ? (
-                        <div className="cv-meta-item shrink-0">
-                            <div className="flex items-center justify-center gap-1">
-                                <span className="text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary whitespace-nowrap">
-                                    {globalControlLabel}
-                                </span>
-                                <input
-                                    type="number"
-                                    min={1}
-                                    value={globalControlValue}
-                                    onChange={(e) => onChange(globalControlKey, e.target.value ? Number.parseInt(e.target.value, 10) : '')}
-                                    placeholder={globalControlKey === 'sets' ? '3' : '5'}
-                                    className="cv-width-short cv-input-micro bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 cv-radius-soft px-1 font-bold text-center text-base focus:ring-1 focus:ring-cv-accent/40 focus:border-cv-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                />
-                            </div>
-                            <div className="flex flex-wrap justify-center gap-1">
-                                {globalControlPresets.map((preset) => (
-                                    <button
-                                        key={preset}
-                                        type="button"
-                                        onClick={() => onChange(globalControlKey, preset)}
-                                        className={`cv-chip-compact cv-chip-micro text-[9px] px-0 rounded-md font-semibold transition-all border ${globalControlValue == preset
-                                            ? 'bg-cv-accent text-white border-cv-accent'
-                                            : 'bg-slate-50 dark:bg-slate-800 text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-cv-accent/40'}`}
-                                    >
-                                        {preset}
-                                    </button>
-                                ))}
-                            </div>
+            {showMetaControls && (
+                <div className="cv-meta-bar">
+                    {isWarmUp && (
+                        <div className="cv-meta-switch shrink-0">
+                            <button
+                                onClick={() => setWarmupMode('rounds')}
+                                className={`px-2 py-0 text-[11px] font-bold rounded-md transition-all h-6 ${warmupMode === 'rounds'
+                                    ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
+                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                                    }`}
+                            >
+                                Por Vueltas
+                            </button>
+                            <button
+                                onClick={() => setWarmupMode('sets')}
+                                className={`px-2 py-0 text-[11px] font-bold rounded-md transition-all h-6 ${warmupMode === 'sets'
+                                    ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
+                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                                    }`}
+                            >
+                                Por Series
+                            </button>
                         </div>
-                    ) : (
-                        <InputCard
-                            label={globalControlLabel}
-                            value={globalControlValue}
-                            onChange={(val) => onChange(globalControlKey, val)}
-                            type="number"
-                            icon={RotateCcw}
-                            placeholder={globalControlKey === 'sets' ? '3' : '5'}
-                            presets={[2, 3, 4, 5]}
-                            valueSize="short"
-                            cardSize="short"
-                            density="micro"
-                            maxVisiblePresets={3}
-                            layout="fit"
-                        />
-                    )
-                )}
+                    )}
 
-                {methodologySimpleFields.map((field) => (
-                    <MethodologySimpleField
-                        key={field.key}
-                        field={field}
-                        value={config[field.key]}
-                        onChange={(nextValue) => onChange(field.key, nextValue)}
-                        isFinisher={isFinisherMethod}
-                    />
-                ))}
-            </div>
+                    {/* 1. Global Rounds/Sets Input - Only if methodology supports it */}
+                    {shouldShowGlobalControl && (
+                        isWarmUp ? (
+                            <div className="cv-meta-item shrink-0">
+                                <div className="flex items-center justify-center gap-1">
+                                    <span className="text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary whitespace-nowrap">
+                                        {globalControlLabel}
+                                    </span>
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        value={globalControlValue}
+                                        onChange={(e) => onChange(globalControlKey, e.target.value ? Number.parseInt(e.target.value, 10) : '')}
+                                        placeholder={globalControlKey === 'sets' ? '3' : '5'}
+                                        className="cv-width-short cv-input-micro bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 cv-radius-soft px-1 font-bold text-center text-base focus:ring-1 focus:ring-cv-accent/40 focus:border-cv-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    />
+                                </div>
+                                <div className="flex flex-wrap justify-center gap-1">
+                                    {globalControlPresets.map((preset) => (
+                                        <button
+                                            key={preset}
+                                            type="button"
+                                            onClick={() => onChange(globalControlKey, preset)}
+                                            className={`cv-chip-compact cv-chip-micro text-[9px] px-0 rounded-md font-semibold transition-all border ${globalControlValue == preset
+                                                ? 'bg-cv-accent text-white border-cv-accent'
+                                                : 'bg-slate-50 dark:bg-slate-800 text-cv-text-secondary border-slate-200 dark:border-slate-700 hover:border-cv-accent/40'}`}
+                                        >
+                                            {preset}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <InputCard
+                                label={globalControlLabel}
+                                value={globalControlValue}
+                                onChange={(val) => onChange(globalControlKey, val)}
+                                type="number"
+                                icon={RotateCcw}
+                                placeholder={globalControlKey === 'sets' ? '3' : '5'}
+                                presets={[2, 3, 4, 5]}
+                                valueSize="short"
+                                cardSize="short"
+                                density="micro"
+                                maxVisiblePresets={3}
+                                layout="fit"
+                            />
+                        )
+                    )}
+
+                    {methodologySimpleFields.map((field) => (
+                        <MethodologySimpleField
+                            key={field.key}
+                            field={field}
+                            value={config[field.key]}
+                            onChange={(nextValue) => onChange(field.key, nextValue)}
+                            isFinisher={isFinisherMethod}
+                        />
+                    ))}
+                </div>
+            )}
 
             {/* 2. Movements List */}
             <div className="space-y-3">

@@ -652,6 +652,33 @@ function BlockTooltip({ hoverState }: { hoverState: { block: any, rect: DOMRect 
 
     const { block, rect } = hoverState;
     const config = block.config || {};
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1920;
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 1080;
+    const tooltipMaxWidth = 220;
+    const viewportMargin = 16;
+    const movementCount = Array.isArray(config.movements)
+        ? config.movements.length
+        : Array.isArray(config.exercises)
+            ? config.exercises.length
+            : 0;
+    const estimatedHeight = Math.min(320, 170 + Math.min(6, movementCount) * 18);
+
+    const anchorX = rect.left + rect.width / 2;
+    const minCenterX = viewportMargin + tooltipMaxWidth / 2;
+    const maxCenterX = viewportWidth - viewportMargin - tooltipMaxWidth / 2;
+    const clampedCenterX = Math.min(Math.max(anchorX, minCenterX), maxCenterX);
+
+    const aboveTop = rect.top - estimatedHeight - 8;
+    const belowTop = rect.bottom + 8;
+    const canRenderAbove = aboveTop >= viewportMargin;
+    const canRenderBelow = belowTop + estimatedHeight <= viewportHeight - viewportMargin;
+    const placeAbove = canRenderAbove || !canRenderBelow;
+
+    const unclampedTop = placeAbove ? aboveTop : belowTop;
+    const top = Math.max(
+        viewportMargin,
+        Math.min(unclampedTop, viewportHeight - estimatedHeight - viewportMargin)
+    );
 
     // Determine content based on block type
     let content = null;
@@ -751,11 +778,11 @@ function BlockTooltip({ hoverState }: { hoverState: { block: any, rect: DOMRect 
 
     return (
         <div
-            className="fixed z-[100] max-w-[220px] w-max bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl rounded-xl p-3 text-left animate-in fade-in zoom-in-95 duration-150 pointer-events-none"
+            className="fixed z-[100] max-w-[220px] w-max max-h-[min(62vh,320px)] overflow-y-auto bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl rounded-xl p-3 text-left animate-in fade-in zoom-in-95 duration-150 pointer-events-none"
             style={{
-                top: rect.top - 8,
-                left: rect.left + rect.width / 2,
-                transform: 'translate(-50%, -100%)',
+                top,
+                left: clampedCenterX,
+                transform: 'translateX(-50%)',
             }}
         >
             <div className="mb-2 border-b border-white/10 pb-2">
@@ -765,9 +792,15 @@ function BlockTooltip({ hoverState }: { hoverState: { block: any, rect: DOMRect 
             {content}
 
             {/* Arrow */}
-            <div
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-slate-900/95"
-            />
+            {placeAbove ? (
+                <div
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-slate-900/95"
+                />
+            ) : (
+                <div
+                    className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-slate-900/95"
+                />
+            )}
         </div>
     );
 }

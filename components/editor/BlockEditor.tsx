@@ -100,6 +100,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     const [stimulusQuery, setStimulusQuery] = useState('');
     const [showProgressionSelector, setShowProgressionSelector] = useState(false);
     const [showEditExerciseModal, setShowEditExerciseModal] = useState(false);
+    const [warmupMode, setWarmupMode] = useState<'rounds' | 'sets'>('rounds');
     const firstInputRef = useRef<HTMLInputElement>(null);
     const normalizedMethodologies = useMemo(
         () => normalizeTrainingMethodologies(trainingMethodologies),
@@ -173,6 +174,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
     const isSpecializedMethod = SPECIALIZED_METHOD_CODES.includes(currentMethodologyCode);
     const blockType = block?.type;
     const supportsStimulusPicker = ['metcon_structured', 'warmup', 'accessory', 'skill', 'finisher'].includes(blockType || '');
+    const config = (block?.config || {}) as WorkoutConfig;
 
     useEffect(() => {
         if (!blockType) return;
@@ -187,6 +189,10 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         setShowStimulusPicker(!hasValidStimulus);
         setStimulusQuery('');
     }, [blockId, blockType, currentMethodology, supportsStimulusPicker]);
+
+    useEffect(() => {
+        setWarmupMode('rounds');
+    }, [blockId]);
 
     // Backfill missing numeric defaults in existing blocks so export and validation remain coherent.
     useEffect(() => {
@@ -227,8 +233,6 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
             </div>
         );
     }
-
-    const config = block.config || {};
 
     const handleConfigChange = (key: string, value: unknown) => {
         updateBlock(blockId, {
@@ -281,6 +285,255 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
             normalizeMethodologyCode(methodology.code).toLowerCase().includes(normalizedStimulusQuery)
         );
     });
+
+    const isGenericMovementMethod = Boolean(
+        currentMethodology
+        && ['warmup', 'accessory', 'skill', 'finisher'].includes(block.type)
+        && !isSpecializedMethod
+    );
+    const isWarmUpMethod = block.type === 'warmup';
+    const isMetconLikeMethod = currentMethodology?.category === 'metcon' || currentMethodology?.category === 'hiit';
+    const isStrengthLikeMethod = currentMethodology?.category === 'strength';
+    const isStandardMethod = currentMethodologyCode === 'STANDARD';
+    const showRoundsInTop = (isMetconLikeMethod && !isStandardMethod) || (isWarmUpMethod && warmupMode === 'rounds');
+    const showGlobalSetsInTop = currentMethodologyCode === 'SUPER_SET';
+    const showGlobalRoundsInTop = currentMethodologyCode === 'GIANT_SET';
+    const showSetsPerMovementTop = (!isWarmUpMethod && (isStrengthLikeMethod || isStandardMethod) && !showGlobalSetsInTop && !showGlobalRoundsInTop) || (isWarmUpMethod && warmupMode === 'sets');
+    const genericGlobalControlKey = isWarmUpMethod
+        ? (warmupMode === 'sets' ? 'sets' : 'rounds')
+        : (showGlobalSetsInTop ? 'sets' : 'rounds');
+    const genericGlobalControlLabel = isWarmUpMethod
+        ? (warmupMode === 'sets' ? 'Series Base' : 'Rondas')
+        : (showGlobalSetsInTop ? 'Series' : 'Rondas / Vueltas');
+    const genericGlobalControlValue = config[genericGlobalControlKey] as string | number | undefined;
+    const shouldShowGenericGlobalControl = isWarmUpMethod || showRoundsInTop || showGlobalSetsInTop || showGlobalRoundsInTop;
+    const genericSimpleFields = (currentMethodology?.form_config?.fields || [])
+        .filter((field) => field.type !== 'movements_list')
+        .filter((field) => !(field.key === 'rounds' && (showRoundsInTop || showGlobalRoundsInTop)))
+        .filter((field) => !(field.key === 'sets' && (showGlobalSetsInTop || showSetsPerMovementTop)));
+
+    const renderMetaNumberInput = (
+        key: string,
+        label: string,
+        value: unknown,
+        onChange: (nextValue: number | null) => void,
+        placeholder: string,
+        Icon?: LucideIcon,
+        widthClass: 'cv-width-short' | 'cv-width-medium' | 'cv-width-time' = 'cv-width-short'
+    ) => {
+        const normalizedValue = typeof value === 'number'
+            ? value
+            : (typeof value === 'string' ? value : '');
+
+        return (
+            <div key={key} className="cv-meta-item">
+                <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
+                    {label}
+                </label>
+                <div className="relative">
+                    {Icon && <Icon size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />}
+                    <input
+                        type="number"
+                        min={0}
+                        value={normalizedValue}
+                        onChange={(e) => onChange(e.target.value ? Number.parseInt(e.target.value, 10) : null)}
+                        className={`${widthClass} cv-meta-input-fit text-sm ${Icon ? 'pl-7 pr-1' : 'px-1'}`}
+                        placeholder={placeholder}
+                    />
+                </div>
+            </div>
+        );
+    };
+
+    const renderTopParameterItems = () => {
+        if (!currentMethodology || showStimulusPicker) return null;
+
+        if (currentMethodologyCode === 'AMRAP') {
+            return [
+                renderMetaNumberInput('minutes', 'Duración (min)', config.minutes, (nextValue) => handleConfigChange('minutes', nextValue), '12', Clock),
+            ];
+        }
+
+        if (currentMethodologyCode === 'EMOM' || currentMethodologyCode === 'EMOM_ALT' || currentMethodologyCode === 'E2MOM') {
+            return [
+                renderMetaNumberInput('minutes', 'Duración', config.minutes, (nextValue) => handleConfigChange('minutes', nextValue), '10', Clock),
+                renderMetaNumberInput('interval', 'Cada', config.interval, (nextValue) => handleConfigChange('interval', nextValue || 1), '1', Repeat),
+            ];
+        }
+
+        if (currentMethodologyCode === 'RFT') {
+            return [
+                renderMetaNumberInput('rounds', 'Rondas', config.rounds, (nextValue) => handleConfigChange('rounds', nextValue), '5', RefreshCw),
+                renderMetaNumberInput('timeCap', 'Time Cap', config.timeCap, (nextValue) => handleConfigChange('timeCap', nextValue), '20', Clock),
+            ];
+        }
+
+        if (currentMethodologyCode === 'FOR_TIME') {
+            return [
+                renderMetaNumberInput('timeCap', 'Time Cap', config.timeCap, (nextValue) => handleConfigChange('timeCap', nextValue), '15', Clock),
+            ];
+        }
+
+        if (currentMethodologyCode === 'CHIPPER') {
+            return [
+                renderMetaNumberInput('rounds', 'Rondas', config.rounds, (nextValue) => handleConfigChange('rounds', nextValue), '1', RefreshCw),
+                renderMetaNumberInput('timeCap', 'Time Cap', config.timeCap, (nextValue) => handleConfigChange('timeCap', nextValue), '25', Clock),
+            ];
+        }
+
+        if (currentMethodologyCode === 'TABATA') {
+            return [
+                renderMetaNumberInput('rounds', 'Rondas', config.rounds, (nextValue) => handleConfigChange('rounds', nextValue), '8', RefreshCw),
+                renderMetaNumberInput('workSeconds', 'Trabajo (s)', config.workSeconds, (nextValue) => handleConfigChange('workSeconds', nextValue), '20', Clock),
+                renderMetaNumberInput('restSeconds', 'Descanso (s)', config.restSeconds, (nextValue) => handleConfigChange('restSeconds', nextValue), '10', Clock),
+            ];
+        }
+
+        if (isGenericMovementMethod) {
+            return (
+                <>
+                    {isWarmUpMethod && (
+                        <div className="cv-meta-switch shrink-0">
+                            <button
+                                onClick={() => setWarmupMode('rounds')}
+                                className={`px-2 py-0 text-[11px] font-bold rounded-md transition-all h-6 ${warmupMode === 'rounds'
+                                    ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
+                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                                    }`}
+                            >
+                                Por Vueltas
+                            </button>
+                            <button
+                                onClick={() => setWarmupMode('sets')}
+                                className={`px-2 py-0 text-[11px] font-bold rounded-md transition-all h-6 ${warmupMode === 'sets'
+                                    ? 'bg-white dark:bg-cv-bg-primary shadow-sm text-cv-accent'
+                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                                    }`}
+                            >
+                                Por Series
+                            </button>
+                        </div>
+                    )}
+
+                    {shouldShowGenericGlobalControl && renderMetaNumberInput(
+                        genericGlobalControlKey,
+                        genericGlobalControlLabel,
+                        genericGlobalControlValue,
+                        (nextValue) => handleConfigChange(genericGlobalControlKey, nextValue),
+                        genericGlobalControlKey === 'sets' ? '3' : '5',
+                        RefreshCw
+                    )}
+
+                    {genericSimpleFields.map((field) => {
+                        if (field.type === 'select' && field.options) {
+                            return (
+                                <div key={field.key} className="cv-meta-item">
+                                    <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
+                                        {field.label}
+                                    </label>
+                                    <select
+                                        value={String(config[field.key] ?? field.default ?? '')}
+                                        onChange={(e) => handleConfigChange(field.key, e.target.value)}
+                                        className="cv-meta-input-fit cv-width-time text-sm px-1"
+                                    >
+                                        {field.options.map((option) => (
+                                            <option key={option} value={option}>
+                                                {formatMethodologyOptionLabel(option)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            );
+                        }
+
+                        if (field.type === 'number') {
+                            return renderMetaNumberInput(
+                                field.key,
+                                field.label,
+                                config[field.key],
+                                (nextValue) => handleConfigChange(field.key, nextValue),
+                                String(field.placeholder || ''),
+                                undefined,
+                                field.key.toLowerCase().includes('time') ? 'cv-width-time' : 'cv-width-short'
+                            );
+                        }
+
+                        return (
+                            <div key={field.key} className="cv-meta-item">
+                                <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
+                                    {field.label}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={String(config[field.key] ?? '')}
+                                    onChange={(e) => handleConfigChange(field.key, e.target.value)}
+                                    placeholder={field.placeholder || ''}
+                                    className="cv-meta-input-fit cv-width-time text-sm px-1"
+                                />
+                            </div>
+                        );
+                    })}
+                </>
+            );
+        }
+
+        if (!isSpecializedMethod) {
+            const dynamicTopFields = (currentMethodology.form_config?.fields || []).filter((field) => field.type !== 'movements_list');
+
+            return dynamicTopFields.map((field) => {
+                if (field.type === 'select' && field.options) {
+                    return (
+                        <div key={field.key} className="cv-meta-item">
+                            <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
+                                {field.label}
+                            </label>
+                            <select
+                                value={String(config[field.key] ?? field.default ?? '')}
+                                onChange={(e) => handleConfigChange(field.key, e.target.value)}
+                                className="cv-meta-input-fit cv-width-time text-sm px-1"
+                            >
+                                {field.options.map((option) => (
+                                    <option key={option} value={option}>
+                                        {formatMethodologyOptionLabel(option)}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    );
+                }
+
+                if (field.type === 'number') {
+                    const widthClass = field.key.toLowerCase().includes('time') ? 'cv-width-time' : 'cv-width-short';
+                    return renderMetaNumberInput(
+                        field.key,
+                        field.label,
+                        config[field.key],
+                        (nextValue) => handleConfigChange(field.key, nextValue),
+                        String(field.placeholder || ''),
+                        undefined,
+                        widthClass
+                    );
+                }
+
+                return (
+                    <div key={field.key} className="cv-meta-item">
+                        <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
+                            {field.label}
+                        </label>
+                        <input
+                            type="text"
+                            value={String(config[field.key] ?? '')}
+                            onChange={(e) => handleConfigChange(field.key, e.target.value)}
+                            placeholder={field.placeholder || ''}
+                            className="cv-meta-input-fit cv-width-time text-sm px-1"
+                        />
+                    </div>
+                );
+            });
+        }
+
+        return null;
+    };
 
     // Navigation info - find current block position
     // Navigation info - find current block position
@@ -348,7 +601,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
 
                         {!loading && currentMethodology && !showStimulusPicker && (
                             <div className="cv-meta-bar">
-                                <div className="flex min-w-0 items-center gap-2 flex-wrap">
+                                <div className="flex min-w-0 shrink-0 items-center gap-2 flex-wrap">
                                     <span className="text-sm font-semibold text-cv-text-primary truncate">
                                         {currentMethodology.name}
                                     </span>
@@ -356,7 +609,10 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                         {blockTypeLabels[block.type] || block.type}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                                    {renderTopParameterItems()}
+                                </div>
+                                <div className="ml-auto flex shrink-0 items-center gap-2">
                                     {block.type !== 'warmup' && (
                                         <ProgressionSettings
                                             blockId={blockId}
@@ -539,6 +795,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                     config={config as any}
                                     onChange={handleConfigChange}
                                     blockType={block.type}
+                                    showMetaControls={false}
                                 />
                             )}
 
@@ -550,6 +807,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                     config={config as any}
                                     onChange={handleConfigChange}
                                     onBatchChange={handleBatchConfigChange}
+                                    showMetaControls={false}
                                 />
                             )}
 
@@ -561,6 +819,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                     config={config as any}
                                     onChange={handleConfigChange}
                                     onBatchChange={handleBatchConfigChange}
+                                    showMetaControls={false}
                                 />
                             )}
 
@@ -572,6 +831,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                     config={config as any}
                                     onChange={handleConfigChange}
                                     onBatchChange={handleBatchConfigChange}
+                                    showMetaControls={false}
                                 />
                             )}
 
@@ -583,6 +843,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                     config={config as any}
                                     onChange={handleConfigChange}
                                     onBatchChange={handleBatchConfigChange}
+                                    showMetaControls={false}
                                 />
                             )}
 
@@ -592,6 +853,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                     key={blockId}
                                     config={config as any}
                                     onChange={handleConfigChange}
+                                    showMetaControls={false}
                                 />
                             )}
 
@@ -603,6 +865,9 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                     onChange={handleConfigChange}
                                     methodology={currentMethodology}
                                     blockType={block.type}
+                                    showMetaControls={false}
+                                    warmupMode={warmupMode}
+                                    onWarmupModeChange={setWarmupMode}
                                 />
                             )}
 
@@ -614,6 +879,7 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                     config={config}
                                     onChange={handleConfigChange}
                                     onBatchChange={handleBatchConfigChange}
+                                    showMetaControls={false}
                                 />
                             )}
                         </div>
@@ -721,9 +987,10 @@ interface DynamicFormProps {
     config: Record<string, unknown>;
     onChange: (key: string, value: unknown) => void;
     onBatchChange?: (updates: Record<string, unknown>) => void;
+    showMetaControls?: boolean;
 }
 
-function DynamicMethodologyForm({ methodology, config, onChange, onBatchChange }: DynamicFormProps) {
+function DynamicMethodologyForm({ methodology, config, onChange, onBatchChange, showMetaControls = true }: DynamicFormProps) {
     const fields = methodology.form_config?.fields || [];
 
     // Group fields: Keep movements_list separate, group others
@@ -733,7 +1000,7 @@ function DynamicMethodologyForm({ methodology, config, onChange, onBatchChange }
     return (
         <div className="space-y-3">
             {/* Compact row for simple inputs - Single horizontal line wrapping if needed */}
-            {simpleFields.length > 0 && (
+            {showMetaControls && simpleFields.length > 0 && (
                 <div className="cv-meta-bar">
                     {simpleFields.map((field: TrainingMethodologyFormField) => (
                         <DynamicField
@@ -1121,7 +1388,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
         <div className="animate-in fade-in duration-300 space-y-4">
 
             {/* MAIN GRID */}
-            <div className="cv-meta-bar">
+            <div className="cv-meta-bar justify-center">
 
                 {/* 1. SERIES */}
                 {showSets && (
@@ -1140,7 +1407,7 @@ function StrengthForm({ config, onChange, onBatchChange, blockName }: FormProps)
                         headerAction={
                             <button
                                 onClick={() => setShowBreakdown(!showBreakdown)}
-                                className={`flex items-center gap-1 text-[10px] font-bold px-1 py-0.5 rounded transition-colors ${showBreakdown
+                                className={`flex items-center gap-1 text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition-colors ${showBreakdown
                                     ? 'bg-cv-accent text-white'
                                     : 'bg-slate-100 dark:bg-slate-800 text-cv-text-tertiary hover:text-cv-accent'
                                     }`}

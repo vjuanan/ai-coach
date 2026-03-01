@@ -9,9 +9,10 @@ interface EmomEditorProps {
     config: Partial<EMOMConfig>;
     onChange: (key: string, value: unknown) => void;
     blockType?: 'warmup' | 'metcon_structured' | 'accessory' | 'skill' | 'finisher' | string;
+    showMetaControls?: boolean;
 }
 
-export function EmomEditor({ config, onChange }: EmomEditorProps) {
+export function EmomEditor({ config, onChange, showMetaControls = true }: EmomEditorProps) {
     // Local state for complex minute logic
     // We map the raw config to a more UI-friendly structure if needed
     // But for now let's try to stick to the config structure:
@@ -106,41 +107,43 @@ export function EmomEditor({ config, onChange }: EmomEditorProps) {
     return (
         <div className="space-y-4 animate-in fade-in duration-300">
             {/* Top Config Row: Duration & Interval */}
-            <div className="cv-meta-bar">
-                <div className="cv-meta-item">
-                    <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
-                        Duración
-                    </label>
-                    <div className="relative">
-                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                        <input
-                            type="number"
-                            value={duration}
-                            onChange={(e) => onChange('minutes', parseInt(e.target.value, 10) || 0)}
-                            className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
-                            placeholder="10"
-                        />
+            {showMetaControls && (
+                <div className="cv-meta-bar">
+                    <div className="cv-meta-item">
+                        <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
+                            Duración
+                        </label>
+                        <div className="relative">
+                            <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                            <input
+                                type="number"
+                                value={duration}
+                                onChange={(e) => onChange('minutes', parseInt(e.target.value, 10) || 0)}
+                                className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
+                                placeholder="10"
+                            />
+                        </div>
+                        <span className="text-[10px] font-medium text-cv-text-tertiary">min</span>
                     </div>
-                    <span className="text-[10px] font-medium text-cv-text-tertiary">min</span>
-                </div>
 
-                <div className="cv-meta-item">
-                    <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
-                        Cada
-                    </label>
-                    <div className="relative">
-                        <Repeat size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                        <input
-                            type="number"
-                            value={interval}
-                            onChange={(e) => onChange('interval', parseInt(e.target.value, 10) || 1)}
-                            className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
-                            placeholder="1"
-                        />
+                    <div className="cv-meta-item">
+                        <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
+                            Cada
+                        </label>
+                        <div className="relative">
+                            <Repeat size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                            <input
+                                type="number"
+                                value={interval}
+                                onChange={(e) => onChange('interval', parseInt(e.target.value, 10) || 1)}
+                                className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
+                                placeholder="1"
+                            />
+                        </div>
+                        <span className="text-[10px] font-medium text-cv-text-tertiary">min</span>
                     </div>
-                    <span className="text-[10px] font-medium text-cv-text-tertiary">min</span>
                 </div>
-            </div>
+            )}
 
             {/* Slots Builder */}
             <div className="space-y-2.5">
@@ -166,6 +169,7 @@ export function EmomEditor({ config, onChange }: EmomEditorProps) {
                     {slots.map((slot, index) => (
                         <div
                             key={slot.id || index}
+                            data-emom-row
                             className={`group relative grid grid-cols-1 ${rowGridCols} gap-2 p-2.5 bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm hover:shadow-md hover:border-cv-accent/30 transition-all items-start md:items-center`}
                         >
                             {/* Interval label */}
@@ -186,9 +190,19 @@ export function EmomEditor({ config, onChange }: EmomEditorProps) {
                                 />
                             </div>
 
-                            <div className="hidden md:flex items-center justify-center text-cv-text-tertiary/80">
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    const row = e.currentTarget.closest('[data-emom-row]');
+                                    const input = (row?.querySelector('[data-smart-exercise-input] input')
+                                        || row?.querySelector('input')) as HTMLInputElement | null;
+                                    input?.focus();
+                                }}
+                                className="hidden md:flex self-center items-center justify-center text-cv-text-tertiary/80 hover:text-cv-accent transition-colors p-1"
+                                aria-label={`Buscar ejercicio intervalo ${index + 1}`}
+                            >
                                 <Search size={17} />
-                            </div>
+                            </button>
 
                             <div className="flex flex-col items-start md:items-center gap-1">
                                 <label className="block md:hidden text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary">

@@ -152,10 +152,10 @@ export function InputCard({
         : 'inline-flex items-center h-[1.5rem] leading-none';
     const labelTextClampClass = labelLines === 2 ? '' : 'whitespace-nowrap overflow-hidden text-ellipsis';
     const isMicro = density === 'micro';
-    const cardPaddingClass = compact ? (isMicro ? 'cv-radius-soft p-1' : 'cv-radius-soft p-1.5') : 'rounded-xl p-2';
+    const cardPaddingClass = compact ? (isMicro ? 'cv-radius-soft p-1.5' : 'cv-radius-soft p-2') : 'rounded-xl p-2';
     const inputHeightClass = isMicro ? 'cv-input-micro text-base' : 'h-[var(--cv-input-height-compact)] text-lg';
     const chipDensityClass = isMicro ? 'cv-chip-micro text-[9px]' : 'h-6 text-[10px]';
-    const valueRowClass = isMicro ? 'min-h-[1.9rem]' : 'min-h-[2.2rem]';
+    const valueRowClass = isMicro ? 'min-h-[2.1rem]' : 'min-h-[2.3rem]';
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let val = e.target.value;
@@ -222,7 +222,7 @@ export function InputCard({
                         {label}
                     </span>
                 </div>
-                {headerAction}
+                {headerAction && <div className="ml-1 shrink-0">{headerAction}</div>}
             </div>
 
             {subLabel && (

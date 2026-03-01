@@ -8,9 +8,10 @@ import type { TabataConfig } from '@/lib/supabase/types';
 interface TabataEditorProps {
     config: Partial<TabataConfig>;
     onChange: (key: string, value: unknown) => void;
+    showMetaControls?: boolean;
 }
 
-export function TabataEditor({ config, onChange }: TabataEditorProps) {
+export function TabataEditor({ config, onChange, showMetaControls = true }: TabataEditorProps) {
     // Default values if not present
     const rounds = config.rounds || 8;
     const workSeconds = config.workSeconds || 20;
@@ -61,52 +62,54 @@ export function TabataEditor({ config, onChange }: TabataEditorProps) {
     return (
         <div className="space-y-4 animate-in fade-in duration-300">
             {/* Config Row */}
-            <div className="cv-meta-bar">
-                <div className="cv-meta-item">
-                    <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
-                        Rondas
-                    </label>
-                    <div className="relative">
-                        <RotateCw size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                        <input
-                            type="number"
-                            value={rounds}
-                            onChange={(e) => onChange('rounds', parseInt(e.target.value, 10) || 0)}
-                            className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
-                        />
+            {showMetaControls && (
+                <div className="cv-meta-bar">
+                    <div className="cv-meta-item">
+                        <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
+                            Rondas
+                        </label>
+                        <div className="relative">
+                            <RotateCw size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                            <input
+                                type="number"
+                                value={rounds}
+                                onChange={(e) => onChange('rounds', parseInt(e.target.value, 10) || 0)}
+                                className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
+                            />
+                        </div>
                     </div>
-                </div>
 
-                <div className="cv-meta-item">
-                    <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
-                        Trabajo (s)
-                    </label>
-                    <div className="relative">
-                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                        <input
-                            type="number"
-                            value={workSeconds}
-                            onChange={(e) => onChange('workSeconds', parseInt(e.target.value, 10) || 0)}
-                            className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
-                        />
+                    <div className="cv-meta-item">
+                        <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
+                            Trabajo (s)
+                        </label>
+                        <div className="relative">
+                            <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                            <input
+                                type="number"
+                                value={workSeconds}
+                                onChange={(e) => onChange('workSeconds', parseInt(e.target.value, 10) || 0)}
+                                className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
+                            />
+                        </div>
                     </div>
-                </div>
 
-                <div className="cv-meta-item">
-                    <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
-                        Descanso (s)
-                    </label>
-                    <div className="relative">
-                        <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
-                        <input
-                            type="number"
-                            value={restSeconds}
-                            onChange={(e) => onChange('restSeconds', parseInt(e.target.value, 10) || 0)}
-                            className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
-                        />
+                    <div className="cv-meta-item">
+                        <label className="text-[10px] font-bold text-cv-text-secondary uppercase tracking-wide whitespace-nowrap">
+                            Descanso (s)
+                        </label>
+                        <div className="relative">
+                            <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
+                            <input
+                                type="number"
+                                value={restSeconds}
+                                onChange={(e) => onChange('restSeconds', parseInt(e.target.value, 10) || 0)}
+                                className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
+                            />
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Exercises List */}
             <div className="space-y-2.5">
