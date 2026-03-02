@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { normalizeNumericInputValue, sanitizeDigits } from '@/lib/input-sanitizers';
 
 interface TableInputWithPresetsProps {
     value: string | number;
@@ -88,6 +89,7 @@ export function TableInputWithPresets({
 }: TableInputWithPresetsProps) {
     const [isFocused, setIsFocused] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const isNumericType = type === 'number';
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -101,20 +103,41 @@ export function TableInputWithPresets({
 
     // Default underline style if no class provided
     const defaultInputClass = `bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 cv-input-compact cv-radius-soft px-1 text-center font-semibold text-cv-text-primary text-sm focus:outline-none focus:ring-1 focus:ring-cv-accent/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${width} ${suffix ? 'pr-5' : ''}`;
-    const visiblePresets = selectStrategicPresets(presets, maxVisiblePresets);
+    const normalizedPresets = isNumericType
+        ? dedupePresets(presets
+            .map((preset) => sanitizeDigits(String(preset)))
+            .filter((preset) => preset !== ''))
+        : presets;
+    const visiblePresets = selectStrategicPresets(normalizedPresets, maxVisiblePresets);
+    const displayedValue = isNumericType ? normalizeNumericInputValue(value) : value;
+    const handleInputChange = (nextValue: string) => {
+        if (!isNumericType) {
+            onChange(nextValue);
+            return;
+        }
+        onChange(sanitizeDigits(nextValue));
+    };
 
     return (
         <div className="relative flex flex-col items-center gap-1" ref={containerRef}>
             <div className="relative">
                 <input
-                    type={type}
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
+                    type={isNumericType ? 'text' : type}
+                    value={displayedValue}
+                    onChange={(e) => handleInputChange(e.target.value)}
                     onFocus={() => setIsFocused(true)}
+                    inputMode={isNumericType ? 'numeric' : undefined}
+                    pattern={isNumericType ? '[0-9]*' : undefined}
+                    maxLength={isNumericType ? 2 : undefined}
                     className={inputClassName || defaultInputClass}
                     placeholder={placeholder}
-                    min={min}
-                    step={step}
+                    min={isNumericType ? undefined : min}
+                    step={isNumericType ? undefined : step}
+                    onPaste={isNumericType ? (e) => {
+                        e.preventDefault();
+                        const pasted = e.clipboardData.getData('text');
+                        onChange(sanitizeDigits(pasted));
+                    } : undefined}
                 />
                 {suffix && (
                     <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -130,7 +153,7 @@ export function TableInputWithPresets({
                             key={preset}
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onChange(preset.toString());
+                                onChange(isNumericType ? sanitizeDigits(String(preset)) : preset.toString());
                                 setIsFocused(false);
                             }}
                             className={`
@@ -154,7 +177,7 @@ export function TableInputWithPresets({
                             key={preset}
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onChange(preset.toString());
+                                onChange(isNumericType ? sanitizeDigits(String(preset)) : preset.toString());
                                 setIsFocused(false);
                             }}
                             className={`

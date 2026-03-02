@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useEditorStore } from '@/lib/store';
 import { ChevronDown, ChevronUp, Calendar, ArrowRight, Layers, Repeat, Percent, Clock, Timer } from 'lucide-react';
 import type { WorkoutConfig } from '@/lib/supabase/types';
+import { normalizeNumericInputValue, sanitizeDigits } from '@/lib/input-sanitizers';
 
 interface ProgressionBlockCardProps {
     blockId: string;
@@ -219,6 +220,10 @@ function MiniInput({
     const containerClass = isGrid
         ? `bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2 border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors group ${fullWidth ? 'flex items-center gap-4' : 'flex flex-row items-center justify-between gap-1'}`
         : `bg-slate-50 dark:bg-slate-900/50 rounded-lg p-1.5 border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors group ${fullWidth ? 'flex items-center gap-3' : 'flex flex-col gap-0.5'}`;
+    const isNumericInput = type === 'number';
+    const normalizedValue = isNumericInput
+        ? normalizeNumericInputValue(value)
+        : (value !== undefined ? String(value) : '');
 
     return (
         <div className={containerClass}>
@@ -229,9 +234,12 @@ function MiniInput({
             </div>
             <div className={`flex items-baseline ${fullWidth ? 'flex-1' : 'justify-center'}`}>
                 <input
-                    type={type}
-                    value={value !== undefined ? String(value) : ''}
-                    onChange={(e) => onChange(e.target.value)}
+                    type={isNumericInput ? 'text' : type}
+                    value={normalizedValue}
+                    onChange={(e) => onChange(isNumericInput ? sanitizeDigits(e.target.value) : e.target.value)}
+                    inputMode={isNumericInput ? 'numeric' : undefined}
+                    pattern={isNumericInput ? '[0-9]*' : undefined}
+                    maxLength={isNumericInput ? 2 : undefined}
                     className={`
                         bg-transparent border-none p-0 text-cv-text-primary font-bold focus:ring-0
                         ${isGrid

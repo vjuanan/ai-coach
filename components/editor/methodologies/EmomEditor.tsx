@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, Clock, Repeat, Search } from 'lucide-react';
 import { SmartExerciseInput } from '../SmartExerciseInput';
 import type { EMOMConfig } from '@/lib/supabase/types';
+import { normalizeNumericInputValue, toNumberOrEmpty, toNumberOrNull } from '@/lib/input-sanitizers';
 
 interface EmomEditorProps {
     config: Partial<EMOMConfig>;
@@ -26,7 +27,7 @@ export function EmomEditor({ config, onChange, showMetaControls = true }: EmomEd
     const duration = (config.minutes as number) || 10;
     const interval = (config.interval as number) || 1;
     const isE2MOMMode = interval === 2;
-    const rowGridCols = 'md:grid-cols-[84px_minmax(0,1fr)_2rem_minmax(6rem,0.8fr)_minmax(7.25rem,0.9fr)_2.25rem]';
+    const rowGridCols = 'md:grid-cols-[84px_minmax(0,1fr)_minmax(6rem,0.8fr)_minmax(7.25rem,0.9fr)_2.25rem]';
 
     const [slots, setSlots] = useState<{ id: string; movement: string; targetValue: number | ''; targetUnit: 'reps' | 'seconds' | 'meters' }[]>(() => {
         // Try to recover from new format first
@@ -116,9 +117,12 @@ export function EmomEditor({ config, onChange, showMetaControls = true }: EmomEd
                         <div className="relative">
                             <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                             <input
-                                type="number"
-                                value={duration}
-                                onChange={(e) => onChange('minutes', parseInt(e.target.value, 10) || 0)}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                maxLength={2}
+                                value={normalizeNumericInputValue(duration)}
+                                onChange={(e) => onChange('minutes', toNumberOrNull(e.target.value) ?? 0)}
                                 className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
                                 placeholder="10"
                             />
@@ -133,9 +137,12 @@ export function EmomEditor({ config, onChange, showMetaControls = true }: EmomEd
                         <div className="relative">
                             <Repeat size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                             <input
-                                type="number"
-                                value={interval}
-                                onChange={(e) => onChange('interval', parseInt(e.target.value, 10) || 1)}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                maxLength={2}
+                                value={normalizeNumericInputValue(interval)}
+                                onChange={(e) => onChange('interval', toNumberOrNull(e.target.value) ?? 1)}
                                 className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
                                 placeholder="1"
                             />
@@ -147,24 +154,6 @@ export function EmomEditor({ config, onChange, showMetaControls = true }: EmomEd
 
             {/* Slots Builder */}
             <div className="space-y-2.5">
-                <div className="flex items-center justify-between mb-3">
-                    <label className="text-sm font-medium text-cv-text-secondary">
-                        Intervalos
-                    </label>
-                    <span className="text-xs text-cv-text-tertiary bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
-                        {slots.length} intervalos definidos
-                    </span>
-                </div>
-
-                <div className={`hidden md:grid ${rowGridCols} gap-2 px-2 text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary items-center`}>
-                    <span />
-                    <span />
-                    <span />
-                    <span className="text-center">Valor</span>
-                    <span className="text-center">Unidad</span>
-                    <span />
-                </div>
-
                 <div className="space-y-2.5">
                     {slots.map((slot, index) => (
                         <div
@@ -180,52 +169,47 @@ export function EmomEditor({ config, onChange, showMetaControls = true }: EmomEd
                             </div>
 
                             {/* Exercise */}
-                            <div className="min-w-0">
+                            <div className="relative min-w-0">
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        const row = e.currentTarget.closest('[data-emom-row]');
+                                        const input = (row?.querySelector('[data-smart-exercise-input] input')
+                                            || row?.querySelector('input')) as HTMLInputElement | null;
+                                        input?.focus();
+                                    }}
+                                    className="cv-row-action-icon hidden md:flex"
+                                    aria-label={`Buscar ejercicio fila ${index + 1}`}
+                                >
+                                    <Search size={16} />
+                                </button>
                                 <SmartExerciseInput
                                     value={slot.movement}
                                     onChange={(val) => updateSlot(index, 'movement', val)}
                                     placeholder="Buscar ejercicio en la biblioteca..."
-                                    className="cv-input cv-input-compact bg-transparent border-none shadow-none focus:ring-0 px-0 py-0 text-sm font-medium h-auto placeholder:text-slate-400 w-full"
+                                    className="cv-input cv-input-compact bg-transparent border-none shadow-none focus:ring-0 pl-0 pr-8 py-0 text-sm font-medium h-auto placeholder:text-slate-400 w-full"
                                     showSearchIcon={false}
                                 />
                             </div>
 
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    const row = e.currentTarget.closest('[data-emom-row]');
-                                    const input = (row?.querySelector('[data-smart-exercise-input] input')
-                                        || row?.querySelector('input')) as HTMLInputElement | null;
-                                    input?.focus();
-                                }}
-                                className="hidden md:flex self-center items-center justify-center text-cv-text-tertiary/80 hover:text-cv-accent transition-colors p-1"
-                                aria-label={`Buscar ejercicio intervalo ${index + 1}`}
-                            >
-                                <Search size={17} />
-                            </button>
-
-                            <div className="flex flex-col items-start md:items-center gap-1">
-                                <label className="block md:hidden text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary">
-                                    Valor
-                                </label>
+                            <div className="flex items-center justify-center">
                                 <input
-                                    type="number"
-                                    min={1}
-                                    value={slot.targetValue}
-                                    onChange={(e) => updateSlot(index, 'targetValue', e.target.value ? Number.parseInt(e.target.value, 10) : '')}
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    maxLength={2}
+                                    value={normalizeNumericInputValue(slot.targetValue)}
+                                    onChange={(e) => updateSlot(index, 'targetValue', toNumberOrEmpty(e.target.value))}
                                     placeholder={slot.targetUnit === 'seconds' ? '40' : slot.targetUnit === 'meters' ? '200' : '12'}
-                                    className="cv-width-short cv-input-compact text-sm text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1 font-semibold focus:ring-1 focus:ring-cv-accent/50"
+                                    className="cv-width-short cv-target-input"
                                 />
                             </div>
 
-                            <div className="flex flex-col items-start md:items-center gap-1">
-                                <label className="block md:hidden text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary">
-                                    Unidad
-                                </label>
+                            <div className="flex items-center justify-center">
                                 <select
                                     value={slot.targetUnit}
                                     onChange={(e) => updateSlot(index, 'targetUnit', e.target.value as 'reps' | 'seconds' | 'meters')}
-                                    className="cv-width-time cv-input-compact text-sm text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1 focus:ring-1 focus:ring-cv-accent/50"
+                                    className="cv-width-time cv-target-unit"
                                 >
                                     <option value="reps">Reps</option>
                                     <option value="seconds">Segundos</option>
@@ -237,7 +221,7 @@ export function EmomEditor({ config, onChange, showMetaControls = true }: EmomEd
                                 <button
                                     onClick={() => removeSlot(index)}
                                     className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
-                                    title="Eliminar intervalo"
+                                    title="Eliminar"
                                 >
                                     <Trash2 size={16} />
                                 </button>
@@ -252,7 +236,7 @@ export function EmomEditor({ config, onChange, showMetaControls = true }: EmomEd
                     className="mt-2.5 w-full py-2 border border-dashed border-cv-border rounded-lg text-cv-text-tertiary hover:text-cv-accent hover:border-cv-accent/50 hover:bg-cv-accent/5 transition-all flex items-center justify-center gap-2 text-sm font-medium"
                 >
                     <Plus size={16} />
-                    Añadir Intervalo
+                    Añadir
                 </button>
             </div>
         </div>

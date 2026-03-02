@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { LucideIcon } from 'lucide-react';
+import { normalizeNumericInputValue, sanitizeDigits } from '@/lib/input-sanitizers';
 
 interface InputCardProps {
     label: string;
@@ -108,14 +109,33 @@ export function InputCard({
     density = 'compact',
     layout = 'fixed',
 }: InputCardProps) {
-    const [localValue, setLocalValue] = useState<string>(value !== undefined && value !== null ? String(value) : '');
+    const normalizeTimeInputValue = (nextValue: unknown) =>
+        nextValue !== undefined && nextValue !== null
+            ? String(nextValue).replace(/[^0-9:]/g, '')
+            : '';
+
+    const [localValue, setLocalValue] = useState<string>(() => (
+        type === 'number'
+            ? normalizeNumericInputValue(value)
+            : type === 'time'
+                ? normalizeTimeInputValue(value)
+            : (value !== undefined && value !== null ? String(value) : '')
+    ));
     const [isFocused, setIsFocused] = useState(false);
     const defaultAppliedRef = useRef(false);
 
     // Sync from props
     useEffect(() => {
+        if (type === 'number') {
+            setLocalValue(normalizeNumericInputValue(value));
+            return;
+        }
+        if (type === 'time') {
+            setLocalValue(normalizeTimeInputValue(value));
+            return;
+        }
         setLocalValue(value !== undefined && value !== null ? String(value) : '');
-    }, [value]);
+    }, [type, value]);
 
     // Apply default value when field is empty
     useEffect(() => {
@@ -146,7 +166,12 @@ export function InputCard({
                 : resolvedCardSize === 'auto'
                     ? 'w-auto'
                     : 'cv-card-medium';
-    const visiblePresets = selectStrategicPresets(presets, maxVisiblePresets);
+    const normalizedPresets = type === 'number'
+        ? dedupePresets(presets
+            .map((preset) => sanitizeDigits(String(preset)))
+            .filter((preset) => preset !== ''))
+        : presets;
+    const visiblePresets = selectStrategicPresets(normalizedPresets, maxVisiblePresets);
     const labelHeightClass = labelLines === 2
         ? 'h-[1.5rem] leading-tight'
         : 'inline-flex items-center h-[1.5rem] leading-none';
@@ -161,8 +186,8 @@ export function InputCard({
         let val = e.target.value;
 
         if (type === 'number') {
-            // Strictly numbers
-            const numericVal = val.replace(/[^0-9.]/g, '');
+            // Strictly digits, max 2 characters.
+            const numericVal = sanitizeDigits(val);
             if (val !== numericVal) {
                 e.target.value = numericVal; // Force DOM override sync
             }
@@ -203,8 +228,14 @@ export function InputCard({
     };
 
     const handlePresetClick = (preset: string | number) => {
-        setLocalValue(String(preset));
-        onChange(preset);
+        if (type === 'number') {
+            const numericPreset = sanitizeDigits(String(preset));
+            setLocalValue(numericPreset);
+            onChange(numericPreset === '' ? '' : Number(numericPreset));
+        } else {
+            setLocalValue(String(preset));
+            onChange(preset);
+        }
         setIsFocused(false);
     };
 
@@ -243,6 +274,9 @@ export function InputCard({
                         onChange={handleChange}
                         onBlur={handleBlur}
                         onFocus={() => setIsFocused(true)}
+                        inputMode={type === 'number' ? 'numeric' : undefined}
+                        pattern={type === 'number' ? '[0-9]*' : undefined}
+                        maxLength={type === 'number' ? 2 : undefined}
                         placeholder={placeholder || '-'}
                         className={`bg-transparent border border-slate-200 dark:border-slate-700 cv-radius-soft ${inputHeightClass} px-1 font-bold text-center focus:ring-1 focus:ring-cv-accent/40 focus:border-cv-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${widthClass}
                             ${isInvalid ? 'text-red-600 placeholder:text-red-300' : 'text-cv-text-primary placeholder:text-slate-300 dark:placeholder:text-slate-600'}

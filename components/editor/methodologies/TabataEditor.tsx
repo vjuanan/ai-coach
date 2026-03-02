@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, Clock, RotateCw } from 'lucide-react';
 import { SmartExerciseInput } from '../SmartExerciseInput';
 import type { TabataConfig } from '@/lib/supabase/types';
+import { normalizeNumericInputValue, toNumberOrNull } from '@/lib/input-sanitizers';
 
 interface TabataEditorProps {
     config: Partial<TabataConfig>;
@@ -71,9 +72,12 @@ export function TabataEditor({ config, onChange, showMetaControls = true }: Taba
                         <div className="relative">
                             <RotateCw size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                             <input
-                                type="number"
-                                value={rounds}
-                                onChange={(e) => onChange('rounds', parseInt(e.target.value, 10) || 0)}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                maxLength={2}
+                                value={normalizeNumericInputValue(rounds)}
+                                onChange={(e) => onChange('rounds', toNumberOrNull(e.target.value) ?? 0)}
                                 className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
                             />
                         </div>
@@ -86,9 +90,12 @@ export function TabataEditor({ config, onChange, showMetaControls = true }: Taba
                         <div className="relative">
                             <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                             <input
-                                type="number"
-                                value={workSeconds}
-                                onChange={(e) => onChange('workSeconds', parseInt(e.target.value, 10) || 0)}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                maxLength={2}
+                                value={normalizeNumericInputValue(workSeconds)}
+                                onChange={(e) => onChange('workSeconds', toNumberOrNull(e.target.value) ?? 0)}
                                 className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
                             />
                         </div>
@@ -101,9 +108,12 @@ export function TabataEditor({ config, onChange, showMetaControls = true }: Taba
                         <div className="relative">
                             <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                             <input
-                                type="number"
-                                value={restSeconds}
-                                onChange={(e) => onChange('restSeconds', parseInt(e.target.value, 10) || 0)}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                maxLength={2}
+                                value={normalizeNumericInputValue(restSeconds)}
+                                onChange={(e) => onChange('restSeconds', toNumberOrNull(e.target.value) ?? 0)}
                                 className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
                             />
                         </div>

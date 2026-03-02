@@ -25,6 +25,8 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import type { BlockType, WorkoutFormat, WorkoutConfig } from '@/lib/supabase/types';
 import { SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { sanitizeDigits } from '@/lib/input-sanitizers';
+import { isWarmupBlock } from '@/lib/block-sections';
 
 // Sortable Item Wrapper for Horizontal List
 function SortableBuilderItem({ id, children, isActive }: { id: string; children: React.ReactNode; isActive: boolean }) {
@@ -148,6 +150,8 @@ const blockTypeOptions: {
         },
     ];
 
+const creatableBlockTypeOptions = blockTypeOptions.filter((option) => option.type !== 'warmup');
+
 const activeBlockClassByType: Record<string, string> = {
     warmup: 'cv-block-active-warmup',
     strength_linear: 'cv-block-active-strength',
@@ -229,14 +233,12 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
 
         return [...currentDay.blocks]
             .filter(b => {
-                const isWarmupBlock = b.section === 'warmup' || b.type === 'warmup';
-
                 if (blockBuilderSection === 'warmup') {
                     // If in Warmup section, ONLY show warmup blocks
-                    return isWarmupBlock;
+                    return isWarmupBlock(b);
                 } else {
                     // If in Main/Training section, ONLY show non-warmup blocks
-                    return !isWarmupBlock;
+                    return !isWarmupBlock(b);
                 }
             })
             .sort((a, b) => a.order_index - b.order_index);
@@ -287,7 +289,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
     };
 
     const performAddBlock = (type: BlockType) => {
-        const stimulusPickerBlockTypes: BlockType[] = ['metcon_structured', 'warmup', 'accessory', 'skill', 'finisher'];
+        const stimulusPickerBlockTypes: BlockType[] = ['metcon_structured', 'accessory', 'skill', 'finisher'];
         const usesStimulusPicker = stimulusPickerBlockTypes.includes(type);
         // Keep explicit default only for strength blocks; structured blocks open with stimulus picker.
         const format = type === 'strength_linear'
@@ -349,7 +351,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                             Tipos de Bloque
                         </p>
                         <div className="space-y-1.5">
-                            {blockTypeOptions.map((option) => {
+                            {creatableBlockTypeOptions.map((option) => {
                                 const Icon = option.icon;
                                 return (
                                     <button
@@ -518,7 +520,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                 Añadir nuevo...
                                             </div>
                                             <div className="space-y-0.5">
-                                                {blockTypeOptions.map((option) => {
+                                                {creatableBlockTypeOptions.map((option) => {
                                                     const Icon = option.icon;
                                                     return (
                                                         <button
@@ -727,7 +729,11 @@ function BlockTooltip({ hoverState }: { hoverState: { block: any, rect: DOMRect 
     if (block.type === 'strength_linear') {
         const sets = config.sets || '-';
         const reps = config.reps || '-';
-        const load = config.percentage ? `${config.percentage}%` : (config.weight ? `${config.weight}kg` : '-');
+        const percentageValue = sanitizeDigits(String(config.percentage ?? ''), 2);
+        const weightValue = sanitizeDigits(String(config.weight ?? ''), 2);
+        const load = percentageValue
+            ? `${percentageValue}%`
+            : (weightValue ? `${weightValue}kg` : '-');
 
         content = (
             <div className="flex flex-col gap-2">

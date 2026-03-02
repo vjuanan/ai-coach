@@ -53,6 +53,7 @@ import { InputCard } from './InputCard';
 import { useAthleteRm } from '@/hooks/useAthleteRm';
 import { useAthleteBenchmarks } from '@/hooks/useAthleteBenchmarks'; // New Hook
 import { useBlockValidator } from '@/hooks/useBlockValidator';
+import { normalizeNumericInputValue, toNumberOrNull } from '@/lib/input-sanitizers';
 import type { BlockType, WorkoutFormat, WorkoutConfig, TrainingMethodology, TrainingMethodologyFormField } from '@/lib/supabase/types';
 
 interface SeriesDetail {
@@ -321,9 +322,9 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
         Icon?: LucideIcon,
         widthClass: 'cv-width-short' | 'cv-width-medium' | 'cv-width-time' = 'cv-width-short'
     ) => {
-        const normalizedValue = typeof value === 'number'
-            ? value
-            : (typeof value === 'string' ? value : '');
+        const normalizedValue = normalizeNumericInputValue(
+            typeof value === 'number' || typeof value === 'string' ? value : ''
+        );
 
         return (
             <div key={key} className="cv-meta-item">
@@ -333,10 +334,12 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 <div className="relative">
                     {Icon && <Icon size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />}
                     <input
-                        type="number"
-                        min={0}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={2}
                         value={normalizedValue}
-                        onChange={(e) => onChange(e.target.value ? Number.parseInt(e.target.value, 10) : null)}
+                        onChange={(e) => onChange(toNumberOrNull(e.target.value))}
                         className={`${widthClass} cv-meta-input-fit text-sm ${Icon ? 'pl-7 pr-1' : 'px-1'}`}
                         placeholder={placeholder}
                     />
@@ -708,29 +711,12 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                 {
                     block.type === 'strength_linear' && (
                         <div>
-                            <div className="flex items-center justify-between mb-2">
-                                <label className="block text-sm font-medium text-cv-text-secondary">
-                                    Ejercicio Principal
+                            <div className="flex items-center gap-2">
+                                <label className="shrink-0 text-sm font-medium text-cv-text-secondary">
+                                    Ejercicio
                                 </label>
 
-                                {/* Progression Toggle - Here for Strength blocks */}
-                                <ProgressionSettings
-                                    blockId={blockId}
-                                    progressionId={block.progression_id}
-                                    showSelector={showProgressionSelector}
-                                    setShowSelector={setShowProgressionSelector}
-                                    onToggle={toggleBlockProgression}
-                                    showDistance={(() => {
-                                        const ex = block.name ? searchLocal(block.name).find(e => e.name === block.name) : null;
-                                        return ex?.tracking_parameters?.distance === true;
-                                    })()}
-                                />
-                            </div>
-
-
-
-                            <div className="flex gap-2">
-                                <div className="flex-1">
+                                <div className="flex-1 min-w-0">
                                     <SmartExerciseInput
                                         value={block.name || ''}
                                         onChange={(val) => updateBlock(blockId, { name: val || null })}
@@ -755,6 +741,21 @@ export function BlockEditor({ blockId, autoFocusFirst = true }: BlockEditorProps
                                         </div>
                                     </button>
                                 )}
+
+                                {/* Progression Toggle - Compact in same row for Classic */}
+                                <div className="shrink-0">
+                                    <ProgressionSettings
+                                        blockId={blockId}
+                                        progressionId={block.progression_id}
+                                        showSelector={showProgressionSelector}
+                                        setShowSelector={setShowProgressionSelector}
+                                        onToggle={toggleBlockProgression}
+                                        showDistance={(() => {
+                                            const ex = block.name ? searchLocal(block.name).find(e => e.name === block.name) : null;
+                                            return ex?.tracking_parameters?.distance === true;
+                                        })()}
+                                    />
+                                </div>
                             </div>
 
                             {/* Validation Warning */}
@@ -1124,18 +1125,22 @@ function DynamicField({ field, value, onChange, allConfig, onConfigChange, onBat
     }
 
     if (field.type === 'number') {
-        const displayValue = typeof value === 'string'
-            ? parseInt(value.replace('%', ''))
-            : value;
+        const displayValue = normalizeNumericInputValue(
+            typeof value === 'string'
+                ? value.replace('%', '')
+                : (typeof value === 'number' ? value : '')
+        );
 
         return (
             <div className="cv-meta-item">
                 <span className="text-xs font-semibold text-cv-text-primary whitespace-nowrap">{field.label}</span>
                 <input
-                    type="number"
-                    min={0}
-                    value={(displayValue as number) || ''}
-                    onChange={(e) => onChange(e.target.value ? parseInt(e.target.value, 10) : null)}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={2}
+                    value={displayValue}
+                    onChange={(e) => onChange(toNumberOrNull(e.target.value))}
                     placeholder={field.placeholder ? field.placeholder.replace('%', '') : '0'}
                     className={`cv-meta-input-fit text-sm focus:ring-1 focus:ring-cv-accent/30 font-bold placeholder:text-slate-300 ${inputWidthClass}`}
                 />

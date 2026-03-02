@@ -7,6 +7,7 @@ import { Trash2, Plus, RotateCcw, Repeat, Activity, Flame, Clock } from 'lucide-
 import type { TrainingMethodology, TrainingMethodologyFormField } from '@/lib/supabase/types';
 import { InputCard } from './InputCard';
 import { formatMethodologyOptionLabel, normalizeMethodologyCode } from '@/lib/training-methodologies';
+import { normalizeNumericInputValue, toNumberOrEmpty } from '@/lib/input-sanitizers';
 
 interface GenericMovementFormProps {
     config: Record<string, unknown>;
@@ -254,10 +255,12 @@ export function GenericMovementForm({
                                         {globalControlLabel}
                                     </span>
                                     <input
-                                        type="number"
-                                        min={1}
-                                        value={globalControlValue}
-                                        onChange={(e) => onChange(globalControlKey, e.target.value ? Number.parseInt(e.target.value, 10) : '')}
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        maxLength={2}
+                                        value={normalizeNumericInputValue(globalControlValue as string | number | null | undefined)}
+                                        onChange={(e) => onChange(globalControlKey, toNumberOrEmpty(e.target.value))}
                                         placeholder={globalControlKey === 'sets' ? '3' : '5'}
                                         className="cv-width-short cv-input-micro bg-white dark:bg-cv-bg-secondary border border-slate-200 dark:border-slate-700 cv-radius-soft px-1 font-bold text-center text-base focus:ring-1 focus:ring-cv-accent/40 focus:border-cv-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     />

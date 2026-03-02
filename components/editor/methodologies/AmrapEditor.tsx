@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, Clock, RotateCw, Search } from 'lucide-react';
 import { SmartExerciseInput } from '../SmartExerciseInput';
 import type { AMRAPConfig, RFTConfig } from '@/lib/supabase/types';
+import { normalizeNumericInputValue, toNumberOrEmpty, toNumberOrNull } from '@/lib/input-sanitizers';
 
 interface CircuitItem {
     id: string;
@@ -21,7 +22,7 @@ interface CircuitEditorProps {
 }
 
 export function CircuitEditor({ config, onChange, onBatchChange, mode, showMetaControls = true }: CircuitEditorProps) {
-    const rowGridCols = 'md:grid-cols-[32px_minmax(0,1fr)_2rem_minmax(6rem,0.8fr)_minmax(7.25rem,0.9fr)_2.25rem]';
+    const rowGridCols = 'md:grid-cols-[32px_minmax(0,1fr)_minmax(6rem,0.8fr)_minmax(7.25rem,0.9fr)_2.25rem]';
     const [items, setItems] = useState<CircuitItem[]>(() => {
         const savedItems = (config as any).items;
         if (savedItems && Array.isArray(savedItems)) {
@@ -123,9 +124,12 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode, showMetaC
                                 <div className="relative">
                                     <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                                     <input
-                                        type="number"
-                                        value={config.minutes || ''}
-                                        onChange={(e) => onChange('minutes', e.target.value ? parseInt(e.target.value, 10) : null)}
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        maxLength={2}
+                                        value={normalizeNumericInputValue(config.minutes as string | number | null | undefined)}
+                                        onChange={(e) => onChange('minutes', toNumberOrNull(e.target.value))}
                                         className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
                                         placeholder="12"
                                     />
@@ -140,9 +144,12 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode, showMetaC
                                 <div className="relative">
                                     <RotateCw size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                                     <input
-                                        type="number"
-                                        value={config.rounds || ''}
-                                        onChange={(e) => onChange('rounds', parseInt(e.target.value, 10) || 0)}
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        maxLength={2}
+                                        value={normalizeNumericInputValue(config.rounds as string | number | null | undefined)}
+                                        onChange={(e) => onChange('rounds', toNumberOrNull(e.target.value) ?? 0)}
                                         className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
                                         placeholder={mode === 'CHIPPER' ? '1' : '5'}
                                     />
@@ -157,9 +164,12 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode, showMetaC
                                 <div className="relative">
                                     <Clock size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cv-text-tertiary" />
                                     <input
-                                        type="number"
-                                        value={config.timeCap || ''}
-                                        onChange={(e) => onChange('timeCap', parseInt(e.target.value, 10) || null)}
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        maxLength={2}
+                                        value={normalizeNumericInputValue(config.timeCap as string | number | null | undefined)}
+                                        onChange={(e) => onChange('timeCap', toNumberOrNull(e.target.value))}
                                         className="cv-width-short cv-meta-input-fit pl-7 pr-1 text-sm"
                                         placeholder="15"
                                     />
@@ -172,22 +182,10 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode, showMetaC
 
             {/* Circuit Builder */}
             <div className="space-y-2.5">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center mb-3">
                     <label className="text-sm font-medium text-cv-text-secondary">
                         Movimientos
                     </label>
-                    <span className="text-xs text-cv-text-tertiary bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
-                        {items.length} ejercicios
-                    </span>
-                </div>
-
-                <div className={`hidden md:grid ${rowGridCols} gap-2 px-2 text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary items-center`}>
-                    <span />
-                    <span />
-                    <span />
-                    <span className="text-center">Valor</span>
-                    <span className="text-center">Unidad</span>
-                    <span />
                 </div>
 
                 <div className="space-y-2.5">
@@ -201,52 +199,47 @@ export function CircuitEditor({ config, onChange, onBatchChange, mode, showMetaC
                                 {index + 1}
                             </div>
 
-                            <div className="min-w-0">
+                            <div className="relative min-w-0">
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        const row = e.currentTarget.closest('[data-circuit-row]');
+                                        const input = (row?.querySelector('[data-smart-exercise-input] input')
+                                            || row?.querySelector('input')) as HTMLInputElement | null;
+                                        input?.focus();
+                                    }}
+                                    className="cv-row-action-icon hidden md:flex"
+                                    aria-label={`Buscar ejercicio fila ${index + 1}`}
+                                >
+                                    <Search size={16} />
+                                </button>
                                 <SmartExerciseInput
                                     value={item.exercise}
                                     onChange={(val) => updateItem(index, 'exercise', val)}
                                     placeholder="Buscar ejercicio en la biblioteca..."
-                                    className="cv-input cv-input-compact bg-transparent border-none shadow-none focus:ring-0 px-0 py-0 text-sm font-medium h-auto placeholder:text-slate-400"
+                                    className="cv-input cv-input-compact bg-transparent border-none shadow-none focus:ring-0 pl-0 pr-8 py-0 text-sm font-medium h-auto placeholder:text-slate-400"
                                     showSearchIcon={false}
                                 />
                             </div>
 
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    const row = e.currentTarget.closest('[data-circuit-row]');
-                                    const input = (row?.querySelector('[data-smart-exercise-input] input')
-                                        || row?.querySelector('input')) as HTMLInputElement | null;
-                                    input?.focus();
-                                }}
-                                className="hidden md:flex self-center items-center justify-center text-cv-text-tertiary/80 hover:text-cv-accent transition-colors p-1"
-                                aria-label={`Buscar ejercicio fila ${index + 1}`}
-                            >
-                                <Search size={17} />
-                            </button>
-
-                            <div className="flex flex-col items-start md:items-center gap-1">
-                                <label className="block md:hidden text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary">
-                                    Valor
-                                </label>
+                            <div className="flex items-center justify-center">
                                 <input
-                                    type="number"
-                                    min={1}
-                                    value={item.targetValue}
-                                    onChange={(e) => updateItem(index, 'targetValue', e.target.value ? Number.parseInt(e.target.value, 10) : '')}
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    maxLength={2}
+                                    value={normalizeNumericInputValue(item.targetValue)}
+                                    onChange={(e) => updateItem(index, 'targetValue', toNumberOrEmpty(e.target.value))}
                                     placeholder={item.targetUnit === 'seconds' ? '40' : item.targetUnit === 'meters' ? '200' : item.targetUnit === 'calories' ? '20' : '12'}
-                                    className="cv-width-short cv-input-compact text-sm text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1 focus:ring-1 focus:ring-cv-accent/50"
+                                    className="cv-width-short cv-target-input"
                                 />
                             </div>
 
-                            <div className="flex flex-col items-start md:items-center gap-1">
-                                <label className="block md:hidden text-[10px] font-bold uppercase tracking-wide text-cv-text-tertiary">
-                                    Unidad
-                                </label>
+                            <div className="flex items-center justify-center">
                                 <select
                                     value={item.targetUnit}
                                     onChange={(e) => updateItem(index, 'targetUnit', e.target.value as 'reps' | 'seconds' | 'meters' | 'calories')}
-                                    className="cv-width-time cv-input-compact text-sm text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-1 focus:ring-1 focus:ring-cv-accent/50"
+                                    className="cv-width-time cv-target-unit"
                                 >
                                     <option value="reps">Reps</option>
                                     <option value="seconds">Segundos</option>
