@@ -388,7 +388,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                 <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/30 dark:bg-cv-bg-tertiary/10">
                     {/* Added Blocks List - Horizontal Horizontal Scrolling */}
                     {currentDay && (
-                        <div className="flex-shrink-0 px-3 py-2 bg-white dark:bg-cv-bg-secondary relative z-20 flex items-center gap-2">
+                        <div className="flex-shrink-0 px-3 py-2 bg-transparent relative z-20 flex items-center gap-2">
                             <div className="flex-1 flex items-center gap-2 overflow-x-auto py-1 pl-1 no-scrollbar" style={{ isolation: 'isolate' }}>
                                 <SortableContext
                                     items={visibleBlocks.map(b => `builder-${b.id}`)}
