@@ -388,8 +388,8 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                 <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/30 dark:bg-cv-bg-tertiary/10">
                     {/* Added Blocks List - Horizontal Horizontal Scrolling */}
                     {currentDay && (
-                        <div className="flex-shrink-0 px-3 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-cv-bg-secondary relative z-20 flex items-center gap-3">
-                            <div className="flex-1 flex items-center gap-3 overflow-x-auto pb-2 pt-2 pl-1 no-scrollbar" style={{ isolation: 'isolate' }}>
+                        <div className="flex-shrink-0 px-3 py-2 bg-white dark:bg-cv-bg-secondary relative z-20 flex items-center gap-2">
+                            <div className="flex-1 flex items-center gap-2 overflow-x-auto py-1 pl-1 no-scrollbar" style={{ isolation: 'isolate' }}>
                                 <SortableContext
                                     items={visibleBlocks.map(b => `builder-${b.id}`)}
                                     strategy={horizontalListSortingStrategy}
@@ -423,7 +423,7 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                             selectBlock(block.id);
                                                         }}
                                                         className={`
-                                                            group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-left w-[160px] flex-shrink-0 cursor-pointer
+                                                            group relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border transition-all duration-200 text-left w-[142px] flex-shrink-0 cursor-pointer
                                                             ${isActive
                                                                 ? `cv-block-active ${activeBlockClassByType[block.type] || 'cv-block-active-free'} z-20`
                                                                 : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-500 hover:z-30'
@@ -442,8 +442,8 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                         <button
                                                             onClick={(e) => handleDeleteBlock(e, block)}
                                                             className="
-                                                                absolute top-1.5 right-1.5 
-                                                                w-6 h-6 
+                                                                absolute top-0.5 right-0.5 
+                                                                w-4 h-4 
                                                                 rounded-full 
                                                                 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
                                                                 flex items-center justify-center 
@@ -454,13 +454,13 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                                             title="Eliminar bloque"
                                                             onPointerDown={(e) => e.stopPropagation()} // Prevent drag start on delete button
                                                         >
-                                                            <Trash2 size={13} strokeWidth={2.5} />
+                                                            <Trash2 size={10} strokeWidth={2.5} />
                                                         </button>
 
-                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? `cv-block-icon-active ${activeIconClassByType[block.type] || 'cv-block-icon-active-free'}` : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'}`}>
-                                                            <Icon size={14} />
+                                                        <div className={`w-[1.625rem] h-[1.625rem] rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? `cv-block-icon-active ${activeIconClassByType[block.type] || 'cv-block-icon-active-free'}` : 'bg-slate-200 dark:bg-slate-700 text-cv-text-tertiary'}`}>
+                                                            <Icon size={13} />
                                                         </div>
-                                                        <div className="flex-1 min-w-0 overflow-hidden pr-6">
+                                                        <div className="flex-1 min-w-0 overflow-hidden pr-4">
                                                             <p className={`text-xs font-semibold truncate ${isActive ? 'text-cv-text-primary' : 'text-cv-text-secondary'}`}>
                                                                 {block.name || blockOption?.label || "Sin nombre"}
                                                             </p>
@@ -488,21 +488,21 @@ export function BlockBuilderPanel({ dayId, dayName, onClose }: BlockBuilderPanel
                                 </SortableContext>
                             </div>
                             {/* Header Quick Add Button - Outside scroll container */}
-                            <div className="relative flex-shrink-0 ml-1 z-40">
+                            <div className="relative flex-shrink-0 ml-0.5 z-40">
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setShowQuickAdd(!showQuickAdd);
                                     }}
                                     className={`
-                                        w-10 h-10 rounded-full border border-dashed border-slate-300 dark:border-slate-600 
+                                        w-9 h-9 rounded-full border border-dashed border-slate-300 dark:border-slate-600 
                                         flex items-center justify-center text-slate-400 hover:text-cv-accent hover:border-cv-accent 
                                         hover:bg-cv-accent/5 transition-all duration-200
                                         ${showQuickAdd ? 'bg-cv-accent/10 border-cv-accent text-cv-accent ring-2 ring-cv-accent/20' : ''}
                                     `}
                                     title="Añadir bloque"
                                 >
-                                    <Plus size={20} />
+                                    <Plus size={18} />
                                 </button>
 
                                 {/* Quick Add Dropdown */}
